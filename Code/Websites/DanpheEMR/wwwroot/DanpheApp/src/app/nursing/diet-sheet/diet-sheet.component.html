@@ -1,0 +1,103 @@
+<div class="grid-title-wrap"
+     style="margin: 10px 0; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <label for="max" style="font-size: 14px; font-weight: 600; color: #0773bc;">Total Patient: </label>
+        <span id="max" style="font-size: 14px; font-weight: 600; color: #0773bc; margin-left: 10px;">{{this.resultCount}}</span>
+    </div>
+    <div style="display: flex; justify-content: flex-end; align-items: center;">
+        <div>
+            <input _ngcontent-c6="" class="searchtbx" id="quickFilterInput" onclick="this.select();"
+                   onfocus="this.placeholder = ''" onfocusout="this.placeholder = 'Patient Name, HospitalNo, Rank'"
+                   placeholder="Patient Name, HospitalNo, Rank" style="width:360px;" type="text" [(ngModel)]="searchData"
+                   (input)="filterTable()">
+        </div>
+        <div>
+            <button class="btn green btn-success" (click)="PrintDietSheet()"
+                    id="btnPrintReciptEchsMrpDrugCertificate" style="margin-left: 10px; ">
+                <span>Print</span>&nbsp;&nbsp;
+                &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="table-container" style="position: relative;" *ngIf="inDataLoaded">
+            <table class="table table-bordered" style="margin-top: 0px;">
+                <thead style="background-color: rgb(51, 138, 245); color: white;">
+                    <tr>
+                        <th>SN</th>
+                        <th>Unit/Address</th>
+                        <th>Hospital No.</th>
+                        <th>Scheme</th>
+                        <th>Patient Name</th>
+                        <th>Age/Sex</th>
+                        <!-- <th>DOA</th> -->
+                        <th style="width: 120px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; height: 100%; width: 100%;">
+                                <div>DOA<b *ngIf="!IsLocalDate">(AD)</b><b *ngIf="IsLocalDate">(BS)</b></div>
+                                <div class="tooltip ng-star-inserted" style="color: #a7b5c4 ;z-index: inherit;">
+                                    <span style="cursor: pointer; font-size: 10px;">
+                                        <i class="fa fa-refresh" (click)="ChangeDateFormate()" style="font-size: 12px !important;"></i>
+                                    </span>
+                                    <p class="tooltiptext ttptextdown no-print">Change date format</p>
+                                </div>
+                            </div>
+                        </th>
+
+                        <th>Bed No.</th>
+                        <th>Diet Type</th>
+                        <th>Extra Diet</th>
+                        <th>Remarks</th>
+                        <th>Last Updated On</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of ipdListView; let i = index">
+                        <td>{{i+1}}</td>
+                        <td>{{item.Address}}</td>
+                        <td>{{item.PatientCode}}</td>
+                        <td>{{item.SchemeName}}</td>
+                        <td>{{item.ShortName}}</td>
+                        <td>{{item.AgeSex}}</td>
+                        <td *ngIf="!IsLocalDate" style="width: 120px;">{{item.AdmissionDate |
+                            DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
+                        <td *ngIf="IsLocalDate" style="width: 120px;">{{item.AdmissionDate|
+                            nepaliDate:'format':'YYYY-MM-DD hh:mm'}}</td>
+
+                        <td>{{item.BedNumber}}</td>
+                        <td style="text-align: center;">{{item.DietTypeName? item.DietTypeName : "--Not Set--"}}
+                        </td>
+                        <td style="text-align: center;">{{item.ExtraDiet}}</td>
+                        <td style="text-align: center;">{{item.Remarks}}</td>
+                        <td style="text-align: center;">{{item.CreatedOn |date:'yyyy-MM-dd hh:mm'}}</td>
+                        <td>
+                            <div class="btn-wrap">
+                                <button class="btn green btn-success ml-2" (click)="AddNewDietPlan(item)" title="Edit Diet"><i
+                                       class='fa fa-pencil'></i></button>
+                                <button class="btn green btn-success" (click)="PatientDietHistory(item)">
+                                    <a danphe-grid-action="contract" class="grid-action-icon" title="Diet History"><i
+                                           class="fa fa-file-text"></i></a></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div>
+    <diet-sheet-patient-history *ngIf="showPatientDietHistory" [selected-ipd]="selectedIpd"
+                                (hidePatientDietHistoryPage)="HidePatientDietHistory()"></diet-sheet-patient-history>
+</div>
+<div>
+    <add-patient-diet *ngIf="showAddDietPopUp" [showAddDietPopUp]="showAddDietPopUp" [selected-ipd]="selectedIpd"
+                      (hideAddDietPage)="HideAddDietPopUp()"></add-patient-diet>
+</div>
+<div>
+    <diet-sheet-print *ngIf="showDietSheetPrintPage" [show-diet-sheet-print-page]="showDietSheetPrintPage" [print-ipd-list]="ipdListView"
+                      [ward-name]="wardName" (hideDietSheetPrintPage)="HidePrintDietSheet()"></diet-sheet-print>
+</div>

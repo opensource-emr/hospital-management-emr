@@ -28,7 +28,8 @@
                 <p class="media-body small border-bottom border-gray">
                   <strong>Requisition Date:</strong>
                   {{RequisitionDispatchToReceive.Requisition.RequisitionDate | date : 'yyyy-MM-dd'}}&nbsp;
-                 
+                  <i *ngIf="RequisitionDispatchToReceive.Requisition.RequisitionDate">{{RequisitionDispatchToReceive.Requisition.RequisitionDate |
+                    nepaliDate:'format':'YYYY-MM-DD'}} </i>
                 </p>
                 <p class="media-body small border-bottom border-gray">
                   <strong>Requisition Status:</strong>
@@ -51,6 +52,7 @@
                       <strong>Received On:</strong>
                       <div *ngIf="!!dispatch.ReceivedOn; else elseBlockTwo">
                         {{dispatch.ReceivedOn | date : "yyyy-MM-dd"}}
+                        <i *ngIf="dispatch.ReceivedOn">{{dispatch.ReceivedOn | nepaliDate:'format':'YYYY-MM-DD'}} </i>
                       </div>
                       <ng-template #elseBlockTwo>Not Received</ng-template>
                     </div>

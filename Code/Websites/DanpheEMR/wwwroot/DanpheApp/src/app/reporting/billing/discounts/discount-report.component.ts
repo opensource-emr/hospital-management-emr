@@ -32,7 +32,7 @@ export class RPT_BIL_DiscountReportComponent {
   // public tot_Tax: number = 0;
   // public tot_TotalAmt: number = 0;
   DiscountReportColumns: Array<any> = null;
-  DiscountReportData: Array<any> = new Array<RPT_BIL_DiscountReportModel>();
+  DiscountReportData = new Array<RPT_BIL_DiscountReportModel>();
   dynamicColumns: Array<string> = new Array<string>();
   public currentDiscount: RPT_BIL_DiscountReportModel = new RPT_BIL_DiscountReportModel();
   dlService: DLService = null;
@@ -73,6 +73,7 @@ export class RPT_BIL_DiscountReportComponent {
     this.currentDiscount.fromDate = moment().format('YYYY-MM-DD');
     this.currentDiscount.toDate = moment().format('YYYY-MM-DD');
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("Date", false));
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail("DischargeDate", false));
     this.LoadExportOptions();
     this.LoadCounter();
     this.LoadUser();
@@ -148,7 +149,7 @@ export class RPT_BIL_DiscountReportComponent {
     };
   }
 
-  //on click grid export button we are catching in component an event.. 
+  //on click grid export button we are catching in component an event..
   //and in that event we are calling the server excel export....
   public OnGridExport($event: GridEmitModel): void {
     this.dlService.ReadExcel("/ReportingNew/ExportToExcelDiscountReport?FromDate="

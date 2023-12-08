@@ -20,6 +20,7 @@ namespace DanpheEMR.Services.Billing
         Task<object> GetVisitAdditionalServiceItems(BillingDbContext billingDbContext, string groupName);
         Task<object> GetServicePackages(BillingDbContext billingDbContext, int schemeId, int priceCategoryId);
         Task<object> Getcurrencies(BillingDbContext billingDbContext);
+        Task<object> GetPriceCategoryServiceItems(BillingDbContext billingDbContext, int priceCategoryId);
         Task<object> AddServiceItemSchemeSettings(BillingDbContext billingDbContext, List<BillServiceItemSchemeSetting_DTO> billServiceItemSchemeSettingdto, RbacUser currentUser);
     }
 }

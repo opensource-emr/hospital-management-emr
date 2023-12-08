@@ -3,8 +3,7 @@
     <table *ngIf="templateReport" class="patient-info-tabl lab-report-tbl">
       <thead>
         <tr>
-          <td class="prelim-sig-holder" colspan="2">
-            <div class="patient-info-box">
+          <td class="prelim-sig-holder" colspan="2"><div class="patient-info-box">
               <div *ngIf="templateReport.Lookups" class="flex-container flex-align-center justify-sp-around">
                 <div class="single-head">
                   <div class="left-col-data"> <strong>Name</strong> : {{templateReport.Lookups.PatientName}} </div>
@@ -13,14 +12,9 @@
                   <div class="right-col-data">
                     <div [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'" style="position: relative;">
                       <div *ngIf="showBarCode" class="lab-barcode-holder" style="position: absolute; right: 2px; top: -2px;">
-                        <danphe-bar-code [barcode-number]="templateReport.BarCodeNumber" [width]="1.5" [height]="24" [barcode-margin]="2"
-                                         [text-margin]="0"> </danphe-bar-code>
+                        <danphe-bar-code [barcode-number]="templateReport.BarCodeNumber" [width]="1.5" [height]="24" [barcode-margin]="2" [text-margin]="0"> </danphe-bar-code>
                       </div>
-                      <strong>Patient No.</strong> : {{templateReport.Lookups.PatientCode}} ( <b
-                         *ngIf="templateReport.Lookups.VisitType.toLowerCase() == 'emergency'">ER</b> <b
-                         *ngIf="templateReport.Lookups.VisitType.toLowerCase() == 'inpatient'">IP</b> <b
-                         *ngIf="templateReport.Lookups.VisitType.toLowerCase() == 'outpatient'">OP</b> )
-                    </div>
+                      <strong>Patient No.</strong> : {{templateReport.Lookups.PatientCode}} ( <b *ngIf="templateReport.Lookups.VisitType.toLowerCase() == 'emergency'">ER</b> <b *ngIf="templateReport.Lookups.VisitType.toLowerCase() == 'inpatient'">IP</b> <b *ngIf="templateReport.Lookups.VisitType.toLowerCase() == 'outpatient'">OP</b> ) </div>
                   </div>
                 </div>
               </div>
@@ -30,8 +24,7 @@
                 </div>
                 <div class="single-head">
                   <div class="right-col-data">
-                    <div [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'"> <strong>Age/Sex</strong> :
-                      {{templateReport.Lookups.DOB | DanpheDateTime:'age'}} /{{templateReport.Lookups.Gender}} </div>
+                    <div [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'"> <strong>Age/Sex</strong> : {{templateReport.Lookups.DOB | DanpheDateTime:'age'}} /{{templateReport.Lookups.Gender}} </div>
                   </div>
                 </div>
               </div>
@@ -41,8 +34,7 @@
                 </div>
                 <div class="single-head">
                   <div class="right-col-data">
-                    <div [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'"> <strong>Receiving Date</strong> :
-                      {{templateReport.Lookups.ReceivingDate | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}} </div>
+                    <div [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'"> <strong>Receiving Date</strong> : {{templateReport.Lookups.ReceivingDate | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}} {{templateReport.Lookups.ReceivingDate | nepaliDate }} </div>
                   </div>
                 </div>
               </div>
@@ -51,8 +43,7 @@
                   <div class="left-col-data "> <strong>Lab No</strong> : {{templateReport.Lookups.SampleCodeFormatted}} </div>
                 </div>
               </div>
-            </div>
-          </td>
+            </div></td>
         </tr>
       </thead>
       <ng-container *ngIf="templateReport.TemplateType != 'html'">
@@ -60,10 +51,10 @@
           <tbody>
             <tr>
               <td colspan="2" style="padding: 0;"><!--Template Type != "Html"-->
-
+                
                 <div class="table-holder">
                   <div [ngClass]="'lab-body' + hospitalCode">
-                    <div class="flex-container" *ngIf="tmplate.TemplateType=='normal'">
+                    <div class="flex-container" *ngIf="tmplate.TemplateType=='normal'"> 
                       <!--Table of a particular template-->
                       <table class="single-tempate-table lab-report-tbl tbl-format1">
                         <thead>
@@ -73,12 +64,12 @@
                           <tr>
                             <th *ngIf="tmplate.TemplateColumns.Name">Test(s)</th>
                             <th *ngIf="tmplate.TemplateColumns.Result">Finding(s)</th>
-                            <!--<th *ngIf="tmplate.TemplateColumns.Unit">Unit</th>-->
+                            <!--<th *ngIf="tmplate.TemplateColumns.Unit">Unit</th>--> 
                             <!--<th *ngIf="tmplate.TemplateColumns.Method">Method</th>
-                          <th *ngIf="tmplate.TemplateColumns.Remarks">Remarks</th>-->
+                          <th *ngIf="tmplate.TemplateColumns.Remarks">Remarks</th>--> 
                           </tr>
                         </thead>
-
+                        
                         <!--Contains all the tests of the template-->
                         <tbody>
                           <ng-container *ngFor="let res of tmplate.Tests; let rnum = index">
@@ -89,14 +80,12 @@
                               <!--<th *ngIf="tmplate.TemplateColumns.Method">
                             </th>
                             <th *ngIf="tmplate.TemplateColumns.Remarks">
-                            </th>-->
+                            </th>--> 
                             </tr>
                             <ng-container *ngFor="let cmp of res.Components; let idx = index;">
                               <tr *ngIf="cmp.ShowInSheet" class="res-positive-rw">
-                                <td class="compname" *ngIf="cmp.ControlType == 'Label'" [style.padding-left]="7 + cmp.IndentationCount*7 + 'px'">
-                                  <label class="margin-0-vr"><b> {{cmp.ComponentName}}</b></label></td>
-                                <td class="compname" *ngIf="cmp.ControlType != 'Label'" [style.padding-left]="7 + cmp.IndentationCount*7 + 'px'">
-                                  <label class="margin-0-vr">{{cmp.ComponentName}}</label></td>
+                                <td class="compname" *ngIf="cmp.ControlType == 'Label'" [style.padding-left]="7 + cmp.IndentationCount*7 + 'px'"><label class="margin-0-vr"><b> {{cmp.ComponentName}}</b></label></td>
+                                <td class="compname" *ngIf="cmp.ControlType != 'Label'" [style.padding-left]="7 + cmp.IndentationCount*7 + 'px'"><label class="margin-0-vr">{{cmp.ComponentName}}</label></td>
                                 <td class="test-data-pstv result"></td>
                               </tr>
                             </ng-container>
@@ -108,8 +97,7 @@
                       <h3>No printing option for this type of Tests..</h3>
                     </div>
                   </div>
-                </div>
-              </td>
+                </div></td>
             </tr>
           </tbody>
         </ng-container>

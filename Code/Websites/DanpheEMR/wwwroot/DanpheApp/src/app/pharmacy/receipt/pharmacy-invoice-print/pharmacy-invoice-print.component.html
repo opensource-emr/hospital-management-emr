@@ -189,7 +189,8 @@
                             <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">{{ headerDetail.DDA}}</p>
                         </td>
                         <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
-                            <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;"><strong>PAN No.
+                            <p *ngIf="headerDetail.PANno!==''" class="c_paragraphs"
+                               style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;"><strong>{{GeneralFieldLabel.PANNo}}
                                     : {{headerDetail.PANno}}</strong> </p>
                         </td>
                     </tr>
@@ -202,7 +203,7 @@
                     </tr>
                     <tr>
                         <td colspan="12" style="text-align: center; color: #000 !important;">
-                            <p><strong>INVOICE</strong></p>
+                            <p><strong>{{InvoiceLabel}}</strong></p>
                         </td>
                     </tr>
                     <tr style="border: 1px solid #ccc; color:black!important;">
@@ -237,7 +238,9 @@
                                         <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Patient's Name:
                                             </strong>{{receipt.PatientInfo.ShortName}}</p>
                                     </td>
-
+                                    <td colspan="6" style="text-align: right;">
+                                        <p class="c_paragraphs" style="margin-bottom: 0px !important;">{{receipt.ReceiptDate | nepaliDate }}</p>
+                                    </td>
                                 </tr>
                                 <tr *ngIf="receipt.PatientInfo.PatientId > 0">
                                     <td colspan="6" style="text-align: left;">
@@ -261,7 +264,8 @@
                                     </td>
                                     <td colspan="6" style="text-align: right;" *ngIf="receipt.ProviderNMCNumber">
                                         <p class="c_paragraphs" style="margin-bottom: 0px !important;">
-                                            <strong>NMCNumber:</strong>{{receipt.ProviderNMCNumber}}</p>
+                                            <strong>{{GeneralFieldLabel.NMCNo}}:</strong>{{receipt.ProviderNMCNumber}}
+                                        </p>
                                     </td>
                                 </tr>
                                 <tr *ngIf="receipt.ClaimCode || receipt.PolicyNo">
@@ -310,8 +314,7 @@
                     <tr style="border-top: 1px solid #ccc; color:black!important;">
                         <td colspan="8" style="padding: 5px 10px 5px 10px !important; vertical-align: top;">
                             <p class="c_paragraphs" style="margin-bottom: 0 !important;"><strong>In Words :{{receipt.TotalAmount | NumberInWords}}
-                                    <span
-                                          *ngIf="receipt.TotalAmount !=0">Only</span></strong></p>
+                                    <span *ngIf="receipt.TotalAmount !=0">Only</span></strong></p>
                         </td>
                         <td colspan="3" style="padding: 5px 10px 5px 10px !important; text-align: right;">
                             <p class="c_paragraphs" style="margin-bottom: 0 !important;"><strong>SubTotal: </strong></p>

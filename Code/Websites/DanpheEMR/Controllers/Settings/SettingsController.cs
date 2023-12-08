@@ -5,6 +5,7 @@ using DanpheEMR.DalLayer;
 using DanpheEMR.Enums;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel;
+using DanpheEMR.ServerModel.ClinicalModels;
 using DanpheEMR.ServerModel.MasterModels;
 using DanpheEMR.ServerModel.WardSupplyModels;
 using DanpheEMR.Services.DepartmentSettings.DTOs;
@@ -15,8 +16,10 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -30,13 +33,14 @@ namespace DanpheEMR.Controllers
         private readonly MasterDbContext _masterDbContext;
         private readonly RbacDbContext _rbacDbContext;
         private readonly LabDbContext _labDbContext;
-
+        private readonly ClinicalDbContext _clinicalDbContext;
 
         public SettingsController(IOptions<MyConfiguration> _config) : base(_config)
         {
             _masterDbContext = new MasterDbContext(connString);
             _rbacDbContext = new RbacDbContext(connString);
             _labDbContext = new LabDbContext(connString);
+            _clinicalDbContext = new ClinicalDbContext(connString);
         }
 
         [HttpGet]
@@ -157,25 +161,124 @@ namespace DanpheEMR.Controllers
                                        select config).OrderBy(b => b.PrintExportSettingsId).ToList();
             return InvokeHttpGetFunction(func);
         }
-
         [HttpGet]
         [Route("OPDServiceItems")]
         public IActionResult OPDServiceItems()
         {
-            Func<object> func = () => _masterDbContext.BillingServiceItems
-                                                      .Join(_masterDbContext.ServiceDepartments,
-                                                            serviceItem => serviceItem.ServiceDepartmentId,
-                                                            servDept => servDept.ServiceDepartmentId,
-                                                            (servItem, servDepartment) => new OPDServiceItemDTO
-                                                            {
-                                                                ServiceItemId = servItem.ServiceItemId,
-                                                                ServiceItemName = servItem.ItemName,
-                                                                IntegrationName = servDepartment.IntegrationName,
-                                                                ServiceDepartmentId = servDepartment.ServiceDepartmentId
-                                                            }).Where(item => item.IntegrationName == ENUM_IntegrationNames.OPD).ToList();
+            var systemDefaultPriceCategory = _masterDbContext.PriceCategorys.FirstOrDefault(p => p.IsDefault == true);
+            if (systemDefaultPriceCategory == null)
+            {
+                throw new InvalidOperationException("There is no default PriceCategory set in the system, Please set if first");
+            }
+            Func<object> func = () => GetOpdServiceItems(systemDefaultPriceCategory.PriceCategoryId);
             return InvokeHttpGetFunction(func);
         }
 
+        [HttpGet]
+        [Route("IntakeOutputType")]
+        public IActionResult getIntakeOutputType()
+        {
+            Func<object> func = () => (from clinicalIntakeOutputParameter in _clinicalDbContext.ClinicalIntakeOutputParameters
+                                       select clinicalIntakeOutputParameter
+                                                                 ).ToList();
+            return InvokeHttpGetFunction(func);
+        }
+        [HttpGet]
+        [Route("IntakeOutputTypeForGrid")]
+        public IActionResult getIntakeOutputTypeForGrid()
+        {
+            DataTable clinicalIntakeOutputParameterList = DALFunctions.GetDataTableFromStoredProc("SP_CLN_GetIntakeOutputParameters", _clinicalDbContext);
+            Func<object> func = () => clinicalIntakeOutputParameterList;
+            return InvokeHttpGetFunction(func);
+        }
+        [HttpPost]
+        [Route("PostIntakeOutputVariable")]
+        public IActionResult postIntakeOutputVariable([FromBody] ClinicalIntakeOutputParameterModel clinicalIntakeOutput)
+        {
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+            ClinicalIntakeOutputParameterModel clinicalIntakeOutputParameterModel = new ClinicalIntakeOutputParameterModel();
+            if (clinicalIntakeOutput == null)
+            {
+                throw new Exception("Null values cannot be added");
+            }
+            clinicalIntakeOutputParameterModel.ParameterType = clinicalIntakeOutput.ParameterType;
+            clinicalIntakeOutputParameterModel.ParameterValue = clinicalIntakeOutput.ParameterValue;
+            if (clinicalIntakeOutput.ParameterMainId == 0)
+            {
+                var nonParentParameterValue = -1;
+                clinicalIntakeOutputParameterModel.ParameterMainId = nonParentParameterValue;
+            }
+            else
+            {
+                clinicalIntakeOutputParameterModel.ParameterMainId = clinicalIntakeOutput.ParameterMainId;
+            }
+            clinicalIntakeOutputParameterModel.IsActive = true;
+            clinicalIntakeOutputParameterModel.CreatedBy = currentUser.EmployeeId;
+            clinicalIntakeOutputParameterModel.CreatedOn = DateTime.Now;
+            _clinicalDbContext.ClinicalIntakeOutputParameters.Add(clinicalIntakeOutputParameterModel);
+            _clinicalDbContext.SaveChanges();
+            Func<object> func = () => clinicalIntakeOutputParameterModel.IntakeOutputId;
+            return InvokeHttpPostFunction(func);
+        }
+        [HttpPut]
+        [Route("activate-deactivate-intakeoutput-variables")]
+        public IActionResult ActivateDeactivateIntakeOutputVariable([FromBody] ClinicalIntakeOutputParameterModel clinicalIntakeOutputParameterModel)
+        {
+            ClinicalIntakeOutputParameterModel existingData = _clinicalDbContext.ClinicalIntakeOutputParameters.FirstOrDefault(x => x.IntakeOutputId == clinicalIntakeOutputParameterModel.IntakeOutputId);
+            if (existingData != null)
+            {
+                existingData.IsActive = clinicalIntakeOutputParameterModel.IsActive;
+                _clinicalDbContext.SaveChanges();
+                Func<object> func = () => existingData;
+                return InvokeHttpPostFunction(func);
+            }
+            else
+            {
+                throw new Exception("Null Value is not Allowed");
+            }
+        }
+        [HttpPut]
+        [Route("UpdateIntakeOutputVariable")]
+        public IActionResult UpdateIntakeOutputVariable([FromBody] ClinicalIntakeOutputParameterModel clinicalIntakeOutputParameterModel)
+        {
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+            ClinicalIntakeOutputParameterModel existingData = _clinicalDbContext.ClinicalIntakeOutputParameters.FirstOrDefault(x => x.IntakeOutputId == clinicalIntakeOutputParameterModel.IntakeOutputId);
+            if (existingData != null)
+            {
+                existingData.ParameterType = clinicalIntakeOutputParameterModel.ParameterType;
+                existingData.ParameterValue = clinicalIntakeOutputParameterModel.ParameterValue;
+                existingData.ParameterMainId = clinicalIntakeOutputParameterModel.ParameterMainId;
+                existingData.ModifiedBy = currentUser.EmployeeId;
+                existingData.ModifiedOn = DateTime.Now;
+                _clinicalDbContext.SaveChanges();
+                Func<object> func = () => existingData;
+                return InvokeHttpPostFunction(func);
+            }
+            else
+            {
+                throw new Exception("Null Value is not Allowed");
+            }
+        }
+        private object GetOpdServiceItems(int defaultPriceCategoryId)
+        {
+            var opdServiceItems = (from servItem in _masterDbContext.BillingServiceItems
+                                   join servDep in _masterDbContext.ServiceDepartments
+                                   on servItem.ServiceDepartmentId equals servDep.ServiceDepartmentId
+                                   join priceCatServItm in _masterDbContext.PriceCategoryServiceItems
+                                   on new { serviceItemId = servItem.ServiceItemId, priceCategoryId = defaultPriceCategoryId } equals new { serviceItemId = priceCatServItm.ServiceItemId, priceCategoryId = priceCatServItm.PriceCategoryId }
+                                   where servItem.IsActive == true && priceCatServItm.IsActive == true
+                                   select new OPDServiceItemDTO
+                                   {
+                                       ServiceItemId = servItem.ServiceItemId,
+                                       ServiceItemName = servItem.ItemName,
+                                       IntegrationName = servItem.IntegrationName,
+                                       ServiceDepartmentId = servDep.ServiceDepartmentId,
+                                       IsActive = servItem.IsActive,
+                                       Price = priceCatServItm.Price,
+                                       ItemCode = priceCatServItm.ItemLegalCode
+                                   }).Where(item => item.IntegrationName == ENUM_IntegrationNames.OPD && item.IsActive == true).ToList();
+            return opdServiceItems;
+        }
 
         //[HttpGet]
         //public string Get(string department,

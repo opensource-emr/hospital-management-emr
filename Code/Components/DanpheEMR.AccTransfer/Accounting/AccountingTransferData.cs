@@ -2619,6 +2619,8 @@ namespace DanpheEMR.AccTransfer
         {
             try
             {
+                var vatParam = accountingDBContext.CFGParameters.Where(a => a.ParameterGroupName == "Accounting" && a.ParameterName == "VatRegisteredHospital").FirstOrDefault().ParameterValue;
+                var isVatRegistered = bool.Parse(vatParam);
                 List<SqlParameter> spParam = new List<SqlParameter>();
                 spParam.Add(new SqlParameter("@TransactionDate", SelectedDate.Date));
                 spParam.Add(new SqlParameter("@HospitalId", currHospitalId));
@@ -2631,9 +2633,12 @@ namespace DanpheEMR.AccTransfer
                 InventoryTxnSyncList.AddRange(InventoryGoodReceiptPurchase);
 
                 // 2. Inventory Good Receipt VAT Entry : DR
-                DataTable InventoryGoodReceiptVAT_DataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_POST_INV_GetGoodReceiptVATTransactions", spParam, accountingDBContext);
-                List<AccountingSync_DTO> InventoryGoodReceiptVAT = JsonConvert.DeserializeObject<List<AccountingSync_DTO>>(JsonConvert.SerializeObject(InventoryGoodReceiptVAT_DataTable, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" }));
-                InventoryTxnSyncList.AddRange(InventoryGoodReceiptVAT);
+                if(isVatRegistered)
+                {
+                    DataTable InventoryGoodReceiptVAT_DataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_POST_INV_GetGoodReceiptVATTransactions", spParam, accountingDBContext);
+                    List<AccountingSync_DTO> InventoryGoodReceiptVAT = JsonConvert.DeserializeObject<List<AccountingSync_DTO>>(JsonConvert.SerializeObject(InventoryGoodReceiptVAT_DataTable, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" }));
+                    InventoryTxnSyncList.AddRange(InventoryGoodReceiptVAT);
+                }
 
                 // 2. Inventory Good Receipt Vendor Entry : CR
                 DataTable InventoryGoodReceiptVendor_DataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_POST_INV_GetGoodReceiptVendorTransactions", spParam, accountingDBContext);
@@ -2648,9 +2653,12 @@ namespace DanpheEMR.AccTransfer
                 InventoryTxnSyncList.AddRange(InventoryGoodReceiptReturnPurchase);
 
                 // 2.Inventory Good Receipt Return VAT Entry : CR
-                DataTable InventoryGoodReceiptReturnVAT_DataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_POST_INV_GetGoodReceiptReturnVATTransactions", spParam, accountingDBContext);
-                List<AccountingSync_DTO> InventoryGoodReceiptReturnVAT = JsonConvert.DeserializeObject<List<AccountingSync_DTO>>(JsonConvert.SerializeObject(InventoryGoodReceiptReturnVAT_DataTable, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" }));
-                InventoryTxnSyncList.AddRange(InventoryGoodReceiptReturnVAT);
+                if (isVatRegistered)
+                {
+                    DataTable InventoryGoodReceiptReturnVAT_DataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_POST_INV_GetGoodReceiptReturnVATTransactions", spParam, accountingDBContext);
+                    List<AccountingSync_DTO> InventoryGoodReceiptReturnVAT = JsonConvert.DeserializeObject<List<AccountingSync_DTO>>(JsonConvert.SerializeObject(InventoryGoodReceiptReturnVAT_DataTable, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" }));
+                    InventoryTxnSyncList.AddRange(InventoryGoodReceiptReturnVAT);
+                }
 
                 // 2.Inventory Good Receipt Return Vendor Entry : DR
                 DataTable InventoryGoodReceiptReturnVendor_DataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_POST_INV_GetGoodReceiptReturnVendorTransactions", spParam, accountingDBContext);
@@ -2695,6 +2703,16 @@ namespace DanpheEMR.AccTransfer
                 DataTable InventoryStockManageOut_DataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_POST_INV_GetInventoryStockManageOutTransactions", spParam, accountingDBContext);
                 List<AccountingSync_DTO> InventoryStockManageOut = JsonConvert.DeserializeObject<List<AccountingSync_DTO>>(JsonConvert.SerializeObject(InventoryStockManageOut_DataTable, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" }));
                 InventoryTxnSyncList.AddRange(InventoryStockManageOut);
+
+                // H.Inventory Consumption --CentralStore Entry : CR
+                DataTable InventoryConsumptionCentrlStore_DataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_POST_INV_GetConsumptionCentralStoreTransaction", spParam, accountingDBContext);
+                List<AccountingSync_DTO> InventoryConsumptionCentralStore = JsonConvert.DeserializeObject<List<AccountingSync_DTO>>(JsonConvert.SerializeObject(InventoryConsumptionCentrlStore_DataTable, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" }));
+                InventoryTxnSyncList.AddRange(InventoryConsumptionCentralStore);
+
+                // I.Inventory Consumption --Expenses SubCategory/subStore : DR
+                DataTable InventoryConsumptionSubStore_DataTable = DALFunctions.GetDataTableFromStoredProc("SP_ACC_POST_INV_GetConsumptionSubStoreTransaction", spParam, accountingDBContext);
+                List<AccountingSync_DTO> InventoryConsumptionSubStore = JsonConvert.DeserializeObject<List<AccountingSync_DTO>>(JsonConvert.SerializeObject(InventoryConsumptionSubStore_DataTable, new IsoDateTimeConverter() { DateTimeFormat = "yyyy-MM-dd" }));
+                InventoryTxnSyncList.AddRange(InventoryConsumptionSubStore);
 
                 if (InventoryTxnSyncList.Count > 0 && InventoryTxnSyncList.All(txn => txn.LedgerId > 0))
                 {

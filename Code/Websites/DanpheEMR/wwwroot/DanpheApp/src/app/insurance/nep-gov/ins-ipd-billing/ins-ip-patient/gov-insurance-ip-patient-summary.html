@@ -12,34 +12,34 @@
 
         <div class="col-md-12">
           <h4 class="header inner-header">
-            <i class="fa fa-file-text-o"></i>Inpatient Billing &nbsp;&nbsp;NSHI No &nbsp;&nbsp;
+            <i class="fa fa-file-text-o"></i>Inpatient Billing &nbsp;&nbsp;{{GeneralFieldLabel.NSHINo}} &nbsp;&nbsp;
             <span *ngIf="admissionInfo && admissionInfo.Ins_NshiNumber">{{admissionInfo.Ins_NshiNumber}}
             </span>&nbsp;&nbsp; Claim Code &nbsp;&nbsp;:
             <span *ngIf="admissionInfo && admissionInfo.ClaimCode">{{admissionInfo.ClaimCode}}</span>
           </h4>
           <div class="action-bar">
             <button class="btn action-btn btn-sm" style="float:left; margin-right: 5px;"
-              (click)="BackToPatientListGrid()">
+                    (click)="BackToPatientListGrid()">
               <i class="fa fa-backward" style="margin-right: 5px;"></i> Back
             </button>
             <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="NewItemBtn_Click()"
-              rbac-permission='{"name":"btn-ipdbilling-newitem","actionOnInvalid":"remove"}'>
+                    rbac-permission='{"name":"btn-ipdbilling-newitem","actionOnInvalid":"remove"}'>
               <i class="fa fa-plus" style="margin-right: 5px;"></i> New Item
             </button>
             <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="ShowEstimationBill()"
-              rbac-permission='{"name":"btn-ipdbilling-estimationbill","actionOnInvalid":"remove"}'>
+                    rbac-permission='{"name":"btn-ipdbilling-estimationbill","actionOnInvalid":"remove"}'>
               Estimation
               Bill
             </button>
             <button class="btn btn-sm action-btn" style="display:none; margin-right: 5px;"> Cancel Item(s) </button>
 
             <button class="btn btn-sm action-btn" style="margin-right: 5px;" (click)="UpdateItems()"
-              rbac-permission='{"name":"btn-ipdbilling-edititems","actionOnInvalid":"remove"}'>
+                    rbac-permission='{"name":"btn-ipdbilling-edititems","actionOnInvalid":"remove"}'>
               <i class="fa fa-pencil" style="margin-right: 5px;"></i> Edit Items
             </button>
 
             <label class="animated-btn blinking-btn" *ngIf="admissionInfo? admissionInfo.IsPoliceCase: false"
-              style="color:orange!important; float:right; font-size: 20px;"> <strong>POLICE CASE</strong></label>
+                   style="color:orange!important; float:right; font-size: 20px;"> <strong>POLICE CASE</strong></label>
           </div>
         </div>
         <div class="col-md-12">
@@ -69,11 +69,11 @@
                       <td style="width:35%"><i class="fa fa-arrow-circle-o-right "></i><b>Procedure:</b></td>
                       <td>
                         <input class="form-control" type="text" maxlength="150"
-                          [(ngModel)]="admissionInfo.ProcedureType" />
+                               [(ngModel)]="admissionInfo.ProcedureType" />
                       </td>
                       <td>
                         <button class="btn btn-sm btn-default" (click)="UpdateProcedure()" [disabled]="loading"
-                          style="margin-left:10px">
+                                style="margin-left:10px">
                           Update
                         </button>
                       </td>
@@ -105,8 +105,8 @@
                       <td>
 
                         <danphe-date-picker [(ngModel)]="dischargeDetail.DischargeDate"
-                          (ngModelChange)="CalculateTotalDays()" [ngModelOptions]="{standalone: true}" [showTime]="true"
-                          [CalendarTypes]="'en,np'">
+                                            (ngModelChange)="CalculateTotalDays()" [ngModelOptions]="{standalone: true}" [showTime]="true"
+                                            [CalendarTypes]="'en,np'">
                         </danphe-date-picker>
                         <label class="color-red font-sm" *ngIf="!validDischargeDate">
                           Please enter Valid Discharge
@@ -115,7 +115,7 @@
                       </td>
                     </tr>
                     <tr>
-                      <td style="width:35%"><i class="fa fa-arrow-circle-o-right "></i><b>NSHI No:</b></td>
+                      <td style="width:35%"><i class="fa fa-arrow-circle-o-right "></i><b>{{GeneralFieldLabel.NSHINo}} </b></td>
                       <td><b>{{admissionInfo.Ins_NshiNumber}}</b></td>
                     </tr>
 
@@ -125,8 +125,8 @@
               <br />
               <div class="col-md-12 mb10">
                 <danphe-grid [grid-colDefaults]="IPBillItemGridCol" [grid-data]="patAllPendingItems"
-                  (grid-actions)="IPBillItemGridActions($event)" [show-print-button]="false" [supressPagination]="true"
-                  [resizeColumnToFit]="false" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+                             (grid-actions)="IPBillItemGridActions($event)" [show-print-button]="false" [supressPagination]="true"
+                             [resizeColumnToFit]="false" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
               </div>
             </div>
             <div class="col-md-3">
@@ -165,14 +165,14 @@
                     <td class="bill-child"> Total Discount </td>
                     <td>
                       <input type="number" style="width:100px;" [(ngModel)]="model.TotalDiscount" disabled
-                        class="form-control" />
+                             class="form-control" />
                     </td>
                   </tr>
                   <tr>
                     <td class="bill-child"> Tax @(0%) </td>
                     <td>
                       <input type="number" style="width:100px;" [(ngModel)]="model.TaxAmount" disabled
-                        class="form-control" />
+                             class="form-control" />
                     </td>
                   </tr>
                   <tr style="font-weight:bold;">
@@ -276,8 +276,8 @@
                     <td class="bill-child">Tender:</td>
                     <td>
                       <input type="number" [(ngModel)]="model.Tender" (ngModelChange)="ChangeTenderAmount()"
-                        name="Tender" placeholder="Rupees" [disabled]="model.PayType == 'credit'"
-                        onClick="this.select();" (wheel)="CoreService.PreventNumberChangeOnScroll($event)">
+                             name="Tender" placeholder="Rupees" [disabled]="model.PayType == 'credit'"
+                             onClick="this.select();" (wheel)="CoreService.PreventNumberChangeOnScroll($event)">
                     </td>
                   </tr>
                   <tr *ngIf="model.PayType != 'credit' && model.ToBePaid">
@@ -296,8 +296,8 @@
                 no deposit deduct / deposit return for <b>CREDIT</b> bill.
               </p> -->
               <button class="btn green btn-success" style="float: right;margin-bottom: 10px;" [disabled]="loading"
-                (click)="ConfirmDischarge()"
-                rbac-permission='{"name":"btn-ipdbilling-confirmdischarge","actionOnInvalid":"remove"}'>
+                      (click)="ConfirmDischarge()"
+                      rbac-permission='{"name":"btn-ipdbilling-confirmdischarge","actionOnInvalid":"remove"}'>
                 Discharge
               </button>
 
@@ -309,7 +309,7 @@
     </div>
   </div>
   <ins-ip-bill-item-request *ngIf="showIpBillRequest" [patientId]="patientId" [visitId]="ipVisitId"
-    [patientInfo]="patientInfo" [past-tests]="patAllPendingItems" (emit-billItemReq)="CloseNewItemAdd($event)">
+                            [patientInfo]="patientInfo" [past-tests]="patAllPendingItems" (emit-billItemReq)="CloseNewItemAdd($event)">
   </ins-ip-bill-item-request>
 
   <!-- <div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showDischargeBill">
@@ -338,9 +338,9 @@
           <div class="modelbox-div clearfix">
             <a class="btn btn-danger del-btn" (click)="CloseRecieptView()">X</a>
             <bil-print-ip-estimation [ipVisitId]="ipVisitId" [patientId]="patientId"
-              [estimated-dischargeDate]="estimatedDischargeDate" [estimated-discountPercent]="estimatedDiscountPercent"
-              [TotalAmountInUSD]="model.TotalAmountInUSD" [ExchangeRate]="exchangeRate"
-              (closeEstimationBill)="CloseRecieptView()"> </bil-print-ip-estimation>
+                                     [estimated-dischargeDate]="estimatedDischargeDate" [estimated-discountPercent]="estimatedDiscountPercent"
+                                     [TotalAmountInUSD]="model.TotalAmountInUSD" [ExchangeRate]="exchangeRate"
+                                     (closeEstimationBill)="CloseRecieptView()"> </bil-print-ip-estimation>
 
           </div>
         </div>
@@ -356,7 +356,7 @@
             <a class="btn btn-danger del-btn" (click)="CloseRecieptView()">X</a>
 
             <bil-print-invoice-main [invoiceNumber]="bil_InvoiceNo" [fiscalYrId]="bil_FiscalYrId"
-              [bil-txn-id]="bil_BilTxnId">
+                                    [bil-txn-id]="bil_BilTxnId">
             </bil-print-invoice-main>
 
           </div>
@@ -419,7 +419,7 @@
               <td> Discharge Date :</td>
               <td>
                 <danphe-date-picker [(ngModel)]="dischargeDetail.DischargeDate" [ngModelOptions]="{standalone: true}"
-                  [showTime]="true" [CalendarTypes]="'en,np'">
+                                    [showTime]="true" [CalendarTypes]="'en,np'">
                 </danphe-date-picker>
               </td>
             </tr>
@@ -427,13 +427,13 @@
           <div>
             Remarks:
             <textarea class="form-control" maxlength="100" [(ngModel)]="dischargeDetail.Remarks"
-              placeholder="Remarks"></textarea>
+                      placeholder="Remarks"></textarea>
           </div>
           <hr />
           <div class="text-center">
             <ng-container *ngIf="allowDischarge">
               <button type="button" class="btn green btn-success" style="margin-top:5px;" [disabled]="loading"
-                (click)="PostBillAndDischargePatientPharmacyCharge()">
+                      (click)="PostBillAndDischargePatientPharmacyCharge()">
                 Confirm Discharge
               </button>
             </ng-container>
@@ -443,7 +443,7 @@
               </button>
             </ng-container>
             <button type="button" class="btn btn-cancel btn-sm" style="margin-top:5px;" [disabled]="loading"
-              (click)="showDischargePopUpBox=false;">
+                    (click)="showDischargePopUpBox=false;">
               Close
             </button>
           </div>
@@ -452,7 +452,7 @@
     </div>
   </div>
   <ins-edit-bill-item *ngIf="showEditItemsPopup" [itemToEdit]="selItemForEdit" [discountApplicable]="discountApplicable"
-    (on-closed)="CloseItemEditWindow($event)" [DoctorsList]="doctorsList" [current-pat-info]="patientInfo">
+                      (on-closed)="CloseItemEditWindow($event)" [DoctorsList]="doctorsList" [current-pat-info]="patientInfo">
   </ins-edit-bill-item>
 
   <div class="popup-static portlet box portlet-fullscreen" *ngIf="showCancelAdmissionAlert">
@@ -472,16 +472,16 @@
             <div>
               Discharge Remarks <b style="color:red">*</b>:
               <textarea class="form-control" maxlength="100" [(ngModel)]="dischargeDetail.Remarks"
-                placeholder="Remarks"></textarea>
+                        placeholder="Remarks"></textarea>
             </div>
           </div>
           <div class="modelbox-footer">
             <div class="all-buttons text-right">
               <button id="btnZeroItemCancel" type="button" class="btn btn-cancel margin-7-hr"
-                (click)="CloseZeroItemBillingPopUp()" [disabled]="loading"> Cancel
+                      (click)="CloseZeroItemBillingPopUp()" [disabled]="loading"> Cancel
               </button>
               <button id="btnZeroItemProceed" type="button" class="btn btn-primary margin-7-hr"
-                (click)="ProceedDischargeWithZeroItems()" [disabled]="loading"> Proceed </button>
+                      (click)="ProceedDischargeWithZeroItems()" [disabled]="loading"> Proceed </button>
             </div>
           </div>
           <div class="close-modelbox">
@@ -519,7 +519,7 @@
                   [items-to-discount]="patAllPendingItems" [admissionInfo]="admissionInfo"
                   (close-popup)="CloseGroupDiscountPopup($event)"> </group-discount>-->
   <ins-update-items *ngIf="showUpdatePricePopup" [patientDetails]="admissionInfo" [filtered-items]="updatedItems"
-    (close-popup)="CloseUpdatePricePopup($event)"> </ins-update-items>
+                    (close-popup)="CloseUpdatePricePopup($event)"> </ins-update-items>
   <!-- <partial-payment *ngIf="showPartialPaymentPopup" [patientDetails]="admissionInfo"
                    [pat-all-items]="ItemForPartialPayment" (close-popup)="ClosePartialPaymentPopup($event)"> </partial-payment> -->
 

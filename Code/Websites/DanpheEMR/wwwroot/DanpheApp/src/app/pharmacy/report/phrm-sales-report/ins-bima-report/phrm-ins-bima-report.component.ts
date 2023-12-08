@@ -1,6 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import * as moment from 'moment';
+import { CoreService } from '../../../../core/shared/core.service';
 import { SettingsBLService } from '../../../../settings-new/shared/settings.bl.service';
+import { GeneralFieldLabels } from '../../../../shared/DTOs/general-field-label.dto';
 import { CommonFunctions } from '../../../../shared/common.functions';
 import { DanpheCache, MasterType } from '../../../../shared/danphe-cache-service-utility/cache-services';
 import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../../shared/danphe-grid/NepaliColGridSettingsModel';
@@ -31,12 +33,20 @@ export class PhrmInsBimaReportComponent implements OnInit {
   public dateRange: string = "";
   public pharmacy: string = "pharmacy";
   public loading: boolean = false;
+  //public coreService: CoreService;
 
-  constructor(public pharmacyBLService: PharmacyBLService, public msgBoxServ: MessageboxService, public settingBLService: SettingsBLService, public changeDetector: ChangeDetectorRef) {
-    this.InsBimaColumn = PHRMReportsGridColumns.PHRMINSPatientBima
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
+
+  constructor(public pharmacyBLService: PharmacyBLService, public msgBoxServ: MessageboxService, public settingBLService: SettingsBLService, public coreService: CoreService, public changeDetector: ChangeDetectorRef) {
+    this.InsBimaColumn = PHRMReportsGridColumns.PHRMINSPatientBima;
+
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('Date', false));
     this.LoadCounter();
     this.LoadUser();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+    this.InsBimaColumn[4].headerName = `${this.GeneralFieldLabel.NSHINo} `;
+
   }
 
   ngOnInit() {
@@ -73,7 +83,7 @@ export class PhrmInsBimaReportComponent implements OnInit {
       .subscribe(res => {
         if (res.Status == "OK") {
           this.userList = res.Results;
-          this.userList.unshift({ EmployeeId: null, EmployeeName: 'All' })
+          this.userList.unshift({ EmployeeId: null, EmployeeName: 'All' });
           CommonFunctions.SortArrayOfObjects(this.userList, "EmployeeName");
         }
         else {

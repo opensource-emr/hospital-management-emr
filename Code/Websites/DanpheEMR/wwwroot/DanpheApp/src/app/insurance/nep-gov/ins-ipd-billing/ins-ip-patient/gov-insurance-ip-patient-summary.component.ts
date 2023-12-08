@@ -9,6 +9,7 @@ import { Patient } from '../../../../patients/shared/patient.model';
 import { PatientService } from '../../../../patients/shared/patient.service';
 import { SecurityService } from '../../../../security/shared/security.service';
 import { CreditOrganization } from '../../../../settings-new/shared/creditOrganization.model';
+import { GeneralFieldLabels } from '../../../../shared/DTOs/general-field-label.dto';
 import { NepaliCalendarService } from "../../../../shared/calendar/np/nepali-calendar.service";
 import { CancelStatusHoldingModel, DanpheHTTPResponse } from '../../../../shared/common-models';
 import { CommonFunctions } from '../../../../shared/common.functions';
@@ -133,6 +134,8 @@ export class GovInsurancePatientIpSummaryComponent {
 
   public showDepositReceipt: boolean = false;
   public deposit: BillingDeposit = new BillingDeposit();
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
 
   constructor(public dlService: DLService,
     public patService: PatientService,
@@ -145,6 +148,9 @@ export class GovInsurancePatientIpSummaryComponent {
     public insuranceService: GovInsuranceService,
     public insuranceBlService: GovInsuranceBlService,
     public renderer: Renderer2,) {
+
+
+    this.GeneralFieldLabel = CoreService.GetFieldLabelParameter();
 
     this.allItemslist = this.insuranceService.allBillItemsPriceList;//sud:30Apr'20--code optimization
     this.allEmployeeList = this.insuranceService.AllEmpListForBilling; //sud:30Apr'20--code optimization
@@ -552,7 +558,7 @@ export class GovInsurancePatientIpSummaryComponent {
       this.model.ToBeRefund = CommonFunctions.parseAmount(this.model.DepositBalance - this.model.TotalAmount);
       this.model.ToBePaid = 0;
       this.model.PayType = "cash";
-      this.model.Tender = this.model.ToBePaid
+      this.model.Tender = this.model.ToBePaid;
     }
     else {
       this.model.ToBePaid = CommonFunctions.parseAmount(this.model.TotalAmount - this.model.DepositBalance);
@@ -760,7 +766,7 @@ export class GovInsurancePatientIpSummaryComponent {
     this.billingTransaction.OrganizationId = this.model.OrganizationId;
     if (this.model.OrganizationId) {
       let org = this.creditOrganizationsList.find(a => a.OrganizationId == this.model.OrganizationId);
-      this.billingTransaction.OrganizationName = org.OrganizationName
+      this.billingTransaction.OrganizationName = org.OrganizationName;
     }
 
     if (this.estimatedDiscountPercent)
@@ -880,7 +886,7 @@ export class GovInsurancePatientIpSummaryComponent {
         //Yubraj 30th July -- Disable discount TextBox in case of DiscableApplicable is false
         let itmId = this.selItemForEdit.ItemId;
         let itmName = this.selItemForEdit.ItemName;
-        var selItemDetails = this.allItemslist.find(a => a.ItemId == itmId && a.ItemName == itmName)
+        var selItemDetails = this.allItemslist.find(a => a.ItemId == itmId && a.ItemName == itmName);
         this.discountApplicable = selItemDetails.DiscountApplicable;
         this.selItemForEdit.IsDoctorMandatory = selItemDetails.IsDoctorMandatory;
 

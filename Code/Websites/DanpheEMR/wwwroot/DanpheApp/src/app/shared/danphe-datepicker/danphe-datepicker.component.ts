@@ -1,9 +1,9 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef, forwardRef, HostBinding, OnChanges } from '@angular/core';
-import { NepaliCalendarService } from '../calendar/np/nepali-calendar.service';
-import { NepaliDate, NepaliYear, NepaliMonth } from '../../shared/calendar/np/nepali-dates';
-import { CoreService } from '../../core/shared/core.service';
-import * as moment from 'moment/moment';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import * as moment from 'moment/moment';
+import { CoreService } from '../../core/shared/core.service';
+import { NepaliYear } from '../../shared/calendar/np/nepali-dates';
+import { NepaliCalendarService } from '../calendar/np/nepali-calendar.service';
 import { ENUM_CalanderType } from '../shared-enums';
 
 
@@ -22,26 +22,27 @@ import { ENUM_CalanderType } from '../shared-enums';
       multi: true
     }]
 })
-export class DatePickerComponent implements ControlValueAccessor,OnChanges {
+export class DatePickerComponent implements ControlValueAccessor, OnChanges {
   public dateModel: string = null;
   public isInitialLoad: boolean = true;
 
   // Required for ControlValueAccessor interface
   writeValue(value: string) {
-    if(!this.showmonthCalendar){
-    if (value && value.trim().length > 0) {
-      this.enDate = value;
-      this.isInitialLoad = false;
-    } else {
-      if (this.isInitialLoad) {
-        let todayStr = this.todayDateString;
-        let time = moment().format("HH:mm");
-        this.enDate = this.showTime ? (todayStr + " " + time) : todayStr;
-        this.CheckForInvalidDate(moment(this.enDate).format('YYYY-MM-DD'), moment(this.enDate).format('HH:mm'));
+    if (!this.showmonthCalendar) {
+      if (value && value.trim().length > 0) {
+        this.enDate = value;
         this.isInitialLoad = false;
+        this.CheckForInvalidDate(moment(this.enDate).format('YYYY-MM-DD'), moment(this.enDate).format('HH:mm'));
+      } else {
+        if (this.isInitialLoad) {
+          let todayStr = this.todayDateString;
+          let time = moment().format("HH:mm");
+          this.enDate = this.showTime ? (todayStr + " " + time) : todayStr;
+          this.CheckForInvalidDate(moment(this.enDate).format('YYYY-MM-DD'), moment(this.enDate).format('HH:mm'));
+          this.isInitialLoad = false;
+        }
       }
     }
-  }
   }
 
   // Required forControlValueAccessor interface
@@ -73,12 +74,12 @@ export class DatePickerComponent implements ControlValueAccessor,OnChanges {
 
   @Input("CalendarTypes")
   set setCalendarType(value: string) {
-    if(value){
-         this.calTypes = value; 
+    if (value) {
+      this.calTypes = value;
     }
-    else{
-       this.calTypes = ENUM_CalanderType.NP;//sud-8Aug'20: Hard-Coded for temporary fix, correct it properly later.
-    }  
+    else {
+      this.calTypes = ENUM_CalanderType.NP;//sud-8Aug'20: Hard-Coded for temporary fix, correct it properly later.
+    }
 
     this.showCalendar(this.calTypes);
   }
@@ -86,29 +87,29 @@ export class DatePickerComponent implements ControlValueAccessor,OnChanges {
   get setCalendarType(): string {
     return this.calTypes;
   }
-  // START:Vikas: 06th Aug 20: Added for month calendar chnages. 
+  // START:Vikas: 06th Aug 20: Added for month calendar chnages.
   public showmonthCalendar: boolean = false;
-  @Input("showmonthCalendar") 
+  @Input("showmonthCalendar")
   set setmonthCalendar(value: boolean) {
-    this.showmonthCalendar = value;      
+    this.showmonthCalendar = value;
   }
 
   @Input("input-focus") //coming from parent form
-  public inputFocus:boolean=null;
+  public inputFocus: boolean = null;
 
-  public inputFocusToEnCalendar:boolean= null;
-  public inputFocusToNpCalendar:boolean= null;
+  public inputFocusToEnCalendar: boolean = null;
+  public inputFocusToNpCalendar: boolean = null;
 
-  public outputToParent:boolean = null;
+  public outputToParent: boolean = null;
 
-  @Output('output-focus') outputFocus:EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output('output-focus') outputFocus: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   @Input("showFiscalYear")
-  public showFiscalYear:boolean =false;
+  public showFiscalYear: boolean = false;
 
   @Output() monthChanged: EventEmitter<object> = new EventEmitter<object>();
   // END:Vikas: 06th Aug 20: Added for month calendar chnages. 
-  
+
   //sud:29May'20-values can be: 'SoftwareStart' ,  'DateOfBirth', check in nepali-calendar component for all othe available options.
   @Input("year-settings")
   public nepYearSettings: string = "SoftwareStart";
@@ -126,7 +127,7 @@ export class DatePickerComponent implements ControlValueAccessor,OnChanges {
     }
     if (this.enDate && this.enDate.trim().length > 0) {
       this.CheckForInvalidDate(moment(this.enDate).format('YYYY-MM-DD'), moment(this.enDate).format('HH:mm'));
-    }    
+    }
   }
   get setMinDate(): string {
     return this.minimumDate;
@@ -145,7 +146,7 @@ export class DatePickerComponent implements ControlValueAccessor,OnChanges {
     }
     if (this.enDate && this.enDate.trim().length > 0) {
       this.CheckForInvalidDate(moment(this.enDate).format('YYYY-MM-DD'), moment(this.enDate).format('HH:mm'));
-    }    
+    }
   }
   get setMaxDate(): string {
     return this.maximumDate;
@@ -166,32 +167,47 @@ export class DatePickerComponent implements ControlValueAccessor,OnChanges {
 
   public nepYears: Array<NepaliYear> = [];
   public todayDateString: string = "";
-  public showAdBsButton:boolean =true;
-
+  public showAdBsButton: boolean = true;
+  public EnableEnglishCalendarOnly: boolean = false;
   constructor(public npCalendarService: NepaliCalendarService, private coreService: CoreService, public changeDetector: ChangeDetectorRef) {
     this.nepYears = NepaliYear.GetAllNepaliYears();
-    this.showAdBsButton=this.coreService.showCalendarADBSButton;
+    this.showAdBsButton = this.coreService.showCalendarADBSButton;
+    this.GetCalendarParameter();
   }
 
-  ngOnChanges(){
-      if(this.inputFocus){
-          if(this.showEnCalendar){
-          this.inputFocusToEnCalendar = false;
-          this.changeDetector.detectChanges();
-          this.inputFocusToEnCalendar = true;
-          this.changeDetector.detectChanges();
+  GetCalendarParameter(): void {
+    const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+    if (param && param.ParameterValue) {
+      const paramValue = JSON.parse(param.ParameterValue);
+      this.EnableEnglishCalendarOnly = paramValue;
+    }
+  }
+
+  ngOnChanges() {
+    if (this.inputFocus) {
+      if (this.showEnCalendar) {
+        this.inputFocusToEnCalendar = false;
+        this.changeDetector.detectChanges();
+        this.inputFocusToEnCalendar = true;
+        this.changeDetector.detectChanges();
       }
-      else if(this.showNpCalendar){
-          this.inputFocusToNpCalendar = false;
-          this.changeDetector.detectChanges();
-          this.inputFocusToNpCalendar = true;
-          this.changeDetector.detectChanges();
+      else if (this.showNpCalendar) {
+        this.inputFocusToNpCalendar = false;
+        this.changeDetector.detectChanges();
+        this.inputFocusToNpCalendar = true;
+        this.changeDetector.detectChanges();
       }
     }
   }
 
   ngOnInit() {
-    //if the maximum date is not provided in the input parameter then set it to max possible value 
+    //! Choose Calendar based in EnableEnglishCalendarOnly parameter
+    if (this.EnableEnglishCalendarOnly) {
+      this.showAdBsButton = false;
+      this.showNpCalendar = false;
+      this.showEnCalendar = true;
+    }
+    //if the maximum date is not provided in the input parameter then set it to max possible value
     //for our application according to the np calendar service
     if (!this.maximumDate || (this.maximumDate && this.maximumDate.trim().length == 0)) {
       this.setMaximumDate();
@@ -201,7 +217,7 @@ export class DatePickerComponent implements ControlValueAccessor,OnChanges {
     //for our application according to the np calendar service
     if (!this.minimumDate || (this.minimumDate && this.minimumDate.trim().length == 0)) {
       this.setMinimumDate();
-    }      
+    }
 
     if (!this.isFromToDateSelect) {
       this.calTypes = "en,np";
@@ -275,11 +291,10 @@ export class DatePickerComponent implements ControlValueAccessor,OnChanges {
 
   //converting date from Nepali date to English date
   NepCalendarOnChange($event) {
-    if(this.showmonthCalendar){
+    if (this.showmonthCalendar) {
       this.monthChanged.emit($event);
     }
-    else
-    {   
+    else {
       let emittedNpDate = $event.npModel;
       if ((typeof (emittedNpDate)) == 'object' && this.nepYears.find(y => y.yearNumber == emittedNpDate.Year)) {
         let emittedDateInEng = this.npCalendarService.ConvertNepToEngDate(emittedNpDate);
@@ -296,14 +311,13 @@ export class DatePickerComponent implements ControlValueAccessor,OnChanges {
   //catches the model change of encalendar and converting date from English date to Nepali date for np-calendar
   //and emits the validation info and the model
   EngCalendarOnChange($event) {
-    if(this.showmonthCalendar){
+    if (this.showmonthCalendar) {
       this.monthChanged.emit($event);
     }
-    else
-    {   
+    else {
       let engDate = $event.enDate;
       let time = $event.enTime;
-      this.enDate = this.showTime ? (engDate + " " + time) : engDate;  
+      this.enDate = this.showTime ? (engDate + " " + time) : engDate;
       this.CheckForInvalidDate(engDate, time);
     }
 
@@ -370,25 +384,25 @@ export class DatePickerComponent implements ControlValueAccessor,OnChanges {
     return this.defaultCalenderTypes;
   }
 
-  FocusOutFromCalender(event:any){
-    if(event){
+  FocusOutFromCalender(event: any) {
+    if (event) {
       this.inputFocusToEnCalendar = false;
       this.inputFocusToNpCalendar = false;
-      this.outputFocus.emit(this.outputToParent=true);
+      this.outputFocus.emit(this.outputToParent = true);
     }
-    else{
+    else {
       return;
     }
   }
 
-    //common function to set focus on  given Element. 
-    setFocusById(targetId: string, waitingTimeinMS: number = 10) {
-      var timer = window.setTimeout(function () {
-        let htmlObject = document.getElementById(targetId);
-        if (htmlObject) {
-          htmlObject.focus();
-        }
-        clearTimeout(timer);
-      }, waitingTimeinMS);
-    }
+  //common function to set focus on  given Element. 
+  setFocusById(targetId: string, waitingTimeinMS: number = 10) {
+    var timer = window.setTimeout(function () {
+      let htmlObject = document.getElementById(targetId);
+      if (htmlObject) {
+        htmlObject.focus();
+      }
+      clearTimeout(timer);
+    }, waitingTimeinMS);
+  }
 }

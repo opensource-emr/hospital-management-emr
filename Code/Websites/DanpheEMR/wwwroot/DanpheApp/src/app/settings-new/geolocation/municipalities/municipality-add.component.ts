@@ -1,11 +1,11 @@
-import { Component, ChangeDetectorRef, Input, Output, EventEmitter } from '@angular/core';
-import { SettingsBLService } from '../../shared/settings.bl.service';
-import { SettingsService } from '../../shared/settings-service';
-import { CountrySubdivision, Municipality } from '../../shared/country-subdivision.model';
-import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
-import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CoreService } from '../../../core/shared/core.service';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
+import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { Municipality } from '../../shared/country-subdivision.model';
+import { SettingsService } from '../../shared/settings-service';
+import { SettingsBLService } from '../../shared/settings.bl.service';
 
 @Component({
     selector: 'municipality-add',
@@ -24,10 +24,15 @@ export class MunicipalityAddComponent {
 
     public model: Municipality = new Municipality();
 
+    public GeneralFieldLabel = new GeneralFieldLabels();
+
 
     constructor(public settingsBLService: SettingsBLService, public msgBoxServ: MessageboxService,
         public settingServ: SettingsService, public coreService: CoreService,
         public changeDetector: ChangeDetectorRef) {
+
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
         this.GetCountryList();
         this.GetCountrySubdivisionList();
     }

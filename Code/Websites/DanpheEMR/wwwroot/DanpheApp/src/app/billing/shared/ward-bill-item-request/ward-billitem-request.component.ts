@@ -1,22 +1,20 @@
-import { Component, OnInit, ChangeDetectorRef, Input, Output, EventEmitter } from "@angular/core";
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
 
-import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
-import { Patient } from "../../../patients/shared/patient.model";
-import { BillingTransaction } from "../../../billing/shared/billing-transaction.model";
-import { BillingTransactionItem } from "../../../billing/shared/billing-transaction-item.model";
-import { CommonFunctions } from '../../../shared/common.functions';
+import * as _ from "lodash";
 import * as moment from 'moment/moment';
-import { SecurityService } from "../../../security/shared/security.service";
-import { BillingBLService } from "../../../billing/shared/billing.bl.service";
-import { BillingService } from "../../../billing/shared/billing.service";
-import { DanpheHTTPResponse } from "../../../shared/common-models";
-import { PatientBillingContextVM } from "../../../billing/shared/patient-billing-context-vm";
-import { LabsBLService } from "../../../labs/shared/labs.bl.service";
-import { ServiceDepartmentVM } from "../../../shared/common-masters.model";
-import { CoreService } from "../../../core/shared/core.service";
 import { CurrentVisitContextVM } from "../../../appointments/shared/current-visit-context.model";
-import { ENUM_BillingStatus, ENUM_VisitType, ENUM_OrderStatus } from "../../../shared/shared-enums";
-import { forEach } from "@angular/router/src/utils/collection";
+import { BillingTransactionItem } from "../../../billing/shared/billing-transaction-item.model";
+import { BillingTransaction } from "../../../billing/shared/billing-transaction.model";
+import { BillingBLService } from "../../../billing/shared/billing.bl.service";
+import { PatientBillingContextVM } from "../../../billing/shared/patient-billing-context-vm";
+import { CoreService } from "../../../core/shared/core.service";
+import { LabsBLService } from "../../../labs/shared/labs.bl.service";
+import { SecurityService } from "../../../security/shared/security.service";
+import { ServiceDepartmentVM } from "../../../shared/common-masters.model";
+import { DanpheHTTPResponse } from "../../../shared/common-models";
+import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
+import { ENUM_BillingStatus, ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status, ENUM_OrderStatus, ENUM_VisitType } from "../../../shared/shared-enums";
+
 
 @Component({
   selector: "ward-billitem-request",
@@ -24,146 +22,109 @@ import { forEach } from "@angular/router/src/utils/collection";
 })
 export class WardBillItemRequestComponent {
   //master data
-  @Input("billItems")
-  public billItems: Array<any> = [];
-  @Input("patientId")
-  public patientId: number;
-  @Input("visitId")
-  public visitId: number;
-  @Input("counterId")
-  public counterId: number;
-  @Input("visitType")
-  public visitType: string;
-  @Input("billingType")
-  public billingType: string;
-  @Input("past-tests")
-  public pastTests: Array<any> = [];
+  @Input("billItems") BillItems: Array<any> = [];
+  @Input("patientId") PatientId: number;
+  @Input("visitId") VisitId: number;
+  @Input("counterId") CounterId: number;
+  @Input("visitType") VisitType: string;
+  @Input("billingType") BillingType: string;
+  @Input("past-tests") PastTests: Array<any> = [];
+  @Input("department") Department: string = null;
+  @Input("showPriceCategory") ShowPriceCategory: boolean = true;
+  @Input("scheme-priceCategory") SchemePriceCategory = { SchemeId: null, PriceCategoryId: null };
+  @Input("is-provisional-discharge") IsProvisionalDischarge: boolean = false;
+  @Output("emit-billItemReq") EmitBillItemReq = new EventEmitter<Object>();
 
-  @Output("emit-billItemReq")
-  public emitBillItemReq: EventEmitter<Object> = new EventEmitter<Object>();
-
-  public showIpBillRequest: boolean = true;
-
-  @Input("department")
-  public department: string = null;
-
-  @Input("showPriceCategory")
-  public showPriceCategory: boolean = true;
-
-  public serviceDeptList: Array<ServiceDepartmentVM>;
-  public doctorsList: Array<any> = [];
-
-  public billingTransaction: BillingTransaction;
-
+  public ShowIpBillRequest: boolean = true;
+  public ServiceDepartmentList: Array<ServiceDepartmentVM>;
+  public DoctorsList: Array<any> = [];
+  public BillingTransaction: BillingTransaction;
   //seleted items
-  public selectedItems = [];
-  public selectedServDepts: Array<any> = [];
-  public selectedAssignedToDr: Array<any> = [];
-  public selectedRequestedByDr: Array<any> = [];
-
-  public inpatientList: Array<Patient>;
-  public visitList: Array<any>;
-
+  public SelectedItems = [];
+  public SelectedServiceDepartment: Array<any> = [];
+  public SelectedAssignedToDr: Array<any> = [];
+  public SelectedRequestedByDr: Array<any> = [];
+  public VisitList: Array<any>;
   public loading = false;
-  public taxDetail = { taxPercent: 0, taxId: 0 };
-  public currBillingContext: PatientBillingContextVM = null;
-
-  public selectedPatient;
-  public currPatVisitContext: CurrentVisitContextVM = null;
-  public isRequestedByDrMandatory: boolean = true;
+  public TaxDetail = { taxPercent: 0, taxId: 0 };
+  public CurrentBillingContext: PatientBillingContextVM = null;
+  public CurrentPatientVisitContext: CurrentVisitContextVM = null;
+  public IsRequestedByDrMandatory: boolean = true;
   public LabTypeName: string = "op-lab";
+  public BillRequestDoubleEntryWarningTimeHrs: number = 0;
+  public PastTestList: any = [];
+  public PastTestList_ForDuplicate: any = [];
 
   constructor(
-    public labBLService: LabsBLService,
-    public msgBoxServ: MessageboxService,
-    public securityService: SecurityService,
-    public changeDetectorRef: ChangeDetectorRef,
-    public billingBLService: BillingBLService,
-    public billingService: BillingService,
+    private _labBLService: LabsBLService,
+    private _messageBoxService: MessageboxService,
+    private _securityService: SecurityService,
+    private _changeDetectorRef: ChangeDetectorRef,
+    private _billingBLService: BillingBLService,
     public coreService: CoreService
   ) {
-    this.billingTransaction = new BillingTransaction();
-    this.serviceDeptList = this.coreService.Masters.ServiceDepartments;
-    this.serviceDeptList = this.serviceDeptList.filter(
-      (a) => a.ServiceDepartmentName != "OPD"
-    );
-
+    this.BillingTransaction = new BillingTransaction();
+    this.ServiceDepartmentList = this.coreService.Masters.ServiceDepartments;
+    this.ServiceDepartmentList = this.ServiceDepartmentList.filter((a) => a.ServiceDepartmentName !== "OPD");
     //instead of Using in OnInit Component is initiated from inside  this function by calling InitiateComponent function
     this.GetDoctorsList();
     this.BillRequestDoubleEntryWarningTimeHrs =
       this.coreService.LoadIPBillRequestDoubleEntryWarningTimeHrs();
-    let param = this.coreService.Parameters.find(
-      (p) =>
-        p.ParameterGroupName == "Common" &&
-        p.ParameterName == "RequestedByDrSettings"
-    ).ParameterValue;
+    let param = this.coreService.Parameters.find((p) => p.ParameterGroupName === "Common" && p.ParameterName === "RequestedByDrSettings").ParameterValue;
     if (param) {
       let paramValue = JSON.parse(param);
-      this.isRequestedByDrMandatory = paramValue.LabWardRequest.IsMandatory;
+      this.IsRequestedByDrMandatory = paramValue.LabWardRequest.IsMandatory;
     }
-
-    if (this.coreService.labTypes.length == 1) {
+    if (this.coreService.labTypes.length === 1) {
       this.LabTypeName = this.coreService.labTypes[0].LabTypeName;
     }
   }
 
   ngOnInit() {
     //Asynchronous (incase if user )
-    if (this.patientId && this.visitId) {
-      this.billingBLService
-        .GetDataOfInPatient(this.patientId, this.visitId)
+    if (this.PatientId && this.VisitId) {
+      this._billingBLService
+        .GetDataOfInPatient(this.PatientId, this.VisitId)
         .subscribe((res: DanpheHTTPResponse) => {
-          if (res.Status == "OK") {
-            this.currPatVisitContext = res.Results;
+          if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+            this.CurrentPatientVisitContext = res.Results;
           } else {
-            this.msgBoxServ.showMessage(
-              "failed",
-              ["Problem! Cannot get the Current Visit Context ! "],
-              res.ErrorMessage
-            );
+            this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Problem! Cannot get the Current Visit Context ! "], res.ErrorMessage);
           }
         });
     }
     this.InitiateComponent();
     this.ResetServiceDepartmentList();
-    this.PastTest(this.pastTests);
+    this.PastTest(this.PastTests);
     this.SetLabTypeNameInLocalStorage();
   }
 
   //sud:11Nov'19--Don't show service department if there's no item in it..
-  public ResetServiceDepartmentList() {
-    if (this.coreService.Masters.ServiceDepartments && this.billItems) {
-      this.serviceDeptList = [];
+  ResetServiceDepartmentList(): void {
+    if (this.coreService.Masters.ServiceDepartments && this.BillItems) {
+      this.ServiceDepartmentList = [];
       this.coreService.Masters.ServiceDepartments.forEach((srv) => {
-        if (
-          this.billItems.find(
-            (itm) => itm.ServiceDepartmentId == srv.ServiceDepartmentId
-          )
-        ) {
-          this.serviceDeptList.push(srv);
+        if (this.BillItems.find((itm) => itm.ServiceDepartmentId === srv.ServiceDepartmentId)) {
+          this.ServiceDepartmentList.push(srv);
         }
       });
       //exclude opd items..
-      this.serviceDeptList = this.serviceDeptList.filter(
-        (a) => a.IntegrationName != "OPD"
-      );
+      this.ServiceDepartmentList = this.ServiceDepartmentList.filter((a) => a.IntegrationName !== "OPD");
     }
   }
 
-  public InitiateComponent() {
-    this.selectedItems = [];
-    this.selectedAssignedToDr = [];
-    this.selectedServDepts = [];
-    this.selectedRequestedByDr = [];
-    this.visitList = [];
-
+  InitiateComponent(): void {
+    this.SelectedItems = [];
+    this.SelectedAssignedToDr = [];
+    this.SelectedServiceDepartment = [];
+    this.SelectedRequestedByDr = [];
+    this.VisitList = [];
     this.AddNewBillTxnItemRow();
-
-    this.LoadPatientBillingContext(this.patientId);
-    this.GetPatientVisitList(this.patientId);
+    this.LoadPatientBillingContext(this.PatientId);
+    this.GetPatientVisitList(this.PatientId);
   }
 
-  public SubmitBillingTransaction(): void {
+  SubmitBillingTransaction(): void {
     //this.loading is set to true from the HTML. to handle double-Click.
     //check if there's other better alternative. till then let it be.. --sud:23Jan'18
     if (this.loading) {
@@ -173,36 +134,42 @@ export class WardBillItemRequestComponent {
       this.SetBillingTxnDetails();
       this.AddToPastTest();
       if (this.CheckValidations()) {
-        this.PostToDepartmentRequisition();
+        // this.PostToDepartmentRequisition();
+        this.PostProvisionalDepartmentRequisition();
       } else {
         this.loading = false;
       }
     }
   }
-  public SetBillingTxnDetails() {
-    let currentVisit = this.visitList.find(
-      (visit) => visit.PatientVisitId == this.visitId
-    );
-    this.billingTransaction.BillingTransactionItems.forEach((txnItem) => {
-      txnItem.PatientVisitId = this.visitId;
+
+  SetBillingTxnDetails(): void {
+    let currentVisit = this.VisitList.find((visit) => visit.PatientVisitId === this.VisitId);
+    this.BillingTransaction.SchemeId = this.SchemePriceCategory.SchemeId;
+    this.BillingTransaction.PriceCategoryId = this.SchemePriceCategory.PriceCategoryId;
+    this.BillingTransaction.PatientId = this.PatientId;
+    this.BillingTransaction.PatientVisitId = this.VisitId;
+    this.BillingTransaction.SubTotal = 0;
+    this.BillingTransaction.TotalAmount = 0;
+    this.BillingTransaction.DiscountPercent = 0;
+    this.BillingTransaction.DiscountAmount = 0;
+    this.BillingTransaction.PaidAmount = 0;
+    this.BillingTransaction.BillingTransactionItems.forEach((txnItem) => {
+      txnItem.PatientVisitId = this.VisitId;
       //txnItem.RequestedBy = currentVisit ? currentVisit.ProviderId : null;
       //txnItem.BillingTransactionItemValidator.controls['RequestedBy'].setValue(txnItem.RequestedBy);
-      txnItem.PatientId = this.patientId;
-      txnItem.CounterId = this.counterId;
-
-      txnItem.RequestingDeptId = this.currBillingContext
-        ? this.currBillingContext.RequestingDeptId
-        : null;
-
-      txnItem.BillingType = this.billingType;
-      txnItem.VisitType = this.visitType; //If we use this for OutPatient Then We must modify it dynamically
-
+      txnItem.PatientId = this.PatientId;
+      txnItem.RequestingDeptId = this.CurrentBillingContext ? this.CurrentBillingContext.RequestingDeptId : null;
+      txnItem.BillingType = this.BillingType;
+      txnItem.VisitType = this.VisitType; //If we use this for OutPatient Then We must modify it dynamically
       txnItem.BillStatus = ENUM_BillingStatus.provisional; // "provisional";
-
+      txnItem.DiscountSchemeId = this.SchemePriceCategory.SchemeId;
+      txnItem.PriceCategoryId = this.SchemePriceCategory.PriceCategoryId;
+      // txnItem.CounterId = this.securityService.getLoggedInCounter().CounterId;
+      txnItem.CounterId = this.CounterId;
+      txnItem.IsProvisionalDischarge = this.IsProvisionalDischarge;
       txnItem.CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");
-      txnItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
+      txnItem.CreatedBy = this._securityService.GetLoggedInUser().EmployeeId;
       txnItem.CounterDay = moment().format("YYYY-MM-DD");
-
       txnItem.SubTotal = txnItem.Price * txnItem.Quantity;
       txnItem.DiscountAmount = 0;
       txnItem.DiscountPercent = 0;
@@ -210,28 +177,20 @@ export class WardBillItemRequestComponent {
       txnItem.TotalAmount = txnItem.SubTotal - txnItem.DiscountAmount;
       txnItem.TaxPercent = 0;
       txnItem.OrderStatus = ENUM_OrderStatus.Active;
-
-      let taxInfo1 = this.coreService.Parameters.find(
-        (a) => a.ParameterName == "TaxInfo"
-      );
+      let taxInfo1 = this.coreService.Parameters.find((a) => a.ParameterName === "TaxInfo");
       if (taxInfo1) {
         let taxInfoStr = taxInfo1.ParameterValue;
         let taxInfo = JSON.parse(taxInfoStr);
         txnItem.TaxPercent = taxInfo.TaxPercent;
-        this.taxDetail.taxId = taxInfo.TaxId;
-
+        this.TaxDetail.taxId = taxInfo.TaxId;
         //this.taxName = taxInfo.TaxName;
         //this.taxLabel = taxInfo.TaxLabel;
         //this.taxPercent = taxInfo.TaxPercent;
       }
-
-      this.billingTransaction.TaxId = this.taxDetail.taxId;
+      this.BillingTransaction.TaxId = this.TaxDetail.taxId;
       //anjana/7-oct-2020: EMR:2695
-      let currItmMaster = this.billItems.find(
-        (itm) =>
-          itm.ServiceDepartmentId == txnItem.ServiceDepartmentId &&
-          itm.ItemId == txnItem.ItemId
-      );
+      // let currItmMaster = this.billItems.find((itm) => itm.ServiceDepartmentId === txnItem.ServiceDepartmentId && itm.ItemId === txnItem.ItemId);
+      let currItmMaster = this.BillItems.find((itm) => itm.ServiceDepartmentId === txnItem.ServiceDepartmentId && itm.ServiceItemId === txnItem.ServiceItemId);
       if (currItmMaster) {
         txnItem.IsTaxApplicable = currItmMaster.TaxApplicable;
       }
@@ -246,57 +205,33 @@ export class WardBillItemRequestComponent {
     });
   }
 
-  public CheckValidations(): boolean {
+  CheckValidations(): boolean {
     let isFormValid = true;
     //for inpatient visitid is compulsory, for other it's not.  (sud:12Nov'19--needs revision.)
-    let isVisitIdValid =
-      this.visitType.toLowerCase() != ENUM_VisitType.inpatient ||
-      (this.visitType.toLowerCase() == ENUM_VisitType.inpatient &&
-        this.visitId);
-
-    if (this.patientId && isVisitIdValid) {
-      if (
-        this.CheckSelectionFromAutoComplete() &&
-        this.billingTransaction.BillingTransactionItems.length
-      ) {
-        for (
-          var i = 0;
-          i < this.billingTransaction.BillingTransactionItems.length;
-          i++
-        ) {
-          if (this.billingTransaction.BillingTransactionItems[i].Price < 0) {
-            this.msgBoxServ.showMessage("error", [
-              "The price of some items is less than zero ",
-            ]);
+    let isVisitIdValid = this.VisitType.toLowerCase() !== ENUM_VisitType.inpatient || (this.VisitType.toLowerCase() === ENUM_VisitType.inpatient && this.VisitId);
+    if (this.PatientId && isVisitIdValid) {
+      if (this.CheckSelectionFromAutoComplete() && this.BillingTransaction.BillingTransactionItems.length) {
+        for (let i = 0; i < this.BillingTransaction.BillingTransactionItems.length; i++) {
+          if (this.BillingTransaction.BillingTransactionItems[i].Price < 0) {
+            this._messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ["The price of some items is less than zero ",]);
             this.loading = false;
             isFormValid = false;
             break;
           }
-
-          let currTxnItm = this.billingTransaction.BillingTransactionItems[i];
-          for (var valCtrls in currTxnItm.BillingTransactionItemValidator
+          let currTxnItm = this.BillingTransaction.BillingTransactionItems[i];
+          for (let validationControls in currTxnItm.BillingTransactionItemValidator
             .controls) {
-            currTxnItm.BillingTransactionItemValidator.controls[
-              valCtrls
-            ].markAsDirty();
-            currTxnItm.BillingTransactionItemValidator.controls[
-              valCtrls
-            ].updateValueAndValidity();
+            currTxnItm.BillingTransactionItemValidator.controls[validationControls].markAsDirty();
+            currTxnItm.BillingTransactionItemValidator.controls[validationControls].updateValueAndValidity();
           }
-
-          if (this.isRequestedByDrMandatory == false) {
+          if (this.IsRequestedByDrMandatory === false) {
             currTxnItm.UpdateValidator("off", "PrescriberId", "required");
           } else {
             currTxnItm.UpdateValidator("on", "PrescriberId", "required");
           }
         }
-
-        for (
-          var i = 0;
-          i < this.billingTransaction.BillingTransactionItems.length;
-          i++
-        ) {
-          let currTxnItm_1 = this.billingTransaction.BillingTransactionItems[i];
+        for (let i = 0; i < this.BillingTransaction.BillingTransactionItems.length; i++) {
+          let currTxnItm_1 = this.BillingTransaction.BillingTransactionItems[i];
           //break loop if even a single txn item is invalid.
           if (!currTxnItm_1.IsValidCheck(undefined, undefined)) {
             isFormValid = false;
@@ -307,18 +242,17 @@ export class WardBillItemRequestComponent {
         isFormValid = false;
       }
     } else {
-      this.msgBoxServ.showMessage("failed", ["Invalid Patient/Visit Id."]);
+      this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Invalid Patient/Visit Id."]);
       isFormValid = false;
     }
-
     return isFormValid;
   }
 
-  public CheckSelectionFromAutoComplete(): boolean {
-    if (this.billingTransaction.BillingTransactionItems.length) {
-      for (let itm of this.billingTransaction.BillingTransactionItems) {
+  CheckSelectionFromAutoComplete(): boolean {
+    if (this.BillingTransaction.BillingTransactionItems.length) {
+      for (let itm of this.BillingTransaction.BillingTransactionItems) {
         if (!itm.IsValidSelDepartment) {
-          this.msgBoxServ.showMessage("failed", ["Select item from list."]);
+          this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Select item from list."]);
           this.loading = false;
           return false;
         }
@@ -327,50 +261,59 @@ export class WardBillItemRequestComponent {
     }
   }
 
+
+  PostProvisionalDepartmentRequisition(): void {
+    const billingTransaction = _.cloneDeep(this.BillingTransaction);
+    const billingTransactionItems = _.cloneDeep(this.BillingTransaction.BillingTransactionItems);
+    this._billingBLService.ProceedToBillingTransaction(billingTransaction, billingTransactionItems, "active", "provisional", false, this.CurrentPatientVisitContext).subscribe(res => {
+      if (res.Status === ENUM_DanpheHTTPResponses.OK && res.Results) {
+        this.ResetAllRowData();
+        this.loading = false;
+        //check if we can send back the response data so that page below don't have to do server call again.
+        this.EmitBillItemReq.emit({ action: "save", data: null });
+      }
+      else {
+        this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Unable to complete transaction."]);
+        console.log(res.ErrorMessage)
+        this.loading = false;
+      }
+    });
+  }
+
   //posts to Departments Requisition Table
-  public PostToDepartmentRequisition() {
+  PostToDepartmentRequisition(): void {
     //orderstatus="active" and billingStatus="paid" when sent from billingpage.
     // for(var i=0; i<this.billingTransaction.BillingTransactionItems.length; i++){
     //   this.pastTests.push(this.billingTransaction.BillingTransactionItems[i]);
     // }
     //this.pastTests.push(this.billingTransaction.BillingTransactionItems);
-    this.billingTransaction.BillingTransactionItems.forEach((item) => {
+    this.BillingTransaction.BillingTransactionItems.forEach((item) => {
       item.LabTypeName = this.LabTypeName;
     });
-    this.billingBLService
-      .PostDepartmentOrders(
-        this.billingTransaction.BillingTransactionItems,
-        "active",
-        "provisional",
-        false,
-        this.currPatVisitContext
-      )
-      .subscribe((res) => {
-        if (res.Status == "OK") {
+    this._billingBLService
+      .PostDepartmentOrders(this.BillingTransaction.BillingTransactionItems, "active", "provisional", false, this.CurrentPatientVisitContext)
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           this.PostToBillingTransaction();
         } else {
           this.loading = false;
-          this.msgBoxServ.showMessage("failed", [
-            "Unable to do lab request.Please try again later",
-          ]);
+          this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Unable to do lab request.Please try again later",]);
           console.log(res.ErrorMessage);
         }
       });
   }
 
-  public PostToBillingTransaction() {
-    this.billingBLService
-      .PostBillingTransactionItems(
-        this.billingTransaction.BillingTransactionItems
-      )
-      .subscribe((res) => {
-        if (res.Status == "OK") {
+  PostToBillingTransaction(): void {
+    this._billingBLService
+      .PostBillingTransactionItems(this.BillingTransaction.BillingTransactionItems)
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           this.ResetAllRowData();
           this.loading = false;
           //check if we can send back the response data so that page below don't have to do server call again.
-          this.emitBillItemReq.emit({ action: "save", data: null });
+          this.EmitBillItemReq.emit({ action: "save", data: null });
         } else {
-          this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
+          this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
           this.loading = false;
         }
       });
@@ -379,35 +322,31 @@ export class WardBillItemRequestComponent {
   //----------end: post billing transaction-----------------------------------
 
   //start: get: master and patient data
-  public LoadPatientBillingContext(patientId) {
-    this.billingBLService
+  LoadPatientBillingContext(patientId): void {
+    this._billingBLService
       .GetPatientBillingContext(patientId)
       .subscribe((res: DanpheHTTPResponse) => {
-        if (res.Status == "OK") {
-          this.currBillingContext = res.Results;
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+          this.CurrentBillingContext = res.Results;
 
-          if (!this.billingType || this.billingType.trim() == "") {
+          if (!this.BillingType || this.BillingType.trim() === "") {
             //this.billingService.BillingType = "inpatient";
-            this.billingType = "inpatient";
+            this.BillingType = "inpatient";
           }
         }
       });
   }
 
-  public GetPatientVisitList(patientId: number) {
-    this.labBLService.GetPatientVisitsProviderWise(patientId).subscribe(
-      (res) => {
-        if (res.Status == "OK") {
+  GetPatientVisitList(patientId: number): void {
+    this._labBLService.GetPatientVisitsProviderWise(patientId).subscribe(
+      (res: DanpheHTTPResponse) => {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           if (res.Results.length) {
-            this.visitList = res.Results;
+            this.VisitList = res.Results;
             //assign doctor of latest visit as requestedby by default to the first billing item.
-
-            let doc = this.doctorsList.find(
-              (a) => a.EmployeeId == this.visitList[0].PerformerId
-            );
-
+            let doc = this.DoctorsList.find((a) => a.EmployeeId === this.VisitList[0].PerformerId);
             if (doc) {
-              this.selectedRequestedByDr[0] = doc.FullName;
+              this.SelectedRequestedByDr[0] = doc.FullName;
               this.AssignRequestedByDoctor(0);
             }
           } else {
@@ -416,335 +355,213 @@ export class WardBillItemRequestComponent {
         }
       },
       (err) => {
-        this.msgBoxServ.showMessage("Failed", [
-          "unable to get PatientVisit list.. check log for more details.",
-        ]);
+        this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["unable to get PatientVisit list.. check log for more details.",]);
         console.log(err.ErrorMessage);
       }
     );
   }
-  public GetDoctorsList() {
-    this.billingBLService.GetDoctorsList().subscribe(
-      (res) => {
-        if (res.Status == "OK") {
+
+  GetDoctorsList(): void {
+    this._billingBLService.GetDoctorsList()
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           if (res.Results.length) {
-            this.doctorsList = res.Results;
+            this.DoctorsList = res.Results;
             let Obj = new Object();
             Obj["EmployeeId"] = null; //change by Yub -- 23rd Aug '18
             Obj["FullName"] = "SELF";
-            this.doctorsList.push(Obj);
+            this.DoctorsList.push(Obj);
           } else {
             console.log(res.ErrorMessage);
           }
         }
       },
-      (err) => {
-        this.msgBoxServ.showMessage("Failed", [
-          "unable to get Doctors list.. check log for more details.",
-        ]);
-        console.log(err.ErrorMessage);
-      }
-    );
+        (err) => {
+          this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Unable to get Doctors list. Check log for more details."]);
+          console.log(err.ErrorMessage);
+        }
+      );
   }
 
-  GetServiceDeptNameById(servDeptId: number): string {
-    if (this.serviceDeptList) {
-      let srvDept = this.serviceDeptList.find(
-        (a) => a.ServiceDepartmentId == servDeptId
-      );
-      return srvDept ? srvDept.ServiceDepartmentName : null;
+  GetServiceDeptNameById(serviceDepartmentId: number): string {
+    if (this.ServiceDepartmentList) {
+      let serviceDepartment = this.ServiceDepartmentList.find((a) => a.ServiceDepartmentId === serviceDepartmentId);
+      return serviceDepartment ? serviceDepartment.ServiceDepartmentName : null;
     }
   }
   //end: get: master and patient data
 
   //start: autocomplete assign functions and item filter logic
-  public AssignSelectedItem(index) {
+  AssignSelectedItem(index): void {
     let item = null;
     // check if user has given proper input string for item name
     //or has selected object properly from the dropdown list.
-    if (this.selectedItems[index]) {
-      if (
-        typeof this.selectedItems[index] == "string" &&
-        this.billingTransaction.BillingTransactionItems[index].ItemList.length
-      ) {
-        item = this.billingTransaction.BillingTransactionItems[
-          index
-        ].ItemList.find(
-          (a) =>
-            a.ItemName.toLowerCase() == this.selectedItems[index].toLowerCase()
-        );
-      } else if (typeof this.selectedItems[index] == "object")
-        item = this.selectedItems[index];
+    if (this.SelectedItems[index]) {
+      if (typeof this.SelectedItems[index] === "string" && this.BillingTransaction.BillingTransactionItems[index].ItemList.length) {
+        item = this.BillingTransaction.BillingTransactionItems[index].ItemList.find((a) => a.ItemName.toLowerCase() === this.SelectedItems[index].toLowerCase());
+      } else if (typeof this.SelectedItems[index] === "object")
+        item = this.SelectedItems[index];
       if (item) {
-        if (this.billingType.toLowerCase() != "inpatient") {
-          let extItem = this.billingTransaction.BillingTransactionItems.find(
-            (a) =>
-              a.ItemId == item.ItemId &&
-              a.ServiceDepartmentId == item.ServiceDepartmentId
-          );
-          let extItemIndex =
-            this.billingTransaction.BillingTransactionItems.findIndex(
-              (a) =>
-                a.ItemId == item.ItemId &&
-                a.ServiceDepartmentId == item.ServiceDepartmentId
-            );
+        if (this.BillingType.toLowerCase() !== "inpatient") {
+          let extItem = this.BillingTransaction.BillingTransactionItems.find((a) => a.ServiceItemId === item.ServiceItemId && a.ServiceDepartmentId === item.ServiceDepartmentId);
+          let extItemIndex = this.BillingTransaction.BillingTransactionItems.findIndex((a) => a.ServiceItemId === item.ServiceItemId && a.ServiceDepartmentId === item.ServiceDepartmentId);
           if (extItem && index != extItemIndex) {
-            this.msgBoxServ.showMessage("failed", [
-              item.ItemName + " is already entered.",
-            ]);
-            this.changeDetectorRef.detectChanges();
-            this.billingTransaction.BillingTransactionItems[
-              index
-            ].IsDuplicateItem = true;
+            this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, [item.ItemName + " is already entered.",]);
+            this._changeDetectorRef.detectChanges();
+            this.BillingTransaction.BillingTransactionItems[index].IsDuplicateItem = true;
           } else
-            this.billingTransaction.BillingTransactionItems[
-              index
-            ].IsDuplicateItem = false;
+            this.BillingTransaction.BillingTransactionItems[index].IsDuplicateItem = false;
         }
-        this.billingTransaction.BillingTransactionItems[index].ItemId =
-          item.ItemId;
-        this.billingTransaction.BillingTransactionItems[index].ItemName =
-          item.ItemName;
-
-        this.billingTransaction.BillingTransactionItems[index].ProcedureCode =
-          item.ProcedureCode;
-        this.billingTransaction.BillingTransactionItems[index].Price =
-          item.Price;
+        this.BillingTransaction.BillingTransactionItems[index].IntegrationItemId = item.IntegrationItemId;
+        this.BillingTransaction.BillingTransactionItems[index].ItemId = item.ItemId;
+        this.BillingTransaction.BillingTransactionItems[index].ServiceItemId = item.ServiceItemId;
+        this.BillingTransaction.BillingTransactionItems[index].ItemName = item.ItemName;
+        this.BillingTransaction.BillingTransactionItems[index].ProcedureCode = item.ProcedureCode;
+        this.BillingTransaction.BillingTransactionItems[index].Price = item.Price;
         //add also the servicedepartmentname property of the item; needed since most of the filtering happens on this value
-
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].ServiceDepartmentName = this.GetServiceDeptNameById(
-          item.ServiceDepartmentId
-        );
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].ServiceDepartmentId = item.ServiceDepartmentId;
-        this.selectedServDepts[index] =
-          this.billingTransaction.BillingTransactionItems[
-            index
-          ].ServiceDepartmentName;
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].IsValidSelDepartment = true;
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].IsValidSelItemName = true;
-
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].IsDoctorMandatory = item.IsDoctorMandatory; //sud:6Feb'19--need to verify once.
-
+        this.BillingTransaction.BillingTransactionItems[index].ServiceDepartmentName = this.GetServiceDeptNameById(item.ServiceDepartmentId);
+        this.BillingTransaction.BillingTransactionItems[index].ServiceDepartmentId = item.ServiceDepartmentId;
+        this.SelectedServiceDepartment[index] = this.BillingTransaction.BillingTransactionItems[index].ServiceDepartmentName;
+        this.BillingTransaction.BillingTransactionItems[index].IsValidSelDepartment = true;
+        this.BillingTransaction.BillingTransactionItems[index].IsValidSelItemName = true;
+        this.BillingTransaction.BillingTransactionItems[index].IsDoctorMandatory = item.IsDoctorMandatory; //sud:6Feb'19--need to verify once.
         this.FilterBillItems(index);
         this.CheckItemProviderValidation(index);
-
         this.ResetDoctorListOnItemChange(item, index);
       } else
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].IsValidSelItemName = false;
-      if (!item && !this.selectedServDepts[index]) {
-        this.billingTransaction.BillingTransactionItems[index].ItemList =
-          this.billItems;
+        this.BillingTransaction.BillingTransactionItems[index].IsValidSelItemName = false;
+      if (!item && !this.SelectedServiceDepartment[index]) {
+        this.BillingTransaction.BillingTransactionItems[index].ItemList = this.BillItems;
       }
       this.CheckForDoubleEntry();
     } else {
-      this.billingTransaction.BillingTransactionItems[index].IsDoubleEntry_Now =
-        false;
-      this.billingTransaction.BillingTransactionItems[
-        index
-      ].IsDoubleEntry_Past = false;
+      this.BillingTransaction.BillingTransactionItems[index].IsDoubleEntry_Now = false;
+      this.BillingTransaction.BillingTransactionItems[index].IsDoubleEntry_Past = false;
     }
   }
 
-  public AssignSelectedDoctor(index) {
+  AssignSelectedDoctor(index): void {
     let doctor = null;
     // check if user has given proper input string for item name
     //or has selected object properly from the dropdown list.
-    if (this.selectedAssignedToDr[index]) {
-      if (
-        typeof this.selectedAssignedToDr[index] == "string" &&
-        this.doctorsList.length
-      ) {
-        doctor = this.doctorsList.find(
-          (a) =>
-            a.FullName.toLowerCase() ==
-            this.selectedAssignedToDr[index].toLowerCase()
-        );
-      } else if (typeof this.selectedAssignedToDr[index] == "object")
-        doctor = this.selectedAssignedToDr[index];
+    if (this.SelectedAssignedToDr[index]) {
+      if (typeof this.SelectedAssignedToDr[index] === "string" && this.DoctorsList.length) {
+        doctor = this.DoctorsList.find((a) => a.FullName.toLowerCase() === this.SelectedAssignedToDr[index].toLowerCase());
+      } else if (typeof this.SelectedAssignedToDr[index] === "object")
+        doctor = this.SelectedAssignedToDr[index];
       if (doctor) {
-        this.billingTransaction.BillingTransactionItems[index].PerformerId = doctor.EmployeeId;
-        this.billingTransaction.BillingTransactionItems[index].PerformerName = doctor.FullName;
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].IsvalidSelPerformerDr = true;
+        this.BillingTransaction.BillingTransactionItems[index].PerformerId = doctor.EmployeeId;
+        this.BillingTransaction.BillingTransactionItems[index].PerformerName = doctor.FullName;
+        this.BillingTransaction.BillingTransactionItems[index].IsvalidSelPerformerDr = true;
       } else
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].IsvalidSelPerformerDr = false;
+        this.BillingTransaction.BillingTransactionItems[index].IsvalidSelPerformerDr = false;
     } else
-      this.billingTransaction.BillingTransactionItems[
-        index
-      ].IsvalidSelPerformerDr = true;
+      this.BillingTransaction.BillingTransactionItems[index].IsvalidSelPerformerDr = true;
   }
 
-  public AssignRequestedByDoctor(index) {
+  AssignRequestedByDoctor(index): void {
     let doctor = null;
     // check if user has given proper input string for item name
     //or has selected object properly from the dropdown list.
-    if (this.selectedRequestedByDr[index]) {
-      if (
-        typeof this.selectedRequestedByDr[index] == "string" &&
-        this.doctorsList.length
-      ) {
-        doctor = this.doctorsList.find(
-          (a) =>
-            a.FullName.toLowerCase() ==
-            this.selectedRequestedByDr[index].toLowerCase()
-        );
-      } else if (typeof this.selectedRequestedByDr[index] == "object") {
-        doctor = this.selectedRequestedByDr[index];
+    if (this.SelectedRequestedByDr[index]) {
+      if (typeof this.SelectedRequestedByDr[index] === "string" && this.DoctorsList.length) {
+        doctor = this.DoctorsList.find((a) => a.FullName.toLowerCase() === this.SelectedRequestedByDr[index].toLowerCase());
+      } else if (typeof this.SelectedRequestedByDr[index] === "object") {
+        doctor = this.SelectedRequestedByDr[index];
       }
-
       if (doctor) {
-        this.billingTransaction.BillingTransactionItems[index].PrescriberId = doctor.EmployeeId;
-        this.billingTransaction.BillingTransactionItems[index].PrescriberName = doctor.FullName;
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].IsValidSelPrescriberDr = true;
+        this.BillingTransaction.BillingTransactionItems[index].PrescriberId = doctor.EmployeeId;
+        this.BillingTransaction.BillingTransactionItems[index].PrescriberName = doctor.FullName;
+        this.BillingTransaction.BillingTransactionItems[index].IsValidSelPrescriberDr = true;
       } else {
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].IsValidSelPrescriberDr = false;
+        this.BillingTransaction.BillingTransactionItems[index].IsValidSelPrescriberDr = false;
       }
     } else {
-      this.billingTransaction.BillingTransactionItems[
-        index
-      ].IsValidSelPrescriberDr = true;
+      this.BillingTransaction.BillingTransactionItems[index].IsValidSelPrescriberDr = true;
     }
   }
 
   //assigns service department id and filters item list
-  ServiceDeptOnChange(index) {
+  ServiceDeptOnChange(index): void {
     let srvDeptObj = null;
     // check if user has given proper input string for department name
     //or has selected object properly from the dropdown list.
-    if (typeof this.selectedServDepts[index] == "string") {
-      if (this.serviceDeptList.length && this.selectedServDepts[index])
-        srvDeptObj = this.serviceDeptList.find(
-          (a) =>
-            a.ServiceDepartmentName.toLowerCase() ==
-            this.selectedServDepts[index].toLowerCase()
-        );
-    } else if (typeof this.selectedServDepts[index] == "object") {
-      srvDeptObj = this.selectedServDepts[index];
+    if (typeof this.SelectedServiceDepartment[index] === "string") {
+      if (this.ServiceDepartmentList.length && this.SelectedServiceDepartment[index])
+        srvDeptObj = this.ServiceDepartmentList.find((a) => a.ServiceDepartmentName.toLowerCase() === this.SelectedServiceDepartment[index].toLowerCase());
+    } else if (typeof this.SelectedServiceDepartment[index] === "object") {
+      srvDeptObj = this.SelectedServiceDepartment[index];
     }
-
     //if selection of department from string or selecting object from the list is true
     //then assign proper department name
     if (srvDeptObj) {
-      if (
-        srvDeptObj.ServiceDepartmentId !=
-        this.billingTransaction.BillingTransactionItems[index]
-          .ServiceDepartmentId
-      ) {
+      if (srvDeptObj.ServiceDepartmentId != this.BillingTransaction.BillingTransactionItems[index].ServiceDepartmentId) {
         this.ResetSelectedRow(index);
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].ServiceDepartmentId = srvDeptObj.ServiceDepartmentId;
+        this.BillingTransaction.BillingTransactionItems[index].ServiceDepartmentId = srvDeptObj.ServiceDepartmentId;
       }
       this.FilterBillItems(index);
-      this.billingTransaction.BillingTransactionItems[
-        index
-      ].IsValidSelDepartment = true;
+      this.BillingTransaction.BillingTransactionItems[index].IsValidSelDepartment = true;
     }
     //else raise an invalid flag
     else {
-      this.billingTransaction.BillingTransactionItems[index].ItemList =
-        this.billItems;
-      this.billingTransaction.BillingTransactionItems[
-        index
-      ].IsValidSelDepartment = false;
+      this.BillingTransaction.BillingTransactionItems[index].ItemList = this.BillItems;
+      this.BillingTransaction.BillingTransactionItems[index].IsValidSelDepartment = false;
     }
   }
-  public FilterBillItems(index) {
-    //ramavtar:13may18: at start if no default service department is set .. we need to skip the filtering of item list.
-    if (
-      this.billingTransaction.BillingTransactionItems[index].ServiceDepartmentId
-    ) {
-      if (
-        this.billingTransaction.BillingTransactionItems.length &&
-        this.billItems.length
-      ) {
-        let srvDeptId =
-          this.billingTransaction.BillingTransactionItems[index]
-            .ServiceDepartmentId;
-        //initalAssign: FilterBillItems was called after assinging all the values(used in ngModelChange in SelectDepartment)
-        // and was assigning ItemId=null.So avoiding assignment null value to ItemId during inital assign.
-        if (
-          this.billingTransaction.BillingTransactionItems[index].ItemId == null
-        )
-          this.ResetSelectedRow(index);
-        this.billingTransaction.BillingTransactionItems[index].ItemList =
-          this.billItems.filter((a) => a.ServiceDepartmentId == srvDeptId);
 
+  FilterBillItems(index): void {
+    //ramavtar:13may18: at start if no default service department is set .. we need to skip the filtering of item list.
+    if (this.BillingTransaction.BillingTransactionItems[index].ServiceDepartmentId) {
+      if (this.BillingTransaction.BillingTransactionItems.length && this.BillItems.length) {
+        let srvDeptId = this.BillingTransaction.BillingTransactionItems[index].ServiceDepartmentId;
+        //initialAssign: FilterBillItems was called after assigning all the values(used in ngModelChange in SelectDepartment)
+        // and was assigning ItemId=null.So avoiding assignment null value to ItemId during initial assign.
+        if (this.BillingTransaction.BillingTransactionItems[index].ServiceItemId === null)
+          this.ResetSelectedRow(index);
+        this.BillingTransaction.BillingTransactionItems[index].ItemList = this.BillItems.filter((a) => a.ServiceDepartmentId === srvDeptId);
         let servDeptName = this.GetServiceDeptNameById(srvDeptId);
         //sud:6Feb'19--we have Use doctormandatory field of database item, not from code.
         //if (this.IsDoctorMandatory(servDeptName, null)) {
-        if (
-          this.billingTransaction.BillingTransactionItems[index] &&
-          this.billingTransaction.BillingTransactionItems[index]
-            .IsDoctorMandatory
-        ) {
-          this.billingTransaction.BillingTransactionItems[
-            index
-          ].UpdateValidator("on", "PerformerId", "required");
+        if (this.BillingTransaction.BillingTransactionItems[index] && this.BillingTransaction.BillingTransactionItems[index].IsDoctorMandatory) {
+          this.BillingTransaction.BillingTransactionItems[index].UpdateValidator("on", "PerformerId", "required");
         } else {
-          this.billingTransaction.BillingTransactionItems[
-            index
-          ].UpdateValidator("off", "PerformerId", null);
+          this.BillingTransaction.BillingTransactionItems[index].UpdateValidator("off", "PerformerId", null);
         }
       }
     } else {
-      let billItems = this.billItems.filter(
-        (a) => a.ServiceDepartmentName != "OPD"
-      );
-      this.billingTransaction.BillingTransactionItems[index].ItemList =
-        billItems;
+      let billItems = this.BillItems.filter((a) => a.ServiceDepartmentName !== "OPD");
+      this.BillingTransaction.BillingTransactionItems[index].ItemList = billItems;
     }
   }
 
   //end: autocomplete assign functions  and item filter logic
 
-  ResetAllRowData() {
+  ResetAllRowData(): void {
     //this.showIpBillRequest = false;
-    this.selectedItems = [];
-    this.selectedAssignedToDr = [];
-    this.selectedServDepts = [];
-    this.selectedRequestedByDr = [];
-    this.visitList = [];
-    this.billingTransaction = new BillingTransaction();
+    this.SelectedItems = [];
+    this.SelectedAssignedToDr = [];
+    this.SelectedServiceDepartment = [];
+    this.SelectedRequestedByDr = [];
+    this.VisitList = [];
+    this.BillingTransaction = new BillingTransaction();
     this.AddNewBillTxnItemRow();
   }
 
   //----start: add/delete rows-----
-  ResetSelectedRow(index) {
-    this.selectedItems[index] = null;
-    this.selectedAssignedToDr[index] = null;
-    this.billingTransaction.BillingTransactionItems[index] =
-      this.NewBillingTransactionItem();
+  ResetSelectedRow(index): void {
+    this.SelectedItems[index] = null;
+    this.SelectedAssignedToDr[index] = null;
+    this.BillingTransaction.BillingTransactionItems[index] = this.NewBillingTransactionItem();
   }
 
-  AddNewBillTxnItemRow(index = null) {
+  AddNewBillTxnItemRow(index = null): void {
     //method to add the row
     let billItem = this.NewBillingTransactionItem();
     billItem.EnableControl("Price", false);
-    this.billingTransaction.BillingTransactionItems.push(billItem);
+    this.BillingTransaction.BillingTransactionItems.push(billItem);
     if (index != null) {
-      let new_index =
-        this.billingTransaction.BillingTransactionItems.length - 1;
-      this.selectedRequestedByDr[new_index] = this.selectedRequestedByDr[index];
+      let new_index = this.BillingTransaction.BillingTransactionItems.length - 1;
+      this.SelectedRequestedByDr[new_index] = this.SelectedRequestedByDr[index];
       ///this.AssignRequestedByDoctor[new_index];//sud:1May'20-- This is not an array but a function.. corrected below.
       this.AssignRequestedByDoctor(new_index);
       window.setTimeout(function () {
@@ -756,23 +573,19 @@ export class WardBillItemRequestComponent {
   NewBillingTransactionItem(index = null): BillingTransactionItem {
     let billItem = new BillingTransactionItem();
     billItem.Quantity = 1;
-    billItem.ItemList = this.billItems;
+    billItem.ItemList = this.BillItems;
     return billItem;
   }
 
-  deleteRow(index: number) {
-    this.billingTransaction.BillingTransactionItems.splice(index, 1);
-    this.billingTransaction.BillingTransactionItems.slice();
-    this.selectedItems.splice(index, 1);
-    this.selectedItems.slice();
-    if (
-      index == 0 &&
-      this.billingTransaction.BillingTransactionItems.length == 0
-    ) {
+  DeleteRow(index: number): void {
+    this.BillingTransaction.BillingTransactionItems.splice(index, 1);
+    this.BillingTransaction.BillingTransactionItems.slice();
+    this.SelectedItems.splice(index, 1);
+    this.SelectedItems.slice();
+    if (index == 0 && this.BillingTransaction.BillingTransactionItems.length == 0) {
       this.AddNewBillTxnItemRow();
-      this.changeDetectorRef.detectChanges();
+      this._changeDetectorRef.detectChanges();
     }
-
     this.CheckForDoubleEntry();
   }
   //----end: add/delete rows-----
@@ -856,25 +669,26 @@ export class WardBillItemRequestComponent {
     },
   ];
   //returns whether doctor is mandatory for current combination of serv-dept and it's item.
+
   IsDoctorMandatory(serviceDeptName: string, itemName: string): boolean {
     let isDocMandatory = false;
     let dptItmMap = this.srvDeptValidationMap;
     //go inside only when serviceDeptName is provided.
     if (serviceDeptName) {
       //check if provided serviceDeptName is present in our map--default is false.
-      let curMap = dptItmMap.find((s) => s.ServDeptName == serviceDeptName);
+      let curMap = dptItmMap.find((s) => s.ServDeptName === serviceDeptName);
       if (curMap) {
         //check if serviceDeptName is in mandatory map or non-mandatory map.
         if (curMap.IsMandatory) {
           isDocMandatory = true; //default true for Mandatory srv-depts
           //false when provided item is excluded from mandatory service department
-          if (curMap.ExcludedItems.find((itm) => itm == itemName)) {
+          if (curMap.ExcludedItems.find((itm) => itm === itemName)) {
             isDocMandatory = false;
           }
         } else if (curMap.IsMandatory == false) {
           isDocMandatory = false; //default false for NON-Mandatory srv-depts
           //true when provided item is excluded from non-mandatory service department
-          if (curMap.ExcludedItems.find((itm) => itm == itemName)) {
+          if (curMap.ExcludedItems.find((itm) => itm === itemName)) {
             isDocMandatory = true;
           }
         }
@@ -885,28 +699,15 @@ export class WardBillItemRequestComponent {
     return isDocMandatory;
   }
 
-  CheckItemProviderValidation(index: number) {
-    let srvDeptId =
-      this.billingTransaction.BillingTransactionItems[index]
-        .ServiceDepartmentId;
+  CheckItemProviderValidation(index: number): void {
+    let srvDeptId = this.BillingTransaction.BillingTransactionItems[index].ServiceDepartmentId;
     let servDeptName = this.GetServiceDeptNameById(srvDeptId);
     //sud:6Feb'19--we have Use doctormandatory field of database item, not from code.
-    if (
-      this.billingTransaction.BillingTransactionItems[index] &&
-      this.billingTransaction.BillingTransactionItems[index].IsDoctorMandatory
-    ) {
+    if (this.BillingTransaction.BillingTransactionItems[index] && this.BillingTransaction.BillingTransactionItems[index].IsDoctorMandatory) {
       //if (this.IsDoctorMandatory(servDeptName, this.billingTransaction.BillingTransactionItems[index].ItemName)) {
-      this.billingTransaction.BillingTransactionItems[index].UpdateValidator(
-        "on",
-        "PerformerId",
-        "required"
-      );
+      this.BillingTransaction.BillingTransactionItems[index].UpdateValidator("on", "PerformerId", "required");
     } else {
-      this.billingTransaction.BillingTransactionItems[index].UpdateValidator(
-        "off",
-        "PerformerId",
-        null
-      );
+      this.BillingTransaction.BillingTransactionItems[index].UpdateValidator("off", "PerformerId", null);
     }
   }
   //end: mandatory doctor validations
@@ -914,72 +715,65 @@ export class WardBillItemRequestComponent {
   //start: list formatters
 
   ItemsListFormatter(data: any): string {
-    let html: string =
-      data["ServiceDepartmentShortName"] +
-      "-" +
-      data["BillItemPriceId"] +
-      "&nbsp;&nbsp;" +
-      data["ItemName"] +
-      "&nbsp;&nbsp;";
-    html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;";
+    let html: string = "";
+    html = "<font color='blue'; size=03 >" + data["ItemCode"] + "&nbsp;&nbsp;" + ":" + "&nbsp;" + data["ItemName"].toUpperCase() + "</font>" + "&nbsp;&nbsp;";
+    html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + data["Price"] + "</b>";
     return html;
   }
 
   DoctorListFormatter(data: any): string {
     return data["FullName"];
   }
+
   ServiceDeptListFormatter(data: any): string {
     return data["ServiceDepartmentName"];
   }
-  patientListFormatter(data: any): string {
+
+  PatientListFormatter(data: any): string {
     let html = data["ShortName"] + " [ " + data["PatientCode"] + " ]";
     return html;
   }
   //start: list formatters
 
-  Cancel() {
-    this.emitBillItemReq.emit({ action: "close", data: null });
+  Cancel(): void {
+    this.EmitBillItemReq.emit({ action: "close", data: null });
   }
 
-  OnPriceCategoryChange($event) {
-    let billingPropertyName = $event.propertyName;
-    let billingCategoryName = $event.categoryName;
+  // OnPriceCategoryChange($event) {
+  //   let billingPropertyName = $event.propertyName;
+  //   let billingCategoryName = $event.categoryName;
 
-    if (this.billItems != null && this.billItems.length > 0) {
-      this.billItems.forEach((itm) => {
-        itm.Price = itm[billingPropertyName] ? itm[billingPropertyName] : 0;
-        itm.PriceCategory = billingCategoryName;
-      });
-    }
+  //   if (this.billItems != null && this.billItems.length > 0) {
+  //     this.billItems.forEach((itm) => {
+  //       itm.Price = itm[billingPropertyName] ? itm[billingPropertyName] : 0;
+  //       itm.PriceCategory = billingCategoryName;
+  //     });
+  //   }
 
-    if (
-      this.billingTransaction.BillingTransactionItems &&
-      this.billingTransaction.BillingTransactionItems.length > 0
-    ) {
-      this.billingTransaction.BillingTransactionItems.forEach((txnItm) => {
-        let currBillItem = this.billItems.find(
-          (billItem) =>
-            billItem.ItemId == txnItm.ItemId &&
-            billItem.ServiceDepartmentId == txnItm.ServiceDepartmentId
-        );
-        if (currBillItem) {
-          txnItm.Price = currBillItem[billingPropertyName]
-            ? currBillItem[billingPropertyName]
-            : 0;
-          txnItm.PriceCategory = billingCategoryName;
-        }
-      });
-    }
-  }
+  //   if (
+  //     this.billingTransaction.BillingTransactionItems &&
+  //     this.billingTransaction.BillingTransactionItems.length > 0
+  //   ) {
+  //     this.billingTransaction.BillingTransactionItems.forEach((txnItm) => {
+  //       let currBillItem = this.billItems.find(
+  //         (billItem) =>
+  //           billItem.ItemId == txnItm.ItemId &&
+  //           billItem.ServiceDepartmentId == txnItm.ServiceDepartmentId
+  //       );
+  //       if (currBillItem) {
+  //         txnItm.Price = currBillItem[billingPropertyName]
+  //           ? currBillItem[billingPropertyName]
+  //           : 0;
+  //         txnItm.PriceCategory = billingCategoryName;
+  //       }
+  //     });
+  //   }
+  // }
 
-  ResetDoctorListOnItemChange(item, index) {
+  ResetDoctorListOnItemChange(item, index): void {
     if (item) {
       let docArray = null;
-      let currItemPriceCFG = this.billItems.find(
-        (a) =>
-          a.ItemId == item.ItemId &&
-          a.ServiceDepartmentId == item.ServiceDepartmentId
-      );
+      let currItemPriceCFG = this.BillItems.find((a) => a.ServiceItemId === item.ServiceItemId && a.ServiceDepartmentId === item.ServiceDepartmentId);
       if (currItemPriceCFG) {
         let docJsonStr = currItemPriceCFG.DefaultDoctorList;
         if (docJsonStr) {
@@ -987,63 +781,46 @@ export class WardBillItemRequestComponent {
         }
       }
       if (docArray && docArray.length > 1) {
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].AssignedDoctorList = [];
+        this.BillingTransaction.BillingTransactionItems[index].AssignedDoctorList = [];
 
         docArray.forEach((docId) => {
-          let currDoc = this.doctorsList.find((d) => d.EmployeeId == docId);
+          let currDoc = this.DoctorsList.find((d) => d.EmployeeId === docId);
           if (currDoc) {
-            this.selectedAssignedToDr[index] = null;
-            this.billingTransaction.BillingTransactionItems[
-              index
-            ].AssignedDoctorList.push(currDoc);
+            this.SelectedAssignedToDr[index] = null;
+            this.BillingTransaction.BillingTransactionItems[index].AssignedDoctorList.push(currDoc);
           }
         });
-      } else if (docArray && docArray.length == 1) {
-        let currDoc = this.doctorsList.find((d) => d.EmployeeId == docArray[0]);
+      } else if (docArray && docArray.length === 1) {
+        let currDoc = this.DoctorsList.find((d) => d.EmployeeId === docArray[0]);
         if (currDoc) {
-          this.selectedAssignedToDr[index] = currDoc.FullName;
+          this.SelectedAssignedToDr[index] = currDoc.FullName;
           this.AssignSelectedDoctor(index);
         }
       } else {
-        this.selectedAssignedToDr[index] = null;
-        this.billingTransaction.BillingTransactionItems[
-          index
-        ].AssignedDoctorList = this.doctorsList;
+        this.SelectedAssignedToDr[index] = null;
+        this.BillingTransaction.BillingTransactionItems[index].AssignedDoctorList = this.DoctorsList;
       }
     }
   }
 
-  assignDocterlist(row, i) {
-    if (row.ItemId == 0) {
-      this.billingTransaction.BillingTransactionItems[i].AssignedDoctorList =
-        this.doctorsList;
+  AssignDoctorList(row, i): void {
+    if (row.ItemId === 0) {
+      this.BillingTransaction.BillingTransactionItems[i].AssignedDoctorList = this.DoctorsList;
     }
   }
 
   //check double entry of items
-  public BillRequestDoubleEntryWarningTimeHrs: number = 0;
-  public PastTestList: any = [];
-  public PastTestList_ForDuplicate: any = [];
-
-  PastTest($event) {
+  PastTest($event): void {
     this.PastTestList = $event;
   }
 
-  HasDoubleEntryInPast() {
+  HasDoubleEntryInPast(): void {
     if (this.PastTestList && this.PastTestList.length > 0) {
       var currDate = moment().format("YYYY-MM-DD HH:mm:ss");
-      if (
-        this.BillRequestDoubleEntryWarningTimeHrs &&
-        this.BillRequestDoubleEntryWarningTimeHrs != 0
-      ) {
+      if (this.BillRequestDoubleEntryWarningTimeHrs && this.BillRequestDoubleEntryWarningTimeHrs !== 0) {
         this.PastTestList.forEach((a) => {
           //var diff = moment.duration(a.CreatedOn.diff(currDate));
-          if (
-            this.DateDifference(currDate, a.CreatedOn) <
-            this.BillRequestDoubleEntryWarningTimeHrs
-          ) {
+          if (this.DateDifference(currDate, a.CreatedOn) < this.BillRequestDoubleEntryWarningTimeHrs) {
             this.PastTestList_ForDuplicate.push(a);
           }
         });
@@ -1051,14 +828,10 @@ export class WardBillItemRequestComponent {
     }
   }
 
-  CheckForDoubleEntry() {
-    this.billingTransaction.BillingTransactionItems.forEach((itm) => {
+  CheckForDoubleEntry(): void {
+    this.BillingTransaction.BillingTransactionItems.forEach((itm) => {
       if (
-        this.billingTransaction.BillingTransactionItems.filter(
-          (a) =>
-            a.ServiceDepartmentId == itm.ServiceDepartmentId &&
-            a.ItemId == itm.ItemId
-        ).length > 1
+        this.BillingTransaction.BillingTransactionItems.filter((a) => a.ServiceDepartmentId === itm.ServiceDepartmentId && a.ServiceItemId === itm.ServiceItemId).length > 1
       ) {
         itm.IsDoubleEntry_Now = true;
         //this.msgBoxServ.showMessage('warning', ["This item is already entered"]);
@@ -1066,14 +839,7 @@ export class WardBillItemRequestComponent {
         itm.IsDoubleEntry_Now = false;
       }
       this.HasDoubleEntryInPast();
-      if (
-        this.PastTestList_ForDuplicate &&
-        this.PastTestList_ForDuplicate.find(
-          (a) =>
-            a.ServiceDepartmentId == itm.ServiceDepartmentId &&
-            a.ItemId == itm.ItemId
-        )
-      ) {
+      if (this.PastTestList_ForDuplicate && this.PastTestList_ForDuplicate.find((a) => a.ServiceDepartmentId === itm.ServiceDepartmentId && a.ServiceItemId === itm.ServiceItemId)) {
         itm.IsDoubleEntry_Past = true;
         //this.msgBoxServ.showMessage('warning', ["This item is already entered"]);
       } else {
@@ -1082,12 +848,10 @@ export class WardBillItemRequestComponent {
     });
   }
 
-  public DateDifference(currDate, startDate): number {
+  DateDifference(currDate, startDate): number {
     //const diffInMs = Date.parse(currDate) - Date.parse(startDate);
     //const diffInHours = diffInMs / 1000 / 60 / 60;
-
     //return diffInHours;
-
     var diffHrs = moment(currDate, "YYYY/MM/DD HH:mm:ss").diff(
       moment(startDate, "YYYY/MM/DD HH:mm:ss"),
       "hours"
@@ -1095,65 +859,53 @@ export class WardBillItemRequestComponent {
     return diffHrs;
   }
 
-  AddToPastTest() {
-    this.billingTransaction.BillingTransactionItems.forEach((val) => {
-      if (val.BillingTransactionItemId != 0) {
-        this.pastTests.push(val);
+  AddToPastTest(): void {
+    this.BillingTransaction.BillingTransactionItems.forEach((val) => {
+      if (val.BillingTransactionItemId !== 0) {
+        this.PastTests.push(val);
       }
     });
-    this.PastTest(this.pastTests);
+    this.PastTest(this.PastTests);
   }
 
-  public OnLabTypeChange() {
-    this.billingTransaction.BillingTransactionItems.forEach((item) => {
+  OnLabTypeChange(): void {
+    this.BillingTransaction.BillingTransactionItems.forEach((item) => {
       item.LabTypeName = this.LabTypeName;
     });
     this.FilterBillItems(0);
-
     if (this.LabTypeName) {
       if (localStorage.getItem("LabWardBillingSelectedLabTypeName")) {
         localStorage.removeItem("LabWardBillingSelectedLabTypeName");
       }
-      localStorage.setItem(
-        "LabWardBillingSelectedLabTypeName",
-        this.LabTypeName
-      );
+      localStorage.setItem("LabWardBillingSelectedLabTypeName", this.LabTypeName);
     } else {
-      this.msgBoxServ.showMessage("error", ["Please select Lab Type Name."]);
+      this._messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ["Please select Lab Type Name."]);
     }
   }
 
-  SetLabTypeNameInLocalStorage() {
-    let labtypeInStorage = localStorage.getItem("LabWardBillingSelectedLabTypeName");
-
-    if (labtypeInStorage) {
-      if (this.coreService.labTypes.length == 1)
-      {
+  SetLabTypeNameInLocalStorage(): void {
+    let labTypeInStorage = localStorage.getItem("LabWardBillingSelectedLabTypeName");
+    if (labTypeInStorage) {
+      if (this.coreService.labTypes.length === 1) {
         this.LabTypeName = this.coreService.labTypes[0].LabTypeName;
       } else {
-        let selectedLabType = this.coreService.labTypes.find(val => val.LabTypeName == labtypeInStorage);
-        if(selectedLabType){
-          this.LabTypeName = labtypeInStorage;
-        }else {
+        let selectedLabType = this.coreService.labTypes.find(val => val.LabTypeName === labTypeInStorage);
+        if (selectedLabType) {
+          this.LabTypeName = labTypeInStorage;
+        } else {
           localStorage.removeItem("LabWardBillingSelectedLabTypeName");
-          let defaultLabType = this.coreService.labTypes.find(
-            (type) => type.IsDefault == true
-          );
+          let defaultLabType = this.coreService.labTypes.find((type) => type.IsDefault === true);
           if (!defaultLabType) {
             this.LabTypeName = this.coreService.labTypes[0].LabTypeName;
           } else {
             this.LabTypeName = defaultLabType.LabTypeName;
           }
-          localStorage.setItem(
-            "LabWardBillingSelectedLabTypeName",
-            this.LabTypeName
-          );
-          
+          localStorage.setItem("LabWardBillingSelectedLabTypeName", this.LabTypeName);
         }
       }
     } else {
       let defaultLabType = this.coreService.labTypes.find(
-        (type) => type.IsDefault == true
+        (type) => type.IsDefault === true
       );
       if (!defaultLabType && this.coreService.singleLabType) {
         this.LabTypeName = this.coreService.labTypes[0].LabTypeName;

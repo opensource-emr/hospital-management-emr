@@ -1,4 +1,3 @@
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 
 export class IncentiveTransactionItemsVM {
 
@@ -23,4 +22,7 @@ export class IncentiveTransactionItemsVM {
   public AssignedToPercent: number = null;
   public AssignedToAmount: number = null;
   public IsSelected: boolean = false;//only for client side.
+  public ServiceItemId: number = null;
+  public PriceCategoryId: number = null;
+  public PriceCategoryName: string = "";
 }

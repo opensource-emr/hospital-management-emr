@@ -8,6 +8,7 @@ import { GoodsReceiptItems } from "../shared/goods-receipt-item.model";
 import { GoodsReceipt } from "../shared/goods-receipt.model";
 import { InventoryBLService } from "../shared/inventory.bl.service";
 import { InventoryService } from "../shared/inventory.service";
+import { GeneralFieldLabels } from "../../shared/DTOs/general-field-label.dto";
 
 @Component({
   templateUrl: "./goods-receipt-inv-view.html"
@@ -33,6 +34,7 @@ export class GoodsReceiptInvViewComponent implements OnInit {
   loading: boolean;
   verifierDetails: any[] = [];
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(
     public inventoryBLService: InventoryBLService,
     public inventoryService: InventoryService,
@@ -43,6 +45,7 @@ export class GoodsReceiptInvViewComponent implements OnInit {
     this.header = JSON.parse(this.coreservice.Parameters[1].ParameterValue);
     this.GetInventoryBillingHeaderParameter();
     this.checkGRCustomization();
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
   }
   ngOnInit() {
     let receipt = this.coreservice.Parameters.find(lang => lang.ParameterName == 'NepaliReceipt' && lang.ParameterGroupName == 'Common').ParameterValue;

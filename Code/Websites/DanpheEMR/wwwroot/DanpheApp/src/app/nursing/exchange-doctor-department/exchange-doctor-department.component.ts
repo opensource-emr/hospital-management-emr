@@ -11,9 +11,9 @@ import { PatientClinicalInfoModel } from '../../clinical/shared/patient-clinical
 import { CoreService } from '../../core/shared/core.service';
 import { FinalDiagnosisModel } from '../../medical-records/outpatient-list/final-diagnosis/final-diagnosis.model';
 import { MR_BLService } from '../../medical-records/shared/mr.bl.service';
+import { Department } from '../../settings-new/shared/department.model';
 import { MessageboxService } from "../../shared/messagebox/messagebox.service";
 import { ENUM_DanpheHTTPResponses, ENUM_DateTimeFormat, ENUM_MessageBox_Status, ENUM_VisitType } from '../../shared/shared-enums';
-import { NursingDepartment_DTO } from '../shared/dto/nursing-department.dto';
 import { NursingOPDExchangedDoctorDepartment_DTO } from '../shared/dto/nursing-opd-exchanged-doctor-department.dto';
 import { PerformerDetails_DTO } from '../shared/dto/performer-details.dto';
 import { NursingBLService } from "../shared/nursing.bl.service";
@@ -25,65 +25,57 @@ import { NursingBLService } from "../shared/nursing.bl.service";
 export class ExchangeDoctorDepartmentComponent implements OnInit {
 
   @Input('is-exchange-doctor-form')
-  public showChangeDoctor: boolean = false;
+  public ShowChangeDoctor: boolean = false;
   @Input('selected-visit')
-  public selectedVisit: Visit;
+  public SelectedVisit = new Visit();
   @Input("visit")
-  public visit: Visit = new Visit();
+  public Visit = new Visit();
   @Output()
-  public discardInput: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output('nursing-opd-exchange-callback)')
+  public DiscardInput: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output('nursing-opd-exchange-callback')
   NursingOpdExchangeCallback = new EventEmitter<object>();
-  public selectedDiagnosis: ICD10[] = [];
-  public chiefComplaints: Array<PatientClinicalInfoModel> = [];
+  public SelectedDiagnosis: ICD10[] = [];
+  public ChiefComplaints: Array<PatientClinicalInfoModel> = [];
   public FinalDiagnosisList: FinalDiagnosisModel[] = [];
-  public showValidationMessage: boolean = false;
-  public visitDate: string = '';
-  public doctorList: Array<PerformerDetails_DTO> = [];
-  public selectedDoctor: PerformerDetails_DTO = null;
-  public filteredDocList: Array<PerformerDetails_DTO>;
-  public selectedDepartment: any;
-  public departmentList: Array<NursingDepartment_DTO> = [];
-  public departmentId: number;
-  public exchangedDoctorDepartment: NursingOPDExchangedDoctorDepartment_DTO = new NursingOPDExchangedDoctorDepartment_DTO();
-  public selectedDoctorToExchange: NursingOPDExchangedDoctorDepartment_DTO = new NursingOPDExchangedDoctorDepartment_DTO();
-  public providerList: PerformerDetails_DTO[] = [];
+  public ShowValidationMessage: boolean = false;
+  public VisitDate: string = '';
+  public DoctorList: Array<PerformerDetails_DTO> = [];
+  public SelectedDoctor: any;
+  public FilteredDocList: Array<PerformerDetails_DTO> = [];
+  public SelectedDepartment: any;
+  public DepartmentList: Array<Department> = [];
+  public DepartmentId: number;
+  public ExchangedDoctorDepartment = new NursingOPDExchangedDoctorDepartment_DTO();
   public ICD10MainList: ICD10[] = [];
-  public selectedDiagnosisSubscription = new Subscription();
-  public enableDepartmentLevelAppointment: boolean;
-  public showDocMandatory: boolean = false;
+  public SelectedDiagnosisSubscription = new Subscription();
+  public EnableDepartmentLevelAppointment: boolean;
+  public ShowDocMandatory: boolean = false;
   public ExchangedValidator: FormGroup = null;
-  public fromDate: string = '';
-  public toDate: string = '';
-  public opdList: Array<Visit> = new Array<Visit>();
-  public opdListZero: Array<Visit> = new Array<Visit>();
-  public opdListOne: Array<Visit> = new Array<Visit>();
-  public opdFilteredList: Array<Visit> = new Array<Visit>();
-  public isAssignFinalDiagnosisDone: boolean = false;
 
   constructor(
-    public admissionDLService: ADT_DLService,
-    public messageBoxService: MessageboxService,
-    public mrBLService: MR_BLService,
-    public coreService: CoreService,
-    public visitService: VisitService,
-    public visitBLService: VisitBLService,
-    public nursingBLService: NursingBLService
+    private _admissionDLService: ADT_DLService,
+    private _messageBoxService: MessageboxService,
+    private _mrBLService: MR_BLService,
+    private _coreService: CoreService,
+    private _visitService: VisitService,
+    private _visitBLService: VisitBLService,
+    private nursingBLService: NursingBLService
   ) {
+    this.FilteredDocList = [];
     this.GetDepartments();
     this.GetICDList();
     this.GetProviderList();
     this.OnSelectedDiagnosisListChanged();
-    let paramValue = this.coreService.EnableDepartmentLevelAppointment();
+    let paramValue = this._coreService.EnableDepartmentLevelAppointment();
     if (paramValue) {
-      this.enableDepartmentLevelAppointment = false;
-      this.showDocMandatory = false;
+      this.EnableDepartmentLevelAppointment = false;
+      this.ShowDocMandatory = false;
     }
     else {
-      this.enableDepartmentLevelAppointment = true;
-      this.showDocMandatory = true;
+      this.EnableDepartmentLevelAppointment = true;
+      this.ShowDocMandatory = true;
     }
-    var _formBuilder = new FormBuilder();
+    let _formBuilder = new FormBuilder();
 
     this.ExchangedValidator = _formBuilder.group({
       'ExchangedDepartment': [, Validators.required],
@@ -92,38 +84,37 @@ export class ExchangeDoctorDepartmentComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.exchangedDoctorDepartment.PatientVisitId = this.selectedVisit.PatientVisitId;
-    this.visitDate = moment(this.selectedVisit.VisitDate).format(ENUM_DateTimeFormat.Year_Month_Day);
-
+    this.ExchangedDoctorDepartment.PatientVisitId = this.SelectedVisit.PatientVisitId;
+    this.VisitDate = moment(this.SelectedVisit.VisitDate).format(ENUM_DateTimeFormat.Year_Month_Day);
+    this.SetFocusById('txt_ExchangedDepartment');
   }
-  OnSelectedDiagnosisListChanged() {
-    this.selectedDiagnosisSubscription = this.nursingBLService.SelectedDiagnosisList().subscribe(res => {
+  OnSelectedDiagnosisListChanged(): void {
+    this.SelectedDiagnosisSubscription = this.nursingBLService.SelectedDiagnosisList().subscribe(res => {
       if (res) {
         this.OnDiagnosisSelected(res);
       }
     })
   }
-
-  OnDiagnosisSelected(event: any) {
+  OnDiagnosisSelected(event: any): void {
     if (event)
-      this.selectedDiagnosis = event;
+      this.SelectedDiagnosis = event;
   }
-  public GetICDList() {
-    this.mrBLService.GetICDList()
+  GetICDList(): void {
+    this._mrBLService.GetICDList()
       .subscribe(res => {
         if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           this.ICD10MainList = res.Results;
         }
         else {
-          this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ['Failed to get data']);
+          this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ['Failed to get data']);
         }
       },
         err => {
-          this.messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ['Failed to get ICD10.. please check log for detail.']);
+          this._messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ['Failed to get ICD10.. please check log for detail.']);
         });
   }
 
-  myDepartmentListFormatter(data: any): string {
+  DepartmentListFormatter(data: any): string {
     let html = data["DepartmentName"];
     return html;
   }
@@ -133,170 +124,169 @@ export class ExchangeDoctorDepartmentComponent implements OnInit {
     return html;
   }
 
-  FilterDoctorList() {
-    if (this.selectedDoctor != null) {
-      if (typeof (this.selectedDoctor) == 'object') {
-        this.selectedDoctor.PerformerName = "";
-        this.selectedDoctor.PerformerId = 0;
-      }
+  FilterDoctorList(): void {
+    if (this.Visit.DepartmentId) {
+      this.FilteredDocList = this.DoctorList.filter(a => a.DepartmentId === this.Visit.DepartmentId);
     }
     else {
-      this.filteredDocList = this.doctorList;
+      this.FilteredDocList = this.DoctorList;
     }
   }
-  GetDepartments() {
-    this.visitBLService.GetDepartment()
+  GetDepartments(): void {
+    this._visitBLService.GetDepartment()
       .subscribe(res => {
-        if (res.Status == "OK")
-          this.departmentList = res.Results;
-        if (!this.visit.DepartmentId)
-          this.SetFocusById('txtDepartment');
-        else {
-          this.SetFocusById('tender');
-        }
+        if (res.Status === ENUM_DanpheHTTPResponses.OK)
+          this.DepartmentList = res.Results;
       },
         error => {
-          this.messageBoxService.showMessage('error', ['No Departments found']);
+          this._messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ['No Departments found']);
         });
   }
 
-  public AssignSelectedDoctor() {
+  AssignSelectedDoctor(): void {
     let doctor = null;
-
-    if (this.selectedDoctor && this.doctorList && this.doctorList.length) {
-      if (typeof (this.selectedDoctor) == 'string') {
-        doctor = this.doctorList.find(a => a.FullName.toLowerCase() == String(this.selectedDoctor).toLowerCase());
+    if (this.SelectedDoctor && this.DoctorList && this.DoctorList.length) {
+      if (typeof (this.SelectedDoctor) === 'string') {
+        doctor = this.DoctorList.find(a => a.FullName.toLowerCase() == String(this.SelectedDoctor).toLowerCase());
       }
-      else if (typeof (this.selectedDoctor) == 'object' && this.selectedDoctor.EmployeeId > 0)
-        doctor = this.doctorList.find(a => a.EmployeeId == this.selectedDoctor.EmployeeId);
+      else if (typeof (this.SelectedDoctor) === 'object' && this.SelectedDoctor.EmployeeId > 0)
+        doctor = this.DoctorList.find(a => a.EmployeeId === this.SelectedDoctor.EmployeeId);
       if (doctor) {
-        this.departmentId = doctor.DepartmentId;
-        const department = this.departmentList.find(dept => dept.DepartmentId === this.departmentId);
-        this.selectedDepartment = department && department.DepartmentName;
-        this.filteredDocList = this.doctorList.filter(doc => doc.DepartmentId == this.departmentId);
-        this.selectedDoctorToExchange = Object.assign(this.selectedDoctor, doctor);
-        this.visit.PerformerId = doctor.EmployeeId;
-        this.visit.PerformerName = doctor.FullName;
-        this.visit.IsValidSelProvider = true;
-        this.visit.IsValidSelDepartment = true;
-        if (this.selectedDepartment !== null) {
-          this.AssignSelectedDepartment(this.selectedDepartment);
+        this.DepartmentId = doctor.DepartmentId;
+        this.SelectedDepartment = this.DepartmentList.find(dept => dept.DepartmentId === this.DepartmentId);
+        this.FilteredDocList = this.DoctorList.filter(doc => doc.DepartmentId === this.DepartmentId);
+        this.Visit.PerformerId = doctor.EmployeeId;
+        this.Visit.PerformerName = doctor.FullName;
+        this.Visit.IsValidSelProvider = true;
+        this.Visit.IsValidSelDepartment = true;
+        if (this.SelectedDepartment !== null) {
+          this.AssignSelectedDepartment(this.SelectedDepartment);
         }
-        this.visitService.TriggerBillChangedEvent({ ChangeType: "Doctor", SelectedDoctor: this.selectedDoctor });
+        this._visitService.TriggerBillChangedEvent({ ChangeType: "Doctor", SelectedDoctor: this.SelectedDoctor });
       }
       else {
-        this.visit.PerformerId = null;
-        this.visit.PerformerName = null;
-        this.visit.IsValidSelProvider = false;
+        this.Visit.PerformerId = null;
+        this.Visit.PerformerName = null;
+        this.Visit.IsValidSelProvider = false;
       }
     }
     else {
-      this.visit.PerformerId = null;
-      this.visit.PerformerName = null;
-      this.AssignSelectedDepartment(this.selectedDepartment);
+      this.Visit.PerformerId = null;
+      this.Visit.PerformerName = null;
+      this.AssignSelectedDepartment(this.SelectedDepartment);
     }
   }
-  GetProviderList() {
-    this.admissionDLService.GetProviderList().subscribe(
+
+  GetProviderList(): void {
+    this._admissionDLService.GetProviderList().subscribe(
       res => {
         if (res.Status === ENUM_DanpheHTTPResponses.OK) {
-          this.doctorList = res.Results.filter(doctor => doctor.EmployeeId > 0);
-          this.filteredDocList = this.doctorList;
+          this.DoctorList = res.Results.filter(doctor => doctor.EmployeeId > 0);
+          this.FilteredDocList = this.DoctorList;
           this.AssignSelectedDoctor();
         } else {
-          this.messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ['Failed.']);
+          this._messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ['Failed.']);
         }
       },
       err => {
-        this.messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ['Failed.']);
+        this._messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ['Failed.']);
       }
     );
   }
 
-  public AssignSelectedDepartment(selectedDepartment) {
+  AssignSelectedDepartment(selectedDepartment): void {
     let department = null;
-    if (selectedDepartment && this.departmentList && this.departmentList.length) {
+    if (selectedDepartment && this.DepartmentList && this.DepartmentList.length) {
       if (typeof (selectedDepartment) === 'string') {
-        department = this.departmentList.find(a => a.DepartmentName.toLowerCase() === String(selectedDepartment).toLowerCase());
+        department = this.DepartmentList.find(a => a.DepartmentName.toLowerCase() === String(selectedDepartment).toLowerCase());
       }
       else if (typeof (selectedDepartment) === 'object' && selectedDepartment.DepartmentId)
-        department = this.departmentList.find(a => a.DepartmentId === selectedDepartment.DepartmentId);
+        department = this.DepartmentList.find(a => a.DepartmentId === selectedDepartment.DepartmentId);
       if (department) {
-        this.selectedDepartment = Object.assign(selectedDepartment, department);
-        this.departmentId = department.DepartmentId;
-        this.visit.IsValidSelDepartment = true;
-        this.visit.IsValidSelProvider = true;
-        this.visit.DepartmentId = department.DepartmentId;
-        this.visit.DepartmentName = department.DepartmentName;
-        this.visit.DeptRoomNumber = department.RoomNumber;
-        this.FilterDoctorList();
-        let erdeptnameparam = this.coreService.Parameters.find(p => p.ParameterGroupName.toLowerCase() == "common" && p.ParameterName.toLowerCase() == "erdepartmentname");
-        if (erdeptnameparam) {
-          let erdeptname = erdeptnameparam.ParameterValue.toLowerCase();
-          if (department.DepartmentName.toLowerCase() == erdeptname) {
-            this.visit.VisitType = ENUM_VisitType.emergency;// "emergency";
+        this.SelectedDepartment = department.DepartmentName;
+        this.DepartmentId = department.DepartmentId;
+        this.Visit.IsValidSelDepartment = true;
+        this.Visit.IsValidSelProvider = true;
+        this.Visit.DepartmentId = department.DepartmentId;
+        this.Visit.DepartmentName = department.DepartmentName;
+        this.Visit.DeptRoomNumber = department.RoomNumber;
+        if (this.SelectedDoctor && this.SelectedDoctor.DepartmentId !== department.DepartmentId) {
+          this.SelectedDoctor = null;
+        }
+        let erDeptNameParam = this._coreService.Parameters.find(p => p.ParameterGroupName.toLowerCase() === "common" && p.ParameterName.toLowerCase() === "erdepartmentname");
+        if (erDeptNameParam) {
+          let erDeptName = erDeptNameParam.ParameterValue.toLowerCase();
+          if (department.DepartmentName.toLowerCase() == erDeptName) {
+            this.Visit.VisitType = ENUM_VisitType.emergency;// "emergency";
           }
           else {
-            this.visit.VisitType = ENUM_VisitType.outpatient;// "outpatient";
+            this.Visit.VisitType = ENUM_VisitType.outpatient;// "outpatient";
           }
         }
-        this.visitService.TriggerBillChangedEvent({ ChangeType: "Department", SelectedDepartment: this.selectedDepartment });
+        this._visitService.TriggerBillChangedEvent({ ChangeType: "Department", SelectedDepartment: this.SelectedDepartment });
       }
       else {
-        this.visit.IsValidSelDepartment = false;
-        this.visit.IsValidSelProvider = false;
+        this.Visit.IsValidSelDepartment = false;
+        this.Visit.IsValidSelProvider = false;
       }
     }
     else {
-      this.departmentId = 0;
-      this.visit.DepartmentId = 0;
-      this.visit.DepartmentName = null;
-      this.filteredDocList = this.doctorList;
-      this.visitService.TriggerBillChangedEvent({ ChangeType: "Department", SelectedDepartment: this.selectedDepartment });
+      this.DepartmentId = 0;
+      this.Visit.DepartmentId = 0;
+      this.Visit.DepartmentName = null;
+      this.FilteredDocList = this.DoctorList;
+      this._visitService.TriggerBillChangedEvent({ ChangeType: "Department", SelectedDepartment: this.SelectedDepartment });
     }
+    this.FilterDoctorList();
   }
 
-
-  AddExchangedDoctorDepartmentDetails() {
+  AddExchangedDoctorDepartmentDetails(): void {
     this.AssignFinalDiagnosis();
     const exchangeRemarksElement = document.getElementById('id_exchange_remarks') as HTMLTextAreaElement;
     const exchangeRemarksValue = exchangeRemarksElement.value;
     const remarks = exchangeRemarksValue;
     const ExchangedDepartment = this.ExchangedValidator.get('ExchangedDepartment').value;
     const ExchangedDoctor = this.ExchangedValidator.get('ExchangedDoctor').value;
-
     if (ExchangedDepartment === null || ExchangedDoctor === null) {
-      this.showValidationMessage = true;
-      this.messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ['Failed. Some fields are missing']);
+      this.ShowValidationMessage = true;
+      this._messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ['Failed. Some fields are missing']);
       return;
     }
-
-    this.exchangedDoctorDepartment = {
+    this.ExchangedDoctorDepartment = {
       DiagnosisList: this.FinalDiagnosisList,
-      PatientVisitId: this.selectedVisit.PatientVisitId,
-      ExchangedDoctorId: this.selectedDoctor.EmployeeId,
-      ExchangedDepartmentId: this.selectedDepartment.DepartmentId,
-      ExchangedDoctorName: this.selectedDoctor.FullName,
+      PatientVisitId: this.SelectedVisit.PatientVisitId,
+      ExchangedDoctorId: this.SelectedDoctor.EmployeeId,
+      ExchangedDepartmentId: this.Visit.DepartmentId,
+      ExchangedDoctorName: this.SelectedDoctor.FullName,
       ExchangedRemarks: remarks,
     }
     if (this.ExchangedValidator.valid) {
-      this.SaveExchangedDoctorDepartmentDetails();
+      const currentDepartmentId = this.SelectedVisit.DepartmentId;
+      const currentDoctorId = this.SelectedVisit.PerformerId;
+      const exchangedDepartmentId = this.Visit.DepartmentId;
+      const exchangedDoctorId = this.SelectedDoctor.EmployeeId;
+      if (currentDepartmentId === exchangedDepartmentId && currentDoctorId === exchangedDoctorId) {
+        this._messageBoxService.showMessage(ENUM_MessageBox_Status.Notice, ['Select another doctor.']);
+      }
+      else {
+        this.SaveExchangedDoctorDepartmentDetails();
+      }
     }
     else {
-      this.showValidationMessage = true;
-      this.messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ['Failed. Some fields are missing']);
+      this.ShowValidationMessage = true;
+      this._messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ['Failed. Some fields are missing']);
     }
   }
 
-  AssignFinalDiagnosis() {
-    if (this.selectedDiagnosis.length > 0) {
+  AssignFinalDiagnosis(): void {
+    if (this.SelectedDiagnosis.length > 0) {
       this.FinalDiagnosisList = [];
-      this.selectedDiagnosis.forEach(a => {
+      this.SelectedDiagnosis.forEach(a => {
         let temp = this.ICD10MainList.find(b => a.ICD10Code === b.ICD10Code);
         if (temp) {
           let finalDiagnosis: FinalDiagnosisModel = new FinalDiagnosisModel();
-          finalDiagnosis.PatientId = this.selectedVisit.PatientId;
-          finalDiagnosis.PatientVisitId = this.selectedVisit.PatientVisitId;
+          finalDiagnosis.PatientId = this.SelectedVisit.PatientId;
+          finalDiagnosis.PatientVisitId = this.SelectedVisit.PatientVisitId;
           finalDiagnosis.ICD10ID = temp.ICD10ID;
           this.FinalDiagnosisList.push(finalDiagnosis);
         }
@@ -304,63 +294,63 @@ export class ExchangeDoctorDepartmentComponent implements OnInit {
     }
   }
 
-  CloseExchangeDoctorDepartmentPopUp() {
-    this.selectedDiagnosis = []
-    this.exchangedDoctorDepartment = new NursingOPDExchangedDoctorDepartment_DTO();
-    this.selectedDepartment = null;
-    this.selectedDoctor = null;
-    this.NursingOpdExchangeCallback.emit({ action: 'close' });
-    this.showChangeDoctor = false;
+  CloseExchangeDoctorDepartmentPopUp(): void {
+    this.SelectedDiagnosis = []
+    this.ExchangedDoctorDepartment = new NursingOPDExchangedDoctorDepartment_DTO();
+    this.SelectedDepartment = null;
+    this.SelectedDoctor = null;
+    this.ShowChangeDoctor = false;
     this.ExchangedValidator.reset();
     this.ExchangedValidator.updateValueAndValidity();
-    this.showValidationMessage = false;
+    this.ShowValidationMessage = false;
+    this.NursingOpdExchangeCallback.emit({ action: 'close' });
 
   }
 
-  Discard() {
-    this.discardInput.emit(true);
-    this.selectedDiagnosis = [];
-    this.exchangedDoctorDepartment = new NursingOPDExchangedDoctorDepartment_DTO();
-    this.showChangeDoctor = true;
-    this.selectedDepartment = null;
-    this.selectedDoctor = null;
+  Discard(): void {
+    this.DiscardInput.emit(true);
+    this.SelectedDiagnosis = [];
+    this.ExchangedDoctorDepartment = new NursingOPDExchangedDoctorDepartment_DTO();
+    this.ShowChangeDoctor = false;
+    this.SelectedDepartment = null;
+    this.SelectedDoctor = null;
     const exchangedRemarksElement = document.getElementById('id_exchange_remarks') as HTMLTextAreaElement;
     exchangedRemarksElement.value = '';
     this.CloseExchangeDoctorDepartmentPopUp();
   }
 
-  SetFocusById(IdToBeFocused: string) {
+  SetFocusById(IdToBeFocused: string): void {
     window.setTimeout(function () {
       let elemToFocus = document.getElementById(IdToBeFocused)
-      if (elemToFocus != null && elemToFocus != undefined) {
+      if (elemToFocus !== null && elemToFocus !== undefined) {
         elemToFocus.focus();
       }
     }, 100);
   }
-  SaveExchangedDoctorDepartmentDetails() {
+
+  SaveExchangedDoctorDepartmentDetails(): void {
     if (!this.ExchangedValidator.valid) {
-      this.showValidationMessage = true;
+      this.ShowValidationMessage = true;
     } else {
-      this.nursingBLService.UpdateExchangedDoctorDepartmentDetails(this.exchangedDoctorDepartment)
+      this.nursingBLService.UpdateExchangedDoctorDepartmentDetails(this.ExchangedDoctorDepartment)
         .subscribe((res) => {
           if (res.Status === ENUM_DanpheHTTPResponses.OK) {
-            this.selectedDiagnosis = [];
-            this.messageBoxService.showMessage(ENUM_MessageBox_Status.Success, ['Exchanged Successfully']);
+            this.SelectedDiagnosis = [];
+            this._messageBoxService.showMessage(ENUM_MessageBox_Status.Success, ['Exchanged Successfully']);
             this.ExchangedValidator.reset();
-            this.showValidationMessage = false;
-            this.exchangedDoctorDepartment = new NursingOPDExchangedDoctorDepartment_DTO();
-            this.LoadVisitList();
+            this.ShowValidationMessage = false;
+            this.ExchangedDoctorDepartment = new NursingOPDExchangedDoctorDepartment_DTO();
             this.CloseExchangeDoctorDepartmentPopUp();
           }
           else {
-            this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ['Patient already has same visit"']);
+            this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ['Patient already has same visit"']);
           }
         });
     }
   }
 
   IsDirty(fieldName): boolean {
-    if (fieldName == undefined) {
+    if (fieldName === undefined) {
       return this.ExchangedValidator.dirty;
     } else {
       return this.ExchangedValidator.controls[fieldName].dirty;
@@ -373,30 +363,5 @@ export class ExchangeDoctorDepartmentComponent implements OnInit {
     } else {
       return !this.ExchangedValidator.hasError(validator, fieldName);
     }
-  }
-  LoadVisitList() {
-    this.fromDate = moment().format('YYYY-MM-DD');
-    this.toDate = moment().format('YYYY-MM-DD');
-    this.nursingBLService.GetOPDList(this.fromDate, this.toDate)
-      .subscribe(res => {
-        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
-          this.opdList = res.Results;
-          let opdTriaged = [];
-          let opdNotTriaged = [];
-          for (let i = 0; i < res.Results.length; i++) {
-            if (res.Results[i].IsTriaged == 0) {
-              opdNotTriaged.push(res.Results[i]);
-            } else if (res.Results[i].IsTriaged == 1) {
-              opdTriaged.push(res.Results[i]);
-            }
-          }
-          this.opdListZero = opdNotTriaged;
-          this.opdListOne = opdTriaged;
-          this.opdFilteredList = this.opdList;
-        }
-        else {
-          this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ['Failed To Load Data']);
-        }
-      });
   }
 }

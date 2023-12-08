@@ -11,6 +11,7 @@ import { WardInventoryConsumptionModel } from '../../shared/ward-inventory-consu
 import { SecurityService } from '../../../security/shared/security.service';
 import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 import { CoreService } from '../../../core/shared/core.service';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 @Component({
   templateUrl: "./inventory-ward-patient-consumption-list.html"   //"/WardSupplyView/ConsumptionList"
 })
@@ -37,6 +38,8 @@ export class InventoryPatientConsumptionListComponent {
   printDetails: HTMLElement;
   showPrint: boolean;
   remarks: any;
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(
     _http: HttpClient,
     _dlService: DLService,
@@ -49,6 +52,7 @@ export class InventoryPatientConsumptionListComponent {
     this.dlService = _dlService;
     //this.getAllComsumptionListDetails();
     this.CheckForSubstoreActivation();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
   CheckForSubstoreActivation() {
     this.CurrentStoreId = this.securityService.getActiveStore().StoreId;

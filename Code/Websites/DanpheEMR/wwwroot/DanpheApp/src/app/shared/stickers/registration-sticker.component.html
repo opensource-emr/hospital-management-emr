@@ -8,12 +8,12 @@
             <div class="row">
               <div class="col-sm-12">
                 <strong>{{StickerSettingsAndData.VisitStickerData.DepartmentName}}</strong>
-                <span *ngIf="StickerSettingsAndData.VisitStickerData.VisitTypeFormatted">
+                <strong *ngIf="StickerSettingsAndData.VisitStickerData.VisitTypeFormatted">
                   /{{StickerSettingsAndData.VisitStickerData.VisitTypeFormatted}}
-                </span>
-                <span *ngIf="StickerSettingsAndData.VisitStickerData.PerformerName">
+                </strong>
+                <strong *ngIf="StickerSettingsAndData.VisitStickerData.PerformerName">
                   /{{StickerSettingsAndData.VisitStickerData.PerformerName}}
-                </span>
+                </strong>
               </div>
             </div>
             <div>
@@ -28,7 +28,7 @@
             <div>
               <div style="display:inline-block;vertical-align: top;">Patient:&nbsp;
                 <span style="text-transform: uppercase;">
-                  {{StickerSettingsAndData.VisitStickerData.PatientName}}&nbsp;&nbsp;&nbsp;
+                  <strong> {{StickerSettingsAndData.VisitStickerData.PatientName}}</strong>&nbsp;&nbsp;&nbsp;
                   {{StickerSettingsAndData.VisitStickerData.DateOfBirth | DanpheDateTime:'age'}}
                   /{{StickerSettingsAndData.VisitStickerData.Gender | slice:0:1}}
                 </span>
@@ -89,6 +89,7 @@
               <span style="float:right;padding-right: 20px;" *ngIf="StickerSettingsAndData.VisitStickerData.VisitDateTime">
                 {{StickerSettingsAndData.RegistrationStickerSettings.VisitDateLabel}}:
                 {{StickerSettingsAndData.VisitStickerData.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                {{StickerSettingsAndData.VisitStickerData.VisitDateTime | nepaliDate:'format':'YYYY-MM-DD'}} 
                 &nbsp;{{ visitTime}}
               </span>
             </div>

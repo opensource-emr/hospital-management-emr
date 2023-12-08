@@ -1,17 +1,12 @@
-import { Injectable, Directive } from '@angular/core';
-import { VisitDLService } from '../../appointments/shared/visit.dl.service';
-import { ImagingDLService } from '../../radiology/shared/imaging.dl.service';
-import { LabsDLService } from '../../labs/shared/labs.dl.service';
-import { BillingDLService } from '../../billing/shared/billing.dl.service';
-import { Employee } from "../../employee/shared/employee.model";
-import { BillingDeposit } from '../../billing/shared/billing-deposit.model';
-import { Visit } from '../../appointments/shared/visit.model';
-import { BillingTransactionItem } from '../../billing/shared/billing-transaction-item.model';
-import * as moment from 'moment/moment';
+import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
-import { CoreService } from "../../core/shared/core.service";
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import * as moment from 'moment/moment';
 import { DischargeSummary } from '../../adt/shared/discharge-summary.model';
+import { BillingDLService } from '../../billing/shared/billing.dl.service';
+import { CoreService } from "../../core/shared/core.service";
+import { LabsDLService } from '../../labs/shared/labs.dl.service';
+import { ImagingDLService } from '../../radiology/shared/imaging.dl.service';
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { DischargeSummaryDLService } from './discharge-summary.dl.service';
 import { PatientCertificate } from './patient-certificate.model';
 
@@ -151,6 +146,25 @@ export class DischargeSummaryBLService {
     return this.dischargeSummaryDLService.UpdateCertificate(patientCertificate)
       .map(res => res)
   }
+  public GetDischargeSummaryTemplates(TemplateTypeName: string) {
+    return this.dischargeSummaryDLService.GetDischargeSummaryTemplates(TemplateTypeName)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+  public LoadTemplateFields(TemplateId: number) {
+    return this.dischargeSummaryDLService.LoadTemplateFields(TemplateId)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+  public LoadTemplate(TemplateId: number) {
+    return this.dischargeSummaryDLService.LoadTemplate(TemplateId)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+
 }
 
 

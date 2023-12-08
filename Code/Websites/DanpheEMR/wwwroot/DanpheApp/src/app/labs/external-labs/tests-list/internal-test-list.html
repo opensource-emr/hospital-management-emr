@@ -1,32 +1,206 @@
+<style>
+  .externalLabReportStatusHeader div[class*="col-"] {
+    height: 100%;
+    min-height: 67px;
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    border: none;
+  }
+</style>
+
+
 <div class="wrapper">
-  <div class="tbl-container">
-    <button *ngIf="showVendorSelectButton" class="btn blue btnvendor" (click)="ShowVendorSelection()"> Choose External Vendor </button>
-    <input class="custom-table-search" [(ngModel)]="searchString" onclick="this.select();" placeholder="Search">
-    <div class="table-responsive">
-      <table class="table table-responsive table-bordered">
-        <thead>
-          <tr class="table-header-bg">
-            <th> Patient </th>
-            <th> TestName </th>
-            <th> Vendor </th>
-            <th> Select </th>
-          </tr>
-        </thead>
-        <tbody>
-          <ng-container *ngFor="let lab of patLabInfoList | searchFilter: searchString | async; let i = index;">
-            <tr [ngClass]="lab.IsSelected ? 'highlightbg':'donthighlight'" (click)="SelectUnselectRow(lab)">
-              <td><label class="margin-0-vr">{{lab.PatientName}}</label></td>
-              <td><label class="margin-0-vr">{{lab.TestName}}</label></td>
-              <td><label class="margin-0-vr">{{lab.VendorName}}</label></td>
-              <td><input id="labitem{{i}}" type="checkbox" [(ngModel)]="lab.IsSelected" (ngModelChange)="CheckForRowSelection()"></td>
-            </tr>
-          </ng-container>
-        </tbody>
-      </table>
+  <div class="row">
+    <div class="col-md-5">
+      <from-to-date-select (on-change)="OnDateRangeChange($event)" [date-settings-name]="'billing-reports'">
+      </from-to-date-select>
+    </div>
+    <div class="col-md-4">
+      <div class="col-md-5">
+        <label>Hospital No :</label>
+      </div>
+      <div class="col-md-7">
+        <input type="text" [(ngModel)]="HospitalNo" class="form-control" placeholder="Enter Hospital Number..."
+               (keyup.enter)="GetAllTestListForExternalLabs()">
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="col-md-5">
+        <label>PatientName :</label>
+      </div>
+      <div class="col-md-7">
+        <input type="text" [(ngModel)]="PatientName" class="form-control" placeholder="Enter Patient Name..."
+               (keyup.enter)="GetAllTestListForExternalLabs()">
+      </div>
     </div>
   </div>
+  <div class="row" style="margin-top: 10px;">
+    <div class="col-md-2">
+      <input class="form-control" [(ngModel)]="searchString" onclick="this.select();" placeholder="Search">
+    </div>
+    <div class="col-md-3">
+      <div class="col-md-4">
+        <label>Vendor :</label>
+      </div>
+      <div class="col-md-8">
+        <select [(ngModel)]="SelectedVendorId" class="form-control" (change)="ClearList()">
+          <option *ngFor="let vendor of VendorList" [ngValue]=vendor.LabVendorId> {{ vendor.VendorName }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="col-md-3">
+        <label>LabTests :</label>
+      </div>
+      <div class="col-md-9">
+        <div class="control-label" *ngIf="LabTestList && LabTestList.length >0">
+          <danphe-multiselect [ddl-data]="LabTestList"
+                              [placeholder-text]="'--Select lab tests--'"
+                              [value-property-name]="'LabTestId'"
+                              [pre-selected]="LabTestList"
+                              (selected-items-list)="AssignTestList($event)"
+                              [display-property-name]="'LabTestName'"
+                              [single-selection]="false">
+          </danphe-multiselect>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="col-md-4">
+        <label>External Lab Status :</label>
+      </div>
+      <div class="col-md-8">
+        <select [(ngModel)]="SelectedExternalLabStatus" (change)="ChangeStatus()" class="form-control">
+          <option *ngFor="let status of ExternalLabStatus" [ngValue]="status"> {{status}}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="row" style="margin-top: 10px;">
+
+    <div class="col-md-12">
+      <div class="form-actions" style="float:right;">
+        <button class="btn green btn-success hidden-print" (click)="Print()" value="Print" title="print page">Print<i
+             class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+        <button class="btn green btn-success hidden-print" (click)="Export()"
+                value="" title="export to excel">Export<i class="fa fa-file-excel-o"
+             style="margin-left:10px;"></i></button>
+      </div>
+
+      <div style="float:right; margin-right:20px;">
+        <button class="btn green btn-success" [disabled]="Loading" (click)="GetAllTestListForExternalLabs()">
+          <i class="fa fa-refresh"></i> Load
+        </button>
+      </div>
+
+      <div style="float:right; margin-right:20px;">
+        <button *ngIf="showVendorSelectButton" class="btn green btn-success" (click)="ShowVendorSelection()">
+          <i class="fa fa-refresh"></i> Change Vendor
+        </button>
+      </div>
+      <div *ngIf="showVendorSelectButton" style="float:right;">
+        <button
+                DanpheConfirmationDialog
+                id="btn_printInvoice1"
+                type="submit"
+                [title]="dispatchConfirmationTitle"
+                [message]="dispatchConfirmationMessage"
+                (confirm)="ConfirmDispatch()"
+                (cancel)="CancelDispatch()" style="font-weight: bold;margin-right: 10px;" class="btn green btn-success"
+                value="" [disabled]="IsDispatch">Dispatch
+        </button>
+      </div>
+      <div *ngIf="ShowReceiveButton" style="float:right;">
+        <button
+                DanpheConfirmationDialog
+                id="btn_printInvoice1"
+                type="submit"
+                [title]="receiveConfirmationTitle"
+                [message]="receiveConfirmationMessage"
+                (confirm)="ConfirmReceive()"
+                (cancel)="CancelReceive()" style="font-weight: bold;margin-right: 10px;" class="btn green btn-success"
+                value="" [disabled]="IsReceive">Receive Report
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+
+
+  <div class="tbl-container" style="margin-top: 10px;">
+    <div id="externalLabReportStatusHeader_id" class="lab-workbook">
+      <div class="table-responsive">
+        <table class="table table-bordered lab-worklist-table">
+          <thead *ngIf="ShowHeader">
+            <tr>
+              <th colspan="9" style="text-align: center;" class="externalLabReportStatusHeader">
+                <div class="row">
+                  <div class="col-md-3 headerDate" style="margin-top: 50px;">
+                    <span class="text-left">From: {{FromDate | nepaliDate:'format':'YYYY-MM-DD'}} BS ({{FromDate}})
+                    </span><span class="text-left">To: {{ToDate | nepaliDate:'format':'YYYY-MM-DD'}} BS ({{ToDate}})
+                    </span>
+                  </div>
+                  <div class="col-md-6 headerHospName" style="width: 50%;">
+                    <span>{{this.ExternalLabReportStatusHeader.hospitalName}}</span>
+                    <span>{{this.ExternalLabReportStatusHeader.address}}</span>
+                    <span> Outsource Lab Test List Report({{SelectedExternalLabStatus}})</span>
+                  </div>
+                  <div class="col-md-3 headerPrintDate" style="margin-top: 50px;">
+                    <span class="text-right"> Printed On: <date-lbl [value]="printDate" [show-time]="true"></date-lbl></span>
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </thead>
+
+          <thead>
+            <tr class="table-header-bg">
+              <th> S.N. </th>
+              <th> Patient Name</th>
+              <th> Hospital No. </th>
+              <th> Test Name </th>
+              <th> Vendor Name </th>
+              <th> Status </th>
+              <th *ngIf="!ReceivedReport" class="no-print">
+                <input style="width: 18px; height: 18px;" id="checkbox" type="checkbox" [(ngModel)]="selectAll"
+                       (change)="selectAllRows()" [disabled]="patLabInfoList.length <=0 || ReceivedReport">
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container
+                          *ngFor="let lab of patLabInfoList | searchFilter: searchString | async | paginate: {id: 'external_testlist_pagination', itemsPerPage: 20, currentPage: Page } ; let i = index;">
+              <tr [ngClass]="lab.IsSelected ? 'highlightbg  ' : 'donthighlight'" (click)="toggleRowSelection(lab)">
+                <td> {{ ((Page-1) * 20) + i + 1 }} </td>
+                <td><label class="margin-0-vr">{{lab.PatientName}}</label></td>
+                <td><label class="margin-0-vr">{{lab.HospitalNo}}</label></td>
+                <td><label class="margin-0-vr">{{lab.TestName}}</label></td>
+                <td><label class="margin-0-vr">{{lab.VendorName}}</label></td>
+                <td><label class="margin-0-vr">{{lab.ExternalLabSampleStatus}}</label></td>
+                <td *ngIf="lab.ExternalLabSampleStatus !=='Report Received'" class="no-print">
+                  <input style="width: 18px; height: 18px;" id="labitem{{i}}" type="checkbox" [(ngModel)]="lab.IsSelected"
+                         (change)="CheckForRowSelection()" [disabled]="lab.ExternalLabSampleStatus ==='Report Received'? true : false">
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <pagination-controls id="external_testlist_pagination" (pageChange)="Page = $event" style="display: flex; float:right;">
+      </pagination-controls>
+    </div>
+  </div>
+
   <div *ngIf="showVendorSelectPopup">
-    <lab-vendor-select *ngIf="showVendorSelectPopup" [reqIdList]="selectedReqList" 
-    (on-save)="OnVendorAssigned($event)" (on-close)="OnVevndorSelectPopupClosed($event)"> </lab-vendor-select>
+    <lab-vendor-select *ngIf="showVendorSelectPopup" [reqIdList]="selectedReqList"
+                       (on-save)="OnVendorAssigned($event)" (on-close)="OnVendorSelectPopupClosed($event)"> </lab-vendor-select>
   </div>
 </div>

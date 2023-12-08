@@ -1,17 +1,16 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import { CoreService } from '../../core/shared/core.service';
-import { EmergencyPatientModel } from '../shared/emergency-patient.model';
-import EmergencyGridColumnSettings from '../shared/emergency-gridcol-settings';
-import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
-import { EmergencyBLService } from '../shared/emergency.bl.service';
-import { Patient } from '../../patients/shared/patient.model';
-import { DanpheHTTPResponse } from '../../shared/common-models';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { PatientService } from '../../patients/shared/patient.service';
-import { VisitService } from '../../appointments/shared/visit.service';
 import * as moment from 'moment';
-
+import { VisitService } from '../../appointments/shared/visit.service';
+import { CoreService } from '../../core/shared/core.service';
+import { PatientService } from '../../patients/shared/patient.service';
+import { DanpheHTTPResponse } from '../../shared/common-models';
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from '../../shared/shared-enums';
+import EmergencyGridColumnSettings from '../shared/emergency-gridcol-settings';
+import { EmergencyPatientModel } from '../shared/emergency-patient.model';
+import { EmergencyBLService } from '../shared/emergency.bl.service';
+import { EmergencyTriagedPatient_DTO } from '../shared/er-triaged-patient-dto';
 
 @Component({
   selector: 'triage-patient-list',
@@ -19,58 +18,56 @@ import * as moment from 'moment';
   styleUrls: ['./triage-pat-list.css']
 })
 
-
 export class ERTriagePatientListComponent {
-  public showOrderPopUp: boolean = false;
-  public showlamaPopUp: boolean = false;
-  public showAdmitPopUp: boolean = false;
-  public showERPatRegistration: boolean = false;
-  public showAssignDoctor: boolean = false;
-  public showAddVitals: boolean = false;
-  public showVitalsList: boolean = true;
-  public visitId: number = null;
-
-  public doctorsList: Array<any> = [];
-  public TriagedERPatients: Array<EmergencyPatientModel> = new Array<EmergencyPatientModel>();
+  public ShowOrderPopUp: boolean = false;
+  public showLamaPopUp: boolean = false;
+  public ShowAdmitPopUp: boolean = false;
+  public ShowERPatRegistration: boolean = false;
+  public ShowAssignDoctor: boolean = false;
+  public ShowAddVitals: boolean = false;
+  public ShowVitalsList: boolean = true;
+  public VisitId: number = null;
+  public DoctorsList: Array<any> = [];
+  public TriagedERPatients = new Array<EmergencyTriagedPatient_DTO>();
   public TriagedERPatientGridCol: Array<any> = null;
-  public selectedTriagedPatientForOrder: EmergencyPatientModel = new EmergencyPatientModel();
-  public selectedPatient: EmergencyPatientModel = new EmergencyPatientModel();
-  public selectedERPatientToEdit: EmergencyPatientModel = new EmergencyPatientModel();
-  public index: number = 0;
-  public action: string = "";
-  public searchString: string = null;
-  public currentDepartmentName: string = null;
-  public globalVisit: any;
-  public globalPatient: any;
-  public caseIdList: Array<number> = new Array<number>();
-  public casesList = [];
-  public allKeys: Array<string>;
-  public showUploadConsent = {
-    "upload_files": false,
-    "remove": false,
-  };
-  public filteredData: any;
+  public SelectedTriagedPatientForOrder = new EmergencyPatientModel();
+  public SelectedPatient = new EmergencyPatientModel();
+  public SelectedERPatientToEdit = new EmergencyPatientModel();
+  public Action: string = "";
+  public SearchString: string = null;
+  public CurrentDepartmentName: string = null;
+  public GlobalVisit: any;
+  public GlobalPatient: any;
+  public CaseIdList = new Array<number>();
+  public CasesList = [];
+  public AllKeys: Array<string>;
+  public ShowUploadConsent = { "upload_files": false, "remove": false };
+  public FilteredData: Array<EmergencyTriagedPatient_DTO>;
 
-  constructor(public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService, public router: Router,
-    public emergencyBLService: EmergencyBLService, public coreService: CoreService, public patientService: PatientService,
-    public visitService: VisitService) {
+  constructor(
+    private _changeDetector: ChangeDetectorRef,
+    private _messageBoxService: MessageboxService,
+    private _router: Router,
+    private _emergencyBLService: EmergencyBLService,
+    private _coreService: CoreService,
+    private _patientService: PatientService,
+    private _visitService: VisitService
+  ) {
     this.TriagedERPatientGridCol = EmergencyGridColumnSettings.TriagedERPatientList;
-    //this.GetERTriagedPatientList();
     this.GetDoctorsList();
   }
 
   ngOnInit() {
-    this.currentDepartmentName = this.coreService.GetERDepartmentName();
-    this.allKeys = Object.keys(this.showUploadConsent);
+    this.CurrentDepartmentName = this._coreService.GetERDepartmentName();
+    this.AllKeys = Object.keys(this.ShowUploadConsent);
   }
 
-
-  public GetDoctorsList() {
-    this.emergencyBLService.GetDoctorsList()
-      .subscribe(res => {
-        if (res.Status == 'OK') {
+  GetDoctorsList(): void {
+    this._emergencyBLService.GetDoctorsList()
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           if (res.Results.length) {
-            this.doctorsList = res.Results;
+            this.DoctorsList = res.Results;
           }
           else {
             console.log(res.ErrorMessage);
@@ -78,176 +75,185 @@ export class ERTriagePatientListComponent {
         }
       },
         err => {
-          this.msgBoxServ.showMessage('Failed', ["unable to get Doctors list.. check log for more details."]);
+          this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["unable to get Doctors list.. check log for more details."]);
           console.log(err.ErrorMessage);
         });
   }
 
-
-  public GetERTriagedPatientList() {
-    var id = this.caseIdList ? this.caseIdList : null;
-    this.emergencyBLService.GetAllTriagedPatients(id[0])
+  GetERTriagedPatientList(): void {
+    let id = this.CaseIdList ? this.CaseIdList : null;
+    this._emergencyBLService.GetAllTriagedPatients(id[0])
       .subscribe((res: DanpheHTTPResponse) => {
-        if (res.Status == "OK") {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+          if (res.Results.length > 0) {
+            res.Results.forEach(element => {
+              let jsonPatientCases = JSON.parse(element.PatientCases);
+              if (jsonPatientCases)
+                element.PatientCases = jsonPatientCases;
+            });
+          }
           this.TriagedERPatients = res.Results;
-          this.filteredData = res.Results;
-          if (this.caseIdList[0] == 6) {
-            this.filterNestedDetails();
+          this.FilteredData = res.Results;
+          if (this.CaseIdList[0] === 6) {
+            this.FilterNestedDetails();
           }
         } else {
-          this.msgBoxServ.showMessage("Failed", ["Cannot Get Triaged Patient List !!"]);
+          this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Cannot Get Triaged Patient List !!"]);
         }
       });
   }
 
   //Closes the Registration PopUp if clicked Outside popup window
-  public ParentOfPopUpClicked($event) {
+  ParentOfPopUpClicked($event): void {
     var currentTarget = $event.currentTarget;
     var target = $event.target;
-    if (target == currentTarget) {
+    if (target === currentTarget) {
       this.CloseAllERPatientPopUp();
     }
   }
 
   //Called each time just before any PopUp Opens
-  public ResetAllAndHideParentBodyScroll() {
-    this.showlamaPopUp = false;
-    this.showOrderPopUp = false;
-    var body = document.getElementsByTagName("body")[0];
+  ResetAllAndHideParentBodyScroll(): void {
+    this.showLamaPopUp = false;
+    this.ShowOrderPopUp = false;
+    let body = document.getElementsByTagName("body")[0];
     body.style.overflow = "hidden";
   }
 
   //Called each time when any of the popUp needs to close or when clicked outside the parent div
-  public CloseAllERPatientPopUp() {
+  CloseAllERPatientPopUp(): void {
     var body = document.getElementsByTagName("body")[0];
     body.style.overflow = "inherit";
-    this.changeDetector.detectChanges();
+    this._changeDetector.detectChanges();
     //Resets Order PopUp
-    this.selectedTriagedPatientForOrder = new EmergencyPatientModel();
-    this.selectedPatient = new EmergencyPatientModel();
-    this.showOrderPopUp = false;
-    this.showlamaPopUp = false;
-    this.showAdmitPopUp = false;
-    this.showERPatRegistration = false;
-    this.showAssignDoctor = false;
-    this.showAddVitals = false;
+    this.SelectedTriagedPatientForOrder = new EmergencyPatientModel();
+    this.SelectedPatient = new EmergencyPatientModel();
+    this.ShowOrderPopUp = false;
+    this.showLamaPopUp = false;
+    this.ShowAdmitPopUp = false;
+    this.ShowERPatRegistration = false;
+    this.ShowAssignDoctor = false;
+    this.ShowAddVitals = false;
   }
 
 
-  public EditPatInfo(selPat: EmergencyPatientModel) {
-    this.selectedERPatientToEdit = new EmergencyPatientModel();
-    this.showERPatRegistration = false;
-    this.changeDetector.detectChanges();
-    this.selectedERPatientToEdit = Object.assign(this.selectedERPatientToEdit, selPat);
-    this.showERPatRegistration = true;
+  EditPatInfo(selPat: EmergencyPatientModel): void {
+    this.SelectedERPatientToEdit = new EmergencyPatientModel();
+    this.ShowERPatRegistration = false;
+    this._changeDetector.detectChanges();
+    this.SelectedERPatientToEdit = Object.assign(this.SelectedERPatientToEdit, selPat);
+    this.ShowERPatRegistration = true;
   }
 
-  public AssignDoctor(selPat: EmergencyPatientModel) {
+  AssignDoctor(selPat: EmergencyPatientModel): void {
     this.ResetAllAndHideParentBodyScroll();
-    this.selectedTriagedPatientForOrder = new EmergencyPatientModel();
-    this.changeDetector.detectChanges();
-    this.selectedERPatientToEdit = Object.assign(this.selectedERPatientToEdit, selPat);
-    if (this.doctorsList.length) {
-      this.showAssignDoctor = true;
+    this.SelectedTriagedPatientForOrder = new EmergencyPatientModel();
+    this._changeDetector.detectChanges();
+    this.SelectedERPatientToEdit = Object.assign(this.SelectedERPatientToEdit, selPat);
+    if (this.DoctorsList.length) {
+      this.ShowAssignDoctor = true;
     } else {
-      this.msgBoxServ.showMessage("Failed", ["Please Try Later"]);
+      this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Please Try Later"]);
     }
   }
 
 
-  public AdmitERPatient(selectedPat: EmergencyPatientModel) {
+  AdmitERPatient(selectedPat: EmergencyPatientModel): void {
     this.ResetAllAndHideParentBodyScroll();
-    this.selectedPatient = new EmergencyPatientModel();
-    this.changeDetector.detectChanges();
-    this.selectedPatient = Object.assign(this.selectedPatient, selectedPat);
-    this.action = "admitted";
-    this.showAdmitPopUp = true;
-  }
-  public DeathCaseOfERPatient(selectedPat: EmergencyPatientModel) {
-    this.ResetAllAndHideParentBodyScroll();
-    this.selectedPatient = new EmergencyPatientModel();
-    this.changeDetector.detectChanges();
-    this.selectedPatient = Object.assign(this.selectedPatient, selectedPat);
-    this.action = "death";
-    this.showlamaPopUp = true;
-  }
-  public TransferERPatient(selectedPat: EmergencyPatientModel) {
-    this.ResetAllAndHideParentBodyScroll();
-    this.selectedPatient = new EmergencyPatientModel();
-    this.changeDetector.detectChanges();
-    this.selectedPatient = Object.assign(this.selectedPatient, selectedPat);
-    this.action = "transferred";
-    this.showlamaPopUp = true;
-  }
-  public DischargeERPatient(selectedPat: EmergencyPatientModel) {
-    this.ResetAllAndHideParentBodyScroll();
-    this.selectedPatient = new EmergencyPatientModel();
-    this.changeDetector.detectChanges();
-    this.selectedPatient = Object.assign(this.selectedPatient, selectedPat);
-    this.action = "discharged";
-    this.showlamaPopUp = true;
+    this.SelectedPatient = new EmergencyPatientModel();
+    this._changeDetector.detectChanges();
+    this.SelectedPatient = Object.assign(this.SelectedPatient, selectedPat);
+    this.Action = "admitted";
+    this.ShowAdmitPopUp = true;
   }
 
-  public LeaveERPatOnMedicalAdvice(selectedPat: EmergencyPatientModel) {
+  DeathCaseOfERPatient(selectedPat: EmergencyPatientModel): void {
     this.ResetAllAndHideParentBodyScroll();
-    this.selectedPatient = new EmergencyPatientModel();
-    this.changeDetector.detectChanges();
-    this.selectedPatient = Object.assign(this.selectedPatient, selectedPat);
-    this.action = "lama";
-    this.showlamaPopUp = true;
+    this.SelectedPatient = new EmergencyPatientModel();
+    this._changeDetector.detectChanges();
+    this.SelectedPatient = Object.assign(this.SelectedPatient, selectedPat);
+    this.Action = "death";
+    this.showLamaPopUp = true;
   }
 
-  public DischargeERPatientOnRequest(selectedPat: EmergencyPatientModel) {
+  TransferERPatient(selectedPat: EmergencyPatientModel): void {
     this.ResetAllAndHideParentBodyScroll();
-    this.selectedPatient = new EmergencyPatientModel();
-    this.changeDetector.detectChanges();
-    this.selectedPatient = Object.assign(this.selectedPatient, selectedPat);
-    this.action = "dor";
-    this.showlamaPopUp = true;
+    this.SelectedPatient = new EmergencyPatientModel();
+    this._changeDetector.detectChanges();
+    this.SelectedPatient = Object.assign(this.SelectedPatient, selectedPat);
+    this.Action = "transferred";
+    this.showLamaPopUp = true;
   }
 
-  public OrderForERPat(selectedPat: EmergencyPatientModel) {
+  DischargeERPatient(selectedPat: EmergencyPatientModel): void {
     this.ResetAllAndHideParentBodyScroll();
-    this.selectedTriagedPatientForOrder = new EmergencyPatientModel();
-    this.changeDetector.detectChanges();
-    this.selectedTriagedPatientForOrder = Object.assign(this.selectedTriagedPatientForOrder, selectedPat);
-    this.showOrderPopUp = true;
+    this.SelectedPatient = new EmergencyPatientModel();
+    this._changeDetector.detectChanges();
+    this.SelectedPatient = Object.assign(this.SelectedPatient, selectedPat);
+    this.Action = "discharged";
+    this.showLamaPopUp = true;
   }
 
-  public UndoTriage(selectedPat: EmergencyPatientModel) {
-    this.selectedTriagedPatientForOrder = new EmergencyPatientModel();
-    this.changeDetector.detectChanges();
-    this.selectedTriagedPatientForOrder = Object.assign(this.selectedTriagedPatientForOrder, selectedPat);
+  LeaveERPatOnMedicalAdvice(selectedPat: EmergencyPatientModel): void {
+    this.ResetAllAndHideParentBodyScroll();
+    this.SelectedPatient = new EmergencyPatientModel();
+    this._changeDetector.detectChanges();
+    this.SelectedPatient = Object.assign(this.SelectedPatient, selectedPat);
+    this.Action = "lama";
+    this.showLamaPopUp = true;
+  }
+
+  DischargeERPatientOnRequest(selectedPat: EmergencyPatientModel): void {
+    this.ResetAllAndHideParentBodyScroll();
+    this.SelectedPatient = new EmergencyPatientModel();
+    this._changeDetector.detectChanges();
+    this.SelectedPatient = Object.assign(this.SelectedPatient, selectedPat);
+    this.Action = "dor";
+    this.showLamaPopUp = true;
+  }
+
+  OrderForERPat(selectedPat: EmergencyPatientModel): void {
+    this.ResetAllAndHideParentBodyScroll();
+    this.SelectedTriagedPatientForOrder = new EmergencyPatientModel();
+    this._changeDetector.detectChanges();
+    this.SelectedTriagedPatientForOrder = Object.assign(this.SelectedTriagedPatientForOrder, selectedPat);
+    this.ShowOrderPopUp = true;
+  }
+
+  UndoTriage(selectedPat: EmergencyPatientModel): void {
+    this.SelectedTriagedPatientForOrder = new EmergencyPatientModel();
+    this._changeDetector.detectChanges();
+    this.SelectedTriagedPatientForOrder = Object.assign(this.SelectedTriagedPatientForOrder, selectedPat);
     var undoTriage = window.confirm("Are You Sure You want to undo this triage ?");
     if (undoTriage) {
-      this.emergencyBLService.UndoTriageOfERPatient(selectedPat)
+      this._emergencyBLService.UndoTriageOfERPatient(selectedPat)
         .subscribe((res: DanpheHTTPResponse) => {
-          if (res.Status == "OK") {
-            let itmIndex = this.TriagedERPatients.findIndex(tst => tst.ERPatientId == selectedPat.ERPatientId);
+          if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+            let itmIndex = this.TriagedERPatients.findIndex(tst => tst.ERPatientId === selectedPat.ERPatientId);
             this.TriagedERPatients.splice(itmIndex, 1);
             this.TriagedERPatients = this.TriagedERPatients.slice();
           } else {
-            this.msgBoxServ.showMessage("Failed", ["Cannot Undo Triag code of a Patient Now."]);
+            this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Cannot Undo Triage code of a Patient Now."]);
           }
         });
     }
   }
 
-  public ReturnFromOrderAndLamaAction($event) {
+  ReturnFromOrderAndLamaAction($event): void {
     this.CloseAllERPatientPopUp();
     if ($event.submit) {
-      if ($event.callBackFrom == 'lama') {
-        let itmIndex = this.TriagedERPatients.findIndex(tst => tst.ERPatientId == $event.ERPatient.ERPatientId);
+      if ($event.callBackFrom === 'lama') {
+        let itmIndex = this.TriagedERPatients.findIndex(tst => tst.ERPatientId === $event.ERPatient.ERPatientId);
         this.TriagedERPatients.splice(itmIndex, 1);
         this.TriagedERPatients = this.TriagedERPatients.slice();
       }
     }
   }
 
-  public ReturnFromPatRegistrationEdit($event) {
+  ReturnFromPatRegistrationEdit($event): void {
     this.CloseAllERPatientPopUp();
     if ($event.submit) {
-      let itmIndex = this.TriagedERPatients.findIndex(tst => tst.ERPatientId == $event.ERPatient.ERPatientId);
+      let itmIndex = this.TriagedERPatients.findIndex(tst => tst.ERPatientId === $event.ERPatient.ERPatientId);
       if (itmIndex >= 0) {
         this.TriagedERPatients.splice(itmIndex, 1, $event.ERPatient);
         this.TriagedERPatients = this.TriagedERPatients.slice();
@@ -257,112 +263,108 @@ export class ERTriagePatientListComponent {
     }
   }
 
-  public ReturnFromAssignDoctor($event) {
+  ReturnFromAssignDoctor($event): void {
     this.CloseAllERPatientPopUp();
     if ($event.submit) {
-      let itmIndex = this.TriagedERPatients.findIndex(tst => tst.ERPatientId == $event.ERPatient.ERPatientId);
+      let itmIndex = this.TriagedERPatients.findIndex(tst => tst.ERPatientId === $event.ERPatient.ERPatientId);
       if (itmIndex >= 0) {
         this.TriagedERPatients[itmIndex].PerformerName = $event.ERPatient.PerformerName;
         this.TriagedERPatients = this.TriagedERPatients.slice();
-      } else {
         this.GetERTriagedPatientList();
       }
     }
   }
 
-  public ReturnFromPatBedReservation($event) {
-    let patId = this.selectedPatient.PatientId;
-    let visitId = this.selectedPatient.PatientVisitId;
+  ReturnFromPatBedReservation($event): void {
+    let patId = this.SelectedPatient.PatientId;
+    let visitId = this.SelectedPatient.PatientVisitId;
     this.CloseAllERPatientPopUp();
     if ($event.submit) {
-      let itmIndex = this.TriagedERPatients.findIndex(tst => tst.PatientId == patId && tst.PatientVisitId == visitId);
+      let itmIndex = this.TriagedERPatients.findIndex(tst => tst.PatientId === patId && tst.PatientVisitId === visitId);
       this.TriagedERPatients.splice(itmIndex, 1);
       this.TriagedERPatients = this.TriagedERPatients.slice();
     }
   }
 
-  public AddVitals(selPat: EmergencyPatientModel) {
+  AddVitals(selPat: EmergencyPatientModel): void {
     this.ResetAllAndHideParentBodyScroll();
-    this.selectedERPatientToEdit = Object.assign(this.selectedERPatientToEdit, selPat);
-    if (this.doctorsList.length) {
-      this.showAddVitals = true;
-      this.visitId = this.selectedERPatientToEdit.PatientVisitId;
+    this.SelectedERPatientToEdit = Object.assign(this.SelectedERPatientToEdit, selPat);
+    if (this.DoctorsList.length) {
+      this.ShowAddVitals = true;
+      this.VisitId = this.SelectedERPatientToEdit.PatientVisitId;
     } else {
-      this.msgBoxServ.showMessage("Failed", ["Please Try Later"]);
+      this._messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Please Try Later"]);
     }
   }
 
-  public ReturnFromAllERPatientActions($event) {
+  ReturnFromAllERPatientActions($event): void {
     this.CloseAllERPatientPopUp();
     if ($event.submit) {
-      //this.GetERTriagedPatientList();
-      this.showAddVitals = false;
+      this.ShowAddVitals = false;
     }
   }
 
-  public GoToPatientOverview(pat) {
+  GoToPatientOverview(pat): void {
     this.SetPatDataToGlobal(pat);
-    this.router.navigate(["/Emergency/PatientOverviewMain"]);
+    this._router.navigate(["/Emergency/PatientOverviewMain"]);
   }
 
-  public SetPatDataToGlobal(data): void {
-    this.globalPatient = this.patientService.CreateNewGlobal();
-    this.globalPatient.PatientId = data.PatientId;
-    this.globalPatient.PatientCode = data.PatientCode;
-    this.globalPatient.ShortName = data.Name;
-    this.globalPatient.DateOfBirth = data.DateOfBirth;
-    this.globalPatient.Gender = data.Gender;
-    this.globalPatient.Age = data.Age;
-    this.globalPatient.Address = data.Address;
-    this.globalPatient.PhoneNumber = data.ContactNo;
-
-
-    this.globalVisit = this.visitService.CreateNewGlobal();
-    this.globalVisit.ERTabName = "triaged";
-    this.globalVisit.PatientVisitId = data.PatientVisitId;
-    this.globalVisit.PatientId = data.PatientId;
-    this.globalVisit.PerformerId = data.PerformerId;
-    this.globalVisit.VisitType = "emergency";
-    this.globalVisit.PerformerName = data.PerformerName;
-    this.globalVisit.VisitDate = moment(data.VisitDateTime).format("YYYY-MM-DD");
-    this.globalVisit.VisitTime = moment(data.VisitDateTime).format("HH:MM");
+  SetPatDataToGlobal(data): void {
+    this.GlobalPatient = this._patientService.CreateNewGlobal();
+    this.GlobalPatient.PatientId = data.PatientId;
+    this.GlobalPatient.PatientCode = data.PatientCode;
+    this.GlobalPatient.ShortName = data.Name;
+    this.GlobalPatient.DateOfBirth = data.DateOfBirth;
+    this.GlobalPatient.Gender = data.Gender;
+    this.GlobalPatient.Age = data.Age;
+    this.GlobalPatient.Address = data.Address;
+    this.GlobalPatient.PhoneNumber = data.ContactNo;
+    this.GlobalVisit = this._visitService.CreateNewGlobal();
+    this.GlobalVisit.ERTabName = "triaged";
+    this.GlobalVisit.PatientVisitId = data.PatientVisitId;
+    this.GlobalVisit.PatientId = data.PatientId;
+    this.GlobalVisit.PerformerId = data.PerformerId;
+    this.GlobalVisit.VisitType = "emergency";
+    this.GlobalVisit.PerformerName = data.PerformerName;
+    this.GlobalVisit.VisitDate = moment(data.VisitDateTime).format("YYYY-MM-DD");
+    this.GlobalVisit.VisitTime = moment(data.VisitDateTime).format("HH:MM");
   }
 
-  PatientCasesOnChange($event) {
-    if ($event.mainDetails && $event.mainDetails != 0) {
-      this.caseIdList = [];
-      this.casesList = [];
-      this.caseIdList.push($event.mainDetails);
+  PatientCasesOnChange($event): void {
+    if ($event.mainDetails && $event.mainDetails !== 0) {
+      this.CaseIdList = [];
+      this.CasesList = [];
+      this.CaseIdList.push($event.mainDetails);
       if ($event.nestedDetails && $event.nestedDetails.length >= 1) {
         $event.nestedDetails.forEach(v => {
-          this.caseIdList.push(v.Id);
-          this.casesList.push(v);
+          this.CaseIdList.push(v.Id);
+          this.CasesList.push(v);
         });
       }
-    }else {
-      this.caseIdList = [];
-      this.caseIdList.push($event.mainDetails)
-  }
+    } else {
+      this.CaseIdList = [];
+      this.CaseIdList.push($event.mainDetails)
+    }
     this.GetERTriagedPatientList();
-
   }
 
-  filterNestedDetails() {
-    this.caseIdList.slice(1);
-    this.filteredData = this.TriagedERPatients.filter(a => this.caseIdList.includes(a.PatientCases.SubCase));
+  FilterNestedDetails(): void {
+    this.CaseIdList.slice(1);
+    this.FilteredData = this.TriagedERPatients.filter(a => this.CaseIdList.includes(a.PatientCases.SubCase));
   }
-  public UploadConsent(selectedPat: EmergencyPatientModel) {
+
+  UploadConsent(selectedPat: EmergencyPatientModel): void {
     this.ResetAllAndHideParentBodyScroll();
-    this.selectedPatient = new EmergencyPatientModel();
-    this.changeDetector.detectChanges();
-    this.selectedPatient = Object.assign(this.selectedPatient, selectedPat);
-    this.action = "consent";
-    this.allKeys.forEach(k => this.showUploadConsent[k] = (k != "upload_files") ? false : true);
+    this.SelectedPatient = new EmergencyPatientModel();
+    this._changeDetector.detectChanges();
+    this.SelectedPatient = Object.assign(this.SelectedPatient, selectedPat);
+    this.Action = "consent";
+    this.AllKeys.forEach(k => this.ShowUploadConsent[k] = (k !== "upload_files") ? false : true);
   }
-  CallBackForClose(event) {
+
+  CallBackForClose(event): void {
     if (event && event.close) {
-      this.allKeys.forEach(k => this.showUploadConsent[k] = false);
-     
+      this.AllKeys.forEach(k => this.ShowUploadConsent[k] = false);
     }
   }
 }

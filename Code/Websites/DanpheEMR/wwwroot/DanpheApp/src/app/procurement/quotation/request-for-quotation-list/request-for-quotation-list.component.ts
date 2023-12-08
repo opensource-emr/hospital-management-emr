@@ -13,6 +13,7 @@ import { QuotationUpLoadFileModel } from '../quotation-upload-file.model';
 import { QuotationBLService } from '../quotation.bl.service';
 import { RequestForQuotationModel } from '../request-for-quotaion.model';
 import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 
 @Component({
   selector: 'app-request-for-quotation-list',
@@ -57,6 +58,8 @@ export class RequestForQuotationListComponent implements OnInit {
   public signature2: '';
   loading: boolean = false;;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(public quotationBLService: QuotationBLService,
     public inventoryService: InventoryService,
     public changeDetectorRef: ChangeDetectorRef,
@@ -70,6 +73,7 @@ export class RequestForQuotationListComponent implements OnInit {
     this.GetInventoryBillingHeaderParameter();
     this.fiscalYearList = this.inventoryService.allFiscalYearList;
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(...[new NepaliDateInGridColumnDetail('RequestedOn', false)]);
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
   ngOnInit() {
     let receipt = this.coreService.Parameters.find(lang => lang.ParameterName == 'NepaliReceipt' && lang.ParameterGroupName == 'Common').ParameterValue;

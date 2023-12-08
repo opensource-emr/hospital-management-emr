@@ -1,9 +1,9 @@
 <div class="popup-static portlet box portlet-fullscreen">
   <div class="portlet-body form">
     <div class="modelbox-div"
-         style="margin-left:20%;margin-right:5%;margin-top:1%;min-height:450px;width:650px; height: auto;"> <i
-         class="btn btn-danger" style="float: right;margin-right:10px;margin-top:10px"
-         (click)="CloseBillRequestSlip()">X</i>
+      style="margin-left:20%;margin-right:5%;margin-top:1%;min-height:450px;width:650px; height: auto;"> <i
+        class="btn btn-danger" style="float: right;margin-right:10px;margin-top:10px"
+        (click)="CloseBillRequestSlip()">X</i>
       <div id="printpage" style="text-align:center;">
         <div class="receipt" style="margin-left: 50px;margin-top: 10px;">
           <billing-header></billing-header>
@@ -70,7 +70,7 @@
             </table>
             <div class="col-md-12 bill-summ-div">
               <div
-                   style="padding: 10px 0px 0px 5px;text-align:left; width:44%;display:inline-block;vertical-align:top;">
+                style="padding: 10px 0px 0px 5px;text-align:left; width:44%;display:inline-block;vertical-align:top;">
                 In Words : {{receipt.TotalAmount | NumberInWords}} <span *ngIf="receipt.TotalAmount !=0">Only</span>
               </div>
               <div style="padding: 0px;width:54%;display:inline-block;">
@@ -107,7 +107,8 @@
             </div>
             <div style="width: 100%;text-align: center;margin-top: 20px;" *ngIf="provSlipFooterParam.ShowFooter">
               <b> {{provSlipFooterParam.EnglishText}} </b>
-
+              <br *ngIf="provSlipFooterParam.VerticalAlign" />
+              <b> {{provSlipFooterParam.NepaliText}} </b>
             </div>
           </div>
         </div>

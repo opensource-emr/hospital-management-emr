@@ -7,6 +7,7 @@ import { OpdServiceItemPrice_DTO } from '../../billing/shared/dto/opd-serviceite
 import { RegistrationScheme_DTO } from '../../billing/shared/dto/registration-scheme.dto';
 import { Visit } from "../shared/visit.model";
 import { Rank_ApfHospital } from '../visit/visit-patient-info.component';
+import { FreeVisitSettings_DTO } from './dto/free-visit-settings.dto';
 
 @Injectable()
 export class VisitService {
@@ -33,6 +34,7 @@ export class VisitService {
 
   // Observable string sources
   public schemeChangedEvent = new Subject<RegistrationScheme_DTO>();
+  public freeVisitSettingsEvent = new Subject<FreeVisitSettings_DTO>();
   public ObserveSchemeChangedEvent(): Observable<RegistrationScheme_DTO> {
     return this.schemeChangedEvent.asObservable();
   }
@@ -47,6 +49,13 @@ export class VisitService {
   }
   public TriggerPatientAgeChangeEvent(age: string) {
     this.patientAgeChangeEvent.next(+age);
+  }
+
+  public ObserveFreeVisitCheckboxChangedEvent(): Observable<FreeVisitSettings_DTO> {
+    return this.freeVisitSettingsEvent.asObservable();
+  }
+  public TriggerFreeVisitCheckboxChangeEvent(freeVisitSettings: FreeVisitSettings_DTO) {
+    this.freeVisitSettingsEvent.next(freeVisitSettings);
   }
 
   //sud: 25June'19-- below contains all common data neeeded in visits.

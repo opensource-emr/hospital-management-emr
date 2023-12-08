@@ -457,11 +457,35 @@
                   *There will be
                   no deposit deduct / deposit return for <b>CREDIT</b> bill.
                 </p>
-                <button class="btn green btn-success" style="float: right;margin-bottom: 10px;" [disabled]="loading"
-                        (click)="ConfirmDischarge()"
-                        rbac-permission='{"name":"btn-ipdbilling-confirmdischarge","actionOnInvalid":"remove"}'>
-                  Discharge
-                </button>
+                <div class="row">
+                  <div class="col-md-6">
+                    <label *ngIf="ShowAllowProvisionalDischargeCheckbox" for="id_provisional_discharge_checkbox"
+                           style="display: flex; align-items: center; padding: 5px;"
+                           rbac-permission='{"name":"billing-provisional-discharge","actionOnInvalid":"remove"}'>
+                      <input type="checkbox" name="checkbox-provisional-discharge" id="id_provisional_discharge_checkbox"
+                             [(ngModel)]="AllowProvisionalDischarge" style="zoom: 1.5;"
+                             rbac-permission='{"name":"billing-provisional-discharge","actionOnInvalid":"remove"}'>
+                      Provisional Discharge?</label>
+                  </div>
+                  <div class="col-md-6">
+                    <button *ngIf="!AllowProvisionalDischarge" class="btn green btn-success" style="float: right;margin-bottom: 10px;"
+                            [disabled]="loading"
+                            (click)="ConfirmDischarge()"
+                            rbac-permission='{"name":"btn-ipdbilling-confirmdischarge","actionOnInvalid":"remove"}'>
+                      Discharge
+                    </button>
+
+                    <button *ngIf="AllowProvisionalDischarge && ShowAllowProvisionalDischargeCheckbox" class="btn green btn-success"
+                            style="float: right;margin-bottom: 10px;"
+                            [disabled]="loading"
+                            (click)="ConfirmProvisionalDischarge()"
+                            rbac-permission='{"name":"btn-ipdbilling-confirmdischarge","actionOnInvalid":"remove"}'>
+                      Provisional Discharge
+                    </button>
+
+                  </div>
+                </div>
+
               </div>
 
             </div>
@@ -498,10 +522,11 @@
             <a class="btn btn-danger del-btn" (click)="CloseRecieptView()">X</a>
             <bil-print-ip-estimation [ipVisitId]="ipVisitId" [patientId]="patientId"
                                      [estimated-dischargeDate]="dischargeDetail.DischargeDate" [estimated-discountPercent]="estimatedDiscountPercent"
-                                     [TotalAmountInUSD]="model.TotalAmountInUSD" [ExchangeRate]="exchangeRate"
+                                     [TotalAmountInUSD]="model.TotalAmountInUSD" [ExchangeRate]="exchangeRate" [IsDischarged]="IsProvisionalDischarge"
+                                     [is-provisional-discharge]="IsProvisionalDischarge"
                                      (closeEstimationBill)="CloseDischargePopUp($event)"
-                                     [DepositBalance]="model.DepositBalance"> </bil-print-ip-estimation>
-
+                                     [DepositBalance]="model.DepositBalance">
+            </bil-print-ip-estimation>
           </div>
         </div>
       </div>
@@ -620,6 +645,97 @@
       </div>
     </div>
   </div>
+
+  <!--START: Provisional Discharge Confirmation-->
+
+  <div class="popup-static portlet box portlet-fullscreen" *ngIf="admissionInfo && ShowProvisionalDischargeConfirmation">
+    <div class="portlet-body form">
+      <div class="modelbox-div" style="margin-left:30%;margin-right:25%;margin-top:2%">
+        <div style="margin:20px;">
+          <div style="text-align: center; color: red;">
+            <h4>Provisional Discharge Confirmation!!!</h4>
+          </div>
+          <table class="table table-striped text-center">
+            <tr>
+              <td><b>{{admissionInfo.PatientName}}</b></td>
+              <td> Inpatient: <b>{{admissionInfo.IpNumber}}</b></td>
+            </tr>
+            <tr>
+              <td>Hospital No: {{admissionInfo.PatientNo}}</td>
+              <td> Age/Sex :{{admissionInfo.DateOfBirth | DanpheDateTime:'age'}} / {{admissionInfo.Gender}} </td>
+            </tr>
+          </table>
+          <div class="text-center">
+            <strong style="text-align:center;color:red">
+              * This will not impact the Sales.
+            </strong><br />
+            <strong style="text-align:center;color:red">
+              * This will not generate Discharge Invoice.
+            </strong><br />
+            <strong style="text-align:center;color:red">
+              * This will Only Release the Bed.
+            </strong><br />
+            <strong style="text-align:center;color:red">
+              * This will not impact the Deposit and User Collection.
+            </strong><br /> <br />
+            <h3><strong style="text-align:center;color:red">Are you sure to discharge this patient?</strong><br /></h3>
+          </div>
+          <hr />
+          <div> </div>
+          <table class="table table-striped">
+            <tr style="font-weight:bold;">
+              <td style="font-size:14px;">Total Amount :</td>
+              <td style="font-size:15px;"><b>{{model.TotalAmount}}</b></td>
+              <td style="font-size:14px;">Deposit Balance :</td>
+              <td style="font-size:15px;"><b>{{model.DepositBalance}}</b></td>
+            </tr>
+            <!-- <tr style="font-weight:bold;">
+              <td style="font-size:14px;" *ngIf="model.ToBePaid">To Be Paid :</td>
+              <td style="font-size:15px;" *ngIf="model.ToBePaid"><b>{{model.ToBePaid}}</b></td>
+              <td style="font-size:14px;" *ngIf="model.ToBeRefund">To Be Refund :</td>
+              <td style="font-size:15px;" *ngIf="model.ToBeRefund"><b>{{model.ToBeRefund}}</b></td>
+            </tr> -->
+          </table>
+          <table class="table">
+            <tr>
+              <td>Admission Date:</td>
+              <td>
+                <b>
+                  <date-lbl [value]="admissionInfo.AdmittedOn" [show-time]="true"></date-lbl>
+                </b>
+              </td>
+            </tr>
+            <tr>
+              <td> Discharge Date :</td>
+              <td>
+                <date-lbl [value]="dischargeDetail.DischargeDate" [show-time]="true"></date-lbl>
+              </td>
+            </tr>
+          </table>
+          <div>
+            Discharge Remarks :
+            <textarea class="form-control" maxlength="100" [(ngModel)]="dischargeDetail.Remarks"
+                      placeholder="Remarks"></textarea>
+          </div>
+          <hr />
+          <div class="text-center">
+            <ng-container *ngIf="allowDischarge">
+              <button type="button" class="btn green btn-success" style="margin-top:5px;" [disabled]="loading"
+                      (click)="PostProvisionalDischarge()">
+                Confirm Provisional Discharge
+              </button>
+            </ng-container>
+            <button type="button" class="btn btn-cancel btn-sm" style="margin-top:5px;" [disabled]="loading"
+                    (click)="ShowProvisionalDischargeConfirmation=false;">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--END: Provisional Discharge Confirmation-->
 
   <edit-bill-item *ngIf="showEditItemsPopup" [itemToEdit]="selItemForEdit" [discountApplicable]="discountApplicable"
                   (on-closed)="CloseItemEditWindow($event)" [DoctorsList]="doctorsList" [current-pat-info]="patientInfo">

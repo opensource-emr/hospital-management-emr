@@ -16,7 +16,6 @@ export default class AccSettingsGridColumnSettings {
         { headerName: "Item Code", field: "ItemCode", width: 100 },
         { headerName: "Item Name", field: "ItemName", width: 120 },
         { headerName: "Main-Ledger", field: "LedgerName", width: 120 },
-        { headerName: "Sub-Ledger", field: "SubLedgerName", width: 120 },
         {
             headerName: "Actions",
             field: "",

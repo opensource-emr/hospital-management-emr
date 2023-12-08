@@ -1,18 +1,17 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import { CoreService } from '../../core/shared/core.service';
-import { EmergencyPatientModel } from '../shared/emergency-patient.model';
-import EmergencyGridColumnSettings from '../shared/emergency-gridcol-settings';
-import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
-import { EmergencyBLService } from '../shared/emergency.bl.service';
-import { Patient } from '../../patients/shared/patient.model';
-import { Visit } from '../../appointments/shared/visit.model';
-import { PatientService } from '../../patients/shared/patient.service';
+import { ChangeDetectorRef, Component } from '@angular/core';
+import { Observable } from 'rxjs/Rx';
 import { VisitService } from '../../appointments/shared/visit.service';
+import { BillingBLService } from '../../billing/shared/billing.bl.service';
+import { CoreService } from '../../core/shared/core.service';
+import { Patient } from '../../patients/shared/patient.model';
+import { PatientService } from '../../patients/shared/patient.service';
 import { PatientsBLService } from '../../patients/shared/patients.bl.service';
 import { Municipality } from '../../shared/address-controls/municipality-model';
-import { BillingBLService } from '../../billing/shared/billing.bl.service';
-import { Observable } from 'rxjs/Rx';
+import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import EmergencyGridColumnSettings from '../shared/emergency-gridcol-settings';
+import { EmergencyPatientModel } from '../shared/emergency-patient.model';
+import { EmergencyBLService } from '../shared/emergency.bl.service';
 
 
 @Component({
@@ -46,12 +45,14 @@ export class ERPatientListComponent {
     public municipalities: Array<Municipality> = [];
     public allKeys: Array<string>;
     public showUploadConsent = {
-        
+
         "upload_files": false,
-       
+
         "remove": false,
-        
-      };
+
+    };
+    public showNewRegistrationEmergency: boolean = false;
+
     constructor(public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService,
         public patientServ: PatientService, public visitServ: VisitService,
         public patientBlService: PatientsBLService,
@@ -59,20 +60,21 @@ export class ERPatientListComponent {
         public billingBLService: BillingBLService) {
         this.ERPatientGridCol = EmergencyGridColumnSettings.ERPatientList;
         this.GetERPatientList();
+        this.GetAddRegistraionEmergencyParameter();
         //this.GetAllExistingPatients();
     }
     ngOnInit() {
         this.allKeys = Object.keys(this.showUploadConsent);
-      }
+    }
 
     public GetERPatientList() {
-        var id = this.caseIdList? this.caseIdList : null;
+        var id = this.caseIdList ? this.caseIdList : null;
         this.emergencyBLService.GetAllERPatients(id[0])
             .subscribe(res => {
                 if (res.Status == "OK") {
                     this.ERPatients = res.Results;
                     this.filteredData = this.ERPatients;
-                    if(this.caseIdList[0] == 6){
+                    if (this.caseIdList[0] == 6) {
                         this.filterNestedDetails();
                     }
                 }
@@ -169,13 +171,13 @@ export class ERPatientListComponent {
                 this.showAddVitals = true;
             }
                 break;
-                case "consent":{
-                    this.HideParentBodyScroll(); 
-                    this.showUploadConsent.upload_files = true;
-                    this.selectedERPatientToEdit = new EmergencyPatientModel();
-                    this.selectedERPatientToEdit = Object.assign(this.selectedERPatientToEdit, event.Data);
-                    this.allKeys.forEach(k => this.showUploadConsent[k] = (k != "upload_files") ? false : true);
-                }
+            case "consent": {
+                this.HideParentBodyScroll();
+                this.showUploadConsent.upload_files = true;
+                this.selectedERPatientToEdit = new EmergencyPatientModel();
+                this.selectedERPatientToEdit = Object.assign(this.selectedERPatientToEdit, event.Data);
+                this.allKeys.forEach(k => this.showUploadConsent[k] = (k != "upload_files") ? false : true);
+            }
             default:
                 break;
         }
@@ -184,8 +186,8 @@ export class ERPatientListComponent {
     public AllPatientSearchAsync = (keyword: any): Observable<any[]> => {
 
         return this.billingBLService.GetPatientsWithVisitsInfo(keyword);
-    
-      }
+
+    }
 
     public AddCurrentExistingPatient() {
         this.selectedERPatientToEdit = new EmergencyPatientModel();
@@ -198,6 +200,7 @@ export class ERPatientListComponent {
         this.selectedERPatientToEdit.MiddleName = this.selectedExistingPatient.MiddleName;
         this.selectedERPatientToEdit.Gender = this.selectedExistingPatient.Gender;
         this.selectedERPatientToEdit.FullName = this.selectedExistingPatient.ShortName;
+        this.selectedERPatientToEdit.EthnicGroup = this.selectedExistingPatient.EthnicGroup;
         this.selectedERPatientToEdit.Address = this.selectedExistingPatient.Address;
         this.selectedERPatientToEdit.Age = this.selectedExistingPatient.Age;
         this.selectedERPatientToEdit.ContactNo = this.selectedExistingPatient.PhoneNumber;
@@ -234,26 +237,37 @@ export class ERPatientListComponent {
                     this.casesList.push(v);
                 });
             }
-        }else {
+        } else {
             this.caseIdList = [];
             this.caseIdList.push($event.mainDetails)
         }
-        this.GetERPatientList();
+        // this.GetERPatientList();
     }
     CallBackForClose(event) {
         if (event && event.close) {
-          this.allKeys.forEach(k => this.showUploadConsent[k] = false);
-         
+            this.allKeys.forEach(k => this.showUploadConsent[k] = false);
+
         }
-      }
+    }
 
     CloseUpload() {
         this.showUploadConsent.upload_files = false;
-        this.allKeys.forEach(k => this.showUploadConsent[k] = false); 
-    }  
+        this.allKeys.forEach(k => this.showUploadConsent[k] = false);
+    }
 
-    filterNestedDetails(){
+    filterNestedDetails() {
         this.caseIdList.slice(1);
         this.filteredData = this.ERPatients.filter(a => this.caseIdList.includes(a.PatientCases.SubCase));
     }
+    //Display Add registration Button 
+    GetAddRegistraionEmergencyParameter() {
+        let btnParam = this.coreService.Parameters.find(p => p.ParameterName == "ShowNewRegistrationInEmergency" && p.ParameterGroupName == "Emergency");
+        if (btnParam != null) {
+            let EmergencyRegistrationParameter = JSON.parse(btnParam.ParameterValue);
+            if (EmergencyRegistrationParameter == true) {
+                this.showNewRegistrationEmergency = true;
+            }
+        }
+    }
+
 }

@@ -203,14 +203,14 @@ export default class LabGridColumnSettings {
 
   public LabTestFinalReportList = [
     { headerName: "Hospital No.", field: "PatientCode", width: 80 },
-    { headerName: "Patient Name", field: "PatientName", width: 140 },
+    { headerName: "Patient Name", field: "PatientName", width: 120 },
     {
       headerName: "Age/Sex",
       field: "",
       width: 60,
       cellRenderer: LabGridColumnSettings.AgeSexRendererPatient,
     },
-    { headerName: "Phone Number", field: "PhoneNumber", width: 100 },
+    { headerName: "Phone Number", field: "PhoneNumber", width: 90 },
     { headerName: "Test Name", field: "LabTestCSV", width: 200 },
     //ashim: 01Sep2018: We're now grouping by sample code only.
     {
@@ -218,8 +218,9 @@ export default class LabGridColumnSettings {
       field: "ReportGeneratedBy",
       width: 120,
     },
-    { headerName: "Requesting Dept.", field: "WardName", width: 80 },
+    { headerName: "Requesting Dept.", field: "WardName", width: 90 },
     { headerName: "Run Num", field: "SampleCodeFormatted", width: 70 },
+    { headerName: "Bar Code", field: "BarCodeNumber", width: 90 },
     {
       headerName: "Is Printed",
       field: "",
@@ -234,7 +235,7 @@ export default class LabGridColumnSettings {
       headerName: "Action",
       field: "",
 
-      width: 150,
+      width: 120,
       cellRenderer: LabGridColumnSettings.BillPaidRenderer,
     },
   ];

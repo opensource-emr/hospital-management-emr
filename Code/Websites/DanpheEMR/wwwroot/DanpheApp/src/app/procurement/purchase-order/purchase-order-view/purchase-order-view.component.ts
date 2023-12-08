@@ -4,6 +4,7 @@ import * as moment from 'moment';
 import { CoreService } from '../../../core/shared/core.service';
 import { EmailService } from '../../../inventory/shared/email.service';
 import { InventoryService } from '../../../inventory/shared/inventory.service';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 import { EmailModel } from '../../../shared/email.model';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { ProcurementBLService } from '../../shared/procurement.bl.service';
@@ -43,7 +44,7 @@ export class PurchaseOrderViewComponent implements OnInit {
   FinanceHeadVerificationDetails: any = null;
   HospitalDirectorVerificationDetails: any = null;
   CEO_DeanVerificationDetails: any = null;
-
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(
     public procBLService: ProcurementBLService,
@@ -53,6 +54,7 @@ export class PurchaseOrderViewComponent implements OnInit {
     public router: Router,
     public emailService: EmailService,
     public coreservice: CoreService) {
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     //this.header = JSON.parse(this.coreservice.Parameters[1].ParameterValue);//sud:3Mar'20-removed unused field.
     this.GetInventoryBillingHeaderParameter();
     this.LoadPurchaseOrderDetails(this.inventoryService.POId);

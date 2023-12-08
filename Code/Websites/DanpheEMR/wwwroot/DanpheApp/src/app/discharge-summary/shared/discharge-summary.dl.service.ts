@@ -1,12 +1,16 @@
-import { Injectable, Directive } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { DischargeDetailBillingVM } from '../../billing/ip-billing/shared/discharge-bill.view.models';
+import { Injectable } from '@angular/core';
+import { DanpheHTTPResponse } from '../../shared/common-models';
 
 @Injectable()
 export class DischargeSummaryDLService {
   public options = {
     headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
   };
+  public optionJson = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+  };
+
   constructor(public http: HttpClient) {
   }
 
@@ -64,7 +68,15 @@ export class DischargeSummaryDLService {
     let data = JSON.stringify(patCertificate);
     return this.http.put<any>("/api/Admission/BirthCertificate", data, this.options);
   }
-
+  public GetDischargeSummaryTemplates(TemplateTypeName: string) {
+    return this.http.get<DanpheHTTPResponse>(`/api/DynamicTemplate/Templates?templateTypeName=${TemplateTypeName}`, this.optionJson);
+  }
+  public LoadTemplateFields(TemplateId: number) {
+    return this.http.get<DanpheHTTPResponse>(`/api/DynamicTemplate/TemplateFields?templateId=${TemplateId}`, this.optionJson)
+  }
+  public LoadTemplate(TemplateId: number) {
+    return this.http.get<DanpheHTTPResponse>(`/api/DynamicTemplate/TemplatePrintHtml?templateId=${TemplateId}`, this.optionJson);
+  }
 }
 
 

@@ -43,7 +43,7 @@ export class Patient {
   public PreviousLastName: string = null;
   public WardName: string = "";
   public WardId: string = "";
-  public BedNo: number = 0;
+  public BedNo: number = null;
   public BedCode: string = null;
   //try to hide the audit trail properties from client models..sudarshan:15July
   public CreatedOn: string = null;
@@ -191,6 +191,11 @@ export class Patient {
   public CareTakerName: string = "";
   public RelationWithCareTaker: string = "";
   public CareTakerContact: string = "";
+  public BedId: number = null;
+  public VisitCode: string = "";
+  public SchemeId: number = null; //! Krishna, 2ndOctober'23, Added this to transfer data to Referral Visit instance
+  public DepartmentName: string = null;
+  public AdmittedDate: string = null;
 
   constructor() {
 
@@ -206,7 +211,7 @@ export class Patient {
       'DateOfBirth': ['', Validators.compose([Validators.required, this.dateValidators]),],
       'Gender': ['', Validators.required],
       'CountrySubDivisionId': ['', Validators.required],
-      //'WardNumber': ['', Validators.required],
+      'WardNumber': ['', Validators.compose([Validators.pattern('^[0-9]{0,2}$')])],
       //sud:20mar'23--Make proper implementation of Municipality validation in all pages (Patient,Registration,Billing,etc) then only apply required validator.
       'Municipality': [''], // ['', Validators.required],
       'Email': ['', Validators.pattern('^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}$')],
@@ -373,7 +378,5 @@ export class Patient {
       if (control.value <= 0)
         return { 'invalidNumber': true };
     }
-
   }
-
 }

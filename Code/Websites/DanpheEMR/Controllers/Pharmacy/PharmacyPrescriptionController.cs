@@ -1,5 +1,7 @@
 ﻿using DanpheEMR.Core.Configuration;
 using DanpheEMR.DalLayer;
+using DanpheEMR.Enums;
+using DanpheEMR.Security;
 using DanpheEMR.ServerModel;
 using DanpheEMR.ServerModel.SSFModels;
 using DanpheEMR.Utilities;
@@ -52,14 +54,10 @@ namespace DanpheEMR.Controllers.Pharmacy
 
         [HttpPost]
         [Route("NewPrescription")]
-        public IActionResult NewPrescription()
+        public IActionResult NewPrescription([FromBody] PHRMPrescriptionModel prescription)
         {
-            //else if (reqType == "postprescription")
-            //{
-            string str = this.ReadPostData();
-            PHRMPrescriptionModel prescriptionData = DanpheJSONConvert.DeserializeObject<PHRMPrescriptionModel>(str);
-
-            Func<object> func = () => AddNewPrescription(prescriptionData);
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>(ENUM_SessionVariables.CurrentUser);
+            Func<object> func = () => AddNewPrescription(prescription, currentUser);
             return InvokeHttpPostFunction<object>(func);
         }
 
@@ -113,28 +111,38 @@ namespace DanpheEMR.Controllers.Pharmacy
                                 eFirstName = emp.FirstName,
                                 eMiddleName = emp.MiddleName,
                                 eLastName = emp.LastName,
-                                ProviderId = pres.CreatedBy,
-
+                                PrescriberId = pres.CreatedBy,
+                                PrescriptionId = pres.PrescriptionId
                             }
                             into t
                             select new
                             {
                                 PatientCode = t.Key.PatientCode,
                                 PatientId = t.Key.PatientId,
+                                PrescriptionId = t.Key.PrescriptionId,
                                 PatientName = t.Key.FirstName + " " + (string.IsNullOrEmpty(t.Key.MiddleName) ? "" : t.Key.MiddleName + " ") + t.Key.LastName,
-                                ProviderId = t.Key.ProviderId,
-                                ProviderFullName = t.Key.eFirstName + " " + (string.IsNullOrEmpty(t.Key.eMiddleName) ? "" : t.Key.eMiddleName + " ") + t.Key.eLastName,
+                                PrescriberId = t.Key.PrescriberId,
+                                PrescriberName = t.Key.eFirstName + " " + (string.IsNullOrEmpty(t.Key.eMiddleName) ? "" : t.Key.eMiddleName + " ") + t.Key.eLastName,
                                 CreatedOn = t.Max(r => r.pres.CreatedOn)
                             }
                             ).OrderByDescending(a => a.CreatedOn).ToList();
             return presList;
         }
 
-        private object AddNewPrescription(PHRMPrescriptionModel prescriptionData)
+        private object AddNewPrescription(PHRMPrescriptionModel prescription, RbacUser currentUser)
         {
-            _phrmDbContext.PHRMPrescription.Add(prescriptionData);
+            prescription.CreatedBy = currentUser.EmployeeId;
+            prescription.CreatedOn = DateTime.Now;
+            prescription.PHRMPrescriptionItems.ForEach(p =>
+            {
+                p.CreatedBy = currentUser.EmployeeId;
+                p.CreatedOn = DateTime.Now;
+            });
+
+
+            _phrmDbContext.PHRMPrescription.Add(prescription);
             _phrmDbContext.SaveChanges();
-            return prescriptionData;
+            return prescription;
         }
 
         private object AddNewPrescriptionItem(List<PHRMPrescriptionItemModel> prescItems)

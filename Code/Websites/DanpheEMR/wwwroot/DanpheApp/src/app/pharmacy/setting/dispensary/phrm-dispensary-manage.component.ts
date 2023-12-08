@@ -1,15 +1,16 @@
-import { Component, ChangeDetectorRef, OnInit, Renderer2 } from "@angular/core";
-import PHRMGridColumns from '../../shared/phrm-grid-columns';
+import { ChangeDetectorRef, Component, OnInit, Renderer2 } from "@angular/core";
+import { Validators } from "@angular/forms";
+import * as moment from "moment";
+import { CoreService } from "../../../core/shared/core.service";
+import { DispensaryService } from "../../../dispensary/shared/dispensary.service";
+import { Permission } from "../../../security/shared/permission.model";
+import { SecurityService } from '../../../security/shared/security.service';
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { SecurityService } from '../../../security/shared/security.service';
-import { DispensaryService } from "../../../dispensary/shared/dispensary.service";
 import { ENUM_DispensaryType } from "../../../shared/shared-enums";
+import PHRMGridColumns from '../../shared/phrm-grid-columns';
 import { PHRMStoreModel } from "../../shared/phrm-store.model";
-import * as moment from "moment";
-import { Permission } from "../../../security/shared/permission.model";
-import { Validators } from "@angular/forms";
-
 @Component({
   templateUrl: "./phrm-dispensary-manage.html"
 
@@ -28,14 +29,20 @@ export class PHRMDispensaryManageComponent implements OnInit {
   public ESCAPE_KEYCODE = 27; //to close the window on click of ESCape.
   showPaymentModesPopUp: boolean = false;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(
     public dispensaryService: DispensaryService,
     public changeDetector: ChangeDetectorRef,
     public securityService: SecurityService,
+
+    public coreservice: CoreService,
     public msgBoxServ: MessageboxService, public renderer2: Renderer2) {
     this.dispensaryGridColumns = PHRMGridColumns.PHRMDispensaryList;
     this.loadDispensaryTypes();
     this.getDispensaryList();
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
+    this.dispensaryGridColumns[5].headerName = `${this.GeneralFieldLabel.PANNo}`;
   }
   ngOnInit() {
     this.globalListenFunc = this.renderer2.listen('document', 'keydown', e => {
@@ -88,7 +95,7 @@ export class PHRMDispensaryManageComponent implements OnInit {
         this.CurrentDispensary.AvailablePaymentModes = this.selectedItem.AvailablePaymentModes;
         this.CurrentDispensary.DefaultPaymentMode = this.selectedItem.DefaultPaymentMode;
         this.checkIfValidationNeededForBillingHeaderInfo();
-        
+
         this.showDispensaryAddPage = true;
         break;
       }
@@ -222,12 +229,12 @@ export class PHRMDispensaryManageComponent implements OnInit {
     this.update = false;
     this.showDispensaryAddPage = false;
   }
-  checkIfValidationNeededForBillingHeaderInfo(){
-    if(this.CurrentDispensary.UseSeparateInvoiceHeader == true){
+  checkIfValidationNeededForBillingHeaderInfo() {
+    if (this.CurrentDispensary.UseSeparateInvoiceHeader == true) {
       this.CurrentDispensary.StoreValidator.get("StoreLabel").setValidators([Validators.required, Validators.maxLength(50)]);
       this.CurrentDispensary.StoreValidator.get("ContactNo").setValidators([Validators.required, Validators.pattern('^[a-zA-Z0-9_@./#)(&+-]+$'), Validators.maxLength(20)]);
     }
-    else{
+    else {
       this.CurrentDispensary.StoreValidator.get("StoreLabel").setValidators(null);
       this.CurrentDispensary.StoreValidator.get("ContactNo").setValidators([Validators.pattern('^[a-zA-Z0-9_@./#)(&+-]+$'), Validators.maxLength(20)]);
     }

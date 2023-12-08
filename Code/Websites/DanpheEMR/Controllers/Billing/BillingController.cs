@@ -9,6 +9,7 @@ using DanpheEMR.Security;
 using DanpheEMR.ServerModel;
 using DanpheEMR.ServerModel.BillingModels;
 using DanpheEMR.Services.Billing.DTO;
+using DanpheEMR.Services.SSF.DTO;
 using DanpheEMR.Utilities;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Mvc;
@@ -38,6 +39,7 @@ namespace DanpheEMR.Controllers
 
         double cacheExpMinutes;//= 5;//this should come from configuration later on.
         bool realTimeRemoteSyncEnabled = false;
+        bool RealTimeSSFClaimBooking = false;
 
         //private int testCount = 1;
 
@@ -51,6 +53,7 @@ namespace DanpheEMR.Controllers
         {
             cacheExpMinutes = _config.Value.CacheExpirationMinutes;
             realTimeRemoteSyncEnabled = _config.Value.RealTimeRemoteSyncEnabled;
+            RealTimeSSFClaimBooking = _config.Value.RealTimeSSFClaimBooking;
             _billingDbContext = new BillingDbContext(connString);
             _radiologyDbContext = new RadiologyDbContext(connString);
             _coreDbContext = new CoreDbContext(connString);
@@ -251,11 +254,13 @@ namespace DanpheEMR.Controllers
             //  {
             Func<object> func = () => (from bill in _billingDbContext.BillingTransactionItems.Include("Patient")
                                        join scheme in _billingDbContext.BillingSchemes on bill.DiscountSchemeId equals scheme.SchemeId
+                                       join visit in _billingDbContext.Visit on bill.PatientVisitId equals visit.PatientVisitId
                                        where bill.BillStatus == ENUM_BillingStatus.provisional // "provisional"
+                                       && bill.IsProvisionalDischarge == false
                                        && (bill.IsInsurance == false || bill.IsInsurance == null)
                                        && (bill.VisitType == ENUM_VisitType.outpatient || bill.VisitType == ENUM_VisitType.emergency)
                                        //couldn't use Patient.ShortName directly since it's not mapped to DB and hence couldn't be used inside LINQ.
-                                       group bill by new { bill.PatientId, bill.Patient.PatientCode, bill.Patient.ShortName, bill.DiscountSchemeId, scheme.SchemeName, bill.Patient.DateOfBirth, bill.Patient.Gender, bill.Patient.PhoneNumber } into p
+                                       group bill by new { bill.PatientId, bill.Patient.PatientCode, bill.Patient.ShortName, bill.DiscountSchemeId, scheme.SchemeName, bill.Patient.DateOfBirth, bill.Patient.Gender, bill.Patient.PhoneNumber, visit.PriceCategoryId } into p
                                        select new
                                        {
                                            PatientId = p.Key.PatientId,
@@ -267,7 +272,8 @@ namespace DanpheEMR.Controllers
                                            LastCreditBillDate = p.Max(a => a.CreatedOn),
                                            TotalCredit = Math.Round(p.Sum(a => a.TotalAmount), 2),
                                            SchemeId = p.Key.DiscountSchemeId,
-                                           SchemeName = p.Key.SchemeName
+                                           SchemeName = p.Key.SchemeName,
+                                           PriceCategoryId = p.Key.PriceCategoryId
                                        }).OrderByDescending(b => b.LastCreditBillDate).ToList();
 
             return InvokeHttpGetFunction<object>(func);
@@ -406,11 +412,11 @@ namespace DanpheEMR.Controllers
                                    from patientSchemeMap in grp.DefaultIfEmpty()
                                    where bill.BillStatus == ENUM_BillingStatus.provisional
                                    && bill.DiscountSchemeId == schemeId
+                                   //&& bill.BillingType== ENUM_BillingType.outpatient
                                    //exclude insurance items if any.
                                    && bill.PatientId == patientId && (bill.IsInsurance == null || bill.IsInsurance == false)
                                    //if provisional receipt number is null then take all, else take specific receipt only by checking both fiscalYrId and ProvReceiptNo.
-                                   && (provReceiptNo == null ||
-                                        (bill.ProvisionalFiscalYearId == fiscalYearId && bill.ProvisionalReceiptNo == provReceiptNo))
+                                   && (bill.ProvisionalFiscalYearId == fiscalYearId && bill.ProvisionalReceiptNo == provReceiptNo)
                                   // we're considering both ER and OPD as same for Provisional hence whenever emergency comes then we're changing it to outpatient.
                                   && (visitType == null || bill.VisitType.Replace("emergency", "outpatient") == visitType)
                                    select new
@@ -659,42 +665,71 @@ namespace DanpheEMR.Controllers
         {
             // else if (reqType != null && reqType.ToLower() == "listprovisionalwisebill")
             //{
-            Func<object> func = () => ((
-                          from pat in _billingDbContext.Patient
-                          join cntrSub in _billingDbContext.CountrySubdivisions
-                                on pat.CountrySubDivisionId equals cntrSub.CountrySubDivisionId
-                          join bill in _billingDbContext.BillingTransactionItems
-                                on pat.PatientId equals bill.PatientId
-                          where bill.BillStatus == ENUM_BillingStatus.provisional
-                          //exclude insurance provisionals
-                          && (bill.IsInsurance == null || bill.IsInsurance == false)
-                          group bill by new
-                          {
-                              bill.PatientId,
-                              pat.PatientCode,
-                              bill.DiscountSchemeId,
-                              pat.ShortName,
-                              pat.PhoneNumber,
-                              pat.DateOfBirth,
-                              pat.Gender,
-                              cntrSub.CountrySubDivisionName,
-                              pat.Address,
-                          } into grp
+            //Func<object> func = () => ((
+            //              from pat in _billingDbContext.Patient
+            //              join cntrSub in _billingDbContext.CountrySubdivisions
+            //                    on pat.CountrySubDivisionId equals cntrSub.CountrySubDivisionId
+            //              join bill in _billingDbContext.BillingTransactionItems
+            //                    on pat.PatientId equals bill.PatientId
+            //              where bill.BillStatus == ENUM_BillingStatus.provisional
+            //              //exclude insurance provisionals
+            //              && (bill.IsInsurance == null || bill.IsInsurance == false)
+            //              group bill by new
+            //              {
+            //                  bill.PatientId,
+            //                  pat.PatientCode,
+            //                  bill.DiscountSchemeId,
+            //                  bill.ProvisionalReceiptNo,
+            //                  pat.ShortName,
+            //                  pat.PhoneNumber,
+            //                  pat.DateOfBirth,
+            //                  pat.Gender,
+            //                  cntrSub.CountrySubDivisionName,
+            //                  pat.Address,
+            //                  bill.ProvisionalFiscalYearId
+            //              } into grp
 
-                          select new
-                          {
-                              PatientId = grp.Key.PatientId,
-                              PatientCode = grp.Key.PatientCode,
-                              PatientName = grp.Key.ShortName,
-                              PhoneNumber = grp.Key.PhoneNumber,
-                              DateOfbirth = grp.Key.DateOfBirth,
-                              Gender = grp.Key.Gender,
-                              CountrySubdivisionName = grp.Key.CountrySubDivisionName,
-                              Address = grp.Key.Address,
-                              LastBillDate = grp.Max(a => a.CreatedOn),
-                              TotalAmount = grp.Sum(a => a.TotalAmount),
-                              SchemeId = grp.Key.DiscountSchemeId
-                          }).OrderByDescending(a => a.LastBillDate).ToList());
+            //              select new
+            //              {
+            //                  PatientId = grp.Key.PatientId,
+            //                  PatientCode = grp.Key.PatientCode,
+            //                  PatientName = grp.Key.ShortName,
+            //                  PhoneNumber = grp.Key.PhoneNumber,
+            //                  DateOfbirth = grp.Key.DateOfBirth,
+            //                  Gender = grp.Key.Gender,
+            //                  CountrySubdivisionName = grp.Key.CountrySubDivisionName,
+            //                  Address = grp.Key.Address,
+            //                  LastBillDate = grp.Max(a => a.CreatedOn),
+            //                  TotalAmount = grp.Sum(a => a.TotalAmount),
+            //                  SchemeId = grp.Key.DiscountSchemeId,
+            //                  ProvisionalFiscalYearId = grp.Key.ProvisionalFiscalYearId,
+            //                  ProvisionalReceiptNo = grp.Key.ProvisionalReceiptNo
+            //              }).OrderByDescending(a => a.LastBillDate).ToList());
+            //return InvokeHttpGetFunction<object>(func);
+
+            Func<object> func = () => (from bill in _billingDbContext.BillingTransactionItems.Include("Patient")
+                                       join scheme in _billingDbContext.BillingSchemes on bill.DiscountSchemeId equals scheme.SchemeId
+                                       join visit in _billingDbContext.Visit on bill.PatientVisitId equals visit.PatientVisitId
+                                       where bill.BillStatus == ENUM_BillingStatus.provisional // "provisional"
+                                       && (bill.IsInsurance == false || bill.IsInsurance == null)
+                                       group bill by new { bill.PatientId, bill.Patient.PatientCode, bill.Patient.ShortName, bill.DiscountSchemeId, scheme.SchemeName, bill.ProvisionalReceiptNo, bill.ProvisionalFiscalYearId, bill.BillingType, bill.Patient.DateOfBirth, bill.Patient.Gender, bill.Patient.PhoneNumber, visit.PriceCategoryId } into p
+                                       select new
+                                       {
+                                           PatientId = p.Key.PatientId,
+                                           PatientCode = p.Key.PatientCode,
+                                           PatientName = p.Key.ShortName,
+                                           PhoneNumber = p.Key.PhoneNumber,
+                                           Gender = p.Key.Gender,
+                                           DateOfBirth = p.Max(a => a.Patient.DateOfBirth),
+                                           LastBillDate = p.Max(a => a.CreatedOn),
+                                           TotalAmount = Math.Round(p.Sum(a => a.TotalAmount), 2),
+                                           SchemeId = p.Key.DiscountSchemeId,
+                                           SchemeName = p.Key.SchemeName,
+                                           PriceCategoryId = p.Key.PriceCategoryId,
+                                           ProvisionalReceiptNo = p.Key.ProvisionalReceiptNo,
+                                           ProvisionalFiscalYearId = p.Key.ProvisionalFiscalYearId
+
+                                       }).OrderByDescending(b => b.LastBillDate).ToList();
             return InvokeHttpGetFunction<object>(func);
         }
 
@@ -4987,6 +5022,17 @@ namespace DanpheEMR.Controllers
             return InvokeHttpPutFunction<string>(func);
         }
 
+        [HttpPut]
+        [Route("UpdateProvisionalBillingTxnItems")]
+        public ActionResult PutProvisionalBillingTxnItems()
+        {
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>(ENUM_SessionVariables.CurrentUser);
+            string ipDataString = this.ReadPostData();
+
+            Func<string> func = () => UpdateProvisionalBillingTxnItems(ipDataString, currentUser);
+            return InvokeHttpPutFunction(func);
+        }
+
 
 
         //[HttpPut]
@@ -5467,7 +5513,7 @@ namespace DanpheEMR.Controllers
             }
 
             //for this request type, patientid comes as inputid.
-            var patCreditItems = (from bill in _billingDbContext.BillingTransactionItems.Include("ServiceDepartment")
+            var patientProvisionalItems = (from bill in _billingDbContext.BillingTransactionItems.Include("ServiceDepartment")
                                   join priceCatServItm in _billingDbContext.BillItemsPriceCategoryMaps
                                   on new { serviceItemId = bill.ServiceItemId, priceCategoryId = bill.PriceCategoryId } equals new { serviceItemId = priceCatServItm.ServiceItemId, priceCategoryId = priceCatServItm.PriceCategoryId }
                                   where bill.BillStatus == ENUM_BillingStatus.provisional && (bill.BillingType == "outpatient" || bill.BillingType == "emergency") // "provisional" 
@@ -5539,10 +5585,10 @@ namespace DanpheEMR.Controllers
                                       ReferredById = bill.ReferredById,
                                       DischargeStatementId = bill.DischargeStatementId,
                                       IsPriceChangeAllowed = priceCatServItm.IsPriceChangeAllowed
-                                  }).ToList().OrderBy(b => b.ServiceDepartmentId);
+                                  }).ToList().OrderBy(b => b.BillingTransactionItemId);
 
             //clear patient object from Items, not needed since we're returning patient object separately
-            if (patCreditItems != null)
+            if (patientProvisionalItems != null)
             {
 
                 var allEmployees = (from emp in _billingDbContext.Employee
@@ -5561,7 +5607,7 @@ namespace DanpheEMR.Controllers
 
                 //remove relational property of BillingTransactionItem//sud: 12May'18
                 //assign requesting department and user for each provisional items.. -- sud: 25Sept'18
-                foreach (var item in patCreditItems)
+                foreach (var item in patientProvisionalItems)
                 {
                     //item.ProvFiscalYear = "2075 / 76";
                     item.ProvFiscalYear = fiscYear.FiscalYearFormatted;
@@ -5581,7 +5627,7 @@ namespace DanpheEMR.Controllers
             var patCreditDetails = new
             {
                 Patient = currPatient,
-                CreditItems = patCreditItems.OrderBy(itm => itm.CreatedOn).ToList()
+                ProvisionalItems = patientProvisionalItems.OrderBy(itm => itm.CreatedOn).ToList()
             };
             return patCreditDetails;
         }
@@ -7055,6 +7101,16 @@ namespace DanpheEMR.Controllers
                 {
                     try
                     {
+                        var admissionDetail = _billingDbContext.Admissions.FirstOrDefault(adm => adm.PatientVisitId == billTransaction.PatientVisitId);
+                        if(admissionDetail != null && admissionDetail.IsProvisionalDischarge == true && admissionDetail.IsProvisionalDischargeCleared == false)
+                        {
+                            admissionDetail.ModifiedBy = currentUser.EmployeeId;
+                            admissionDetail.ModifiedOn = DateTime.Now;
+                            admissionDetail.IsProvisionalDischargeCleared = true;
+
+                            _billingDbContext.Entry(admissionDetail).State = EntityState.Modified;
+                            _billingDbContext.SaveChanges();
+                        }
                         billTransaction = BillingTransactionBL.PostBillingTransaction(_billingDbContext, connString, null, billTransaction, currentUser, DateTime.Now);
 
                         //Billing User should be assigned from the server side avoiding assigning from client side 
@@ -7857,6 +7913,9 @@ namespace DanpheEMR.Controllers
             DataTable dtPhrmInvItems = dsPrintData.Tables[4];
             DataTable dtLabReportInfo = dsPrintData.Tables[5];
             DataTable dtRadiologyReportInfo = dsPrintData.Tables[6];
+            DataTable dtBillingInvoiceReturns = dsPrintData.Tables[7];
+            DataTable dtPharmacyInvoiceReturns = dsPrintData.Tables[8];
+
 
             //group them in a new anonymous object and send to client.
             var printInfoToReturn = new
@@ -7867,7 +7926,9 @@ namespace DanpheEMR.Controllers
                 PhrmInvoices = dtPhrmInvoice,
                 PhrmInvoiceItems = dtPhrmInvItems,
                 LabReportInfo = dtLabReportInfo,
-                RadiologyReportInfo = dtRadiologyReportInfo
+                RadiologyReportInfo = dtRadiologyReportInfo,
+                BillingInvoiceReturns = dtBillingInvoiceReturns,
+                PharmacyInvoiceReturns = dtPharmacyInvoiceReturns
             };
             return printInfoToReturn;
         }
@@ -8161,6 +8222,29 @@ namespace DanpheEMR.Controllers
                     // BillingBL.SyncBillToRemoteServer(billTransaction, "sales", billingDbContext);
                     Task.Run(() => BillingBL.SyncBillToRemoteServer(billingTransactionModel, "sales", billingDbContext));
                 }
+
+                //Send to SSF Server for Real time ClaimBooking.
+                var patientSchemes = billingDbContext.PatientSchemeMaps.Where(a => a.SchemeId == billingTransactionModel.SchemeId && a.PatientId == billingTransactionModel.PatientId).FirstOrDefault();
+                if (patientSchemes != null)
+                {
+                    int priceCategoryId = billingTransactionModel.BillingTransactionItems[0].PriceCategoryId;
+                    var priceCategory = billingDbContext.PriceCategoryModels.Where(a => a.PriceCategoryId == priceCategoryId).FirstOrDefault();
+                    if (priceCategory != null && priceCategory.PriceCategoryName.ToLower() == "ssf" && RealTimeSSFClaimBooking)
+                    {
+                        //making parallel thread call (asynchronous) to post to SSF Server. so that it won't stop the normal BillingFlow.
+                        SSFDbContext ssfDbContext = new SSFDbContext(connString);
+                        var billObj = new SSF_ClaimBookingBillDetail_DTO()
+                        {
+                            InvoiceNoFormatted = $"BL{billingTransactionModel.InvoiceNo}",
+                            TotalAmount = (decimal)billingTransactionModel.TotalAmount,
+                            ClaimCode = (long)billingTransactionModel.ClaimCode
+                        };
+
+                        SSF_ClaimBookingService_DTO claimBooking = SSF_ClaimBookingService_DTO.GetMappedToBookClaim(billObj, patientSchemes);
+
+                        Task.Run(() => BillingBL.SyncToSSFServer(claimBooking, "billing", ssfDbContext, patientSchemes, currentUser));
+                    }
+                }
                 return billingTransactionModel;
             }
             catch (Exception ex)
@@ -8400,6 +8484,22 @@ namespace DanpheEMR.Controllers
 
         }
 
+        #endregion
+
+        #region This method will update the Provisional Items
+        private string UpdateProvisionalBillingTxnItems(string ipDataString, RbacUser currentUser)
+        {
+            List<BillingTransactionItemModel> txnItems = DanpheJSONConvert.DeserializeObject<List<BillingTransactionItemModel>>(ipDataString);
+            if (txnItems != null)
+            {
+                BillingTransactionBL.UpdateProvisionalBillingTransactionItems(_billingDbContext, txnItems, currentUser);
+                return "Provisional items updated successfully.";
+            }
+            else
+            {
+                return "Provisional items Not found to update.";
+            }
+        } 
         #endregion
     }
 

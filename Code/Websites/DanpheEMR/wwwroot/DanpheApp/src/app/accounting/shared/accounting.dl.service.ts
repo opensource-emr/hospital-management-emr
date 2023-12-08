@@ -295,8 +295,8 @@ export class AccountingDLService {
     //END: PUT
 
     //post payment to accounting Payment table
-    public PostPayment(data: string, Transactiondata: string) {
-        return this.http.post<any>("/api/Accounting/Payment?transactionObj=" + Transactiondata, data);
+    public PostPayment(makePayment) {
+        return this.http.post<any>("/api/Accounting/Payment", makePayment, this.optionJson);
     }
 
     public VerifyVoucher(voucherData: VoucherVerify_DTO) {

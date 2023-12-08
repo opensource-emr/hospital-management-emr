@@ -1,19 +1,18 @@
-﻿import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+﻿import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { AdmissionStickerViewModel } from './admission-sticker.model';
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import { CommonFunctions } from "../../shared/common.functions";
-import { CoreService } from "../../core/shared/core.service";
-import { NepaliCalendarService } from '../../shared/calendar/np/nepali-calendar.service';
-import { BillingDeposit } from '../../billing/shared/billing-deposit.model';
+import * as moment from 'moment/moment';
 import { Observable } from 'rxjs/Observable';
 import { Subscription } from 'rxjs/Subscription';
-import * as moment from 'moment/moment';
-import { BillingTransaction } from "../../billing/shared/billing-transaction.model";
-import { PrinterSettingsModel, ENUM_PrintingType } from "../../settings-new/printers/printer-settings.model";
+import { CoreService } from "../../core/shared/core.service";
+import { ENUM_PrintingType, PrinterSettingsModel } from "../../settings-new/printers/printer-settings.model";
+import { GeneralFieldLabels } from "../../shared/DTOs/general-field-label.dto";
+import { NepaliCalendarService } from '../../shared/calendar/np/nepali-calendar.service';
+import { CommonFunctions } from "../../shared/common.functions";
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { ENUM_Country, ENUM_DanpheHTTPResponseText, ENUM_MembershipTypeName, ENUM_PriceCategory } from "../../shared/shared-enums";
+import { AdmissionStickerViewModel } from './admission-sticker.model';
 @Component({
     selector: 'admission-sticker',
     templateUrl: "./admission-sticker.html",
@@ -62,6 +61,8 @@ export class AdmissionPrintStickerComponent {
     public showMunicipality: boolean;
     public SSFPriceCategoryName: string = (ENUM_PriceCategory.SSF).toUpperCase();
     public ECHSMembershipTypeName: string = ENUM_MembershipTypeName.ECHS;
+    public GeneralFieldLabel = new GeneralFieldLabels();
+
     constructor(
         public http: HttpClient,
         public msgBoxServ: MessageboxService,
@@ -69,6 +70,8 @@ export class AdmissionPrintStickerComponent {
         public nepaliCalendarServ: NepaliCalendarService,
         public coreService: CoreService,
         public changeDetector: ChangeDetectorRef) {
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
         this.showHidePrintButton();
 
         this.printerName = localStorage.getItem('Danphe_ADT_Default_PrinterName');
@@ -173,7 +176,7 @@ Address: `+ this.stickerDetail.Address;
             documentContent += '<link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css"/>';
             /// documentContent += '<link rel="stylesheet" type="text/css" href="../../../assets/global/plugins/bootstrap/css/bootstrap.min.css"/>';
             documentContent += '</head>';
-            documentContent += '<body>' + printContents + '</body></html>'
+            documentContent += '<body>' + printContents + '</body></html>';
             popupWinindow.document.write(documentContent);
             let tmr = setTimeout(function () {
                 popupWinindow.print();
@@ -192,15 +195,15 @@ Address: `+ this.stickerDetail.Address;
         finalDataToPrint = finalDataToPrint + "DOA:" + moment(this.stickerDetail.AdmissionDate).format('YYYY-MM-DD HH:mm') + '(' + this.localDateTime + ')' + nline;
         finalDataToPrint += "Name:" + this.stickerDetail.PatientName + " " + ageSex + nline;
         finalDataToPrint += "Hosp. No:" + this.stickerDetail.PatientCode + " " + (this.stickerDetail.PhoneNumber ? "Ph:" + this.stickerDetail.PhoneNumber : "") + nline;
-        if(this.stickerDetail.CountryName === ENUM_Country.Nepal){
-            finalDataToPrint += "Address:" + ((this.showMunicipality && this.stickerDetail.MunicipalityName)? this.stickerDetail.MunicipalityName + (this.stickerDetail.WardNumber? "-" + this.stickerDetail.WardNumber + ", " : ", ") : "") + this.stickerDetail.CountrySubDivisionName + nline;
+        if (this.stickerDetail.CountryName === ENUM_Country.Nepal) {
+            finalDataToPrint += "Address:" + ((this.showMunicipality && this.stickerDetail.MunicipalityName) ? this.stickerDetail.MunicipalityName + (this.stickerDetail.WardNumber ? "-" + this.stickerDetail.WardNumber + ", " : ", ") : "") + this.stickerDetail.CountrySubDivisionName + nline;
         }
-        else{
-            finalDataToPrint += "Address:" + (this.stickerDetail.Address? this.stickerDetail.Address + ", " : "") + this.stickerDetail.CountrySubDivisionName + ", " + this.stickerDetail.CountryName + nline;
+        else {
+            finalDataToPrint += "Address:" + (this.stickerDetail.Address ? this.stickerDetail.Address + ", " : "") + this.stickerDetail.CountrySubDivisionName + ", " + this.stickerDetail.CountryName + nline;
         }
         finalDataToPrint += 'Type: ' + this.stickerDetail.MembershipTypeName
-                                     + ((this.stickerDetail.SSFPolicyNo && (this.stickerDetail.MembershipTypeName === ENUM_MembershipTypeName.SSF))? '  ' + 'SSF Policy No: ' + this.stickerDetail.SSFPolicyNo + nline: "")
-                                     + ((this.stickerDetail.PolicyNo && (this.stickerDetail.MembershipTypeName === ENUM_MembershipTypeName.ECHS))?  '  ' + 'ECHS No: ' + this.stickerDetail.PolicyNo + nline: "");
+            + ((this.stickerDetail.SSFPolicyNo && (this.stickerDetail.MembershipTypeName === ENUM_MembershipTypeName.SSF)) ? '  ' + 'SSF Policy No: ' + this.stickerDetail.SSFPolicyNo + nline : "")
+            + ((this.stickerDetail.PolicyNo && (this.stickerDetail.MembershipTypeName === ENUM_MembershipTypeName.ECHS)) ? '  ' + 'ECHS No: ' + this.stickerDetail.PolicyNo + nline : "");
 
         let insDetail = "";
         if (this.stickerDetail.Ins_HasInsurance) {
@@ -216,7 +219,7 @@ Address: `+ this.stickerDetail.Address;
         finalDataToPrint;
         //passing "reg-sticker" as printOutType parameter since we're implementing charcter margin and different font size in registration stickers.
         //need to make it dynamic such that we can remove that variable..
-        return finalDataToPrint
+        return finalDataToPrint;
         //return null;
     }
 
@@ -241,7 +244,7 @@ Address: `+ this.stickerDetail.Address;
 
 
     GetLocalDate(): string {
-        var currParameter = this.coreService.Parameters.find(a => a.ParameterName === "CalendarTypes")
+        var currParameter = this.coreService.Parameters.find(a => a.ParameterName === "CalendarTypes");
         if (currParameter) {
             let visitCalendar = JSON.parse(currParameter.ParameterValue).PatientVisit;
             if (visitCalendar === "en,np") {

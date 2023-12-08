@@ -170,6 +170,7 @@
 
               <div class="col-md-6" *ngIf="opdListZero && opdListZero.length >0">
                 <div class="button-row" style="display: flex; flex-wrap: nowrap; gap: 5px;">
+                  <button class="btn green btn-success form-control small-width" (click)="NursingTriage()">Triage</button>
                   <button class="btn green btn-success form-control small-width" (click)="NursingCheckin()">Check In</button>
                   <button class="btn green btn-success form-control small-width" (click)="ChangeDoctor()">Refer</button>
                   <button class="btn green btn-success form-control small-width" (click)="ExchangeDoctorDepartment()">Exchange Doc/Dept</button>
@@ -290,8 +291,8 @@
         </div>
         <div class="modelbox-body">
           <div class="row">
-            <opd-triage [isEditMode]="triageEdit" [currentPatInfo]="patientInfo"
-                        (opdTriagedCallback)=OPDTriagedCallback($event)>
+            <opd-triage [isEditMode]="triageEdit" [currentPatInfo]="patientInfo" [patientInformation]="globalVisit"
+                        (opdTriagedCallback)="OPDTriagedCallback($event)">
             </opd-triage>
           </div>
         </div>

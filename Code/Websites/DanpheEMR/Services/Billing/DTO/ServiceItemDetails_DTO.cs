@@ -1,4 +1,6 @@
-﻿namespace DanpheEMR.Services.Billing.DTO
+﻿using System;
+
+namespace DanpheEMR.Services.Billing.DTO
 {
     /// <summary>
     /// Gives Price, Copayment, Discount details of the ServiceItem for Current PriceCategory and Scheme.
@@ -26,5 +28,6 @@
         public int IntegrationItemId { get; set; }
         public string IntegrationName { get; set; }
         public int? DisplaySequence { get; set; }
+        public string DefaultDoctorList { get; set; }
     }
 }

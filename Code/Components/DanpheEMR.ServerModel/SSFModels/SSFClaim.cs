@@ -177,7 +177,7 @@ namespace DanpheEMR.ServerModel.SSFModels
 
     public class Details
     {
-        public string text { get; set; }
+        public ErrorText text { get; set; }
     }
 
     public class Issue
@@ -191,6 +191,12 @@ namespace DanpheEMR.ServerModel.SSFModels
     {
         public string resourceType { get; set; }
         public List<Issue> issue { get; set; }
+    }
+
+    public class ErrorText
+    {
+        public string errorCode { get; set; }
+        public string message { get; set; }
     }
 
 

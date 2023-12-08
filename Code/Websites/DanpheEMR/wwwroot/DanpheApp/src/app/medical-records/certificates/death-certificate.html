@@ -56,12 +56,13 @@
           as per
           hospital record resident of Country <span class="txt-underline" style="text-transform: capitalize;"><b>{{deadPat.Country}}</b></span>
           district
-          <span class="txt-underline" style="text-transform: capitalize;"><b>{{deadPat.CountrySubDivision}}</b></span> <span> village/municipality
-          </span>
+          <span class="txt-underline" style="text-transform: capitalize;"><b>{{deadPat.CountrySubDivision}}</b></span> <span>
+            village/{{GeneralFieldLabel.Municipality}} </span>
           <span class="txt-underline" style="text-transform: capitalize;"><b>{{deadPat.Address}}</b></span> and inpatient/Emergency number
           <span class="txt-underline">{{deadPat.VisitCode}}</span> expired on BS
+          <span class="txt-underline">{{deadPat.DeathDate | nepaliDate}}</span> <span> (</span>
           <span class="txt-underline"><b><i>{{deadPat.DeathDate}} AD</i></b></span>
-
+          <span>, YYYY/MM/DD) time </span>
           <span class="txt-underline"><b>{{deadPat.DeathTime}}</b></span>
           (24 hours) at the age of {{deadPat.Age}}.
           <ng-container *ngIf="deadPat.Sex && deadPat.Sex.toLowerCase() == 'male'">His</ng-container>
@@ -85,8 +86,7 @@
                       *ngIf="!CertifiedSignatory || !CertifiedSignatory.FullName">______________________</span><span><b><u>{{CertifiedSignatory.FullName}}</u></b></span>
               </p>
               <p>Designation :<span *ngIf="!CertifiedSignatory || !CertifiedSignatory.LongSignature">______________________</span>
-                <b><u>{{CertifiedSignatory.LongSignature}}</u></b>
-              </p>
+                <b><u>{{CertifiedSignatory.LongSignature}}</u></b></p>
             </div>
             <div *ngIf="!isFinalCertificate" class="flex-container">
               <input danphe-auto-complete class="form-control" [(ngModel)]="CertifiedSignatory" [source]="providerList"

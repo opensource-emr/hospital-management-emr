@@ -85,6 +85,8 @@
     <Compile Include="IRDNepal\SyncLocalData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoteSync.cs" />
+    <Compile Include="SSF\APIs.cs" />
+    <Compile Include="SSF\SSF_ClaimBookingViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

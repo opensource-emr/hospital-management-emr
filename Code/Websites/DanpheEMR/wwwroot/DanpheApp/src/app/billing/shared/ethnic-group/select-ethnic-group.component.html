@@ -1,6 +1,7 @@
 <div>
-    <select id="id_select_ethnic_group" class="form-control" [(ngModel)]="selectedEthnicGroup" (change)="manualChangeOfEthnicGroup($event)" [disabled]="disableSelect ?  true: null">
-        <option value="" selected>--select Ethnicity--</option>
+    <select id="id_select_ethnic_group" class="form-control" [(ngModel)]="selectedEthnicGroup" (change)="manualChangeOfEthnicGroup($event)"
+            [disabled]="disableSelect ?  true: null">
+        <option value="" selected>--{{GeneralFieldLabel.Caste}}--</option>
         <option value="{{ethnic.EthnicGroup}}" *ngFor="let ethnic of CastEthnicGroupList">{{ ethnic.EthnicGroup }}</option>
     </select>
 </div>

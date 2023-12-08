@@ -18,7 +18,7 @@ export class BillingService {
   public taxPercent: number = 0;
   public taxId: number = 0;
   public currencyUnit: string = "";
-  public BillingType: string = "";//for: inpatient, outpatient, etc.. 
+  public BillingType: string = "";//for: inpatient, outpatient, etc..
   public BillingFlow: string = "normal";//normal for normal billing and insurance for insurance billing
   public Insurance: InsuranceVM;
   public isInsuranceBilling: boolean = false;
@@ -34,6 +34,7 @@ export class BillingService {
   public PatLastVisitContext: PatientLatestVisitContext_DTO = new PatientLatestVisitContext_DTO();
   public BillItemsVsPriceCategoryMapping = new Array<BillItemsPriceCategoryMap>();
   public SchemeList = new Array<BillingScheme_DTO>();
+  public IsProvisionalDischargeClearance: boolean = false;
 
   constructor(public coreService: CoreService, public msgBoxServ: MessageboxService) {
     this.GetTaxDetails();
@@ -110,7 +111,7 @@ export class BillingService {
 
   //this creates a duplicate and returns the doctor's list.
   //shouldn't send the same array since we're adding additional fields in the billing components
-  //which will change this shared object.. 
+  //which will change this shared object..
   public GetDoctorsListForBilling(): Array<any> {
     let docListToReturn = [];
     if (this.AllDoctorsListForBilling) {

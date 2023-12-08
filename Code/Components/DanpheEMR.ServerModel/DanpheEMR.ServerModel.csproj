@@ -65,8 +65,10 @@
     <Compile Include="AccountingModels\DTOs\ConsultantLedger_DTO.cs" />
     <Compile Include="AccountingModels\DTOs\InventoryVendorLedger_DTO.cs" />
     <Compile Include="AccountingModels\DTOs\LedgerReportRequest_DTO.cs" />
+    <Compile Include="AccountingModels\DTOs\MakePayment_DTO.cs" />
     <Compile Include="AccountingModels\DTOs\MapSuspenseAccountReconciliation_DTO.cs" />
     <Compile Include="AccountingModels\DTOs\PharmacySupplierLedger_DTO.cs" />
+    <Compile Include="AccountingModels\DTOs\SubLedgerForMakePayment_DTO.cs" />
     <Compile Include="AccountingModels\DTOs\SubLedgerReportRequst_DTO.cs" />
     <Compile Include="AccountingModels\DTOs\SuspenseAccountTransaction_DTO.cs" />
     <Compile Include="AccountingModels\Transactions\AccountingPaymentModel.cs" />
@@ -187,6 +189,14 @@
     <Compile Include="BillingModels\Logs\IRDLogModel.cs" />
     <Compile Include="BillingModels\PatientInsurancePackageTransactionModel.cs" />
     <Compile Include="BillingModels\Config\PriceCategoryModel.cs" />
+    <Compile Include="ClinicalModels\Diet\DietTypeModel.cs" />
+    <Compile Include="ClinicalModels\Diet\PatientDietDTO.cs" />
+    <Compile Include="ClinicalModels\Diet\PatientDietModel.cs" />
+    <Compile Include="ClinicalModels\BloodSugarMonitoring\BloodSugarModel.cs" />
+    <Compile Include="ClinicalModels\ConsulationRequests\ConsultationRequestModel.cs" />
+    <Compile Include="ClinicalModels\DTOs\ConsultationRequestDTO.cs" />
+    <Compile Include="ClinicalModels\DTOs\ConsultationRequestForGetDTO.cs" />
+    <Compile Include="ClinicalModels\ClinicalIntakeOutputParameterModel.cs" />
     <Compile Include="CommonModels\PrinterSettingsModel.cs" />
     <Compile Include="BillingModels\Reporting\ReportingItemBillingItemMapping.cs" />
     <Compile Include="BillingModels\Reporting\ReportingItemsModel.cs" />
@@ -374,6 +384,7 @@
     <Compile Include="InventoryModels\VendorMasterModel.cs" />
     <Compile Include="InventoryModels\WriteOffItemsModel.cs" />
     <Compile Include="LabModels\AttachmentModel.cs" />
+    <Compile Include="LabModels\ExternalLabDTO.cs" />
     <Compile Include="LabModels\FinalLabReportListVM.cs" />
     <Compile Include="LabModels\InpatientLabTestModel.cs" />
     <Compile Include="LabModels\LabBarCodeModel.cs" />
@@ -588,6 +599,7 @@
     <Compile Include="SSFModels\PAT_SSFClaimResponseDetails.cs" />
     <Compile Include="SSFModels\SSF.cs" />
     <Compile Include="SSFModels\SSFClaim.cs" />
+    <Compile Include="SSFModels\SSFClaimBookingModel.cs" />
     <Compile Include="SSFModels\SSFClaimResponse.cs" />
     <Compile Include="SSFModels\SSFCredentials.cs" />
     <Compile Include="SSFModels\SSFPatientDetail.cs" />

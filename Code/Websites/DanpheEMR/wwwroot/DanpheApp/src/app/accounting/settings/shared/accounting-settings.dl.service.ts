@@ -4,12 +4,16 @@ import { response } from '../../../core/response.model';
 import { MedicalCareType } from '../../../insurance/medicare/shared/medicare-member.model';
 import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { BankReconciliationCategory } from '../../bank-reconciliation/reconcile-bank-transactions/bank-reconciliation.model';
+import { SubLedgerForMakePayment } from '../../transactions/shared/DTOs/sub-ledger-for-payment.dto';
 import { SubLedgerModel } from './sub-ledger.model';
 
 @Injectable()
 export class AccountingSettingsDLService {
     //public headers = new Headers({ 'Content-Type': 'application/x-www-form-urlencoded' });
     public options = { headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' }) };
+    public jsonOptions = {
+        headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    };
     constructor(public http: HttpClient) { }
     //#region Ledger Settings Calls
     //GET
@@ -351,5 +355,8 @@ export class AccountingSettingsDLService {
         } catch (ex) {
             throw ex
         }
+    }
+    AddSubLedgers(subLedgers: Array<SubLedgerForMakePayment>) {
+        return this.http.post<DanpheHTTPResponse>("/api/AccountingSettings/SubLedger", subLedgers, this.jsonOptions);
     }
 }

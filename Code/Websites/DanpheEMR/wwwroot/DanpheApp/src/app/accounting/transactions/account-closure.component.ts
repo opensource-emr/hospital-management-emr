@@ -21,6 +21,7 @@ export class AccountClosureComponent {
     public closureVM: AccountClosureViewModel = new AccountClosureViewModel();
     public calType: string = "";
 
+    public EnableEnglishCalendarOnly: boolean = false;
     public showAccountClosureUI: boolean = false;
     public showpopup: boolean = false;
     public disablebtn: boolean = false;
@@ -31,12 +32,20 @@ export class AccountClosureComponent {
         public msgBoxServ: MessageboxService,
         public accBLService: AccountingBLService, public nepaliCalendarServ: NepaliCalendarService,
         public securityService: SecurityService, public changeDetRef: ChangeDetectorRef, public coreService: CoreService,public accountingService:AccountingService) {
+        this.GetCalendarParameter();
         this.getActiveFiscalYear();
         this.showAccountClosureUI = true;        
         this.calType = coreService.DatePreference;
         this.disablebtn=false;
     }
 
+    GetCalendarParameter(): void {
+        const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+        if (param && param.ParameterValue) {
+          const paramValue = JSON.parse(param.ParameterValue);
+          this.EnableEnglishCalendarOnly = paramValue;
+        }
+      }
     getActiveFiscalYear() {
         try {
             if (!!this.accountingService.accCacheData.FiscalYearList && this.accountingService.accCacheData.FiscalYearList.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change

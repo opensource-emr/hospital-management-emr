@@ -8,7 +8,7 @@ import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { GoodsReceipt } from '../goods-receipt/goods-receipt.model';
 import ProcurementGridColumns from '../shared/procurement-grid-column';
 import { ProcurementBLService } from '../shared/procurement.bl.service';
-
+import { GeneralFieldLabels } from '../../shared/DTOs/general-field-label.dto';
 @Component({
   selector: 'app-vendor-list',
   templateUrl: './vendor-list.component.html',
@@ -43,6 +43,8 @@ export class VendorListComponent implements OnInit {
    public discountTotal: number = 0;
    public Discount: number = 0;
 
+   public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor( public coreService: CoreService,
     public procurementBLService: ProcurementBLService,
     public inventoryService: InventoryService,
@@ -52,6 +54,7 @@ export class VendorListComponent implements OnInit {
     this.vendorsGridColumns = ProcurementGridColumns.VendorsList;
     this.GetVendorsDetailsList();
     this.GetInventoryBillingHeaderParameter();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
 
   

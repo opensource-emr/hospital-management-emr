@@ -11,6 +11,13 @@ using System.Configuration;
 using System.Data.Entity;
 using System.Transactions;
 using DanpheEMR.Enums;
+using DanpheEMR.Security;
+using DanpheEMR.Services.SSF.DTO;
+using DanpheEMR.Sync.SSF;
+using DanpheEMR.ServerModel.PatientModels;
+using DanpheEMR.ServerModel.SSFModels;
+using DanpheEMR.Utilities;
+using Newtonsoft.Json.Linq;
 
 namespace DanpheEMR.Controllers.Billing
 {
@@ -465,5 +472,78 @@ namespace DanpheEMR.Controllers.Billing
 
             return empDueAmountObj;
         }
+        public static void SyncToSSFServer(SSF_ClaimBookingService_DTO claimBooking, string moduleName, SSFDbContext dbContext, PatientSchemeMapModel patientSchemeMap, RbacUser currentUser)
+        {
+            SSFClaimBookingModel claimBookingModel = new SSFClaimBookingModel();
+            SSF_RealTimeBookingServiceResponse realTimeclaimBookingService = new SSF_RealTimeBookingServiceResponse();
+            try
+            {
+                var SSFCred = GetSSFCredentials(dbContext);
+                realTimeclaimBookingService = DanpheEMR.Sync.SSF.APIs.BookClaim(claimBooking, SSFCred);
+            }
+            catch (Exception ex)
+            {
+                claimBookingModel.ResponseData = GetInnerMostException(ex);
+                claimBookingModel.BookingStatus = false;
+            }
+            claimBookingModel.ResponseData = realTimeclaimBookingService.ResponseData;
+            claimBookingModel.BookingStatus = realTimeclaimBookingService.BookingStatus;
+            PostToClaimBookingLog(dbContext, moduleName, claimBookingModel, claimBooking, patientSchemeMap, currentUser);
+
+        }
+        public static void PostToClaimBookingLog(SSFDbContext dbContext, string moduleName, SSFClaimBookingModel claimBooking, SSF_ClaimBookingService_DTO claimBookingObj, PatientSchemeMapModel patientSchemeMap, RbacUser currentUser)
+        {
+            SSFClaimBookingModel claimBookingModel = new SSFClaimBookingModel();
+            claimBookingModel.BookingStatus = claimBooking.BookingStatus;
+            claimBookingModel.ResponseData = claimBooking.ResponseData;
+            if (moduleName == "billing")
+            {
+                claimBookingModel.BillingInvoiceNo = claimBookingObj.client_invoice_no;
+            }
+            else
+            {
+                claimBookingModel.PharmacyInvoiceNo = claimBookingObj.client_invoice_no;
+            }
+            claimBookingModel.BookingRequestDate = DateTime.Now;
+            claimBookingModel.BookedBy = currentUser.EmployeeId;
+            claimBookingModel.IsClaimed = false;
+            claimBookingModel.LatestClaimCode = long.Parse(claimBookingObj.client_claim_id);
+            claimBookingModel.PolicyNo = patientSchemeMap.PolicyNo;
+            claimBookingModel.HospitalNo = patientSchemeMap.PatientCode;
+            claimBookingModel.PatientId = patientSchemeMap.PatientId;
+            claimBookingModel.IsActive = true;
+
+            dbContext.SSFClaimBookings.Add(claimBookingModel);
+            dbContext.SaveChanges();
+        }
+
+        public static SSFCredentials GetSSFCredentials(SSFDbContext ssfDbContext)
+        {
+            SSFCredentials cred = new SSFCredentials();
+            cred.SSFurl = GetCoreParameterValueByKeyName_String(ssfDbContext, "SSF", "SSFConfiguration", "SSFurl");
+            cred.SSFUsername = GetCoreParameterValueByKeyName_String(ssfDbContext, "SSF", "SSFConfiguration", "SSFUsername");
+            cred.SSFPassword = GetCoreParameterValueByKeyName_String(ssfDbContext, "SSF", "SSFConfiguration", "SSFPassword");
+            cred.SSFRemotekey = GetCoreParameterValueByKeyName_String(ssfDbContext, "SSF", "SSFConfiguration", "SSFRemotekey");
+            cred.SSFRemoteValue = GetCoreParameterValueByKeyName_String(ssfDbContext, "SSF", "SSFConfiguration", "SSFRemoteValue");
+            return cred;
+        }
+        public static string GetCoreParameterValueByKeyName_String(SSFDbContext ssfDbContext, string paramGroup, string paramName, string keyNameOfJsonObj)
+        {
+            string retValue = null;
+
+            var param = ssfDbContext.AdminParameters.Where(a => a.ParameterGroupName == paramGroup && a.ParameterName == paramName).FirstOrDefault();
+            if (param != null)
+            {
+                string paramValueStr = param.ParameterValue;
+                var data = DanpheJSONConvert.DeserializeObject<JObject>(paramValueStr);
+                if (data != null)
+                {
+                    return data[keyNameOfJsonObj].Value<string>();
+                }
+            }
+
+            return retValue;
+        }
+
     }
 }

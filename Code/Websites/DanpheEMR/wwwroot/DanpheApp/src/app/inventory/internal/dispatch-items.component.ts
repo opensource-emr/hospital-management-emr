@@ -147,8 +147,10 @@ export class DispatchItemsComponent {
         //Validation Pass then Dispatch and Save
         if (CheckIsValid) {
           this.Dispatch.Remarks = this.Remarks;
-          this.Dispatch.DispatchItems.forEach(d => d.Remarks = this.Remarks);
-          this.Dispatch.DispatchItems.forEach(d => d.ReqDisGroupId = this.currentActiveInventory.INV_ReqDisGroupId);
+          this.Dispatch.DispatchItems.forEach(itm => {
+            itm.Remarks = this.Remarks;
+            itm.ReqDisGroupId = this.currentActiveInventory.INV_ReqDisGroupId;
+          });
           this.InventoryBLService.PostToDispatchItems(this.Dispatch)
             .subscribe(
               (res: DanpheHTTPResponse) => {

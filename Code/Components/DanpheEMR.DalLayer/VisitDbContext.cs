@@ -49,7 +49,8 @@ namespace DanpheEMR.DalLayer
         public DbSet<GuarantorModel> Guarantor { get; set; }
         public DbSet<BillingSubSchemeModel> BillingSubSchemes { get; set; }
         public DbSet<EmpCashTransactionModel> EmpCashTransactions { get; set; }
-
+        public DbSet<EmergencyPatientModel> EmergencyPatients { get; set; }
+        public DbSet<PriceCategoryModel> PriceCategories { get; set; }
         public VisitDbContext(string conn) : base(conn)
         {
             this.Configuration.LazyLoadingEnabled = true;
@@ -111,7 +112,8 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<GuarantorModel>().ToTable("PAT_PatientGurantorInfo");
             modelBuilder.Entity<BillingSubSchemeModel>().ToTable("BIL_CFG_SubScheme");
             modelBuilder.Entity<EmpCashTransactionModel>().ToTable("TXN_EmpCashTransaction");
-
+            modelBuilder.Entity<EmergencyPatientModel>().ToTable("ER_Patient");
+            modelBuilder.Entity<PriceCategoryModel>().ToTable("BIL_CFG_PriceCategory");
 
         }
         public DbSet<PatientModel> Patients { get; set; }

@@ -5,7 +5,8 @@ import { PharmacyBLService } from '../../../../../pharmacy/shared/pharmacy.bl.se
 import { PharmacyService } from '../../../../../pharmacy/shared/pharmacy.service';
 import { MessageboxService } from '../../../../../shared/messagebox/messagebox.service';
 import { RouteFromService } from '../../../../../shared/routefrom.service';
-import { DispensaryRequisitionService } from '../dispensary-requisition.service'
+import { DispensaryRequisitionService } from '../dispensary-requisition.service';
+import { GeneralFieldLabels } from "../../../../../shared/DTOs/general-field-label.dto";
 @Component({
   selector: 'app-requisition-view',
   templateUrl: './requisition-view.component.html',
@@ -20,6 +21,8 @@ export class RequisitionViewComponent implements OnInit {
   @Input("requisitionId") RequisitionId: number;
   public showNepaliReceipt: boolean;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(public dispensaryRequisitionService: DispensaryRequisitionService,
     public pharmacyBLService: PharmacyBLService,
     public pharmacyService: PharmacyService,
@@ -27,8 +30,10 @@ export class RequisitionViewComponent implements OnInit {
     public router: Router,
     public routeFrom: RouteFromService,
     public coreservice: CoreService) {
+
     this.LoadRequisitionView(this.pharmacyService.Id);
     this.GetPharmacyBillingHeaderParameter();;
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
   }
   ngOnInit(): void {
     //check for english or nepali receipt style

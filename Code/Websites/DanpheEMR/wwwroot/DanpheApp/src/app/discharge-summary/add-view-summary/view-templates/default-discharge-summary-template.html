@@ -95,12 +95,12 @@
                             </b>: {{dsVM?.selectedADT?.BedInformation.BedNumber}}
                         </p>
                         <p class="patient-hdr-label">
-                            <b>Admitted On</b>: {{dsVM?.selectedADT?.AdmittedDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm' }} &nbsp;
-
+                            <b>Admitted On</b>: {{dsVM?.selectedADT?.AdmittedDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm' }} AD &nbsp;
+                            <strong>{{dsVM?.selectedADT?.AdmittedDate | nepaliDate}}</strong>
                         </p>
                         <p class="patient-hdr-label">
-                            <b>Discharged On</b>: {{dsVM?.selectedADT?.DischargedDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm' }} &nbsp;
-
+                            <b>Discharged On</b>: {{dsVM?.selectedADT?.DischargedDate | DanpheDateTime:'format':'YYYY-MM-DD HH:mm' }} AD &nbsp;
+                            <strong>{{dsVM?.selectedADT?.DischargedDate | nepaliDate}}</strong>
                         </p>
                     </div>
                 </div>
@@ -428,7 +428,7 @@
                                    style="height: 0px!important;"></p>
                                 <p class="patient-hdr-label signature" *ngIf="!ShowDoctorsSignatureImage || !dsVM.DrInchargeSignImgPath"></p>
                                 <p class="patient-hdr-label"><strong>{{dsVM.DrInchargeLongSignature}}</strong></p>
-                                <p class="patient-hdr-label">NMC No.: {{dsVM.DrInchargeNMC}}</p>
+                                <p class="patient-hdr-label">{{GeneralFieldLabel.NMCNo}}.: {{dsVM.DrInchargeNMC}}</p>
                             </div>
                             <!-- <div *ngIf="dsVM?.patDischargeSummary?.ConsultantName"> -->
                             <div *ngFor="let cons of dsVM.Consultants; let i= index;">
@@ -441,7 +441,7 @@
 
                                 <p class="patient-hdr-label"><strong>{{cons.consultantLongSignature}}</strong></p>
                                 <!-- <p class="patient-hdr-label"><strong>NMC Number</strong>&nbsp;:&nbsp;{{dsVM.NMC}}</p> -->
-                                <p class="patient-hdr-label">NMC No.: {{cons.consultantNMC}}</p>
+                                <p class="patient-hdr-label">{{GeneralFieldLabel.NMCNO}}.: {{cons.consultantNMC}}</p>
 
 
                             </div>

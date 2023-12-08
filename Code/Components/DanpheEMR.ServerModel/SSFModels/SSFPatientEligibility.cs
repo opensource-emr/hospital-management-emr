@@ -55,7 +55,7 @@ namespace DanpheEMR.ServerModel.SSFModels
     {
         public string url { get; set; }
         public double valueDecimal { get; set; }
-        public object valueString { get; set; }
+        public string valueString { get; set; }
     }
 
     public class EligibilityInsurance

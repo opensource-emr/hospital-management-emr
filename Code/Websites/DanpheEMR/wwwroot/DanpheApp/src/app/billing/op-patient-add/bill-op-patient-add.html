@@ -11,34 +11,48 @@
             <div class="row">
               <div class="col-md-12">
                 <div>
-                  <form [formGroup]="newPatient.OutPatientValidator" class="form-horizontal">
+                  <form [formGroup]="NewPatient.OutPatientValidator" class="form-horizontal">
                     <div class="row">
                       <div class="col-md-6 col-xs-12">
                         <div class="form-group">
-                          <label for="newPatFirstName" class="control-label col-md-4">First Name<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                          <label for="newPatFirstName" class="control-label col-md-4">First Name<b class="color-red"> *</b><b
+                               style="float:right;">:</b></label>
                           <div class="col-md-7">
                             <input id="newPatFirstName" class="form-control" maxlength="30" type="text" formControlName="FirstName"
-                                 [(ngModel)]="newPatient.FirstName" required value="{{newPatient.FirstName | CapitalFirstLetter}}"
-                                 placeholder="First Name" (keyup.enter)="setFocusById('newPatMiddleName')"/>
-                            <span class="color-red font-sm" *ngIf="newPatient.IsDirty('FirstName')" [hidden]="newPatient.IsValidCheck('FirstName','required')"> First Name is required.</span> <span class="color-red font-sm" *ngIf="newPatient.IsDirty('FirstName')" [hidden]="newPatient.IsValidCheck('FirstName','maxlength')"> First Name must be less than 30 characters.</span> </div>
+                                   [(ngModel)]="NewPatient.FirstName" required value="{{NewPatient.FirstName | CapitalFirstLetter}}"
+                                   placeholder="First Name" (keyup.enter)="setFocusById('newPatMiddleName')" />
+                            <span class="color-red font-sm" *ngIf="NewPatient.IsDirty('FirstName')"
+                                  [hidden]="NewPatient.IsValidCheck('FirstName','required')"> First Name is required.</span> <span
+                                  class="color-red font-sm" *ngIf="NewPatient.IsDirty('FirstName')"
+                                  [hidden]="NewPatient.IsValidCheck('FirstName','maxlength')"> First Name must be less than 30 characters.</span>
+                          </div>
                           <div class="col-md-1"> </div>
                         </div>
                         <div class="form-group">
                           <label for="newPatMiddleName" class="control-label col-md-4">Middle Name<b style="float:right;">:</b></label>
                           <div class="col-md-7">
-                            <input id="newPatMiddleName" class="form-control" maxlength="30" type="text" formControlName="MiddleName" [(ngModel)]="newPatient.MiddleName"
-                                 value="{{newPatient.MiddleName | CapitalFirstLetter}}"
-                                 placeholder="Middle Name" (keyup.enter)="setFocusById('newPatLastName')"/>
-                            <span class="color-red font-sm" *ngIf="newPatient.IsDirty('MiddleName')" [hidden]="newPatient.IsValidCheck('MiddleName','maxlength')">Middle Name must be less than 30 characters.</span> </div>
+                            <input id="newPatMiddleName" class="form-control" maxlength="30" type="text" formControlName="MiddleName"
+                                   [(ngModel)]="NewPatient.MiddleName"
+                                   value="{{NewPatient.MiddleName | CapitalFirstLetter}}"
+                                   placeholder="Middle Name" (keyup.enter)="setFocusById('newPatLastName')" />
+                            <span class="color-red font-sm" *ngIf="NewPatient.IsDirty('MiddleName')"
+                                  [hidden]="NewPatient.IsValidCheck('MiddleName','maxlength')">Middle Name must be less than 30 characters.</span>
+                          </div>
                           <div class="col-md-1"> </div>
                         </div>
                         <div class="form-group">
-                          <label for="newPatLastName" class="control-label col-md-4">Last Name<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                          <label for="newPatLastName" class="control-label col-md-4">Last Name<b class="color-red"> *</b><b
+                               style="float:right;">:</b></label>
                           <div class="col-md-7">
-                            <input id="newPatLastName" class="form-control" maxlength="30" type="text" formControlName="LastName" [(ngModel)]="newPatient.LastName"
-                                 required value="{{newPatient.LastName | CapitalFirstLetter}}"
-                                 placeholder="Last Name" (keyup.enter)="setFocusById('selGender')" (focusout)="onLastNameChanged($event)"/>
-                            <span class="color-red font-sm" *ngIf="newPatient.IsDirty('LastName')" [hidden]="newPatient.IsValidCheck('LastName','required')"> Last Name is required.</span> <span class="color-red font-sm" *ngIf="newPatient.IsDirty('LastName')" [hidden]="newPatient.IsValidCheck('LastName','maxlength')"> Last Name must be less than 30 characters.</span> </div>
+                            <input id="newPatLastName" class="form-control" maxlength="30" type="text" formControlName="LastName"
+                                   [(ngModel)]="NewPatient.LastName"
+                                   required value="{{NewPatient.LastName | CapitalFirstLetter}}"
+                                   placeholder="Last Name" (keyup.enter)="setFocusById('selGender')" (focusout)="OnLastNameChanged($event)" />
+                            <span class="color-red font-sm" *ngIf="NewPatient.IsDirty('LastName')"
+                                  [hidden]="NewPatient.IsValidCheck('LastName','required')"> Last Name is required.</span> <span
+                                  class="color-red font-sm" *ngIf="NewPatient.IsDirty('LastName')"
+                                  [hidden]="NewPatient.IsValidCheck('LastName','maxlength')"> Last Name must be less than 30 characters.</span>
+                          </div>
                           <div class="col-md-1"> </div>
                         </div>
                         <div class="form-group">
@@ -48,28 +62,31 @@
                               <!-- <div>
                                 <div class="rad-holder">
                                   <label for="newPatGenderMale" class="mt-radio mt-radio-outline">
-                                    <input id="newPatGenderMale" type="radio" value="Male" [(ngModel)]="newPatient.Gender" formControlName="Gender">
+                                    <input id="newPatGenderMale" type="radio" value="Male" [(ngModel)]="NewPatient.Gender" formControlName="Gender">
                                     <span></span>Male</label>
                                 </div>
                                 <div class="rad-holder">
                                   <label for="newPatGenderFemale" class="mt-radio mt-radio-outline">
-                                    <input id="newPatGenderFemale" type="radio" value="Female" [(ngModel)]="newPatient.Gender" formControlName="Gender">
+                                    <input id="newPatGenderFemale" type="radio" value="Female" [(ngModel)]="NewPatient.Gender" formControlName="Gender">
                                     <span></span> Female</label>
                                 </div>
                                 <div class="rad-holder">
                                   <label for="newPatGenderOther" class="mt-radio mt-radio-outline">
-                                    <input id="newPatGenderOther" type="radio" value="Others" [(ngModel)]="newPatient.Gender" formControlName="Gender">
+                                    <input id="newPatGenderOther" type="radio" value="Others" [(ngModel)]="NewPatient.Gender" formControlName="Gender">
                                     <span></span>Other</label>
                                 </div>
                               </div> -->
-                              <select id="selGender" class="form-control" [(ngModel)]="newPatient.Gender" formControlName="Gender" (change)="setFocusById('age')">
+                              <select id="selGender" class="form-control" [(ngModel)]="NewPatient.Gender" formControlName="Gender"
+                                      (change)="setFocusById('age')">
                                 <option value="null" selected disabled>--select--</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                                 <option value="Others">Other</option>
                               </select>
                             </div>
-                            <span class="color-red font-sm" *ngIf="newPatient.IsDirty('Gender')" [hidden]="newPatient.IsValidCheck('Gender','required')"> Gender is required.</span> </div>
+                            <span class="color-red font-sm" *ngIf="NewPatient.IsDirty('Gender')"
+                                  [hidden]="NewPatient.IsValidCheck('Gender','required')"> Gender is required.</span>
+                          </div>
                           <div class="col-md-1"> </div>
                         </div>
                         <div class="form-group">
@@ -77,8 +94,10 @@
                           <div class="col-md-7">
                             <div class="col-md-3">
                               <div class="row">
-                                <input id="age" class="form-control" type="number" min="0" max="150" formControlName="Age" (focusout)="CalculateDob();"
-                                     [(ngModel)]="newPatient.Age" placeholder="Age" (keyup.enter)="setFocusById('phoneNo')" oninput="validity.valid||(value='');"/>
+                                <input id="age" class="form-control" type="number" min="0" max="150" formControlName="Age"
+                                       (focusout)="CalculateDob();"
+                                       [(ngModel)]="NewPatient.Age" placeholder="Age" (keyup.enter)="setFocusById('phoneNo')"
+                                       oninput="validity.valid||(value='');" />
                               </div>
                             </div>
                             <div class="col-md-9">
@@ -88,21 +107,22 @@
                                     <!-- <div>
                                       <div class="rad-holder mid-rad-holder">
                                         <label for="newPatAgUnitYear" class="mt-radio mt-radio-outline">
-                                          <input id="newPatAgUnitYear" name="AgeUnit" type="radio" value="Y" [(ngModel)]="newPatient.AgeUnit" [ngModelOptions]="{standalone: true}" (focusout)="CalculateDob();" [disabled]="newPatient.PatientId">
+                                          <input id="newPatAgUnitYear" name="AgeUnit" type="radio" value="Y" [(ngModel)]="NewPatient.AgeUnit" [ngModelOptions]="{standalone: true}" (focusout)="CalculateDob();" [disabled]="NewPatient.PatientId">
                                           <span></span>Yrs</label>
                                       </div>
                                       <div class="rad-holder mid-rad-holder">
                                         <label for="newPatAgUnitMonth" class="mt-radio mt-radio-outline">
-                                          <input id="newPatAgUnitMonth" name="AgeUnit" type="radio" value="M" [(ngModel)]="newPatient.AgeUnit" [ngModelOptions]="{standalone: true}" (focusout)="CalculateDob();" [disabled]="newPatient.PatientId">
+                                          <input id="newPatAgUnitMonth" name="AgeUnit" type="radio" value="M" [(ngModel)]="NewPatient.AgeUnit" [ngModelOptions]="{standalone: true}" (focusout)="CalculateDob();" [disabled]="NewPatient.PatientId">
                                           <span></span>Month</label>
                                       </div>
                                       <div class="rad-holder mid-rad-holder">
                                         <label for="newPatAgUnitDay" class="mt-radio mt-radio-outline">
-                                          <input id="newPatAgUnitDay" name="AgeUnit" type="radio" value="D" [(ngModel)]="newPatient.AgeUnit" [ngModelOptions]="{standalone: true}" (focusout)="CalculateDob();" [disabled]="newPatient.PatientId">
+                                          <input id="newPatAgUnitDay" name="AgeUnit" type="radio" value="D" [(ngModel)]="NewPatient.AgeUnit" [ngModelOptions]="{standalone: true}" (focusout)="CalculateDob();" [disabled]="NewPatient.PatientId">
                                           <span></span>Days</label>
                                       </div>
                                     </div> -->
-                                    <select id="ageUnit" class="form-control" [(ngModel)]="newPatient.AgeUnit" [ngModelOptions]="{standalone: true}" (ngModelChange)="CalculateDob()">
+                                    <select id="ageUnit" class="form-control" [(ngModel)]="NewPatient.AgeUnit" [ngModelOptions]="{standalone: true}"
+                                            (ngModelChange)="CalculateDob()">
                                       <option value="Y" selected>Years</option>
                                       <option value="M">Months</option>
                                       <option value="D">Days</option>
@@ -111,95 +131,138 @@
                                 </div>
                               </div>
                               <div class="row">
-                                <div class="col-md-12"><span class="color-red font-sm" *ngIf="newPatient.IsDirty('Age')" [hidden]="newPatient.IsValidCheck('Age','required')"> Age is required.</span></div>
+                                <div class="col-md-12"><span class="color-red font-sm" *ngIf="NewPatient.IsDirty('Age')"
+                                        [hidden]="NewPatient.IsValidCheck('Age','required')"> Age is required.</span></div>
                               </div>
                             </div>
                           </div>
                         </div>
                         <div class="form-group">
-                          <label for="" class="control-label col-md-4">Caste/Ethnic Group<b class="color-red"> *</b><b
-                              style="float:right;">:</b></label>
+                          <label for="" class="control-label col-md-4">{{GeneralFieldLabel.Caste}}<b class="color-red"> *</b><b
+                               style="float:right;">:</b></label>
                           <div class="col-md-7">
-                            <select-ethnic-group [lastName]="patientLastName" (on-ethnic-group-change)="onEthnicGroupChangeCallBack($event)">
+                            <select-ethnic-group [lastName]="PatientLastName" (on-ethnic-group-change)="OnEthnicGroupChangeCallBack($event)">
                             </select-ethnic-group>
                           </div>
                         </div>
                         <div class="form-group">
-                          <label class="control-label col-md-4">Contact Number <b class="color-red" *ngIf="isPhoneMandatory"> *</b><b style="float:right;">:</b></label>
+                          <label class="control-label col-md-4">Contact Number <b class="color-red" *ngIf="IsPhoneMandatory"> *</b><b
+                               style="float:right;">:</b></label>
                           <div class="col-md-7">
-                            <input id="phoneNo" class="form-control" maxlength="11" type="number" [(ngModel)]="newPatient.PhoneNumber" formControlName="PhoneNumber"
-                                   placeholder="Contact Number" (keyup.enter)="setFocusById('ddlCountrySubdivision')"/>
-                            <span class="color-red font-sm" *ngIf="newPatient.IsDirty('PhoneNumber')"
-                                [hidden]="newPatient.IsValidCheck('PhoneNumber','pattern')">Please enter valid contact number.</span>
-                          <span class="color-red font-sm" *ngIf="newPatient.IsDirty('PhoneNumber')"
-                                [hidden]="newPatient.IsValidCheck('PhoneNumber','required')">Contact number is required.</span> </div>
+                            <input id="phoneNo" class="form-control" maxlength="11" type="number" [(ngModel)]="NewPatient.PhoneNumber"
+                                   formControlName="PhoneNumber"
+                                   placeholder="Contact Number" (keyup.enter)="setFocusById('ddlCountrySubdivision')" />
+                            <span class="color-red font-sm" *ngIf="NewPatient.IsDirty('PhoneNumber')"
+                                  [hidden]="NewPatient.IsValidCheck('PhoneNumber','pattern')">Please enter valid contact number.</span>
+                            <span class="color-red font-sm" *ngIf="NewPatient.IsDirty('PhoneNumber')"
+                                  [hidden]="NewPatient.IsValidCheck('PhoneNumber','required')">Contact number is required.</span>
+                          </div>
                         </div>
                       </div>
                       <div class="col-md-6 col-xs-12">
-                        
+
                         <div class="form-group">
                           <label class="control-label col-md-4">Country<b class="color-red"> *</b><b style="float:right;">:</b></label>
                           <div class="col-md-7">
-                            <select id="ddlCountry" class="form-control" [(ngModel)]="newPatient.CountryId" formControlName="CountryId" (ngModelChange)="CountryDDL_OnChange()">
+                            <select id="ddlCountry" class="form-control" [(ngModel)]="NewPatient.CountryId" formControlName="CountryId"
+                                    (ngModelChange)="CountryDDL_OnChange()">
                               <option *ngFor="let cont of Country_All" value="{{cont.CountryId}}">{{cont.CountryName}}</option>
                             </select>
-                            <span class="color-red font-sm" *ngIf="newPatient.IsDirty('CountryId')" [hidden]="newPatient.IsValidCheck('CountryId','required')"> Country is required.</span> </div>
-                        </div>
-                        <div class="form-group">
-                          <label class="control-label col-md-4">District/State<b class="color-red"> *</b><b style="float:right;">:</b></label>
-                          <div class="col-md-7">
-                            <input class="form-control" danphe-auto-complete id="ddlCountrySubdivision"
-                                 formControlName="CountrySubDivisionId"
-                                 [(ngModel)]="selectedDistrict"
-                                 [list-formatter]="districtListFormatter"
-                                 [source]="districts_Filtered"
-                                 placeholder="District"
-                                 display-property-name="CountrySubDivisionName"
-                                 value-property-name=null
-                                 (valueChanged)="AssignSelectedDistrict()"
-                                 onClick="this.select();"
-                                 max-num-list="10"     (keyup.enter)="showMunicipality? setFocusById('municipality') : setFocusById('address')" />
-                            <span class="color-red font-sm" *ngIf="newPatient.IsDirty('CountrySubDivisionId')" [hidden]="newPatient.IsValidCheck('CountrySubDivisionId','required')"> District/State is required.</span> </div>
-                        </div>
-                        <div class="form-group" *ngIf="showMunicipality">
-                          <label for="municipality" class="control-label col-md-4">Municipality <b style="float:right;">:</b></label>
-                          <div class="col-md-7">
-                            <municipality-select *ngIf="newPatient" [municipalityId]='newPatient.MunicipalityId' [subDivisionId] = 'newPatient.CountrySubDivisionId' (valueChange) ="updateMunicipality($event)"></municipality-select>
+                            <span class="color-red font-sm" *ngIf="NewPatient.IsDirty('CountryId')"
+                                  [hidden]="NewPatient.IsValidCheck('CountryId','required')"> Country is required.</span>
                           </div>
                         </div>
-                        
+                        <div class="form-group">
+                          <label class="control-label col-md-4">{{GeneralFieldLabel.DistrictState}}<b class="color-red"> *</b><b
+                               style="float:right;">:</b></label>
+                          <div class="col-md-7">
+                            <input class="form-control" danphe-auto-complete id="ddlCountrySubdivision"
+                                   formControlName="CountrySubDivisionId"
+                                   [(ngModel)]="SelectedDistrict"
+                                   [list-formatter]="DistrictListFormatter"
+                                   [source]="Districts_Filtered"
+                                   placeholder="District"
+                                   display-property-name="CountrySubDivisionName"
+                                   value-property-name=null
+                                   (valueChanged)="AssignSelectedDistrict()"
+                                   onClick="this.select();"
+                                   max-num-list="10" (keyup.enter)="ShowMunicipality? setFocusById('municipality') : setFocusById('address')" />
+                            <span class="color-red font-sm" *ngIf="NewPatient.IsDirty('CountrySubDivisionId')"
+                                  [hidden]="NewPatient.IsValidCheck('CountrySubDivisionId','required')"> {{GeneralFieldLabel.DistrictState}} is
+                              required.</span>
+                          </div>
+                        </div>
+
+
+                        <!--<div class="form-group" *ngIf="ShowMunicipality">
+                          <label for="municipality" class="control-label col-md-4">{{Muncipalitylable}}<b style="float:right;">:</b></label>
+                          <div class="col-md-7">
+                            <municipality-select *ngIf="NewPatient" [municipalityId]='NewPatient.MunicipalityId'
+                                                 [subDivisionId]='NewPatient.CountrySubDivisionId'
+                                                 (valueChange)="UpdateMunicipality($event)"></municipality-select>
+                          </div>
+                        </div>-->
+                        <div class="form-group" *ngIf="ShowMunicipality">
+                          <label for="municipality" class="control-label col-md-4">
+                            {{GeneralFieldLabel.Municipality}}<b style="float:right;">:</b>
+                          </label>
+                          <div class="col-md-7">
+                            <municipality-select *ngIf="NewPatient"
+                                                 [municipalityId]='NewPatient.MunicipalityId'
+                                                 [subDivisionId]='NewPatient.CountrySubDivisionId'
+                                                 (valueChange)="UpdateMunicipality($event)">
+                            </municipality-select>
+                          </div>
+                        </div>
+
+
+                        <div class="form-group" *ngIf="ShowMunicipality">
+                          <label for="wardNumber" class="control-label col-md-4">Ward Number <b style="float:right;">:</b></label>
+                          <div class="col-md-7">
+                            <input id="wardNumber" class="form-control" max="99" type="number" [(ngModel)]="NewPatient.WardNumber"
+                                   formControlName="WardNumber"
+                                   placeholder="Ward Number" (keyup.enter)="setFocusById('address')"
+                                   (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+                            <span class="color-red font-sm" *ngIf="NewPatient.IsDirty('WardNumber')"
+                                  [hidden]="NewPatient.IsValidCheck('WardNumber','pattern')"> Enter valid Ward Number</span>
+                          </div>
+                        </div>
                         <div class="form-group">
                           <label class="control-label col-md-4">Address<b style="float:right;">:</b></label>
                           <div class="col-md-7">
                             <input danphe-auto-complete class="form-control"
-                                 [ngModelOptions]="{standalone: true}"
-                                 [(ngModel)]="newPatient.Address"
-                                 [source]="olderAddressList"
-                                 placeholder="Address" id="address"
-                                 display-property-name="PatAddress"
-                                 value-property-name=null
-                                 no-match-found-text=" "
-                                 onClick="this.select();"
-                                 min-chars="2"
-                                 style="text-transform: capitalize;"
-                                 [grid-sort]="'sortonbasicdatatype'"
-                                 max-num-list="10" (keyup.enter)="setFocusById('registerNbilling')" />
+                                   [ngModelOptions]="{standalone: true}"
+                                   [(ngModel)]="NewPatient.Address"
+                                   [source]="OlderAddressList"
+                                   placeholder="Address" id="address"
+                                   display-property-name="PatAddress"
+                                   value-property-name=null
+                                   no-match-found-text=" "
+                                   onClick="this.select();"
+                                   min-chars="2"
+                                   style="text-transform: capitalize;"
+                                   [grid-sort]="'sortonbasicdatatype'"
+                                   max-num-list="10" (keyup.enter)="setFocusById('registerNbilling')" />
                           </div>
                         </div>
-                        <div *ngIf="showLocalName" class="form-group">
-                          <label class="control-label col-md-4">नाम थर <b class="color-red"></b><b style="float:right;">:</b></label>
-                          <div class="col-md-7">
-                            <input id="patNameLocal" class="form-control" [(ngModel)]="newPatient.PatientNameLocal" [ngModelOptions]="{standalone: true}"
-                                 (focus)="translate('nepali')" (focusout)="translate('english')"
-                                 style="font-size: 20px" type="text" maxlength="30" placeholder="नाम थर"/>
+                        <div *ngIf="ShowLocalName" class="form-group">
+                          <div *ngIf="showNam_Thar">
+                            <label class="control-label col-md-4">नाम थर <b class="color-red"></b><b style="float:right;">:</b></label>
+                            <div class="col-md-7">
+                              <input id="patNameLocal" class="form-control" [(ngModel)]="NewPatient.PatientNameLocal"
+                                     [ngModelOptions]="{standalone: true}"
+                                     (focus)="Translate('nepali')" (focusout)="Translate('english')"
+                                     style="font-size: 20px" type="text" maxlength="30" placeholder="नाम थर" />
+                            </div>
                           </div>
                         </div>
                         <div class="form-group">
                           <label class="control-label col-md-4">Email<b class="color-red"></b><b style="float:right;">:</b></label>
                           <div class="col-md-7">
-                            <input id="idemail" class="form-control" [(ngModel)]="newPatient.Email" formControlName="Email"
-                                 style="font-size: 20px" type="text" maxlength="30" placeholder="Enter Email" />
-                                 <span class="color-red font-sm" *ngIf="newPatient.IsDirty('Email')" [hidden]="newPatient.IsValidCheck('Email','pattern')"> Invalid Email Address.</span> 
+                            <input id="idemail" class="form-control" [(ngModel)]="NewPatient.Email" formControlName="Email"
+                                   style="font-size: 20px" type="text" maxlength="30" placeholder="Enter Email" />
+                            <span class="color-red font-sm" *ngIf="NewPatient.IsDirty('Email')" [hidden]="NewPatient.IsValidCheck('Email','pattern')">
+                              Invalid Email Address.</span>
                           </div>
                         </div>
                       </div>
@@ -211,8 +274,10 @@
           </div>
           <div class="modelbox-footer">
             <div class="all-buttons text-right">
-              <button id="registerNbilling" type="button" class="btn green btn-success margin-7-hr" [disabled]="loading" (click)="loading=true;CheckValiadtionAndRegisterNewPatient(true)"> Register & Billing </button>
-              <button id="register" type="button" class="btn green btn-success margin-7-hr" [disabled]="loading" (click)="loading=true;CheckValiadtionAndRegisterNewPatient(false)"> Register Only </button>
+              <button id="registerNbilling" type="button" class="btn green btn-success margin-7-hr" [disabled]="loading"
+                      (click)="loading=true;CheckValiadtionAndRegisterNewPatient(true)"> Register & Billing </button>
+              <button id="register" type="button" class="btn green btn-success margin-7-hr" [disabled]="loading"
+                      (click)="loading=true;CheckValiadtionAndRegisterNewPatient(false)"> Register Only </button>
               <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="CloseAddNewPatPopUp()"> Close </button>
             </div>
           </div>
@@ -220,9 +285,9 @@
       </div>
     </div>
   </div>
-  <patient-duplicate-warning-box *ngIf="showExstingPatientListPage"
-                               [matchedPatResult]="matchedPatientList"
-                               [currentPatInfo]="newPatient"
-                               [btnActionName]="'Do Billing For this Patient'"
-                               (emit-close-action)="emitCloseAction($event)"> </patient-duplicate-warning-box>
+  <patient-duplicate-warning-box *ngIf="ShowExistingPatientListPage"
+                                 [matchedPatResult]="MatchedPatientList"
+                                 [currentPatInfo]="NewPatient"
+                                 [btnActionName]="'Do Billing For this Patient'"
+                                 (emit-close-action)="EmitCloseAction($event)"> </patient-duplicate-warning-box>
 </div>

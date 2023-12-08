@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angu
 import { CoreService } from "../../../core/shared/core.service";
 import { DispensaryService } from "../../../dispensary/shared/dispensary.service";
 import { PrinterSettingsModel } from "../../../settings-new/printers/printer-settings.model";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from "../../../shared/shared-enums";
@@ -34,6 +35,7 @@ export class PharmacyCreditNotePrintComponent {
     public selectedPrinter: PrinterSettingsModel = new PrinterSettingsModel();
     public openBrowserPrintWindow: boolean = false;
     public browserPrintContentObj: any = { innerHTML: '' };
+    public GeneralFieldLabel = new GeneralFieldLabels();
     @Output("call-back-print") callBackPrint: EventEmitter<object> = new EventEmitter();
 
 
@@ -43,6 +45,7 @@ export class PharmacyCreditNotePrintComponent {
         public _dispensaryService: DispensaryService,
         private changeDetector: ChangeDetectorRef
     ) {
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
 
     ngOnInit() {

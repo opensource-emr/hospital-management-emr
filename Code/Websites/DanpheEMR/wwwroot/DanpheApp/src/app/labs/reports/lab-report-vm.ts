@@ -10,7 +10,7 @@ export class LabReportVM {
   public Lookups: ReportLookup = new ReportLookup();
   public Columns: any;
   public Signatories: string;
-  public IsFileUploadedToTeleMedicine : boolean;
+  public IsFileUploadedToTeleMedicine: boolean;
   //ashim: 01Sep2018 : We're now grouping by sample code only. Template detail goes to the test level.
   //public TemplateId: number;
   //public TemplateName: string;
@@ -35,7 +35,7 @@ export class LabReportVM {
   public Templates: Array<LabResult_TemplatesVM> = new Array<
     LabResult_TemplatesVM
   >();
-  public Email:string=null;
+  public Email: string = null;
   //sud: 21Aug'18--Implementation Pending -- handed over to Ashim
   public static AssignControlTypesToComponent(
     ipLabReportVM: LabReportVM
@@ -146,7 +146,7 @@ export class LabReportVM {
 }
 
 export class ReportLookup {
-  public LabTypeName :string ='';
+  public LabTypeName: string = '';
   public PatientId: number = null;
   public PatientName: string = null;
   public PatientCode: string = null;
@@ -169,7 +169,8 @@ export class ReportLookup {
   public Specimen: string = null;
   public CountrySubDivisionName: string = null;
   public MunicipalityName: string = null;
-  public Email : string = null;
-  public ProfilePictureName : string = null;
-  public PassPortNumber : string = null;
+  public Email: string = null;
+  public ProfilePictureName: string = null;
+  public PassPortNumber: string = null;
+  public WardName: string = null;
 }

@@ -29,10 +29,7 @@
       <div class="form-group">
         <label class="control-label col-md-4 col-sm-3">Supplier<b>:</b></label>
         <div class="col-md-8 col-sm-9">
-          <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [ngModelOptions]="{standalone:true}"
-                 [(ngModel)]="selSupplier" [source]="supplierList" placeholder="-- Search Supplier --" [list-formatter]="SupplierListFormatter"
-                 ngModelOptions="{standalone:true}" display-property-name="SupplierName" value-property-name="null" max-num-list="15"
-                 style="width: 100%;" />
+          <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [ngModelOptions]="{standalone:true}" [(ngModel)]="selSupplier" [source]="supplierList" placeholder="-- Search Supplier --" [list-formatter]="SupplierListFormatter" ngModelOptions="{standalone:true}" display-property-name="SupplierName" value-property-name="null" max-num-list="15" style="width: 100%;" />
         </div>
       </div>
     </div>
@@ -40,8 +37,7 @@
       <div class="form-group">
         <label class="control-label col-md-5 col-sm-5">GRNo<b>:</b></label>
         <div class="col-md-7 col-sm-7">
-          <input style="width:80px;" class="form-control" value="" [(ngModel)]="currGRDetail.GoodReceiptPrintId" [ngModelOptions]="{standalone:true}"
-                 min="1" type="text" value="">
+          <input style="width:80px;" class="form-control" value="" [(ngModel)]="currGRDetail.GoodReceiptPrintId" [ngModelOptions]="{standalone:true}" min="1" type="text" value="">
         </div>
       </div>
     </div>
@@ -57,8 +53,7 @@
       <div class="form-group">
         <label class="control-label col-md-4 col-sm-5">InvoiceNo<b>:</b></label>
         <div class="col-md-8 col-sm-7">
-          <input style="width:80px;" class="form-control" [(ngModel)]="currGRDetail.InvoiceNo" [ngModelOptions]="{standalone:true}" min="1"
-                 type="text" value="">
+          <input style="width:80px;" class="form-control" [(ngModel)]="currGRDetail.InvoiceNo" [ngModelOptions]="{standalone:true}" min="1" type="text" value="">
         </div>
       </div>
     </div>
@@ -94,13 +89,10 @@
   </div>
   <div>
     <form [formGroup]="curtRetSuppModel.ReturnToSupplierValidator" class="form-horizontal hm-form mb10">
-      <label class="control-label col-md-2 col-sm-5" style="padding-left: 0; margin: 10px 0;">Credit Note No.<sup style="color: red;">*</sup>
-        <b>:</b></label>
+      <label class="control-label col-md-2 col-sm-5" style="padding-left: 0; margin: 10px 0;">Credit Note No.<sup style="color: red;">*</sup> <b>:</b></label>
       <div>
-        <input style="width:80px;" class="form-control" [(ngModel)]="curtRetSuppModel.CreditNoteId" min="1" formControlName="CreditNoteId"
-               name="CreditNoteId" type="text" value="">
-        <div style="color:red" *ngIf="curtRetSuppModel.IsDirty('CreditNoteId')" [hidden]="curtRetSuppModel.IsValidCheck('CreditNoteId','required')">
-          Credit Note Number is Required</div>
+        <input style="width:80px;" class="form-control" [(ngModel)]="curtRetSuppModel.CreditNoteId" min="1" formControlName="CreditNoteId" name="CreditNoteId" type="text" value="">
+        <div style="color:red" *ngIf="curtRetSuppModel.IsDirty('CreditNoteId')" [hidden]="curtRetSuppModel.IsValidCheck('CreditNoteId','required')"> Credit Note Number is Required</div>
       </div>
     </form>
   </div>
@@ -135,9 +127,7 @@
             </td>
             <td class="autocomplete-item">
               <form [formGroup]="row.ReturnToSupplierItemValidator">
-                <input disabled class="form-control " [(ngModel)]="row.SelectedItem" ngModelOptions="{standalone:true}" placeholder="Item Name"
-                       display-property-name="ItemName" value-property-name=null min-chars="0" formControlName="ItemId" max-num-list="20"
-                       style="width:200px;font-weight: bold; " />
+                <input disabled class="form-control " [(ngModel)]="row.SelectedItem" ngModelOptions="{standalone:true}" placeholder="Item Name" display-property-name="ItemName" value-property-name=null min-chars="0" formControlName="ItemId" max-num-list="20" style="width:200px;font-weight: bold; " />
                 <div style="color:red" *ngIf="row.IsDirty('ItemId')" [hidden]="row.IsValidCheck('ItemId','required')"> Item is required</div>
               </form>
             </td>
@@ -158,24 +148,17 @@
             </td>
             <td>
               <form [formGroup]="row.ReturnToSupplierItemValidator">
-                <input style="width:90px;" class="form-control" min="0" [(ngModel)]="row.Quantity" (keyup.enter)="GoToNextInput('ReturnRate',i)"
-                       [ngClass]="row.Quantity > row.AvaliableQuantity  ? 'bg-on' : 'bg-off'"
-                       (ngModelChange)="CalculationForSupplierItemReturn(row,i)" id="Quantity{{i}}" formControlName="Quantity" name="Quantity"
-                       type="number" onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                <input style="width:90px;" class="form-control" min="0" [(ngModel)]="row.Quantity" (keyup.enter)="GoToNextInput('ReturnRate',i)" [ngClass]="row.Quantity > row.AvaliableQuantity  ? 'bg-on' : 'bg-off'" (ngModelChange)="CalculationForSupplierItemReturn(row,i)" id="Quantity{{i}}" formControlName="Quantity" name="Quantity" type="number" onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
                 <span class="error-msg" *ngIf="row.AvaliableQuantity<row.Quantity">Quantity Should be less then Available Qty</span>
                 <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','required')"> Quantity is required</div>
-                <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','positivenum')">Required positive number
-                </div>
+                <div style="color:red" *ngIf="row.IsDirty('Quantity')" [hidden]="row.IsValidCheck('Quantity','positivenum')">Required positive number</div>
               </form>
             </td>
             <td>
               <form [formGroup]="row.ReturnToSupplierItemValidator">
-                <input style="width:90px;" class="form-control" [(ngModel)]="row.ReturnRate" (ngModelChange)="CalculationForSupplierItemReturn(row,i)"
-                       formControlName="ReturnRate" (keyup.enter)="GoToNextInput('DiscountedAmount',i)" name="ReturnRate" id="ReturnRate{{i}}"
-                       type="number" onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                <input style="width:90px;" class="form-control" [(ngModel)]="row.ReturnRate" (ngModelChange)="CalculationForSupplierItemReturn(row,i)" formControlName="ReturnRate" (keyup.enter)="GoToNextInput('DiscountedAmount',i)" name="ReturnRate" id="ReturnRate{{i}}" type="number" onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
                 <div style="color:red" *ngIf="row.IsDirty('ReturnRate')" [hidden]="row.IsValidCheck('ReturnRate','required')"> Rate is required</div>
-                <div style="color:red" *ngIf="row.IsDirty('ReturnRate')" [hidden]="row.IsValidCheck('ReturnRate','positivenum')">Required positive
-                  number</div>
+                <div style="color:red" *ngIf="row.IsDirty('ReturnRate')" [hidden]="row.IsValidCheck('ReturnRate','positivenum')">Required positive number</div>
               </form>
             </td>
             <td>
@@ -183,34 +166,23 @@
             </td>
             <td>
               <form [formGroup]="row.ReturnToSupplierItemValidator">
-                <input style="width:90px;" class="form-control" [(ngModel)]="row.DiscountedAmount"
-                       (ngModelChange)="CalculationForSupplierItemReturn(row,i)" formControlName="DiscountedAmount"
-                       (keyup.enter)="GoToNextInput('VATAmount',i)" id="DiscountedAmount{{i}}" name="DiscountedAmount" type="number"
-                       onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
-                <div style="color:red" *ngIf="row.IsDirty('DiscountedAmount')" [hidden]="row.IsValidCheck('DiscountedAmount','required')"> Amount is
-                  required</div>
-                <div style="color:red" *ngIf="row.IsDirty('DiscountedAmount')" [hidden]="row.IsValidCheck('DiscountedAmount','invalidNumber')">
-                  Required positive number</div>
+                <input style="width:90px;" class="form-control" [(ngModel)]="row.DiscountedAmount" (ngModelChange)="CalculationForSupplierItemReturn(row,i)" formControlName="DiscountedAmount" (keyup.enter)="GoToNextInput('VATAmount',i)" id="DiscountedAmount{{i}}" name="DiscountedAmount" type="number" onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                <div style="color:red" *ngIf="row.IsDirty('DiscountedAmount')" [hidden]="row.IsValidCheck('DiscountedAmount','required')"> Amount is required</div>
+                <div style="color:red" *ngIf="row.IsDirty('DiscountedAmount')" [hidden]="row.IsValidCheck('DiscountedAmount','invalidNumber')">Required positive number</div>
               </form>
             </td>
             <td>
               <form [formGroup]="row.ReturnToSupplierItemValidator">
-                <input style="width:90px;" class="form-control" [(ngModel)]="row.VATAmount" (ngModelChange)="CalculationForSupplierItemReturn(row,i)"
-                       formControlName="VATAmount" (keyup.enter)="GoToNextInput('CCAmount',i)" id="VATAmount{{i}}" name="VATAmount" type="number"
-                       onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                <input style="width:90px;" class="form-control" [(ngModel)]="row.VATAmount" (ngModelChange)="CalculationForSupplierItemReturn(row,i)" formControlName="VATAmount" (keyup.enter)="GoToNextInput('CCAmount',i)" id="VATAmount{{i}}" name="VATAmount" type="number" onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
                 <div style="color:red" *ngIf="row.IsDirty('VATAmount')" [hidden]="row.IsValidCheck('VATAmount','required')"> Amount is required</div>
-                <div style="color:red" *ngIf="row.IsDirty('VATAmount')" [hidden]="row.IsValidCheck('VATAmount','invalidNumber')">Required positive
-                  number</div>
+                <div style="color:red" *ngIf="row.IsDirty('VATAmount')" [hidden]="row.IsValidCheck('VATAmount','invalidNumber')">Required positive number</div>
               </form>
             </td>
             <td>
               <form [formGroup]="row.ReturnToSupplierItemValidator">
-                <input style="width:90px;" class="form-control" [(ngModel)]="row.CCAmount" (ngModelChange)="CalculationForSupplierItemReturn(row,i)"
-                       formControlName="CCAmount" (keyup.enter)="GoToNextInput('ReturnQty',i+1)" id="CCAmount{{i}}" name="CCAmount" type="number"
-                       onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                <input style="width:90px;" class="form-control" [(ngModel)]="row.CCAmount" (ngModelChange)="CalculationForSupplierItemReturn(row,i)" formControlName="CCAmount" (keyup.enter)="GoToNextInput('ReturnQty',i+1)" id="CCAmount{{i}}" name="CCAmount" type="number" onclick="this.select()" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
                 <div style="color:red" *ngIf="row.IsDirty('CCAmount')" [hidden]="row.IsValidCheck('CCAmount','required')"> Amount is required</div>
-                <div style="color:red" *ngIf="row.IsDirty('CCAmount')" [hidden]="row.IsValidCheck('CCAmount','invalidNumber')">Required positive
-                  number</div>
+                <div style="color:red" *ngIf="row.IsDirty('CCAmount')" [hidden]="row.IsValidCheck('CCAmount','invalidNumber')">Required positive number</div>
               </form>
             </td>
             <td>
@@ -289,15 +261,15 @@
         <tr>
           <td>Select Return Date:</td>
           <td>
-            <div *ngIf="canUserEnterDate; else DefaultDate">
-              <fiscal-year-calendar [showSingleDatePicker]="true" [showAllFiscalYear]="false" [SingleFiscalYearId]="getCurrentFiscalYearId()"
-                                    (fiscalYearDate)="OnFiscalYearDateChange($event)"></fiscal-year-calendar>
-            </div>
-            <ng-template #DefaultDate>
-              <div style="font-size: 12px; padding-top:6px;">
-                {{curtRetSuppModel.ReturnDate}} 
+              <div *ngIf="canUserEnterDate; else DefaultDate">
+                <fiscal-year-calendar [showSingleDatePicker]="true" [showAllFiscalYear]="false" [SingleFiscalYearId]="getCurrentFiscalYearId()" (fiscalYearDate)="OnFiscalYearDateChange($event)"></fiscal-year-calendar>
               </div>
-            </ng-template>
+              <ng-template #DefaultDate>
+                <div style="font-size: 12px; padding-top:6px;">
+                  {{curtRetSuppModel.ReturnDate}} A.D.
+                  {{curtRetSuppModel.ReturnDate | nepaliDate:'format':'YYYY-MM-DD'}} 
+                </div>
+              </ng-template>
           </td>
         </tr>
         <tr>
@@ -337,8 +309,7 @@
                 <option value="2">Expiry</option>
                 <option value="3">Breakage and Expiry</option>
               </select>
-              <div style="color:red" *ngIf="curtRetSuppModel.IsDirty('ReturnStatus')"
-                   [hidden]="curtRetSuppModel.IsValidCheck('ReturnStatus','required')"> Return Status is required</div>
+              <div style="color:red" *ngIf="curtRetSuppModel.IsDirty('ReturnStatus')" [hidden]="curtRetSuppModel.IsValidCheck('ReturnStatus','required')"> Return Status is required</div>
             </form>
           </td>
         </tr>
@@ -354,9 +325,7 @@
   </div>
 </div>
 
-<div *ngIf="showDangerBox" class="popup-static portlet box portlet-fullscreen"
-     style="display:flex;justify-content:center;text-align:center;position:fixed;top:0%;height:100%;width:100%;background-color:rgba(0,0,0,0.7) !important"
-     role="dialog">
+<div *ngIf="showDangerBox" class="popup-static portlet box portlet-fullscreen" style="display:flex;justify-content:center;text-align:center;position:fixed;top:0%;height:100%;width:100%;background-color:rgba(0,0,0,0.7) !important" role="dialog">
   <div class="modal-dialog">
 
     <!-- Modal content-->
@@ -377,18 +346,14 @@
 </div>
 <div class="row" *ngIf="!showReturnSupp">
   <div class="col-lg-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="returnToSupplierListGridColumns" [rangeType]="dateRange" (onDateChange)="onGridDateChange($event)"
-                 [date-range-options]="'1W,1M,3M'" [show-CustomDate]="true" [grid-data]="returnToSupplierData"
-                 (grid-actions)="ReturnToSupplierGridAction($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    <danphe-grid [grid-colDefaults]="returnToSupplierListGridColumns" [rangeType]="dateRange" (onDateChange)="onGridDateChange($event)" [date-range-options]="'1W,1M,3M'" [show-CustomDate]="true" [grid-data]="returnToSupplierData" (grid-actions)="ReturnToSupplierGridAction($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
   </div>
 </div>
 <div *ngIf="showGoodReceipt">
-  <goods-receipt-view [showPopUp]="showGoodReceipt" [goodsReceiptId]="returnFromSupplier.GoodReceiptId" [isGRCancelled]="returnFromSupplier.IsCancel"
-                      (popup-close-event)="OnGRPopUpClose()"></goods-receipt-view>
+  <goods-receipt-view [showPopUp]="showGoodReceipt" [goodsReceiptId]="returnFromSupplier.GoodReceiptId" [isGRCancelled]="returnFromSupplier.IsCancel" (popup-close-event)="OnGRPopUpClose()"></goods-receipt-view>
 </div>
 <!-- Nepali GR View  START-->
 <div *ngIf="showPopUp">
-  <app-phrm-gr-view-np [showPopUp]="showPopUp" [goodsReceiptId]="returnFromSupplier.GoodReceiptId" [isGRCancelled]="returnFromSupplier.IsCancel"
-                       [canUserModify]="true" (popup-close-event)="OnGRViewPopUpClose()"></app-phrm-gr-view-np>
+  <app-phrm-gr-view-np [showPopUp]="showPopUp" [goodsReceiptId]="returnFromSupplier.GoodReceiptId" [isGRCancelled]="returnFromSupplier.IsCancel" [canUserModify]="true" (popup-close-event)="OnGRViewPopUpClose()"></app-phrm-gr-view-np>
 </div>
 <!-- Nepali GR View  END-->

@@ -7,6 +7,7 @@ import { EmployeeRole } from "../../../employee/shared/employee-role.model";
 import { EmployeeType } from "../../../employee/shared/employee-type.model";
 import { Employee } from "../../../employee/shared/employee.model";
 import { SecurityService } from '../../../security/shared/security.service';
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { CommonFunctions } from "../../../shared/common.functions";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
@@ -56,14 +57,7 @@ export class EmployeeAddComponent {
   public isServiceItemsDetailsValid: boolean = false;
   public onApptApplicable: boolean = false;
 
-  //vishal-14-09-2023-- Employee label chenge
-  public employeeLables: Array<string> = [];
-  public RegistrationInfo: any;
-  public lebelForNMCNo: string = "";
-  public lebelForNHPCNo: string = "";
-  public lebelForPANNo: string = "";
-  public lebelForNNCNo: string = "";
-  public lebelForTDS: string = "";
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(
     public settingsBLService: SettingsBLService,
     public securityService: SecurityService,
@@ -71,22 +65,19 @@ export class EmployeeAddComponent {
     public changeDetector: ChangeDetectorRef,
     public coreService: CoreService) {
 
-    //vishal-14-09-2023-- Employee label chenge
-    var lebelDetails = JSON.parse(coreService.Parameters.find(p => p.ParameterGroupName == "Employeelabel" && p.ParameterName == "RegistrationInfo").ParameterValue);
-    if (lebelDetails) {
-      this.lebelForNMCNo = lebelDetails.NMCNo;
-      this.lebelForNHPCNo = lebelDetails.NHPCNo;
-      this.lebelForNNCNo = lebelDetails.NNCNo;
-      this.lebelForPANNo = lebelDetails.PANNo;
-      this.lebelForTDS = lebelDetails.TDS;
-    }
+    //vishal-20-11-2023-- Employee label chenge
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
+
     this.InitializeServices_TEMP();
     this.GetOPDServiceItems();
     this.GetEmpRoleList();
     this.GetEmpTypeList();
     this.GetDepartmentList();
   }
-
+  lableChange() {
+    let label = this.coreService.GetFieldLabelParameter();
+  }
   ngOnInit() {
     if (this.selectedEmployee) {
       this.update = true;
@@ -483,7 +474,8 @@ export class EmployeeAddComponent {
   }
 
   public myItemListFormatter(data: any): string {
-    let html = data["ServiceItemName"];
+    let html = data['ItemCode'] + '|' + data['ServiceItemName'] + '|' + data['Price'];
+
     return html;
   }
 

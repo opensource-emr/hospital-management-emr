@@ -1,0 +1,259 @@
+<!-- Modal -->
+<div
+     class="popup-static portlet box portlet-fullscreen custom_modal"
+     *ngIf="ShowAddNewRequestPopup">
+    <div class="portlet-body form">
+        <!--Model Box Body Start-->
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption no-margin">
+                        <h3><span>Add New Request</span></h3>
+                        <a
+                           class="btn btn-danger"
+                           (click)="CloseAddNewRequestPopup()"
+                           title="Cancel">X</a>
+                    </div>
+
+                    <div class="row" style="margin: 15px 0px 0px 0px !important">
+                        <div class="col-md-6" style="padding-left: 45px !important">
+                            <label><b>Patient Name:&nbsp;</b></label>{{ patientService.globalPatient.ShortName }}
+                        </div>
+                        <div class="col-md-6" style="padding-left: 45px !important">
+                            <label><b>Hospital Number:&nbsp;</b></label>{{ patientService.globalPatient.PatientCode }}
+                        </div>
+                    </div>
+                    <div class="row" style="margin: 0px !important">
+                        <div class="col-md-6" style="padding-left: 45px !important">
+                            <label><b>Age/Sex:&nbsp;</b></label>{{ patientService.globalPatient.Age }}/{{ patientService.globalPatient.Gender }}
+                        </div>
+                        <div class="col-md-6" style="padding-left: 45px !important">
+                            <label><b>IP Number:&nbsp;</b></label>{{ patientService.globalPatient.PatientCode }}
+                        </div>
+                    </div>
+                    <div class="row" style="margin: 0px !important">
+                        <div class="col-md-6" style="padding-left: 45px !important">
+                            <label><b>Ward/Bed:&nbsp;</b></label>{{ patientService.globalPatient.WardName }}/{{patientService.globalPatient.BedNo}}
+                        </div>
+                        <div class="col-md-6" style="padding-left: 45px !important">
+                            <label><b>Date of Request:&nbsp;</b></label>{{ConsultationRequest.RequestedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm
+                            A'}}
+                        </div>
+                    </div>
+                    <div
+                         class="row"
+                         style="
+              margin: 15px 15px 15px 15px !important;
+              padding-bottom: 10px;
+              border: 2px solid black;">
+
+                        <div class="col-md-12">
+                            <span style="text-decoration: underline"><b>Request To:</b></span>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="col-md-4">
+                                <label class="control-label"><b>Department</b><sup>*</sup><b>:</b></label>
+                            </div>
+                            <div class="col-md-6">
+                                <input
+                                       id="id_txt_request_to_department"
+                                       danphe-auto-complete
+                                       class="form-control"
+                                       display-property-name="DepartmentName"
+                                       [list-formatter]="DepartmentListFormatter"
+                                       [source]="DepartmentList"
+                                       [(ngModel)]="SelectedRequestToDepartment"
+                                       placeholder="Department Name"
+                                       [min-chars]="1"
+                                       value-property-name="DepartmentId"
+                                       onclick="this.select();"
+                                       (valueChanged)="OnConsultingDepartmentChange($event)"
+                                       (focusout)="FilterConsultingDoctorList()"
+                                       [disabled]="!IsNewRequest"
+                                       max-num-list="10" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="col-md-4">
+                                <label class="control-label"><b>Consultant Name</b><sup>*</sup><b>:</b></label>
+                            </div>
+                            <div class="col-md-6">
+                                <input
+                                       id="id_txt_request_to_doctor"
+                                       danphe-auto-complete
+                                       class="form-control"
+                                       display-property-name="FullName"
+                                       [list-formatter]="DoctorListFormatter"
+                                       [source]="FilteredConsultingDoctorList"
+                                       [(ngModel)]="SelectedRequestToDoctor"
+                                       placeholder="Consultant Name"
+                                       [min-chars]="1"
+                                       value-property-name="EmployeeId"
+                                       onclick="this.select();"
+                                       (valueChanged)="OnConsultingDoctorChange($event)"
+                                       (focusout)="CheckConsultingDoctor()"
+                                       [disabled]="!IsNewRequest"
+                                       max-num-list="10" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                         class="row"
+                         style="
+              margin: 15px 15px 15px 15px !important;
+              padding-bottom: 10px;
+              border: 2px solid black;">
+                        <div class="col-md-12">
+                            <span style="text-decoration: underline"><b>Purpose of Consultation<sup>*</sup></b></span>
+                        </div>
+                        <textarea [disabled]="!IsNewRequest" class="col-md-11" style="height: 150px; margin: 5px 0px 0px 15px;"
+                                  [(ngModel)]="ConsultationRequest.PurposeOfConsultation"
+                                  id="id_textarea_purpose_of_consultation"></textarea>
+                        <div class="col-md-12" style="margin: 5px 0px 0px 0px; padding: 0px;">
+                            <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label class="control-label"><b>Requesting Department</b><sup>*</sup><b>:</b></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input
+                                           id="id_txt_requesting_department"
+                                           danphe-auto-complete
+                                           class="form-control"
+                                           display-property-name="DepartmentName"
+                                           [list-formatter]="DepartmentListFormatter"
+                                           [source]="DepartmentList"
+                                           [(ngModel)]="SelectedRequestingDepartment"
+                                           placeholder="Department Name"
+                                           [min-chars]="1"
+                                           value-property-name="DepartmentId"
+                                           onclick="this.select();"
+                                           (valueChanged)="OnRequestingDepartmentChange($event)"
+                                           (focusout)="FilterRequestingDoctorList()"
+                                           [disabled]="!IsNewRequest"
+                                           max-num-list="10" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label class="control-label"><b>Requesting Doctor</b><sup>*</sup><b>:</b></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input
+                                           id="id_txt_requesting_doctor"
+                                           danphe-auto-complete
+                                           class="form-control"
+                                           display-property-name="FullName"
+                                           [list-formatter]="DoctorListFormatter"
+                                           [source]="FilteredRequestingDoctorList"
+                                           [(ngModel)]="SelectedRequestingDoctor"
+                                           placeholder="Doctor Name"
+                                           [min-chars]="1"
+                                           value-property-name="EmployeeId"
+                                           onclick="this.select();"
+                                           (valueChanged)="OnRequestingDoctorChange($event)"
+                                           (focusout)="CheckRequestingDoctor()"
+                                           [disabled]="!IsNewRequest"
+                                           max-num-list="10" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                         *ngIf="!IsNewRequest"
+                         class="row"
+                         style="
+              margin: 15px 15px 15px 15px !important;
+              padding-bottom: 10px;
+              border: 2px solid black;">
+                        <div class="col-md-12">
+                            <span style="text-decoration: underline"><b>Consultation's Report<sup>*</sup></b></span>
+                        </div>
+                        <textarea class="col-md-11" style="height: 150px; margin: 5px 0px 0px 15px;"
+                                  [(ngModel)]="ConsultationRequest.ConsultantResponse"
+                                  id="id_textarea_consultations_reports"></textarea>
+                        <div class="col-md-12" style="margin: 5px 0px 0px 0px; padding: 0px;">
+                            <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label class="control-label"><b>Consulting Department</b><sup>*</sup><b>:</b></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input
+                                           id="id_txt_consulting_department"
+                                           danphe-auto-complete
+                                           class="form-control"
+                                           display-property-name="DepartmentName"
+                                           [list-formatter]="DepartmentListFormatter"
+                                           [source]="DepartmentList"
+                                           [(ngModel)]="SelectedConsultingDepartment"
+                                           placeholder="Department Name"
+                                           [min-chars]="1"
+                                           value-property-name="DepartmentId"
+                                           onclick="this.select();"
+                                           (valueChanged)="OnConsultingDepartmentChange($event)"
+                                           (focusout)="FilterConsultingDoctorList()"
+                                           max-num-list="10"
+                                           [disabled]="!IsNewRequest" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label class="control-label"><b>Consulting Doctor</b><sup>*</sup><b>:</b></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input
+                                           id="id_txt_consulting_doctor"
+                                           danphe-auto-complete
+                                           class="form-control"
+                                           display-property-name="FullName"
+                                           [list-formatter]="DoctorListFormatter"
+                                           [source]="FilteredConsultingDoctorList"
+                                           [(ngModel)]="SelectedConsultingDoctor"
+                                           placeholder="Doctor Name"
+                                           [min-chars]="1"
+                                           value-property-name="EmployeeId"
+                                           onclick="this.select();"
+                                           (valueChanged)="OnConsultingDoctorChange($event)"
+                                           (focusout)="CheckConsultingDoctor()"
+                                           max-num-list="10"
+                                           [disabled]="!IsNewRequest" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12" style="margin: 5px 0px 0px 0px; padding: 0px;">
+                            <label style="padding-left: 30px;"><b>Signature:</b></label>
+                        </div>
+                        <div class="col-md-12" style="margin: 5px 0px 0px 0px; padding: 0px;">
+                            <label style="padding-left: 30px;"><b>Date/Time:&nbsp;</b></label>{{ ConsultationRequest.ConsultedOn }}
+                        </div>
+                    </div>
+
+                    <div id="id_add_new_request" style="margin-top: 15px">
+                        <div class="col-md-12">
+                            <div class="modelbox-footer">
+                                <div class="all-buttons text-right">
+                                    <input
+                                           type="button"
+                                           id="add"
+                                           class="btn green btn-success margin-7-hr"
+                                           (click)="IsNewRequest? AddNewRequest() : ResponseConsultationRequest()"
+                                           value="Save"
+                                           [disabled]="loading" />
+                                    <input
+                                           type="button"
+                                           id="id_discard_scheme"
+                                           class="btn orange btn-success margin-7-hr"
+                                           (click)="DiscardChanges()"
+                                           value="Discard Changes"
+                                           [disabled]="loading" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--Model Box Body End-->
+        </div>
+    </div>
+</div>

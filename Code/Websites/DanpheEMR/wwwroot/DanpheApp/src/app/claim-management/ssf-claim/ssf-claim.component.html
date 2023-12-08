@@ -202,6 +202,97 @@
   </div>
 </div>
 
+
+<!--START: Claim Booking-->
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="ShowClaimBooking">
+  <div class="col-md-10 col-md-offset-1">
+    <div class="modelbox-div">
+      <div class="modelbox-header">
+        <h4 class="margin-0-vr">Book Claim</h4>
+      </div>
+      <div class="modelbox-body">
+        <div class="dropdown" style="display:inline-block;">
+          <div>
+            <label for="id_select_schemeTypeProduct">SchemeType SubProduct: </label>
+            <select name="schemeTypeProduct" id="id_select_schemeTypeProduct"
+                    (change)="selectSSFSchemeTypeSubProductForClaimBooking($event)">
+              <option value="">--Select Scheme SubProduct--</option>
+              <option *ngFor="let item of SchemeTypeSubProduct" value="{{ item.value }}"> {{ item.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <table style="margin-top: 10px;" *ngIf="Invoices && Invoices.length > 0">
+            <thead>
+              <th>#</th>
+              <th>InvoiceNo</th>
+              <th>InvoiceAmount</th>
+              <th>Module</th>
+              <th>BookingStatus</th>
+              <th>Action</th>
+            </thead>
+            <tbody style="margin-top: 5px !important;">
+              <tr *ngFor="let inv of Invoices; let i = index">
+                <td>{{i+1}}</td>
+                <td>{{ inv.InvoiceNoFormatted }}</td>
+                <td>{{ inv.InvoiceTotalAmount | number : "1.2-2" }}</td>
+                <td>{{ inv.ModuleName }}</td>
+                <td>{{ inv.BookingStatus }}</td>
+                <td>
+                  <button *ngIf="inv.BookingStatus === 'Not Booked'" type="button" id="id_ssfClaim_btn_bookClaim" class="btn btn-primary"
+                          [disabled]="bookClaimClicked" (click)="BookClaim(inv)" style="padding: 0px;">Book Claim</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <hr>
+          <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+              <table *ngIf="Invoices && Invoices.length > 0" style="color: #354ae7;">
+                <tr>
+                  <td>TotalInvoiceAmount:</td>
+                  <td> <strong>{{ TotalInvoiceAmountForClaim | number : "1.2-2" }}</strong> </td>
+                </tr>
+                <tr>
+                  <td>BookedInvoiceAmount:</td>
+                  <td> <strong>{{ AlreadyBookedInvoiceAmount | number : "1.2-2" }}</strong> </td>
+                </tr>
+                <tr>
+                  <td>RemainingInvoiceAmount:</td>
+                  <td> <strong>{{ RemainingInvoiceAmountToBook | number : "1.2-2" }}</strong> </td>
+                </tr>
+
+                <tr>
+                  <td>TotalReturnAmount:</td>
+                  <td> <strong>{{ TotalReturnAmountForClaim | number : "1.2-2" }}</strong> </td>
+                </tr>
+                <tr>
+                  <td>BookedReturnAmount:</td>
+                  <td> <strong>{{ AlreadyBookedReturnAmount | number : "1.2-2" }}</strong> </td>
+                </tr>
+                <tr>
+                  <td>RemainingReturnAmount:</td>
+                  <td> <strong>{{ RemainingReturnAmountToBook | number : "1.2-2" }}</strong> </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modelbox-footer" style="text-align: right;">
+        <!-- <button type="button" id="id_ssfClaim_btn_bookClaim" class="btn green btn-success" [disabled]="bookClaimClicked" (click)="BookClaim()">Book Claim</button> -->
+      </div>
+      <div class="close-modelbox lb-close-btn">
+        <button class="btn btn-danger" (click)="CloseClaimBookingPopup()">X</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--END: Claim Booking-->
+
+
 <!--START: image Preview-->
 <div class="popup-static portlet box portlet-fullscreen" *ngIf="showImageFilePreviewPopUp">
   <div class="portlet-body form">
@@ -327,6 +418,11 @@
               <i class="fa fa-tasks" aria-hidden="true"></i>
             </button>
           </div>
+          <div class="dropdown" style="display:inline-block;">
+            <button class="dropdown-toggle grid-btnCstm" type="button" (click)="OpenClaimBooking(data)">
+              Book Claim
+            </button>
+          </div>
         </td>
         <td *ngIf="ind != 0"></td>
       </tr>
@@ -428,22 +524,14 @@
             <tr>
               <td colspan="11" style="text-align: center;">
                 <p><strong><span>
-                      <span *ngIf="!isInsurance">
+                      <span>
                         <b>
                           {{Invoice_Label}}
                         </b>
                       </span>
-                      <span *ngIf="isInsurance">
-                        <b>
-                          Health Insurance Credit Invoice
-                        </b>
-                      </span>
+
                     </span>
-                    <span *ngIf="BillingInvoiceInfo.PrintCount > 0">
-                      <b>
-                        | COPY({{BillingInvoiceInfo.PrintCount}}) OF ORIGINAL
-                      </b>
-                    </span></strong></p>
+                  </strong></p>
               </td>
             </tr>
             <tr style="border: 1px solid #ccc;">
@@ -476,7 +564,7 @@
                           {{SelectedClaimObject.PatientInfo[0].ShortName}}</strong></p>
                     </td>
                     <td colspan="4" style="text-align: right;">
-                      <p class="c_paragraphs" style="margin-bottom: 0px;">Date:<strong>({{localDateTime}})</strong></p>
+                      <p class="c_paragraphs" style="margin-bottom: 0px;">Date:<strong>{{localDateTime}}</strong></p>
                     </td>
                   </tr>
                   <tr>
@@ -800,8 +888,9 @@
                   <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">{{ pharmacyHeaderDetail.DDA}}</p>
                 </td>
                 <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
-                  <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;"><strong>PAN No.
-                      : {{pharmacyHeaderDetail.PANno}}</strong> </p>
+                  <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;">
+                    <strong>{{GeneralFieldLabel.PANNo}}: {{pharmacyHeaderDetail.PANno}}</strong>
+                  </p>
                 </td>
               </tr>
             </table>
@@ -813,7 +902,11 @@
               </tr>
               <tr>
                 <td colspan="12" style="text-align: center; color: #000 !important;">
-                  <p><strong>INVOICE</strong></p>
+                  <p *ngIf="pharmacyHeaderDetail.hospitalName"><strong>{{PharmacyInvoiceLabel}}</strong></p>
+                  <p *ngIf="!pharmacyHeaderDetail.hospitalName">
+                    <b>REF. BILL</b>
+                  </p>
+
                 </td>
               </tr>
               <tr style="border: 1px solid #ccc; color:black!important;">
@@ -821,8 +914,14 @@
                   <table style="width: 100%; margin-bottom: 0;">
                     <tr>
                       <td colspan="6" style="text-align: left;">
-                        <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Invoice No:</strong>
-                          {{pharmacyReceipt.CurrentFinYear}} - PH{{ pharmacyReceipt.ReceiptPrintNo}}</p>
+                        <p class="c_paragraphs" style="margin-bottom: 0px !important;" *ngIf="pharmacyHeaderDetail.hospitalName">
+                          <strong>Invoice No:</strong>
+                          {{pharmacyReceipt.CurrentFinYear}} - PH{{ pharmacyReceipt.ReceiptPrintNo}}
+                        </p>
+                        <p class="c_paragraphs" style="margin-bottom: 0px !important;" *ngIf="!pharmacyHeaderDetail.hospitalName">
+                          <strong>Ref BillNo:</strong>
+                          {{pharmacyReceipt.CurrentFinYear}} - PH{{ pharmacyReceipt.ReceiptPrintNo}}
+                        </p>
                       </td>
                       <td colspan="6" style="text-align: right;">
                         <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Transaction Date:</strong>
@@ -835,7 +934,7 @@
                         <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Hospital No :
                           </strong>{{pharmacyReceipt.Patient.PatientCode}}</p>
                       </td>
-                      <td colspan="6" style="text-align: right;">
+                      <td colspan="6" style="text-align: right;" *ngIf="pharmacyHeaderDetail.hospitalName">
                         <p class="c_paragraphs" style="margin-bottom: 0px !important;"><strong>Invoice Date:</strong>
                           {{pharmacyReceipt.ReceiptDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</p>
                       </td>
@@ -846,7 +945,7 @@
                           </strong>{{pharmacyReceipt.Patient.ShortName}}</p>
                       </td>
                       <td colspan="6" style="text-align: right;">
-                        <p class="c_paragraphs" style="margin-bottom: 0px !important;">({{pharmacyReceipt.ReceiptDate}})</p>
+                        <p class="c_paragraphs" style="margin-bottom: 0px !important;">{{pharmacyReceipt.ReceiptDate | nepaliDate }}</p>
                       </td>
                     </tr>
                     <tr *ngIf="pharmacyReceipt.Patient.PatientId > 0">
@@ -871,7 +970,8 @@
                         </p>
                       </td>
                       <td colspan="6" style="text-align: right;" *ngIf="pharmacyReceipt.ProviderNMCNumber">
-                        <p class="c_paragraphs" style="margin-bottom: 0px !important;">NMCNumber:{{pharmacyReceipt.ProviderNMCNumber}}</p>
+                        <p class="c_paragraphs" style="margin-bottom: 0px !important;">
+                          {{GeneralFieldLabel.NMCNo}}:{{pharmacyReceipt.ProviderNMCNumber}}</p>
                       </td>
                     </tr>
                     <tr *ngIf="pharmacyReceipt.ClaimCode || pharmacyReceipt.PolicyNo">

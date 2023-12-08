@@ -14,7 +14,7 @@
                                                 <customer-header></customer-header>
                                                 <div class="discharge-bill-sm-holder">
                                                     <div
-                                                        class="discharge-bill-sm-header flx justify-center text-uppercase">
+                                                         class="discharge-bill-sm-header flx justify-center text-uppercase">
                                                         <span>
                                                             <span>
                                                                 <b>
@@ -24,48 +24,48 @@
                                                         </span>
                                                     </div>
                                                     <div class="flx flex-col discharge-bill-description-header"
-                                                        style="margin-bottom: 10px; border-bottom: 1px solid;">
+                                                         style="margin-bottom: 10px; border-bottom: 1px solid;">
                                                         <div class="discharge-bill-sm-row flx justify-sp-between">
                                                             <div class="col-left flex-2">
                                                             </div>
                                                             <div class="col-right"><span
-                                                                    class="text-uppercase text-bold txt-label"> Printed
+                                                                      class="text-uppercase text-bold txt-label"> Printed
                                                                     by:&nbsp;&nbsp;</span><span
-                                                                    class="text-bold txt-val">{{printedBy}}</span>
+                                                                      class="text-bold txt-val">{{printedBy}}</span>
                                                             </div>
                                                         </div>
                                                         <div class="discharge-bill-sm-row flx justify-sp-between">
                                                             <div class="col-left flex-2">
                                                             </div>
                                                             <div class="col-right"><span
-                                                                    class="text-uppercase text-bold txt-label">Printed
+                                                                      class="text-uppercase text-bold txt-label">Printed
                                                                     on:&nbsp;&nbsp;</span><span
-                                                                    class="text-bold txt-val">{{printedOn}}({{printedOn
+                                                                      class="text-bold txt-val">{{printedOn}}{{printedOn
                                                                     |
-                                                                    nepaliDate:'format':'YYYY-MM-DD'}} BS)</span>
+                                                                    nepaliDate:'format':'YYYY-MM-DD'}} </span>
                                                             </div>
                                                         </div>
                                                         <div class="discharge-bill-sm-row flx justify-sp-between">
                                                             <div class="col-left flex-2"><span
-                                                                    class="text-uppercase text-bold txt-label">Claim
+                                                                      class="text-uppercase text-bold txt-label">Claim
                                                                     Code&nbsp;:&nbsp;</span><span
-                                                                    class="text-bold txt-val">{{selectedClaimCode}}</span>
+                                                                      class="text-bold txt-val">{{selectedClaimCode}}</span>
                                                             </div>
                                                             <div class="col-right"><span
-                                                                    class="text-uppercase text-bold txt-label"> NSHI
+                                                                      class="text-uppercase text-bold txt-label"> {{GeneralFieldLabel.NSHINo}}
                                                                     No.&nbsp;:&nbsp;</span><span
-                                                                    class="text-bold txt-val">{{selPatient.Ins_NshiNumber}}</span>
+                                                                      class="text-bold txt-val">{{selPatient.Ins_NshiNumber}}</span>
                                                             </div>
                                                         </div>
                                                         <div class="discharge-bill-sm-row flx justify-sp-between">
                                                             <div class="col-left flex-2"><span
-                                                                    class="text-uppercase text-bold txt-label">Patient's
+                                                                      class="text-uppercase text-bold txt-label">Patient's
                                                                     Name&nbsp;:&nbsp;</span>
                                                                 <span
-                                                                    class="text-bold txt-val">{{selPatient.ShortName}}</span>
+                                                                      class="text-bold txt-val">{{selPatient.ShortName}}</span>
                                                             </div>
                                                             <div class="col-right"><span
-                                                                    class="text-uppercase text-bold txt-label">
+                                                                      class="text-uppercase text-bold txt-label">
                                                                     Address&nbsp;:&nbsp;</span>
                                                                 <span class="text-bold txt-val">
                                                                     {{selPatient.Address}}
@@ -74,10 +74,10 @@
                                                         </div>
                                                         <div class="discharge-bill-sm-row flx justify-sp-between">
                                                             <div class="col-left flex-2"><span
-                                                                    class="text-uppercase text-bold txt-label">Hospital
+                                                                      class="text-uppercase text-bold txt-label">Hospital
                                                                     No&nbsp;:&nbsp;</span>
                                                                 <span
-                                                                    class="text-bold txt-val">{{selPatient.PatientCode}}</span>
+                                                                      class="text-bold txt-val">{{selPatient.PatientCode}}</span>
                                                             </div>
                                                             <div class="col-right">
                                                                 <span class="text-uppercase text-bold txt-label">
@@ -90,9 +90,9 @@
                                                         <div class="discharge-bill-sm-row flx justify-sp-between">
                                                             <div class="col-left flex-2">
                                                                 <span
-                                                                    class="text-uppercase text-bold txt-label">Age/Sex&nbsp;:&nbsp;</span>
+                                                                      class="text-uppercase text-bold txt-label">Age/Sex&nbsp;:&nbsp;</span>
                                                                 <span
-                                                                    class="text-bold txt-val">{{selPatient.Age}}/{{selPatient.Gender}}
+                                                                      class="text-bold txt-val">{{selPatient.Age}}/{{selPatient.Gender}}
                                                                 </span>
                                                             </div>
                                                             <div class="col-right">
@@ -103,31 +103,31 @@
                                                         </div>
                                                         <div class="discharge-bill-sm-row flx justify-sp-between">
                                                             <div class="col-left flex-2" *ngIf="admissionDate"><span
-                                                                    class="text-uppercase text-bold txt-label">Admission
+                                                                      class="text-uppercase text-bold txt-label">Admission
                                                                     Date&nbsp;:&nbsp;</span>
                                                                 <span class="text-bold txt-val">{{admissionDate|
                                                                     DanpheDateTime:'format':'YYYY-MM-DD'}}
-                                                                    ({{admissionDate |
-                                                                    nepaliDate:'format':'YYYY-MM-DD'}} BS)</span>
+                                                                    {{admissionDate |
+                                                                    nepaliDate:'format':'YYYY-MM-DD'}} </span>
                                                             </div>
                                                             <div class="col-right" *ngIf="dischargeDate">
                                                                 <span
-                                                                    class="text-uppercase text-bold txt-label">Discharge
+                                                                      class="text-uppercase text-bold txt-label">Discharge
                                                                     Date&nbsp;:&nbsp;</span>
                                                                 <span class="text-bold txt-val"> {{dischargeDate |
                                                                     DanpheDateTime:'format':'YYYY-MM-DD'}}
-                                                                    ({{dischargeDate |
-                                                                    nepaliDate:'format':'YYYY-MM-DD'}} BS)
+                                                                    {{dischargeDate |
+                                                                    nepaliDate:'format':'YYYY-MM-DD'}}
                                                                 </span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div class="wrapper" style="border-bottom: 1px solid"
-                                                        *ngIf="isBillListAvailable">
+                                                         *ngIf="isBillListAvailable">
                                                         <span class="text-uppercase text-bold txt-label">Test and
                                                             services&nbsp;:&nbsp;</span>
                                                         <table class="table table-striped table-hover"
-                                                            style="width: 100%;">
+                                                               style="width: 100%;">
                                                             <thead>
                                                                 <tr>
                                                                     <th border="1" align="left" style="font-size:12px;">
@@ -137,7 +137,7 @@
                                                                         <strong>Invoice No.</strong>
                                                                     </th>
                                                                     <th border="1" align="left" style="font-size:12px;">
-                                                                        <strong>Invoice Date (BS)</strong>
+                                                                        <strong>Invoice Date </strong>
                                                                     </th>
                                                                     <th border="1" align="left" style="font-size:12px;">
                                                                         <strong>Department</strong>
@@ -187,7 +187,7 @@
                                                                         style="text-align:right; font-size:11px;"></td>
                                                                     <td colspan="2"
                                                                         style="text-align:left; font-size:11px;"><span
-                                                                            class="text-uppercase text-bold txt-label">Billing
+                                                                              class="text-uppercase text-bold txt-label">Billing
                                                                             Total</span></td>
                                                                     <td style="text-align:left; font-size:11px;">
                                                                         {{billTotal[0].Net_TotalAmount | Currency:'4'}}
@@ -197,12 +197,12 @@
                                                         </table>
                                                     </div>
                                                     <div class="wrapper"
-                                                        style="border-bottom: 1px solid ;margin-top: 10px;"
-                                                        *ngIf="isPhrmListAvailable">
+                                                         style="border-bottom: 1px solid ;margin-top: 10px;"
+                                                         *ngIf="isPhrmListAvailable">
                                                         <span
-                                                            class="text-uppercase text-bold txt-label">Pharmacy&nbsp;:&nbsp;</span>
+                                                              class="text-uppercase text-bold txt-label">Pharmacy&nbsp;:&nbsp;</span>
                                                         <table class="table table-striped table-hover"
-                                                            style="width: 100%;">
+                                                               style="width: 100%;">
                                                             <thead>
                                                                 <tr>
                                                                     <th border="1" align="left" style="font-size:12px;">
@@ -212,7 +212,7 @@
                                                                         <strong>Invoice No.</strong>
                                                                     </th>
                                                                     <th border="1" align="left" style="font-size:12px;">
-                                                                        <strong>Invoice Date (BS)</strong>
+                                                                        <strong>Invoice Date </strong>
                                                                     </th>
                                                                     <th border="1" align="left" style="font-size:12px;">
                                                                         <strong>Medicine Name</strong>
@@ -262,7 +262,7 @@
                                                                         style="text-align:left; font-size:11px;"></td>
                                                                     <td colspan="2"
                                                                         style="text-align:left; font-size:11px;"><span
-                                                                            class="text-uppercase text-bold txt-label">Pharmacy
+                                                                              class="text-uppercase text-bold txt-label">Pharmacy
                                                                             Total</span></td>
                                                                     <td style="text-align:left; font-size:11px;">
                                                                         {{phrmTotal[0].NetAmount | Currency:'4'}}</td>

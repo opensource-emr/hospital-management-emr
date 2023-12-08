@@ -1,6 +1,6 @@
-import { Component, Input, Output, EventEmitter } from "@angular/core";
+import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { CoreService } from "../../core/shared/core.service";
-import { Patient } from "../../patients/shared/patient.model";
+import { GeneralFieldLabels } from "../DTOs/general-field-label.dto";
 import { Municipality } from "./municipality-model";
 
 @Component({
@@ -14,13 +14,13 @@ export class MunicipalitySelectComponent {
   public municipalityId: number = 0;
   public subDivisionId: number;
   public municipalityList: Array<Municipality> = new Array<Municipality>();
-  public isInitailLoad : boolean = true;
+  public isInitailLoad: boolean = true;
   @Input('subDivisionId')
   public set setValue(val: number) {
-    if(val){
+    if (val) {
       this.subDivisionId = val;
       let result = this.coreService.GetMunicipalityByCountryAndSubDivisionId(this.subDivisionId);
-      if(result) {
+      if (result) {
         this.municipalityList = result.Municipalities;
       }
     }
@@ -30,7 +30,20 @@ export class MunicipalitySelectComponent {
 
   public selectedMunicipality: Municipality = new Municipality();
   public bindedMunicipality: any;
+
+  //public Muncipalitylable: string = "";
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(public coreService: CoreService) {
+
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
+
+    /* var Muncipalitylable = JSON.parse(coreService.Parameters.find(p => p.ParameterGroupName == "Patient" && p.ParameterName == "Municipality").ParameterValue);
+     if (Muncipalitylable) {
+       this.Muncipalitylable = Muncipalitylable.Municipality;
+     }*/
+
   }
 
   ngOnInit() {
@@ -51,9 +64,9 @@ export class MunicipalitySelectComponent {
   }
 
   AssignSelectedMunicipality() {
-    if(this.bindedMunicipality == null || this.bindedMunicipality == ''){
+    if (this.bindedMunicipality == null || this.bindedMunicipality == '') {
       this.municipalityId = null;
-      this.valueChange.emit({data : this.municipalityId});
+      this.valueChange.emit({ data: this.municipalityId });
       this.isInitailLoad = true;
       return 0;
     }
@@ -73,7 +86,7 @@ export class MunicipalitySelectComponent {
         // Needed Id as well as Name, so rather than sending individually, emitting as an object
         this.valueChange.emit({ data: this.bindedMunicipality });
       }
-      else{
+      else {
         this.municipalityId = 0;
         this.valueChange.emit({ data: this.municipalityId });
       }

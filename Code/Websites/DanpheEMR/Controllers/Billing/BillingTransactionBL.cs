@@ -25,7 +25,7 @@ namespace DanpheEMR.Controllers.Billing
             BillingTransactionPostVM billingTransactionPostVM,
             BillingTransactionModel billingTransaction,
             RbacUser currentUser,
-            DateTime currentDate)
+            DateTime currentDate, int? dischargeStatementId = null)
         {
             List<BillingTransactionItemModel> newTxnItems = new List<BillingTransactionItemModel>();
             dbContext.AuditDisabled = false;
@@ -97,7 +97,8 @@ namespace DanpheEMR.Controllers.Billing
                    currentUser, currentDate,
                    billingTransaction.BillStatus,
                    billingTransaction.CounterId,
-                   billingTransaction.BillingTransactionId);
+                   billingTransaction.BillingTransactionId,
+                   dischargeStatementId);
 
             dbContext.SaveChanges();
 
@@ -622,7 +623,8 @@ namespace DanpheEMR.Controllers.Billing
             DateTime currentDate,
             string billStatus,
             int counterId,
-             int? billingTransactionId = null)
+            int? billingTransactionId = null,
+            int? dischargeStatementId = null)
         {
 
             BillingFiscalYear fiscYear = BillingBL.GetFiscalYear(connString);
@@ -670,7 +672,7 @@ namespace DanpheEMR.Controllers.Billing
                     }
                     else
                     {
-                        txnItem = UpdateTxnItemBillStatus(dbContext, txnItem, billStatus, currentUser, currentDate, counterId, billingTransactionId);
+                        txnItem = UpdateTxnItemBillStatus(dbContext, txnItem, billStatus, currentUser, currentDate, counterId, billingTransactionId, dischargeStatementId);
                     }
 
 
@@ -703,7 +705,8 @@ namespace DanpheEMR.Controllers.Billing
             RbacUser currentUser,
             DateTime? modifiedDate = null,
             int? counterId = null,
-            int? billingTransactionId = null)
+            int? billingTransactionId = null,
+            int? dischargeStatementId = null)
         {
             modifiedDate = modifiedDate != null ? modifiedDate : DateTime.Now;
                int fiscalYearId =
@@ -813,6 +816,11 @@ namespace DanpheEMR.Controllers.Billing
                 billingDbContext.Entry(billItem).Property(b => b.BillingTransactionId).IsModified = true;
             }
 
+            if (dischargeStatementId != null)
+            {
+                billItem.DischargeStatementId = dischargeStatementId;
+                billingDbContext.Entry(billItem).Property(b => b.DischargeStatementId).IsModified = true;
+            }
             //these fields could also be changed during update.
             billingDbContext.Entry(billItem).Property(b => b.BillStatus).IsModified = true;
             billingDbContext.Entry(billItem).Property(a => a.Price).IsModified = true;
@@ -831,7 +839,7 @@ namespace DanpheEMR.Controllers.Billing
             billingDbContext.Entry(billItem).Property(a => a.CoPaymentCashAmount).IsModified = true;
             billingDbContext.Entry(billItem).Property(a => a.CoPaymentCreditAmount).IsModified = true;
 
-            //UpdateRequisitionItemsBillStatus(billingDbContext, billItem.ServiceDepartmentName, billStatus, currentUser, billItem.RequisitionId, modifiedDate);
+            UpdateRequisitionItemsBillStatus(billingDbContext, billItem.ServiceDepartmentName, billStatus, currentUser, billItem.BillingTransactionItemId, modifiedDate, billItem.PatientVisitId);
 
             //update bill status in BillItemRequistion (Order Table)
             BillItemRequisition billItemRequisition = (from bill in billingDbContext.BillItemRequisitions
@@ -859,8 +867,9 @@ namespace DanpheEMR.Controllers.Billing
             string serviceDepartmentName,
             string billStatus, //provisional,paid,unpaid,returned
             RbacUser currentUser,
-            long? requisitionId,
-            DateTime? modifiedDate)
+            int billingTransactionItemId,
+            DateTime? modifiedDate,
+            int? patientVisitId)
         {
 
             string integrationName = billingDbContext.ServiceDepartment
@@ -872,7 +881,7 @@ namespace DanpheEMR.Controllers.Billing
                 //update return status in lab 
                 if (integrationName.ToLower() == "lab")
                 {
-                    var labItem = billingDbContext.LabRequisitions.Where(req => req.RequisitionId == requisitionId).FirstOrDefault();
+                    var labItem = billingDbContext.LabRequisitions.Where(req => req.BillingTransactionItemId == billingTransactionItemId).FirstOrDefault();
                     if (labItem != null)
                     {
                         labItem.BillingStatus = billStatus;
@@ -887,7 +896,7 @@ namespace DanpheEMR.Controllers.Billing
                 //update return status for Radiology
                 else if (integrationName.ToLower() == "radiology")
                 {
-                    var radioItem = billingDbContext.RadiologyImagingRequisitions.Where(req => req.ImagingRequisitionId == requisitionId).FirstOrDefault();
+                    var radioItem = billingDbContext.RadiologyImagingRequisitions.Where(req => req.BillingTransactionItemId == billingTransactionItemId).FirstOrDefault();
                     if (radioItem != null)
                     {
                         radioItem.BillingStatus = billStatus;
@@ -902,7 +911,7 @@ namespace DanpheEMR.Controllers.Billing
                 //update return status for Visit
                 else if (integrationName.ToLower() == "opd" || integrationName.ToLower() == "er")
                 {
-                    var visitItem = billingDbContext.Visit.Where(vis => vis.PatientVisitId == requisitionId).FirstOrDefault();
+                    var visitItem = billingDbContext.Visit.Where(vis => vis.PatientVisitId == patientVisitId).FirstOrDefault();
                     if (visitItem != null)
                     {
                         visitItem.BillingStatus = billStatus;
@@ -1048,6 +1057,52 @@ namespace DanpheEMR.Controllers.Billing
                         //        }
                         //    }
                         //}
+
+                        billingDbContext.SaveChanges();
+
+                        dbContextTransaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        //rollback all changes if any error occurs
+                        dbContextTransaction.Rollback();
+                        throw ex;
+                    }
+                }
+            }
+        }
+
+        //updates price, quantity, bed charges etc.
+        public static void UpdateProvisionalBillingTransactionItems(BillingDbContext billingDbContext, List<BillingTransactionItemModel> txnItmsFromClient, RbacUser currentUser)
+        {
+            if (txnItmsFromClient != null && txnItmsFromClient.Count > 0)
+            {
+
+                using (var dbContextTransaction = billingDbContext.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        txnItmsFromClient.ForEach(itm =>
+                        {
+                            BillingTransactionItemModel txnItmFromDb = billingDbContext.BillingTransactionItems.Where(a => a.BillingTransactionItemId == itm.BillingTransactionItemId).FirstOrDefault();
+                            billingDbContext.BillingTransactionItems.Attach(txnItmFromDb);
+
+                            txnItmFromDb.Price = itm.Price;
+                            txnItmFromDb.Quantity = itm.Quantity;
+                            txnItmFromDb.SubTotal = itm.SubTotal;
+                            txnItmFromDb.DiscountAmount = itm.DiscountAmount;
+                            txnItmFromDb.DiscountPercent = itm.DiscountPercent;
+                            txnItmFromDb.TotalAmount = itm.TotalAmount;
+                            txnItmFromDb.PerformerId = itm.PerformerId;
+                            txnItmFromDb.PerformerName = itm.PerformerName;
+                            txnItmFromDb.PrescriberId = itm.PrescriberId;
+                            txnItmFromDb.DiscountPercentAgg = itm.DiscountPercentAgg;
+                            txnItmFromDb.TaxableAmount = itm.TaxableAmount;
+                            txnItmFromDb.NonTaxableAmount = itm.NonTaxableAmount;
+                            txnItmFromDb.ModifiedBy = currentUser.EmployeeId;
+                            txnItmFromDb.ModifiedOn = DateTime.Now;
+                            txnItmFromDb.IsAutoCalculationStop = itm.IsAutoCalculationStop;
+                        });
 
                         billingDbContext.SaveChanges();
 

@@ -6,6 +6,7 @@ using DanpheEMR.Core.Parameters;
 using DanpheEMR.ServerModel;
 using DanpheEMR.Core.DynTemplates;
 using Audit.EntityFramework;
+using DanpheEMR.Core.DynamicTemplate;
 
 namespace DanpheEMR.Core
 {
@@ -42,13 +43,20 @@ namespace DanpheEMR.Core
         public DbSet<PHRMItemMasterModel> Medicines { get; set; }
 
         //For DynamicTemplates configuration (merged from CLN-Psy)--sud: 18June'18
-        public DbSet<Template> Templates { get; set; }
+        public DbSet<Template> Old_Templates { get; set; }
         public DbSet<Questionnaire> Questionnaires { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Option> Options { get; set; }
         public DbSet<LabRunNumberSettingsModel> LabRunNumberSettings { get; set; }
         public DbSet<AccountingCodeDetailsModel> ACCCodeDetails { get; set; }
         public DbSet<HospitalModel> Hospitals { get; set; }
+
+        //For New DynamicTemplates Configuration --bikesh 13July'23
+        public DbSet<TemplateTypeModel> TemplateTypes { get; set; }
+        public DbSet<FieldMasterModel> FieldMasters { get; set; }
+        public DbSet<TemplateModel> Templates { get; set; }
+        public DbSet<TemplateFieldMappingModel> TemplateFieldMappings { get; set; }
+
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -86,6 +94,13 @@ namespace DanpheEMR.Core
             modelBuilder.Entity<LabRunNumberSettingsModel>().ToTable("Lab_MST_RunNumberSettings");
             modelBuilder.Entity<AccountingCodeDetailsModel>().ToTable("ACC_MST_CodeDetails");
             modelBuilder.Entity<HospitalModel>().ToTable("ACC_MST_Hospital");
+
+            //For NewDynamicTemplates configuration --bikesh: 13July'23
+            modelBuilder.Entity<TemplateTypeModel>().ToTable("DYNTMP_MST_TemplateType");
+            modelBuilder.Entity<FieldMasterModel>().ToTable("DYNTMP_MST_FieldMaster");
+            modelBuilder.Entity<TemplateModel>().ToTable("DYNTEMP_CFG_Template");
+            modelBuilder.Entity<TemplateFieldMappingModel>().ToTable("DYNTMP_MAP_TemplateFieldMapping");
+
         }
     }
 }

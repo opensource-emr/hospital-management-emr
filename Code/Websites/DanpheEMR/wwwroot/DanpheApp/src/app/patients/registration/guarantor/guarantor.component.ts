@@ -1,11 +1,14 @@
 import { Component } from "@angular/core";
+import { CoreService } from "../../../core/shared/core.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
+import { DanpheCache, MasterType } from "../../../shared/danphe-cache-service-utility/cache-services";
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { IRouteGuard } from '../../../shared/route-guard.interface';
-import { PatientService } from '../../shared/patient.service';
-import { PatientsBLService } from '../../shared/patients.bl.service';
 import { Guarantor } from "../../shared/guarantor.model";
 import { Patient } from "../../shared/patient.model";
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { DanpheCache,MasterType } from "../../../shared/danphe-cache-service-utility/cache-services";
+import { PatientService } from '../../shared/patient.service';
+import { PatientsBLService } from '../../shared/patients.bl.service';
+
 @Component({
     templateUrl: "./guarantor.html"
 })
@@ -23,11 +26,13 @@ export class GuarantorComponent implements IRouteGuard {
     public guarantor: Guarantor = new Guarantor();
     public showGuarantorPropertyField: boolean = false;
     public Countries: Array<any> = null;
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
 
     constructor(
         _serv: PatientService,
         public patientBLService: PatientsBLService,
+        public coreService: CoreService,
         public msgBoxServ: MessageboxService) {
         this.GoToNextInput("InputId");
         this.currentPatient = _serv.getGlobal();
@@ -40,6 +45,7 @@ export class GuarantorComponent implements IRouteGuard {
         this.currentGuarantor.PatientId = this.currentPatient.PatientId;
         this.hasGuarantor = this.currentGuarantor.PatientGurantorInfo > 0 ? true : false;
         this.GetCountry();
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
 
     ChangeForSelf(val): void {
@@ -71,12 +77,12 @@ export class GuarantorComponent implements IRouteGuard {
 
     GoToNextInput(id: string) {
         window.setTimeout(function () {
-          let itmNameBox = document.getElementById(id);
-          if (itmNameBox) {
-            itmNameBox.focus();
-          }
+            let itmNameBox = document.getElementById(id);
+            if (itmNameBox) {
+                itmNameBox.focus();
+            }
         }, 600);
-      }
+    }
 
     CanRouteLeave() {
         // if the IsValid is false  then..it will show the validation message to the end user using the for loop..
@@ -106,9 +112,9 @@ export class GuarantorComponent implements IRouteGuard {
                     this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
                 }
             },
-            err => {
-                this.msgBoxServ.showMessage("error", ["failed get cities. please check log for details."]);
-            });
+                err => {
+                    this.msgBoxServ.showMessage("error", ["failed get cities. please check log for details."]);
+                });
     }
 
     save() {
@@ -142,20 +148,20 @@ export class GuarantorComponent implements IRouteGuard {
         }
     }
     GetCountry() {
-		this.Countries = DanpheCache.GetData(MasterType.Country,null);
-		
+        this.Countries = DanpheCache.GetData(MasterType.Country, null);
+
         // this.patientBLService.GetCountries()
-            // .subscribe(res => {
-                // if (res.Status == 'OK') {
-                    // this.Countries = res.Results;
-                // } else {
-                    // this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+        // .subscribe(res => {
+        // if (res.Status == 'OK') {
+        // this.Countries = res.Results;
+        // } else {
+        // this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
 
-                // }
-            // },
-                // err => {
-                    // this.msgBoxServ.showMessage("failed", ["failed get countries. please check log for details."]);
+        // }
+        // },
+        // err => {
+        // this.msgBoxServ.showMessage("failed", ["failed get countries. please check log for details."]);
 
-                // });
+        // });
     }
 }

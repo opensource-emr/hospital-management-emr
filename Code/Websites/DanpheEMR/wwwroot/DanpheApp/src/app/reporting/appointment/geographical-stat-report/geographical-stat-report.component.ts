@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import * as moment from 'moment';
 import { CoreService } from '../../../core/shared/core.service';
 import { CountrySubdivision, Municipality } from '../../../settings-new/shared/country-subdivision.model';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { DLService } from '../../../shared/dl.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
@@ -38,12 +39,17 @@ export class RPT_ADT_GeographicalStatReportComponent implements OnInit {
   public GeoStatType: string = "District";
   showMunicipality: any;
   public selectedDistrictId: number = 0;
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
 
   constructor(public dlService: DLService,
     public msgBoxServ: MessageboxService,
     public coreService: CoreService,
     public reportServ: ReportingService) {
+
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
+
     this.geographicalstatreport.fromDate = moment().format('YYYY-MM-DD');
     this.geographicalstatreport.toDate = moment().format('YYYY-MM-DD');
     this.DistrictWiseReportColumn = this.reportServ.reportGridCols.RPT_ADT_DistrictWiseReportColumn;

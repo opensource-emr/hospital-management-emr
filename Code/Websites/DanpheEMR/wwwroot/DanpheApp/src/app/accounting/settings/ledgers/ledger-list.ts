@@ -1,15 +1,14 @@
 
-import { Component, ChangeDetectorRef } from "@angular/core";
+import { ChangeDetectorRef, Component } from "@angular/core";
 
-import { LedgerModel } from '../shared/ledger.model';
 import { AccountingSettingsBLService } from '../shared/accounting-settings.bl.service';
+import { LedgerModel } from '../shared/ledger.model';
 
+import { DanpheCache, MasterType } from "../../../shared/danphe-cache-service-utility/cache-services";
 import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import * as moment from 'moment/moment';
 import { AccountingService } from "../../shared/accounting.service";
-import { MasterType, DanpheCache } from "../../../shared/danphe-cache-service-utility/cache-services";
 
 @Component({
   selector: 'ledger-list',
@@ -51,14 +50,14 @@ export class LedgerListComponent {
 
   CallBackAdd($event) {
     let tempLed = $event.ledger;
-      this.changeDetector.detectChanges();
-      this.getLedgerList();
-      this.UpdateLedgers();
-      this.showAddPage = false;
-      this.showEditPage = false;
-      this.changeDetector.detectChanges();
-      this.selectedLedger = null;
-      this.index = null;
+    this.changeDetector.detectChanges();
+    this.getLedgerList();
+    this.UpdateLedgers();
+    this.showAddPage = false;
+    this.showEditPage = false;
+    this.changeDetector.detectChanges();
+    this.selectedLedger = null;
+    this.index = null;
 
   }
   LedgerGridActions($event: GridEmitModel) {
@@ -68,7 +67,7 @@ export class LedgerListComponent {
         this.selectedLedger = null;
         this.index = $event.RowIndex;
         this.selectedLedger = $event.Data;
-        this.ActivateDeactivateLedgerStatus(this.selectedLedger)
+        this.ActivateDeactivateLedgerStatus(this.selectedLedger, this.index)
         this.showLedgerList = true;
         this.selectedLedger = null;
         break;
@@ -91,7 +90,7 @@ export class LedgerListComponent {
     }
   }
 
-  ActivateDeactivateLedgerStatus(selectedLedger: LedgerModel) {
+  ActivateDeactivateLedgerStatus(selectedLedger: LedgerModel, index: number) {
     if (selectedLedger != null) {
       let status = selectedLedger.IsActive == true ? false : true;
       let msg = status == true ? 'Activate' : 'Deactivate';
@@ -106,8 +105,15 @@ export class LedgerListComponent {
                 let responseMessage = res.Results.IsActive ? "is now activated." : "is now Deactivated.";
                 this.msgBox.showMessage("success", [res.Results.LedgerName + ' ' + responseMessage]);
                 //This for send to callbackadd function to update data in list
+
+
                 this.getLedgerList();
                 this.UpdateLedgers();
+
+                //Ledger list refresh problem after the activation or deactivation of the Ledger is solved by following code
+                this.ledgerList[index].IsActive = res.Results.IsActive;
+                this.ledgerList.slice();
+                this.changeDetector.detectChanges();
               }
               else {
                 this.msgBox.showMessage("error", ['Something wrong' + res.ErrorMessage]);

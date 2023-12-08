@@ -116,7 +116,7 @@
                   <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
                     <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                     <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
+                    <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{
                       headerDetail.tel}}</span><br />
                     <span style="font-size:15px;"><strong> Procurement Unit </strong></span><br />
                   </div>
@@ -135,12 +135,13 @@
           </div>
           <div class="clear"></div>
           <div class="left" style="text-align:left;">
-            <div>PR No:<b> {{PurchaseOrder.PONumber}}</b></div>
+            <div>PO No:<b> {{PurchaseOrder.PONumber}}</b></div>
             <div *ngIf="!!PurchaseOrder.VendorName">Selected Vendor:<b> {{PurchaseOrder.VendorName}}</b></div>
           </div>
           <div class="right" style="text-align:right;">
             <div>
               Ordered Date:<b> {{PurchaseOrder.PoDate | date : 'yyyy-MM-dd'}}</b>&nbsp;&nbsp;
+              <i *ngIf="PurchaseOrder.PoDate"> {{PurchaseOrder.PoDate | nepaliDate:'format':'YYYY-MM-DD'}} </i>
             </div>
             <div>
               Ordered From:<b> {{PurchaseOrder.OrderFromStoreName}}</b>

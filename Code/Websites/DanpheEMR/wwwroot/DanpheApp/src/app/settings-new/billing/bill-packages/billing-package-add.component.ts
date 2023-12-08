@@ -64,7 +64,8 @@ export class BillingPackageAddComponent {
   public confirmationTitle: string = "Confirm !";
   public confirmationMessageForSave: string = "Are you sure you want to Save Billing Package ?";
   public confirmationMessageForUpdate: string = "Are you sure you want to Update Billing Package ?";
-
+  public IsPackageItemsInitialLoad: boolean = false;
+  public DisplaySchemePriceCategorySelection: boolean = false;
   constructor(
     private _settingsBLService: SettingsBLService,
     private _messageBoxService: MessageboxService,
@@ -84,10 +85,13 @@ export class BillingPackageAddComponent {
     this.CurrentBillingPackage.PackageServiceItems = new Array<BillingPackageItem>();
     this.SelectedPerformer = null;
     if (this.isUpdate) {
+      this.IsPackageItemsInitialLoad = true;
       this.SchemePriCeCategory.SchemeId = this.selectedItem.SchemeId;
       this.SchemePriCeCategory.PriceCategoryId = this.selectedItem.PriceCategoryId;
       this.DisableSchemePriceSelection = true;
       this.GetBillingPackageServiceItemList(this.selectedItem.BillingPackageId, this.selectedItem.PriceCategoryId);
+    } else {
+      this.DisplaySchemePriceCategorySelection = true;
     }
     this.taxPercent = this._billingService.taxPercent;
     this.SelectedServiceItem = new BillingPackageServiceItem_DTO();
@@ -183,7 +187,6 @@ export class BillingPackageAddComponent {
       this.totalAmount = 0;
       return;
     }
-    this.CurrentBillingPackage.TotalPrice = this.CurrentBillingPackage.PackageServiceItems.reduce((acc, curr) => acc + (curr.Price * curr.Quantity), 0);
     this.totalAmount = this.CurrentBillingPackage.TotalPrice;
     if (this.totalDiscount) {
       this.CurrentBillingPackage.DiscountPercent = CommonFunctions.parseAmount(((this.totalDiscount / this.CurrentBillingPackage.TotalPrice) * 100), 4);
@@ -214,19 +217,22 @@ export class BillingPackageAddComponent {
       //this.totalDiscount = (this.CurrentBillingPackage.DiscountPercent * this.CurrentBillingPackage.TotalPrice) / 100;
       this.CurrentBillingPackage.PackageServiceItems.forEach((item, index) => {
         const itemSubTotal = item.Price * item.Quantity;
-        const itemDiscount = CommonFunctions.parseAmount(((itemSubTotal * this.CurrentBillingPackage.DiscountPercent) / 100), 2);
-        item.DiscountPercent = this.CurrentBillingPackage.DiscountPercent;
+        let itemDiscount;
+        if (!this.IsPackageItemsInitialLoad) {
+          itemDiscount = CommonFunctions.parseAmount(((itemSubTotal * this.CurrentBillingPackage.DiscountPercent) / 100), 2);
+          item.DiscountPercent = this.CurrentBillingPackage.DiscountPercent;
+        }
+        else {
+          itemDiscount = CommonFunctions.parseAmount(((itemSubTotal * item.DiscountPercent) / 100), 2);
+        }
         item.DiscountAmount = itemDiscount;
-        //this.totalDiscount += item.DiscountAmount;
         item.Total = itemSubTotal - itemDiscount;
         this.SelectedServiceItemList[index].DiscountAmount = item.DiscountAmount;
         this.SelectedServiceItemList[index].TotalAmount = item.Total;
         item.Tax = (this.taxPercent * item.Total) / 100;
         item.Total = CommonFunctions.parseAmount(item.Total + item.Tax);
-        // this.CurrentBillingPackage.TotalPrice += CommonFunctions.parseAmount(itemSubTotal);
-        // this.totalAmount += item.Total;
       });
-      //this.CurrentBillingPackage.DiscountPercent = Math.round(this.CurrentBillingPackage.DiscountPercent * 10000) / 10000;
+      this.IsPackageItemsInitialLoad = false;
       this.totalAmount = CommonFunctions.parseAmount(this.CurrentBillingPackage.TotalPrice - this.totalDiscount);
     }
   }
@@ -303,7 +309,6 @@ export class BillingPackageAddComponent {
   public RemoveInvoiceItem(index: number): void {
     this.SelectedServiceItemList.splice(index, 1);
     this.CurrentBillingPackage.PackageServiceItems.splice(index, 1);
-    //this.totalDiscount = this.CurrentBillingPackage.PackageServiceItems.reduce((acc, curr) => acc + (curr.DiscountAmount), 0);
     this.CalculationForCurrentBillingPackage();
   }
 
@@ -323,9 +328,10 @@ export class BillingPackageAddComponent {
       this.SelectedServiceItem = new BillingPackageServiceItem_DTO();
       this.SelectedServiceItemList = new Array<BillingPackageServiceItem_DTO>();
       this.CurrentBillingPackage.PackageServiceItems = new Array<BillingPackageItem>();
+      this.totalDiscount = 0;
+      this.totalAmount = 0;
     }
     this.SelectedPerformer = null;
-    this.CalculationForCurrentBillingPackage();
     if (schemePriceObj) {
       this.serviceBillingContext = ENUM_ServiceBillingContext.OpBilling;
       this.GetServiceItems(this.serviceBillingContext, schemePriceObj.SchemeId, schemePriceObj.PriceCategoryId);
@@ -562,7 +568,7 @@ export class BillingPackageAddComponent {
     let html: string = "";
     if (data.ServiceDepartmentName !== "OPD") {
       html = "<font color='blue'; size=03 >" + data["ItemCode"] + "&nbsp;&nbsp;" + ":" + "&nbsp;" + data["ItemName"].toUpperCase() + "</font>" + "&nbsp;&nbsp;";
-      html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + (this.coreService.currencyUnit) + "<b>" + data["Price"] + "</b>";
+      html += "(<i>" + data["ServiceDepartmentName"] + "</i>)" + "&nbsp;&nbsp;" + 'Rs.' + "<b>" + data["Price"] + "</b>";
       return html;
     }
     else {

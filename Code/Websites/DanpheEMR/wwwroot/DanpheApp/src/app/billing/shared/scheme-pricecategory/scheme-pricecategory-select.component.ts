@@ -23,7 +23,8 @@ export class SchemePriceCategorySelectComponent {
 
   @Input("module-name")
   public moduleName: string = "Billing";
-
+  @Input("show-priceCategory-selection")
+  public ShowPriceCategorySelection: boolean = true;
 
   @Output("on-change")
   public schemePriceCategoryEmitter: EventEmitter<SchemePriceCategory_DTO> = new EventEmitter<SchemePriceCategory_DTO>();

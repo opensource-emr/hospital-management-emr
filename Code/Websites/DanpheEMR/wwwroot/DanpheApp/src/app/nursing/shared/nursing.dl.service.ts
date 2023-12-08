@@ -1,7 +1,11 @@
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 
+import { Observable } from "rxjs";
 import { ImagingItemRequisition } from "../../radiology/shared/imaging-item-requisition.model";
+import { DietType } from "./diet-type.model";
+import { DanpheHTTPResponse } from "../../shared/common-models";
+import { ConsultationRequestModel } from "./consultation-request.model";
 
 @Injectable()
 export class NursingDLService {
@@ -11,6 +15,7 @@ export class NursingDLService {
       "Content-Type": "application/x-www-form-urlencoded",
     }),
   };
+  public optionJson = { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) };
   public jsonOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };
@@ -201,5 +206,49 @@ export class NursingDLService {
   public UpdateExchangedDoctorDepartmentDetails(exchangedDoctorDepartment) {
     return this.http.put<any>(
       "/api/Nursing/ExchangeDoctorDepartment", exchangedDoctorDepartment, this.jsonOptions);
+  }
+  public GetAllDietTypes() {
+    return this.http.get<any>(
+      "/api/Clinical/DietTypes"
+    )
+  }
+  public GetAllInpatientListWithDietDetail(wardId: number) {
+    return this.http.get<any>(
+      `/api/Clinical/InpatientListWithDietDetail?WardId=${wardId}`, this.options);
+  }
+
+  public GetPatientDietHistory(PatientVisitId: number) {
+    return this.http.get<any>(
+      `/api/Clinical/PatientDietHistory?PatientVisitId=${PatientVisitId}`, this.options);
+  }
+  public AddPatientDietType(diet: DietType) {
+    return this.http.post<any>("/api/Clinical/AddPatientDietType", diet, this.jsonOptions);
+    }
+
+    public GetConsultationRequestsByPatientVisitId(PatientVisitId: number): Observable<DanpheHTTPResponse> {
+        return this.http.get<DanpheHTTPResponse>(`/api/Clinical/ConsultationRequestsByPatientVisitId?PatientVisitId=${PatientVisitId}`, this.options);
+    }
+
+    public GetPatientDetailsByPatientVisitIdForConsultationRequest(PatientVisitId: number): Observable<DanpheHTTPResponse> {
+        return this.http.get<DanpheHTTPResponse>(`/api/Clinical/PatientDetailsByPatientVisitIdForConsultationRequest?PatientVisitId=${PatientVisitId}`, this.options);
+    }
+
+    public GetAllApptDepartment(): Observable<DanpheHTTPResponse> {
+        return this.http.get<DanpheHTTPResponse>(`/api/Clinical/GetAllApptDepartment`);
+    }
+
+    public GetAllAppointmentApplicableDoctor(): Observable<DanpheHTTPResponse> {
+        return this.http.get<DanpheHTTPResponse>(`/api/Clinical/GetAllAppointmentApplicableDoctor`);
+    }
+
+    public AddNewConsultationRequest(newConsultationRequest: ConsultationRequestModel): Observable<DanpheHTTPResponse> {
+        return this.http.post<DanpheHTTPResponse>(`/api/Clinical/AddNewConsultationRequest`, newConsultationRequest, this.optionJson);
+    }
+
+    public ResponseConsultationRequest(responseConsultationRequest: ConsultationRequestModel): Observable<DanpheHTTPResponse> {
+        return this.http.put<DanpheHTTPResponse>(`/api/Clinical/ResponseConsultationRequest`, responseConsultationRequest, this.optionJson);
+    }
+  public GetInvestigationResults(FromDate, ToDate, patientId, patientVisitId) {
+    return this.http.get<any>(`/api/Nursing/InvestigationResults?fromDate=${FromDate}&toDate=${ToDate}&patientId=${patientId}&patientVisitId=${patientVisitId}`, this.options)
   }
 }

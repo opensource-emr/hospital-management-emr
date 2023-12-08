@@ -72,7 +72,7 @@ export default class DispensaryGridColumns {
     // { headerName: "PrescriptionId", field: "PrescriptionId", width: 100 },
     { headerName: "Code", field: "PatientCode", width: 100 },
     { headerName: "Patient Name", field: "PatientName", width: 200 },
-    { headerName: "Requested By", field: "ProviderFullName", width: 200 },
+    { headerName: "Requested By", field: "PrescriberName", width: 200 },
     { headerName: "Date", field: "CreatedOn", width: 110, cellRenderer: DispensaryGridColumns.PrescriptionListDateRender },
     {
       headerName: "Actions",

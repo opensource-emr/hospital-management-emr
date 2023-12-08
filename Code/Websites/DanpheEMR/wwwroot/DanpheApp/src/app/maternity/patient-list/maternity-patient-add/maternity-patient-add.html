@@ -12,7 +12,7 @@
   <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
 </div>
 <h4 [ngClass]="PatientDetails.PatientId ? 'clp clp-hd collapsed' : 'clp clp-hd'"
-  [attr.aria-expanded]="PatientDetails.PatientId ? 'false' : 'true'" data-toggle="collapse" data-target="#patInfoSection">
+    [attr.aria-expanded]="PatientDetails.PatientId ? 'false' : 'true'" data-toggle="collapse" data-target="#patInfoSection">
   Patient Information
 </h4>
 
@@ -27,8 +27,8 @@
 
               <div class="col-md-8">
                 <input type="text" id="patFirstName" class="form-control" [(ngModel)]="PatientDetails.FirstName"
-                  required formControlName="FirstName" value="{{PatientDetails.FirstName | CapitalFirstLetter}}"
-                  placeholder="First Name" (keyup.enter)="setFocusById('patMiddleName')">
+                       required formControlName="FirstName" value="{{PatientDetails.FirstName | CapitalFirstLetter}}"
+                       placeholder="First Name" (keyup.enter)="setFocusById('patMiddleName')">
               </div>
             </div>
 
@@ -37,8 +37,8 @@
 
               <div class="col-md-8">
                 <input type="text" id="patMiddleName" class="form-control" [(ngModel)]="PatientDetails.MiddleName"
-                  required formControlName="MiddleName" value="{{PatientDetails.MiddleName | CapitalFirstLetter}}"
-                  placeholder="Middle Name" (keyup.enter)="setFocusById('patLastName')">
+                       required formControlName="MiddleName" value="{{PatientDetails.MiddleName | CapitalFirstLetter}}"
+                       placeholder="Middle Name" (keyup.enter)="setFocusById('patLastName')">
               </div>
             </div>
 
@@ -47,8 +47,8 @@
 
               <div class="col-md-8">
                 <input type="text" id="patLastName" class="form-control" [(ngModel)]="PatientDetails.LastName" required
-                  formControlName="LastName" value="{{PatientDetails.LastName | CapitalFirstLetter}}"
-                  placeholder="Last Name" (keyup.enter)="setFocusById('patGender')">
+                       formControlName="LastName" value="{{PatientDetails.LastName | CapitalFirstLetter}}"
+                       placeholder="Last Name" (keyup.enter)="setFocusById('patGender')">
               </div>
             </div>
 
@@ -58,14 +58,14 @@
               </label>
               <div class="col-md-8">
                 <select id="patGender" class="form-control" [(ngModel)]="PatientDetails.Gender" formControlName="Gender"
-                  (change)="setFocusById('patAge')">
+                        (change)="setFocusById('patAge')">
                   <option value="null" selected>--select--</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Others">Other</option>
                 </select>
                 <span class="color-red font-sm" *ngIf="PatientDetails.IsDirty('Gender')"
-                  [hidden]="PatientDetails.IsValidCheck('Gender','required')"> Gender is required.</span>
+                      [hidden]="PatientDetails.IsValidCheck('Gender','required')"> Gender is required.</span>
               </div>
             </div>
 
@@ -75,13 +75,14 @@
               <div class="col-md-8">
                 <div class="col-md-4">
                   <input id="age" class="form-control" type="number" min="0" max="150" formControlName="Age"
-                    (focusout)="CalculateDob();" [(ngModel)]="PatientDetails.Age" placeholder="Age"
-                    (keyup.enter)="setFocusById('patPhoneNumber')" (wheel)="coreService.PreventNumberChangeOnScroll($event)" oninput="validity.valid||(value='');"/>
+                         (focusout)="CalculateDob();" [(ngModel)]="PatientDetails.Age" placeholder="Age"
+                         (keyup.enter)="setFocusById('patPhoneNumber')" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                         oninput="validity.valid||(value='');" />
                 </div>
                 <div class="col-md-6">
                   <div class="input-group">
                     <select class="form-control" [(ngModel)]="PatientDetails.AgeUnit" [ngModelOptions]="{standalone: true}"
-                      [disabled]="PatientDetails.PatientId" (ngModelChange)="CalculateDob();">
+                            [disabled]="PatientDetails.PatientId" (ngModelChange)="CalculateDob();">
                       <option value="Y" selected>Years</option>
                       <option value="M">Months</option>
                       <option value="D">Days</option>
@@ -98,12 +99,12 @@
 
               <div class="col-md-8">
                 <input id="patPhoneNumber" class="form-control" maxlength="11" type="tel" required
-                  [(ngModel)]="PatientDetails.PhoneNumber" formControlName="PhoneNumber" placeholder="Contact Number"
-                  (keyup.enter)="setFocusById('patAddress')" />
+                       [(ngModel)]="PatientDetails.PhoneNumber" formControlName="PhoneNumber" placeholder="Contact Number"
+                       (keyup.enter)="setFocusById('patAddress')" />
                 <span class="error-msg" *ngIf="PatientDetails.IsDirty('PhoneNumber')"
-                  [hidden]="PatientDetails.IsValidCheck('PhoneNumber','pattern')">Primary Phone is not proper</span>
+                      [hidden]="PatientDetails.IsValidCheck('PhoneNumber','pattern')">Primary Phone is not proper</span>
                 <span class="error-msg" *ngIf="PatientDetails.IsDirty('PhoneNumber')"
-                  [hidden]="PatientDetails.IsValidCheck('PhoneNumber','required')">Primary Phone is required</span>
+                      [hidden]="PatientDetails.IsValidCheck('PhoneNumber','required')">Primary Phone is required</span>
               </div>
             </div>
             <div class="form-group">
@@ -111,28 +112,28 @@
 
               <div class="col-md-8">
                 <select id="patCountry" class="form-control" [(ngModel)]="PatientDetails.CountryId"
-                  formControlName="CountryId" (ngModelChange)="CountryDDL_OnChange()">
+                        formControlName="CountryId" (ngModelChange)="CountryDDL_OnChange()">
                   <option *ngFor="let cont of allCountry" value="{{cont.CountryId}}">
                     {{cont.CountryName}}
                   </option>
                 </select>
                 <span class="error-msg" *ngIf="PatientDetails.IsDirty('CountryId')"
-                  [hidden]="PatientDetails.IsValidCheck('CountryId','required')"> Country is required</span>
+                      [hidden]="PatientDetails.IsValidCheck('CountryId','required')"> Country is required</span>
               </div>
             </div>
 
             <div class="form-group">
-              <label for="patDistrict" class="control-label col-md-4">District/State<b style="float:right;">:</b></label>
+              <label for="patDistrict" class="control-label col-md-4">{{GeneralFieldLabel.DistrictState}}<b style="float:right;">:</b></label>
 
               <div class="col-md-8">
                 <input class="form-control" danphe-auto-complete formControlName="CountrySubDivisionId"
-                  [(ngModel)]="selectedDistrict.CountrySubDivisionName" [list-formatter]="districtListFormatter"
-                  [source]="districts_Filtered" placeholder="District" display-property-name="CountrySubDivisionName"
-                  value-property-name=null onClick="this.select();" max-num-list="10" />
+                       [(ngModel)]="selectedDistrict.CountrySubDivisionName" [list-formatter]="districtListFormatter"
+                       [source]="districts_Filtered" placeholder="{{GeneralFieldLabel.DistrictState}}" display-property-name="CountrySubDivisionName"
+                       value-property-name=null onClick="this.select();" max-num-list="10" />
 
                 <span class="error-msg"
-                  *ngIf="PatientDetails.IsDirty('CountrySubDivisionId') && PatientDetails.CountryId == 1"
-                  [hidden]="PatientDetails.IsValidCheck('CountrySubDivisionId','required')"> District/State is
+                      *ngIf="PatientDetails.IsDirty('CountrySubDivisionId') && PatientDetails.CountryId == 1"
+                      [hidden]="PatientDetails.IsValidCheck('CountrySubDivisionId','required')"> {{GeneralFieldLabel.DistrictState}} is
                   required</span>
               </div>
             </div>
@@ -142,10 +143,10 @@
 
               <div class="col-md-8">
                 <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}" id="address"
-                  [(ngModel)]="PatientDetails.Address" placeholder="Address" display-property-name="PatAddress"
-                  value-property-name=null no-match-found-text=" " onClick="this.select();" min-chars="2"
-                  [source]="olderAddressList" style="text-transform: capitalize;" [grid-sort]="'sortonbasicdatatype'"
-                  max-num-list="10" />
+                       [(ngModel)]="PatientDetails.Address" placeholder="Address" display-property-name="PatAddress"
+                       value-property-name=null no-match-found-text=" " onClick="this.select();" min-chars="2"
+                       [source]="olderAddressList" style="text-transform: capitalize;" [grid-sort]="'sortonbasicdatatype'"
+                       max-num-list="10" />
                 <!-- (keyup.enter)="setFocusById('patMiddleName')" -->
               </div>
             </div>
@@ -171,10 +172,10 @@
 
               <div class="col-md-8">
                 <input type="text" id="patHusbandName" class="form-control" [(ngModel)]="MaternityPatient.HusbandName"
-                  required value="{{MaternityPatient.HusbandName | CapitalFirstLetter}}" placeholder="Husband's Name"
-                  (keyup.enter)="setFocusById('patHeight')" formControlName="HusbandName">
+                       required value="{{MaternityPatient.HusbandName | CapitalFirstLetter}}" placeholder="Husband's Name"
+                       (keyup.enter)="setFocusById('patHeight')" formControlName="HusbandName">
                 <span class="color-red font-sm" *ngIf="MaternityPatient.IsDirty('HusbandName')"
-                  [hidden]="MaternityPatient.IsValidCheck('HusbandName','required')"> First Name is required.</span>
+                      [hidden]="MaternityPatient.IsValidCheck('HusbandName','required')"> First Name is required.</span>
               </div>
             </div>
 
@@ -185,10 +186,10 @@
 
               <div class="col-md-8">
                 <input type="number" id="patHeight" class="form-control" [(ngModel)]="MaternityPatient.Height" required
-                  value="{{MaternityPatient.Height}}" placeholder="Height in cm"
-                  (keyup.enter)="setFocusById('patWeight')" formControlName="Height">
+                       value="{{MaternityPatient.Height}}" placeholder="Height in cm"
+                       (keyup.enter)="setFocusById('patWeight')" formControlName="Height">
                 <span class="color-red font-sm" *ngIf="MaternityPatient.IsDirty('Height')"
-                  [hidden]="MaternityPatient.IsValidCheck('Height','required')"> Height is required.</span>
+                      [hidden]="MaternityPatient.IsValidCheck('Height','required')"> Height is required.</span>
               </div>
             </div>
 
@@ -199,10 +200,10 @@
 
               <div class="col-md-8">
                 <input type="number" id="patWeight" class="form-control" [(ngModel)]="MaternityPatient.Weight" required
-                  value="{{MaternityPatient.Weight}}" placeholder="Weight in kgs" (keyup.enter)="setFocusById('patFLM')"
-                  formControlName="Weight">
+                       value="{{MaternityPatient.Weight}}" placeholder="Weight in kgs" (keyup.enter)="setFocusById('patFLM')"
+                       formControlName="Weight">
                 <span class="color-red font-sm" *ngIf="MaternityPatient.IsDirty('Weight')"
-                  [hidden]="MaternityPatient.IsValidCheck('Weight','required')"> Weight is required.</span>
+                      [hidden]="MaternityPatient.IsValidCheck('Weight','required')"> Weight is required.</span>
               </div>
             </div>
           </div>
@@ -210,13 +211,13 @@
           <div class="col-md-6">
             <div class="form-group">
               <label for="patFLM" class="control-label col-md-5">1<sup class="flm">st</sup> dayOf Last Menstruation<b
-                  class="color-red">
+                   class="color-red">
                   *
                 </b><b style="float:right;">:</b></label>
 
               <div class="col-md-6">
                 <danphe-date-picker [(ngModel)]="MaternityPatient.LastMenstrualPeriod" [CalendarTypes]="'en,np'"
-                  ngDefaultControl [ngModelOptions]="{standalone: true}">
+                                    ngDefaultControl [ngModelOptions]="{standalone: true}">
                 </danphe-date-picker>
                 <!-- <input type="text" id="patFLM" class="form-control"
                       [(ngModel)]="MaternityPatient.LastMenstrualPeriod" required
@@ -233,7 +234,7 @@
 
               <div class="col-md-6">
                 <danphe-date-picker [(ngModel)]="MaternityPatient.ExpectedDeliveryDate" [CalendarTypes]="'en,np'"
-                  ngDefaultControl [allow-future-date]="true" [ngModelOptions]="{standalone: true}">
+                                    ngDefaultControl [allow-future-date]="true" [ngModelOptions]="{standalone: true}">
                 </danphe-date-picker>
                 <!-- <input type="text" id="patEDD" class="form-control"
                       [(ngModel)]="MaternityPatient.ExpectedDeliveryDate" required
@@ -247,8 +248,8 @@
 
               <div class="col-md-7">
                 <input type="text" id="patObsHistory" class="form-control" [(ngModel)]="MaternityPatient.OBSHistory"
-                  required value="{{MaternityPatient.OBSHistory}}" placeholder="OBSHistory"
-                  (keyup.enter)="setFocusById('register')" [ngModelOptions]="{standalone: true}">
+                       required value="{{MaternityPatient.OBSHistory}}" placeholder="OBSHistory"
+                       (keyup.enter)="setFocusById('register')" [ngModelOptions]="{standalone: true}">
                 <!-- <span class="color-red font-sm" *ngIf="MaternityPatient.IsDirty('OBSHistory')" [hidden]="MaternityPatient.IsValidCheck('OBSHistory','required')"> Obs History is required.</span> -->
               </div>
             </div>
@@ -259,10 +260,12 @@
   </div>
 </div>
 <div class="all-buttons text-right margin-bottom-15">
-  <button *ngIf="!isUpdate" type="button" id="register" [disabled]="coreService.loading" class="btn green btn-success margin-7-hr" (click)="coreService.loading = true;AddNewMatPatient()">
+  <button *ngIf="!isUpdate" type="button" id="register" [disabled]="coreService.loading" class="btn green btn-success margin-7-hr"
+          (click)="coreService.loading = true;AddNewMatPatient()">
     Register
   </button>
-  <button *ngIf="isUpdate" type="button" id="register" [disabled]="coreService.loading" class="btn green btn-success margin-7-hr" (click)="coreService.loading = true;UpdateMaternityPatient()">
+  <button *ngIf="isUpdate" type="button" id="register" [disabled]="coreService.loading" class="btn green btn-success margin-7-hr"
+          (click)="coreService.loading = true;UpdateMaternityPatient()">
     Update Details
   </button>
 </div>

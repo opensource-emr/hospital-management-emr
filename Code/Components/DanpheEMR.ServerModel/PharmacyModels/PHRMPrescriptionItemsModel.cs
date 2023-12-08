@@ -12,14 +12,15 @@ namespace DanpheEMR.ServerModel
     {
         [Key]
         public int PrescriptionItemId { get; set; }
+        public int PrescriptionId { get; set; }
         public int PatientId { get; set; }
-        public int? PerformerId { get; set; }
+        public int? PrescriberId { get; set; }
         public int? ItemId { get; set; }//when order is given with generic, it could be null.
-        public Nullable<double> Quantity { get; set; }
+        public double? Quantity { get; set; }
         public int? Frequency { get; set; }
         public DateTime? StartingDate { get; set; }
         public int? HowManyDays { get; set; }
-        public string Notes { get; set; }        
+        public string Notes { get; set; }
         public int? CreatedBy { get; set; }
         public DateTime? CreatedOn { get; set; }
         public string OrderStatus { get; set; }
@@ -29,7 +30,7 @@ namespace DanpheEMR.ServerModel
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
 
-        public int? DiagnosisId { get; set; }        
+        public int? DiagnosisId { get; set; }
 
         [NotMapped]
         public string PerformerName { get; set; }

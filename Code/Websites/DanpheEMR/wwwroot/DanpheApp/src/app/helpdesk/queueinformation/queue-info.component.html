@@ -57,7 +57,7 @@
                                 <div class="inner-header">
                                     <h1 class="logo"><img src="../../../themes/theme-default/images/lumbini-hospital.png" alt=""></h1>
                                     <div class="top-header">
-                                        
+                                        <p>{{ labelContainer.Header_Text_Nepali }}</p>
                                         <p>{{ labelContainer.Header_Text }}</p>
                                     </div>
                                     <div class="blank-space">
@@ -73,7 +73,8 @@
                                     <div class="row">
                                         <div class="col-md-4" *ngFor="let data of visits | slice:0:1">
                                             <div class="patient-detail">
-                                                <div class="title"><span>{{ labelContainer.Label_Now }}<br></span></div>
+                                                <div class="title"><span>{{ labelContainer.Label_Now }}<br>{{ labelContainer.Label_Now_Nepali }}</span></div>
+                                                <div class="title" style="margin-top: 5px;">{{ labelContainer.Label_Token_Number_Nepali }}</div>
                                                 <div class="patient-number success-number pulse-highlight">{{data.QueueNo}}</div>
                                                 <div class="title" style="margin-bottom: 5px;">{{ labelContainer.Label_Token_Number }}</div>
                                                 <div class="patient-info">
@@ -90,11 +91,11 @@
                                         <div class="col-md-4" *ngIf="visits.length>0">                            
                                             <div class="patient-list">                                
                                                     <div class="subtitle">
-                                                        <h3>{{ labelContainer.Label_Next}} </h3>
+                                                        <h3>{{ labelContainer.Label_Next}} {{labelContainer.English_Nepali_Separator_Text}} {{ labelContainer.Label_Next_Nepali }}</h3>
                                                     </div>
                                                     <div class="patient-inner-list">
                                                     <div class="row">
-                                                        <div class="col-md-12" style="text-align: center;" *ngIf = "visits.length<2">{{labelContainer.No_Data_Text}} </div>
+                                                        <div class="col-md-12" style="text-align: center;" *ngIf = "visits.length<2">{{labelContainer.No_Data_Text}} {{labelContainer.English_Nepali_Separator_Text}} {{labelContainer.No_Data_Text_Nepali}}</div>
                                                         <div class="col-md-12" *ngFor="let data of visits | slice:1:6 ; index as i">
                                                             <div class="list-wrapper">
                                                                 <div class="patient-list-card" [ngClass] ="i==0?'next':''">
@@ -118,11 +119,11 @@
                                         <div class="col-md-4" *ngIf="visits.length>0">                            
                                             <div class="patient-list">                                
                                                     <div class="subtitle">
-                                                        <h3>{{ labelContainer.Label_Upcoming }} </h3>
+                                                        <h3>{{ labelContainer.Label_Upcoming }} {{labelContainer.English_Nepali_Separator_Text}} {{ labelContainer.Label_Upcoming_Nepali }}</h3>
                                                     </div>
                                                     <div class="patient-inner-list">
                                                     <div class="row">
-                                                        <div class="col-md-12" style="text-align: center;" *ngIf = "visits.length<7">{{labelContainer.No_Data_Text}} </div>
+                                                        <div class="col-md-12" style="text-align: center;" *ngIf = "visits.length<7">{{labelContainer.No_Data_Text}} {{labelContainer.English_Nepali_Separator_Text}} {{labelContainer.No_Data_Text_Nepali}}</div>
                                                         <div class="col-md-12" *ngFor="let data of visits | slice:6:11">
                                                             <div class="list-wrapper">
                                                                 <div class="patient-list-card">
@@ -146,7 +147,7 @@
                                     </div>  
                                     <div class="col-md-12">
                                         <div class="card-footer" style="display: flex;">
-                                            <h4 style="width: 300px;"><b>{{ labelContainer.Label_Notice }} :</b></h4>
+                                            <h4 style="width: 300px;"><b>{{ labelContainer.Label_Notice }} {{labelContainer.English_Nepali_Separator_Text}} {{ labelContainer.Label_Notice_Nepali }}:</b></h4>
                                             <marquee width="100%" direction="left" loop="infinite" scrollamount="infinite">
                                                 <ul>
                                                     <li *ngIf=" queueLevel !='hospital' && (selectedDepartmentId==0 || (selectedDepartmentId>0 && !department.NoticeText))"><i class="fa fa-check-circle mr-1"></i>{{labelContainer.Default_Notice}}</li>

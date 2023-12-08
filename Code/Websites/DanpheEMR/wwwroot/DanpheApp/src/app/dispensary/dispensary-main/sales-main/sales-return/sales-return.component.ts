@@ -17,6 +17,7 @@ import { SecurityService } from '../../../../security/shared/security.service';
 import { BillingScheme_DTO } from '../../../../settings-new/billing/shared/dto/billing-scheme.dto';
 import { PriceCategory } from '../../../../settings-new/shared/price.category.model';
 import { SettingsBLService } from '../../../../settings-new/shared/settings.bl.service';
+import { GeneralFieldLabels } from '../../../../shared/DTOs/general-field-label.dto';
 import { NepaliCalendarService } from '../../../../shared/calendar/np/nepali-calendar.service';
 import { CallbackService } from '../../../../shared/callback.service';
 import { DanpheHTTPResponse } from '../../../../shared/common-models';
@@ -46,9 +47,9 @@ export class SalesReturnComponent implements OnInit {
   public loopvar: Array<number> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   //variable for show TotalReturn amount details
   public returnAmount: number = 0;
-  //select or deselect all Items variable 
+  //select or deselect all Items variable
   public selectDeselectAll: boolean = false;
-  //Variable declaration is here for sale      
+  //Variable declaration is here for sale
   public loading: boolean = false;
   //variable for show hide Return Invoice page show whwen matching records findout
   public showReturnInvoicePage: boolean = false;
@@ -74,7 +75,7 @@ export class SalesReturnComponent implements OnInit {
   public selectedCommunityName: string = "";
 
   storeId: number = 0;
-  public nepaliDate: NepaliCalendarService
+  public nepaliDate: NepaliCalendarService;
   public disableSearchBtn: boolean = false;
   enableEnterReturnDiscount: boolean = false;
   NetReturnedAmount: number = 0;
@@ -105,6 +106,7 @@ export class SalesReturnComponent implements OnInit {
   public membershipList: Array<BillingScheme_DTO> = new Array<BillingScheme_DTO>();
   public schemeData: BillingScheme_DTO = new BillingScheme_DTO();
   public SchemeName: string = "";
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
 
   constructor(private _dispensaryService: DispensaryService, public nepaliCalendarServ: NepaliCalendarService,
@@ -123,6 +125,8 @@ export class SalesReturnComponent implements OnInit {
     public coreBLService: CoreBLService,
     public settingsBLService: SettingsBLService
   ) {
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
 
     try {
       this.currentCounter = this.securityService.getPHRMLoggedInCounter().CounterId;
@@ -136,7 +140,7 @@ export class SalesReturnComponent implements OnInit {
       this.GetPriceCategories();
       this.LoadPharmacySchemesList();
       if (this.currentCounter < 1) {
-        this.callBackService.CallbackRoute = '/Dispensary/Sale/New'
+        this.callBackService.CallbackRoute = '/Dispensary/Sale/New';
         this.router.navigate(['/Dispensary/ActivateCounter']);
       }
 
@@ -216,7 +220,7 @@ export class SalesReturnComponent implements OnInit {
             }
           });
       } else {
-        this.messageboxService.showMessage(ENUM_MessageBox_Status.Error, ["Please enter InvoiceNo and Fiscal Year"])
+        this.messageboxService.showMessage(ENUM_MessageBox_Status.Error, ["Please enter InvoiceNo and Fiscal Year"]);
         this.Cancel();
       }
     } catch (exception) {
@@ -251,7 +255,7 @@ export class SalesReturnComponent implements OnInit {
     this.CheckIfReturnValid();
     res.Results.invoiceItems.forEach(itm => {
       let itemObj = new PHRMInvoiceReturnItemsModel();
-      this.saleReturnModelList.push(Object.assign(itemObj, itm)); //Object.assign match and assign only values                               
+      this.saleReturnModelList.push(Object.assign(itemObj, itm)); //Object.assign match and assign only values
     });
     this.salesReturn.InvoiceReturnItems = this.saleReturnModelList;
     this.salesReturn.PaymentMode = res.Results.invoiceHeader.PaymentMode;
@@ -423,11 +427,12 @@ export class SalesReturnComponent implements OnInit {
           //return only selected items so validation also check only on selected items
           this.salesReturn.InvoiceReturnItems[j].CounterId = this.currentCounter;
           this.salesReturn.InvoiceReturnItems[j].StoreId = this._dispensaryService.activeDispensary.StoreId;
+          this.salesReturn.InvoiceReturnItems[j].PriceCategoryId = this.PriceCategoryId;
           if (this.salesReturn.InvoiceReturnItems[j].ReturnedQty > this.salesReturn.InvoiceReturnItems[j].Quantity) {
             formValidity = false;
-            errorMessages.push(`Returned Quantity is greater than Sold Quantity for Item ${this.salesReturn.InvoiceReturnItems[j].ItemName}.`)
+            errorMessages.push(`Returned Quantity is greater than Sold Quantity for Item ${this.salesReturn.InvoiceReturnItems[j].ItemName}.`);
           }
-          let isReturnedItemListEmpty = this.saleReturnModelList.some(a => a.ReturnedQty > 0) === false
+          let isReturnedItemListEmpty = this.saleReturnModelList.some(a => a.ReturnedQty > 0) === false;
           if (isReturnedItemListEmpty === true) {
             errorMessages.push("No items to return.");
             formValidity = false;
@@ -456,10 +461,10 @@ export class SalesReturnComponent implements OnInit {
           }
         }
         if (this.invoiceHeader.InvoiceBillStatus === 'unpaid') {
-          this.salesReturn.PaymentMode = 'credit'
+          this.salesReturn.PaymentMode = 'credit';
         }
         else {
-          this.salesReturn.PaymentMode = 'cash'
+          this.salesReturn.PaymentMode = 'cash';
         }
         this.salesReturn.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
         this.userName = this.securityService.GetLoggedInUser().UserName;
@@ -529,7 +534,7 @@ export class SalesReturnComponent implements OnInit {
       this.ShowCatchErrMessage(ex);
     }
   }
-  //call this function after post successfully 
+  //call this function after post successfully
   CallBackPostReturnInvoice(res) {
     try {
       if (res.Status === ENUM_DanpheHTTPResponses.OK) {
@@ -617,7 +622,7 @@ export class SalesReturnComponent implements OnInit {
     this.salesReturn.TotalAmount = CommonFunctions.parseAmount(this.salesReturn.TotalAmount);
     this.salesReturn.Tender = this.salesReturn.TotalAmount;
     this.salesReturn.Change = CommonFunctions.parseAmount(this.salesReturn.Tender - this.salesReturn.TotalAmount);
-    this.returnAmount = this.salesReturn.TotalAmount
+    this.returnAmount = this.salesReturn.TotalAmount;
     if (this.PriceCategoryId != null && this.IsCoPayment) {
       if (this.IsCoPayment) {
         this.salesReturn.ReturnCashAmount = CommonFunctions.parsePhrmAmount((this.salesReturn.TotalAmount * this.CoPaymentCashPercent) / 100);
@@ -686,10 +691,10 @@ export class SalesReturnComponent implements OnInit {
     const checked = event.target.checked;
     this.salesReturn.InvoiceReturnItems.forEach(item => item.checked = checked);
     if (checked === true) {
-      this.salesReturn.InvoiceReturnItems.forEach(item => { item.ReturnedQty = item.Quantity })
+      this.salesReturn.InvoiceReturnItems.forEach(item => { item.ReturnedQty = item.Quantity; });
     }
     else {
-      this.salesReturn.InvoiceReturnItems.forEach(item => { item.ReturnedQty = 0 })
+      this.salesReturn.InvoiceReturnItems.forEach(item => { item.ReturnedQty = 0; });
     }
   }
   SetCurrentFiscalYear() {
@@ -740,7 +745,7 @@ export class SalesReturnComponent implements OnInit {
         nextEl.focus();
         clearTimeout(Timer);
       }
-    }, 100)
+    }, 100);
   }
   FindNextFocusElementByIndex(index) {
     let indx = index + 1;
@@ -798,7 +803,7 @@ export class SalesReturnComponent implements OnInit {
         if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           this.dispensaryList = JSON.parse(JSON.stringify(res.Results));
         }
-      })
+      });
   }
   DispensaryListFormatter(data: any): string {
     return data["Name"];
@@ -903,7 +908,7 @@ export class SalesReturnComponent implements OnInit {
         this.InvoiceDetailToBeReturn.ReturnCashAmount = CommonFunctions.parseAmount(ReturnCashAmount, 4);
 
         ReturnCreditAmount = ReturnCreditAmount + this.InvoiceDetailToBeReturn.InvoiceReturnItems[i].ReturnCreditAmount;
-        this.InvoiceDetailToBeReturn.ReturnCreditAmount = CommonFunctions.parseAmount(ReturnCreditAmount, 4)
+        this.InvoiceDetailToBeReturn.ReturnCreditAmount = CommonFunctions.parseAmount(ReturnCreditAmount, 4);
       }
 
       if (this.InvoiceDetailToBeReturn.InvoiceReturnItems[i].ReturnedQty > 0) {
@@ -942,10 +947,10 @@ export class SalesReturnComponent implements OnInit {
     const checked = event.target.checked;
     this.InvoiceDetailToBeReturn.InvoiceReturnItems.forEach(item => item.Checked = checked);
     if (checked === true) {
-      this.InvoiceDetailToBeReturn.InvoiceReturnItems.forEach(item => { item.ReturnedQty = item.Quantity });
+      this.InvoiceDetailToBeReturn.InvoiceReturnItems.forEach(item => { item.ReturnedQty = item.Quantity; });
     }
     else {
-      this.InvoiceDetailToBeReturn.InvoiceReturnItems.forEach(item => { item.ReturnedQty = 0 });
+      this.InvoiceDetailToBeReturn.InvoiceReturnItems.forEach(item => { item.ReturnedQty = 0; });
     }
   }
 
@@ -980,7 +985,7 @@ export class SalesReturnComponent implements OnInit {
       itm.PatientId = PatientDetail.PatientId;
       itm.SchemeId = schemeData.SchemeId;
       itm.IsCoPayment = schemeData.IsCoPayment;
-    })
+    });
 
     const filteredInvoiceReturnItems = InvoiceDetailToBeReturn.InvoiceReturnItems.filter(itm => itm.ReturnedQty > 0);
     if (!filteredInvoiceReturnItems.length) {
@@ -1048,7 +1053,7 @@ export class SalesReturnComponent implements OnInit {
       },
         err => {
           this.messageboxService.showMessage(ENUM_MessageBox_Status.Failed, ['Failed To Return Invoice']);
-        })
+        });
   }
 
   ClearField(): void {

@@ -23,8 +23,7 @@ export class ItemGroupDistributionModel {
   public IsRemoved: boolean = false;
   public DocObj = { EmployeeId: null, FullName: '' };
   public isSelfGroupDistribution: boolean = false;
-
-
+  public ServiceItemId: number = 0;
   constructor() {
 
   }

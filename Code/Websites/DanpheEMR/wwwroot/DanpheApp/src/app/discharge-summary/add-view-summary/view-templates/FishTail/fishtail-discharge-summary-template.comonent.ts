@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { CoreService } from "../../../../core/shared/core.service";
 import { SecurityService } from "../../../../security/shared/security.service";
+import { GeneralFieldLabels } from "../../../../shared/DTOs/general-field-label.dto";
 import { DischargeSummaryViewModel } from "../discharge-summary-view-model";
 
 
@@ -25,13 +27,16 @@ export class FishTailDischargeSummaryViewTemplateComponent {
     hideBtn: boolean = false;
     loggedInuserName: string;
 
-    public ConsultantDoctor:string;
+    public ConsultantDoctor: string;
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
-    constructor(public securityService: SecurityService) {
+    constructor(public securityService: SecurityService, public coreservice: CoreService,) {
         this.hasEditDischargeSunnaryPermission = this.securityService.HasPermission('btn-edit-discharge-summary-after-final-submit');
+        this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
+
     }
     ngOnInit() {
-        if(this.dsVM.Consultants && this.dsVM.Consultants.length){
+        if (this.dsVM.Consultants && this.dsVM.Consultants.length) {
             this.ConsultantDoctor = this.dsVM.Consultants[0].consultantLongSignature;
         }
         this.CalculateHospitalStayDay();

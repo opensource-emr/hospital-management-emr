@@ -5,7 +5,7 @@ export class EmployeeBillItemsMapModel {
   public EmployeeBillItemsMapId: number = 0;
   public EmployeeId: number = 0;
   public PriceCategoryId: number = 0;
-  public BillItemPriceId: number = 0;
+  public PriceCategoryName: string = "";
   public ServiceItemId: number = 0;
   // public AssignedToPercent: number = 0;
   // public ReferredByPercent: number = 0;

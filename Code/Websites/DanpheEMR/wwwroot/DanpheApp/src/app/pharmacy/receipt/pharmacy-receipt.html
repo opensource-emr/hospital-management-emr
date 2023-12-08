@@ -176,7 +176,7 @@
                             <p class="c_paragraphs" style="text-align: center;">{{ headerDetail.DDA}}</p>
                         </td>
                         <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
-                            <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;"><strong>PAN No.
+                            <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;"><strong>{{GeneralFieldLabel.PANNo}}
                                     : {{headerDetail.PANno}}</strong> </p>
                         </td>
                     </tr>
@@ -226,7 +226,9 @@
                                     <td colspan="6" style="text-align: left;">
                                         <p class="c_paragraphs"><strong>Patient's Name: </strong>{{receipt.PatientInfo.ShortName}}</p>
                                     </td>
-
+                                    <td colspan="6" style="text-align: right;">
+                                        <p class="c_paragraphs">{{receipt.ReceiptDate | nepaliDate }}</p>
+                                    </td>
                                 </tr>
                                 <tr *ngIf="receipt.PatientInfo.PatientId > 0">
                                     <td colspan="6" style="text-align: left;">
@@ -246,7 +248,7 @@
                                         </p>
                                     </td>
                                     <td colspan="6" style="text-align: right;" *ngIf="receipt.ProviderNMCNumber">
-                                        <p class="c_paragraphs">NMCNumber:{{receipt.ProviderNMCNumber}}</p>
+                                        <p class="c_paragraphs">{{GeneralFieldLabel.NMCNo}}:{{receipt.ProviderNMCNumber}}</p>
                                     </td>
                                 </tr>
                                 <tr *ngIf="receipt.ClaimCode || receipt.PolicyNo">
@@ -404,7 +406,7 @@
                             <p class="c_paragraphs" style="text-align: center;">{{headerDetail.DDA}}</p>
                         </td>
                         <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
-                            <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;"><strong>PAN No.
+                            <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;"><strong>{{GeneralFieldLabel.PANNo}}
                                     : {{headerDetail.PANno}}</strong> </p>
                         </td>
                     </tr>
@@ -454,14 +456,16 @@
                                     <td colspan="6" style="text-align: left;">
                                         <p class="c_paragraphs"><strong>Patient's Name: </strong>{{receipt.PatientInfo.ShortName}}</p>
                                     </td>
-
+                                    <td colspan="6" style="text-align: right;">
+                                        <p class="c_paragraphs">{{receipt.ReceiptDate | nepaliDate }}</p>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td colspan="6" style="text-align: left;" *ngIf="receipt.ProviderName">
                                         <p class="c_paragraphs"><strong>Provider's Name: </strong>{{receipt.ProviderName}}</p>
                                     </td>
                                     <td colspan="6" style="text-align: right;" *ngIf="receipt.ProviderNMCNumber">
-                                        <p class="c_paragraphs"><strong>NMCNumber: </strong>{{receipt.ProviderNMCNumber}}</p>
+                                        <p class="c_paragraphs"><strong>{{GeneralFieldLabel.NMCNo}}: </strong>{{receipt.ProviderNMCNumber}}</p>
                                     </td>
                                 </tr>
                                 <tr *ngIf="receipt.PatientInfo.PatientId > 0">

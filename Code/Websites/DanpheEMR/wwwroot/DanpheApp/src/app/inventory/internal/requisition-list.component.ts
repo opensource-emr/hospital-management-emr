@@ -15,6 +15,7 @@ import { InventoryBLService } from "../shared/inventory.bl.service";
 import { InventoryService } from '../shared/inventory.service';
 import { RequisitionItems } from "../shared/requisition-items.model";
 import { Requisition } from "../shared/requisition.model";
+import { GeneralFieldLabels } from "../../shared/DTOs/general-field-label.dto";
 
 @Component({ templateUrl: "./requisition-list.component.html" })
 export class RequisitionListComponent {
@@ -61,6 +62,10 @@ export class RequisitionListComponent {
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   public NepaliDateInGridSettingsForDispatchList: NepaliDateInGridParams = new NepaliDateInGridParams();
   currentActiveInventory: PHRMStoreModel;
+  showRequisitionDetailsPopup: boolean = false;
+  showDispatchDetailsPopup: boolean = false;
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(public coreService: CoreService, private _activeInvService: ActivateInventoryService, public InventoryBLService: InventoryBLService, public inventoryService: InventoryService, public router: Router, public routeFrom: RouteFromService, public messageBoxService: MessageboxService, public securityService: SecurityService) {
     var colSettings = new GridColumnSettings(this.securityService);
@@ -69,10 +74,11 @@ export class RequisitionListComponent {
     this.DispatchListGridColumns = GridColumnSettings.DispatchList;
     this.CancelListGridColumns = GridColumnSettings.CancelList;
     this.dateRange = 'None';
-    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RequisitionDate', false));
+    this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RequisitionDate', true));
     this.NepaliDateInGridSettingsForDispatchList.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('DispatchedDate', false));
     this.GetInventoryBillingHeaderParameter();
     this.currentActiveInventory = _activeInvService.activeInventory;
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
   BackToGrid() {
     this.showItemwise = false;
@@ -135,7 +141,12 @@ export class RequisitionListComponent {
       case "view":
         {
           var data = $event.Data;
-          this.RouteToViewDetail(data);
+          //this.RouteToViewDetail(data);
+
+          this.inventoryService.RequisitionId = data.RequisitionId;
+          this.inventoryService.StoreName = data.StoreName;
+          this.inventoryService.StoreId = data.StoreId;
+          this.showRequisitionDetailsPopup = true;
           break;
         }
       case "cancelList":
@@ -217,12 +228,7 @@ export class RequisitionListComponent {
           this.inventoryService.RequisitionId = this.requisitionId;
           this.inventoryService.StoreName = this.storeName;
           this.inventoryService.CreatedOn = $event.Data.CreatedOn;
-          this.router.navigate(["/Inventory/InternalMain/Requisition/DispatchReceiptDetails"]);
-          // var tempDispatchId = $event.Data.DispatchId;
-          // this.innerDispatchdetails = $event.Data;
-          // this.ShowbyDispatchId(tempDispatchId);
-          // this.showDispatchList = false;
-          // this.showCancelList = false;
+          this.showDispatchDetailsPopup = true;
         }
         break;
       }
@@ -345,5 +351,16 @@ export class RequisitionListComponent {
       }
 
     }
+  }
+
+  CallBackDispatchDetailsPopUpClose() {
+    this.showDispatchDetailsPopup = false;
+  }
+
+  CloseRequisitionDetailsPopup() {
+    this.showRequisitionDetailsPopup = false;
+    this.inventoryService.RequisitionId = null;
+    this.inventoryService.StoreName = null;
+    this.inventoryService.StoreId = null;
   }
 }

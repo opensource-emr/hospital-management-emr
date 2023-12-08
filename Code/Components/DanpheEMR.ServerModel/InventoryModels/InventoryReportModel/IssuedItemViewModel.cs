@@ -8,7 +8,7 @@ namespace DanpheEMR.ServerModel.InventoryModels.InventoryReportModel
 {
     public class IssuedItemViewModel
     {
-        public int ReferenceNo { get; set; }
+        public int DispatchNo { get; set; }
         public string SubStoreName { get; set; }
         public string ItemName { get; set; }
         public string Unit { get; set; }

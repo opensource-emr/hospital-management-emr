@@ -4,7 +4,8 @@ export class RequisitionDispatch_DTO {
     SourceStoreName: string = '';
     RequisitionDate: string = '';
     RequestedByName: string = '';
-    IssueNo: string = '';
+    IssueNo: number = null;
+    DispatchNo: number = null;
     DispatchedByName: string = '';
     DispatchedDate: string = '';
     ReceivedBy: string = '';

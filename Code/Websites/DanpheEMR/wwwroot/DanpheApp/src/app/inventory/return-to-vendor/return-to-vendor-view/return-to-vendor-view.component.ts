@@ -6,6 +6,7 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 import { RouteFromService } from '../../../shared/routefrom.service';
 import { ReturnToVendorItem } from '../return-to-vendor-items.model';
 import { InventoryBLService } from '../../shared/inventory.bl.service';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 
 @Component({
   selector: 'app-return-to-vendor-view',
@@ -34,6 +35,8 @@ export class ReturnToVendorViewComponent implements OnInit {
   public PurchaseReturnNumber: string = "PI000";
   msgBoxServ: any;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(
     public inventoryBLService: InventoryBLService,
     public messageBoxService: MessageboxService,
@@ -43,6 +46,7 @@ export class ReturnToVendorViewComponent implements OnInit {
     public coreService: CoreService) {
     this.LoadReturnItems(this.inventoryService.CreatedOn, this.inventoryService.VendorId);
     this.GetInventoryBillingHeaderParameter();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
 
   LoadReturnItems(CreatedOn: string, VendorId: number) {

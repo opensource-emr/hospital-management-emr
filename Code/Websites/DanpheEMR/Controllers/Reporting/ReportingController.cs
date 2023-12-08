@@ -974,6 +974,30 @@ namespace DanpheEMR.Controllers.Reporting
                 responseData.ErrorMessage = ex.Message;
             }
             return DanpheJSONConvert.SerializeObject(responseData);
+        }public string DoctorWiseStatisticReport(DateTime FromDate, DateTime ToDate, int? EmployeeId, string gender)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+
+                List<SqlParameter> paramsList = new List<SqlParameter>();
+                paramsList.Add(new SqlParameter("@FromDate", FromDate));
+                paramsList.Add(new SqlParameter("@ToDate", ToDate));
+                paramsList.Add(new SqlParameter("@EmployeeId", EmployeeId));
+                paramsList.Add(new SqlParameter("@Gender", gender));
+
+                DataTable dtDoctorWiseRpt = DALFunctions.GetDataTableFromStoredProc("SP_Report_Appointment_DoctorWiseStatReport", paramsList, reportingDbContext);
+                responseData.Status = ENUM_Danphe_HTTP_ResponseStatus.OK;
+                responseData.Results = dtDoctorWiseRpt;
+            }
+            catch (Exception ex)
+            {
+                //Insert exception details into database table.
+                responseData.Status = ENUM_Danphe_HTTP_ResponseStatus.Failed;
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
         }
 
 
@@ -2219,7 +2243,7 @@ namespace DanpheEMR.Controllers.Reporting
             try
             {
 
-                
+
                 ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
                 DynamicReport dtLabDashboardLabReqDetails = reportingDbContext.LabDashboardTestReqDetails();
 
@@ -2259,6 +2283,28 @@ namespace DanpheEMR.Controllers.Reporting
 
             return DanpheJSONConvert.SerializeObject(responseData);
         }
+        #endregion
+
+        #region  InPatient OutstandingReport
+        public string InpatientOutstandingReport(string Operator, decimal? Amount)
+        {
+            DanpheHTTPResponse<DataTable> responseData = new DanpheHTTPResponse<DataTable>();
+            try
+            {
+                ReportingDbContext reportingDbContext = new ReportingDbContext(connString);
+                DataTable inpatientOutstandingReport = reportingDbContext.InpatientOutstandingReport(Operator, Amount);
+                responseData.Status = ENUM_Danphe_HTTP_ResponseStatus.OK;
+                responseData.Results = inpatientOutstandingReport;
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = ENUM_Danphe_HTTP_ResponseStatus.Failed;
+                responseData.ErrorMessage = ex.Message;
+            }
+            return DanpheJSONConvert.SerializeObject(responseData);
+        }
+
+
         #endregion
     }
 }

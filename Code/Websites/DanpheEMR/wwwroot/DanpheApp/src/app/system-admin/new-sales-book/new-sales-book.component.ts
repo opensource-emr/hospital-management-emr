@@ -9,7 +9,7 @@ import { NepaliCalendarService } from "../../shared/calendar/np/nepali-calendar.
 import { NepaliDate } from '../../shared/calendar/np/nepali-dates';
 import { PhrmInvoiceDetailsModel } from '../shared/phrm-invoice-details.model'
 import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from '../../shared/shared-enums';
-
+import { GeneralFieldLabels } from '../../shared/DTOs/general-field-label.dto';
 @Component({
   selector: 'new-sales-book',
   templateUrl: './new-sales-book.component.html',
@@ -34,6 +34,7 @@ export class NewSalesBookComponent implements OnInit {
   public curtPhrmSalesBookDetail: Array<PhrmInvoiceDetailsModel> = new Array<PhrmInvoiceDetailsModel>();
   public finalData: Array<InvoiceDetailsModel> = new Array<InvoiceDetailsModel>();
   public headerDetail: { CustomerName, Address, Email, CustomerRegLabel, CustomerRegNo, Tel };
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(
     public _systemAdminBLService: SystemAdminBLService,
     private messageBoxService: MessageboxService,
@@ -45,6 +46,7 @@ export class NewSalesBookComponent implements OnInit {
     this.toDate = moment().format('YYYY-MM-DD');
     this.LoadCalendarTypes();
     this.GetBillingHeaderParameter();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
 
   ngOnInit() {

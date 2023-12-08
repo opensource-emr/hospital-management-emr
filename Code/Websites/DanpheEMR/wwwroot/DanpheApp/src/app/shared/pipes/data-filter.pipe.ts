@@ -1,5 +1,4 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { pipe } from '@angular/core/src/render3';
 import { Observable, of } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 /*
@@ -16,7 +15,7 @@ import { delay, map } from 'rxjs/operators';
 export class SearchFilterPipe implements PipeTransform {
   transform(itemList: any[], searchText: string): Observable<any[]> {
     return of(itemList).pipe(
-      delay(500),
+      delay(50),
       map(d => {
         if (!searchText) { return d };
         if (searchText && searchText.trim() != '') {
@@ -35,7 +34,7 @@ export class SearchFilterPipe implements PipeTransform {
         } else {
           return itemList;
         }
-      }) 
-     );
+      })
+    );
   }
 }

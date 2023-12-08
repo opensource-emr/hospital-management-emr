@@ -41,6 +41,9 @@ export class RegistrationSchemeSelectComponent {
   @Input("service-billing-context")
   public serviceBillingContext: string = ENUM_ServiceBillingContext.OpBilling;
 
+  @Input("policy-no")
+  public policyNo: string = "";
+
   @Output("on-change")
   public regSchemeChangeEmitter: EventEmitter<RegistrationScheme_DTO> = new EventEmitter<RegistrationScheme_DTO>();
 
@@ -64,6 +67,7 @@ export class RegistrationSchemeSelectComponent {
   public IsSsfEmployerAssigned: boolean = false;
   public FetchSsfDetailLocally: boolean = false;
   public PatientImage: string = null;
+  public DisplayMembershipLoadButton: boolean = false;
 
   constructor(public visitBlService: VisitBLService, public msgBoxService: MessageboxService, public ssfService: SsfService, public coreService: CoreService, public billingService: BillingService) {
     //this.currentRegSchemeDto.SchemeId = 4;//this is default-hardcoded.. need to change this soon..
@@ -128,6 +132,7 @@ export class RegistrationSchemeSelectComponent {
       if (scheme && scheme.ApiIntegrationName === ENUM_Scheme_ApiIntegrationNames.SSF) {
         if (this.currentPatientId) {
           this.FetchSsfDetailLocally = true;
+          this.DisplayMembershipLoadButton = true;
           this.LoadSSFPatientInformation();
         } else {
           this.IsClaimSuccessful = true;
@@ -224,6 +229,7 @@ export class RegistrationSchemeSelectComponent {
       this.currentRegSchemeDto.PriceCategoryName = schemeObj.DefaultPriceCategoryName;
       this.currentRegSchemeDto.IsCreditLimited = schemeObj.IsCreditLimited;
       this.currentRegSchemeDto.IsGeneralCreditLimited = schemeObj.IsGeneralCreditLimited;
+      this.currentRegSchemeDto.IsMemberNumberCompulsory = schemeObj.IsMemberNumberCompulsory;
       if (schemeObj.IsGeneralCreditLimited) {
         this.currentRegSchemeDto.CreditLimitObj.GeneralCreditLimit = schemeObj.GeneralCreditLimit;
       }
@@ -369,10 +375,12 @@ export class RegistrationSchemeSelectComponent {
   public loadFromSSFServer: boolean = false;
   LoadSSFPatientInformation() {
 
-    if (!this.currentPatientId && this.loadFromSSFServer) {
+    if ((!this.currentPatientId || this.DisplayMembershipLoadButton) && this.loadFromSSFServer) {
       this.ssfService.GetSsfPatientDetailAndEligibilityFromSsfServer(this.currentRegSchemeDto.MemberNo, this.loadFromSSFServer);
     }
     else {
+      this.DisplayMembershipLoadButton = false;
+      this.currentRegSchemeDto.MemberNo = this.policyNo;
       this.ssfService.GetSsfPatientDetailAndEligibilityLocally(this.currentPatientId, this.currentRegSchemeDto.SchemeId);
     }
   }
@@ -383,15 +391,19 @@ export class RegistrationSchemeSelectComponent {
       ssfData = res;
       if (ssfData.isPatientInformationLoaded && ssfData.isPatientEligibilityLoaded && ssfData.isEmployerListLoaded) {
         this.IsClaimSuccessful = ssfData.IsClaimSuccessful;
+        this.DisplayMembershipLoadButton = this.IsClaimSuccessful;
         if (ssfData.ssfPatientDetail.img !== null) {
           this.PatientImage = `data:image/jpeg;base64,${ssfData.ssfPatientDetail.img}`;
         } else {
           this.PatientImage = null;
         }
+
         this.AssignSsfPatientData(ssfData);
         this.CheckValidationAndEmit();
         this.loading = false;
         this.FetchSsfDetailLocally = false;
+      } else {
+        this.DisplayMembershipLoadButton = true;
       }
     });
   }
@@ -417,6 +429,15 @@ export class RegistrationSchemeSelectComponent {
     if (ssfPatientDetail && ssfPatientDetail.FirstName) {
       this.currentRegSchemeDto.ssfPatientDetail = ssfPatientDetail;
     }
+    if (!(ssfData.patientEligibility && ssfData.patientEligibility.length)) {
+      this.currentRegSchemeDto.IsPatientEligibleForService = false;
+      this.DisplayMembershipLoadButton = true;
+      this.SsfEmployer = new Array<SsfEmployerCompany>();
+      this.msgBoxService.showMessage(ENUM_MessageBox_Status.Failed, [`Patient is not eligible for SSF Services. Please check in SSF Portal and try again!`]);
+      return;
+    } else {
+      this.currentRegSchemeDto.IsPatientEligibleForService = true;
+    }
     let eligibility = new Array<SSFEligibility>();
     //! Below SSF-Medical is hard coded, need revision
     if (this.currentRegSchemeDto.SchemeName.toLowerCase() === ENUM_DanpheSSFSchemes.Medical.toLowerCase()) {
@@ -424,10 +445,23 @@ export class RegistrationSchemeSelectComponent {
     } else {
       eligibility = ssfData.patientEligibility.filter(a => a.SsfEligibilityType.toLowerCase() === ENUM_SSF_EligibilityType.Accident.toLowerCase());
     }
-    this.currentRegSchemeDto.CreditLimitObj.OpCreditLimit = eligibility[0].OpdBalance;
-    this.currentRegSchemeDto.CreditLimitObj.IpCreditLimit = eligibility[0].IPBalance;
+    if (eligibility && eligibility.length && this.currentRegSchemeDto.SchemeName.toLowerCase() === ENUM_DanpheSSFSchemes.Medical.toLowerCase()) {
+      this.currentRegSchemeDto.CreditLimitObj.OpCreditLimit = eligibility[0].OpdBalance;
+      this.currentRegSchemeDto.CreditLimitObj.IpCreditLimit = eligibility[0].IPBalance;
+      ssfData.RegistrationCase = eligibility[0].SsfEligibilityType;
+      this.currentRegSchemeDto.PatientScheme = this.Ssf_GetPatientSchemeForCurrentContext(ssfData);
+    } else if (eligibility && eligibility.length && this.currentRegSchemeDto.SchemeName.toLowerCase() !== ENUM_DanpheSSFSchemes.Medical.toLowerCase()) {
+      this.currentRegSchemeDto.CreditLimitObj.GeneralCreditLimit = eligibility[0].AccidentBalance;
+      ssfData.RegistrationCase = eligibility[0].SsfEligibilityType;
+      this.currentRegSchemeDto.PatientScheme = this.Ssf_GetPatientSchemeForCurrentContext(ssfData);
+    } else {
+      this.currentRegSchemeDto.IsPatientEligibleForService = false;
+      this.DisplayMembershipLoadButton = true;
+      this.SsfEmployer = new Array<SsfEmployerCompany>();
+      this.msgBoxService.showMessage(ENUM_MessageBox_Status.Failed, [`Patient is not eligible for SSF Services. Please check in SSF Portal and try again!`]);
+      return;
+    }
 
-    this.currentRegSchemeDto.PatientScheme = this.Ssf_GetPatientSchemeForCurrentContext(ssfData);
 
   }
 
@@ -439,6 +473,8 @@ export class RegistrationSchemeSelectComponent {
     this.currentRegSchemeDto.ClaimCode = retObj.LatestClaimCode;
     retObj.OpCreditLimit = this.currentRegSchemeDto.CreditLimitObj.OpCreditLimit;
     retObj.IpCreditLimit = this.currentRegSchemeDto.CreditLimitObj.IpCreditLimit;
+    retObj.GeneralCreditLimit = this.currentRegSchemeDto.CreditLimitObj.GeneralCreditLimit;
+    retObj.RegistrationCase = ssfData.RegistrationCase;
     retObj.PolicyHolderUID = ssfData.ssfPatientDetail.PolicyHolderUID;
     return retObj;
   }

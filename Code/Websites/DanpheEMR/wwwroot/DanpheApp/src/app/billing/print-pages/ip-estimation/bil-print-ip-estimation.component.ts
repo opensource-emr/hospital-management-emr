@@ -59,6 +59,10 @@ export class BIL_Print_IP_Estimation {
   @Input("DepositBalance")
   public DepositBalance: number = 0;
 
+  @Input("IsDischarged")
+  public IsDischarged: boolean = false;
+  @Input("is-provisional-discharge")
+  public IsProvisionalDischarge: boolean = false;
 
   public filteredPendingItems: Array<BillingTransactionItem> = [];
   public AmountType: string = "";//this.billStatus.toLocaleLowerCase() != "paid" ? "Amount to be Paid" : "Paid Amount";

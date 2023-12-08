@@ -33,6 +33,7 @@ import { SchemePriceCategory_DTO } from '../../shared/dto/scheme-pricecategory.d
 import { IpBillingDiscountModel } from '../../shared/ip-bill-discount.model';
 import { PatientScheme } from '../../shared/patient-map-scheme';
 import { BedDetailVM, BedDurationTxnDetailsVM, DischargeDetailBillingVM } from '../shared/discharge-bill.view.models';
+import { ProvisionalDischarge_DTO } from '../shared/dto/provisional-discharge.dto';
 import { PharmacyPendingBillItemsViewModel } from '../shared/pharmacy-pending-bill-item-view.model';
 
 @Component({
@@ -160,7 +161,7 @@ export class PatientIpSummaryComponent {
 
   public cancellationNumber: number = 0;
 
-  public MembershipTypeId: number = 0;
+  public DiscountSchemeId: number = 0;
   public MembershipTypeName: string = null;
   public membershipSchemeParam = { ShowCommunity: false, IsMandatory: true };
   public deposit: BillingDeposit = new BillingDeposit();
@@ -230,7 +231,11 @@ export class PatientIpSummaryComponent {
   public EnableShowOtherCurrency: boolean = false;
   public ShowOtherCurrency: boolean = false;
   public DisplayOtherCurrencyDetail: boolean = false;
-
+  public OtherCurrencyDetail: OtherCurrencyDetail;
+  public ShowAllowProvisionalDischargeCheckbox: boolean = false;
+  public AllowProvisionalDischarge: boolean = false;
+  public ShowProvisionalDischargeConfirmation: boolean = false;
+  public IsProvisionalDischarge: boolean = false;
 
 
   constructor(public dlService: DLService,
@@ -281,6 +286,7 @@ export class PatientIpSummaryComponent {
     // this.LoadAdditionalServiceItems();
     this.InitializeSubscription();
     this.GetParameterToShowHideOtherCurrencyOption();
+    this.GetParameterToEnableDisableProvisionalDischarge();
 
   }
 
@@ -298,6 +304,12 @@ export class PatientIpSummaryComponent {
       this.EnableShowOtherCurrency = params.ParameterValue === "true" ? true : false;
     } else {
       this.EnableShowOtherCurrency = false;
+    }
+  }
+  GetParameterToEnableDisableProvisionalDischarge(): void {
+    const params = this.CoreService.Parameters.find(p => p.ParameterGroupName === "Billing" && p.ParameterName === "EnableProvisionalDischarge");
+    if (params) {
+      this.ShowAllowProvisionalDischargeCheckbox = JSON.parse(params.ParameterValue);
     }
   }
 
@@ -384,7 +396,7 @@ export class PatientIpSummaryComponent {
 
   OnMembershipChanged($event: BillingScheme_DTO) {
     if ($event) {
-      this.MembershipTypeId = $event.SchemeId;
+      this.DiscountSchemeId = $event.SchemeId;
       this.isGroupDiscountApplied = false;
       this.currMembershipDiscountPercent = $event.DiscountPercent;
       this.model.DiscountPercent = $event.DiscountPercent;
@@ -500,7 +512,7 @@ export class PatientIpSummaryComponent {
           a.ItemCode = matchedData.ItemLegalCode;
           //a.Price = matchedData.Price;
           a.DiscountApplicable = matchedData.IsDiscountApplicable;
-          a.DiscountPercent = matchedData.DiscountPercent;
+          //a.DiscountPercent = matchedData.DiscountPercent;
           a.IsCoPayment = matchedData.IsCoPayment;
           a.CoPaymentCashPercent = matchedData.CoPayCashPercent;
           a.CoPaymentCreditPercent = matchedData.CoPayCreditPercent;
@@ -577,7 +589,7 @@ export class PatientIpSummaryComponent {
           }
           let admissionObj = res.Results.Admissions.find(a => a.AdmissionStatus.toLowerCase() === "admitted");
           if (admissionObj) {
-            this.MembershipTypeId = admissionObj.DiscountSchemeId;
+            this.DiscountSchemeId = admissionObj.DiscountSchemeId;
 
             if (admissionObj.IsItemDiscountEnabled && this.SchemePriceCategory.IsDiscountEditable) {
               this.enableItemLevelDiscount = true;
@@ -619,7 +631,7 @@ export class PatientIpSummaryComponent {
             this.model.DepositBalance = ((this.admissionInfo.DepositAdded || 0) - (this.admissionInfo.DepositReturned || 0));
             //this.model.DepositAdded = CommonFunctions.parseAmount(admInfo.DepositAdded);
             //this.model.DepositReturned = CommonFunctions.parseAmount(admInfo.DepositReturned);
-            this.MembershipTypeId = this.admissionInfo.MembershipTypeId;
+            this.DiscountSchemeId = this.admissionInfo.MembershipTypeId;
           }
           //this.model.DepositBalance = CommonFunctions.parseAmount((this.model.DepositAdded || 0) - (this.model.DepositReturned || 0));
 
@@ -785,7 +797,7 @@ export class PatientIpSummaryComponent {
 
     //! Krishna, 18thMay'23, Check if credit limit is exceeded for CreditLimited Schemes.
 
-    if (this.PatientSchemeMap && (this.SchemePriceCategory.IsCreditLimited || this.SchemePriceCategory.IsGeneralCreditLimited) && !this.CheckCreditLimits()) {
+    if (this.PatientSchemeMap && (this.SchemePriceCategory.IsCreditLimited || this.SchemePriceCategory.IsGeneralCreditLimited) && (this.SchemePriceCategory.IsCreditLimited && !this.CheckCreditLimits())) {
       this.validDischargeDate = false;
       this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ["Credit Amount cannot exceed Credit limit."]);
       return;
@@ -855,9 +867,9 @@ export class PatientIpSummaryComponent {
     if (this.HasZeroPriceItems()) {
       return;
     }
-    var currDate = moment().format('YYYY-MM-DD HH:mm');
-    var disDate = moment(this.dischargeDetail.DischargeDate).format('YYYY-MM-DD HH:mm');
-    var AdmissionDate = moment(this.admissionInfo.AdmittedOn).format('YYYY-MM-DD HH:mm');
+    let currDate = moment().format('YYYY-MM-DD HH:mm');
+    let disDate = moment(this.dischargeDetail.DischargeDate).format('YYYY-MM-DD HH:mm');
+    let AdmissionDate = moment(this.admissionInfo.AdmittedOn).format('YYYY-MM-DD HH:mm');
     if ((moment(currDate).isBefore(disDate))) {
       this.validDischargeDate = false;
       this.msgBoxServ.showMessage("notice", ["Invalid can't enter future date"]);
@@ -896,7 +908,7 @@ export class PatientIpSummaryComponent {
         "CounterId": this.securityService.getLoggedInCounter().CounterId,
         "DepositBalance": this.model.DepositBalance,
         "DischargeRemarks": this.dischargeDetail.Remarks,
-        "DiscountSchemeId": this.MembershipTypeId,
+        "DiscountSchemeId": this.DiscountSchemeId,
         "DischargeFrom": "billing"
       };
       this.billingBLService.DischargePatientWithZeroItem(data)
@@ -941,7 +953,10 @@ export class PatientIpSummaryComponent {
   CloseRecieptView() {
     this.showDischargeBill = false;
     this.showEstimationBill = false;
-    if (this.billType == "invoice") {
+    if (this.IsProvisionalDischarge) {
+      this.router.navigate(['/Billing/SearchPatient']);
+    }
+    if (this.billType === "invoice") {
       this.ClosePatientSummary(false);
     }
   }
@@ -978,7 +993,7 @@ export class PatientIpSummaryComponent {
         //itm.DiscountPercent = this.currMembershipDiscountPercent;
         //itm.DiscountPercentAgg = this.model.DiscountPercent ? this.model.DiscountPercent : 0;
         itm.DiscountAmount = (itm.SubTotal * itm.DiscountPercent) / 100;
-        itm.DiscountSchemeId = this.MembershipTypeId;
+        itm.DiscountSchemeId = this.DiscountSchemeId;
       }
     });
     // this.FilterItemsAndAssignCoPayAndDiscountInfo();
@@ -1333,10 +1348,10 @@ export class PatientIpSummaryComponent {
   PostBillingTransaction() {
     this.MapBillingTransaction();
     this.ipBillingTxnVM.billingTransactionModel = this.billingTransaction;
-    this.ipBillingTxnVM.billingTransactionModel.SchemeId = this.MembershipTypeId;//sud:29Mar'23--For New BillingStructure.
+    this.ipBillingTxnVM.billingTransactionModel.SchemeId = this.DiscountSchemeId;//sud:29Mar'23--For New BillingStructure.
     this.dischargeDetail.ProcedureType = this.admissionInfo.ProcedureType;
     this.dischargeDetail.PatientId = this.patientId;
-    this.dischargeDetail.DiscountSchemeId = this.MembershipTypeId;
+    this.dischargeDetail.DiscountSchemeId = this.DiscountSchemeId;
     this.dischargeDetail.BillingTransactionId = 0;
     this.ipBillingTxnVM.dischargeDetailVM = this.dischargeDetail;
     this.ipBillingTxnVM.billingTransactionModel.ReceivedAmount = this.model.ReceivedAmount;
@@ -1395,7 +1410,7 @@ export class PatientIpSummaryComponent {
   DischargePatient(invoiceNo: number, fiscYrId: number) {
     this.dischargeDetail.BillStatus = this.billingTransaction.BillStatus;
     this.dischargeDetail.BillingTransactionId = this.bil_BilTxnId;//sud:15Sept'21--replaced old variable with new to keep similarity with other pages
-    this.dischargeDetail.DiscountSchemeId = this.MembershipTypeId;
+    this.dischargeDetail.DiscountSchemeId = this.DiscountSchemeId;
     this.dischargeDetail.PatientId = this.patientId;
     this.dischargeDetail.ProcedureType = this.admissionInfo.ProcedureType;
     this.billingBLService.DischargePatient(this.dischargeDetail)
@@ -1417,7 +1432,7 @@ export class PatientIpSummaryComponent {
 
   MapBillingTransaction() {
     this.patAllPendingItems.forEach(a => {
-      a.DiscountSchemeId = this.MembershipTypeId;
+      a.DiscountSchemeId = this.DiscountSchemeId;
     });
 
     this.billingTransaction = new BillingTransaction;
@@ -1431,6 +1446,7 @@ export class PatientIpSummaryComponent {
     this.billingTransaction.PatientVisitId = this.ipVisitId;
     this.billingTransaction.PatientMapPriceCategoryId = this.PatientSchemeMap ? this.PatientSchemeMap.PatientSchemeId : null;
     this.billingTransaction.ClaimCode = this.PatientSchemeMap ? this.PatientSchemeMap.LatestClaimCode : null;
+    this.billingTransaction.MemberNo = this.PatientSchemeMap ? this.PatientSchemeMap.PolicyNo : null;
     this.billingTransaction.PaymentMode = this.model.PayType.toLowerCase() == 'others' ? 'cash' : this.model.PayType.toLowerCase();
     this.billingTransaction.PaymentDetails = this.model.PaymentDetails;
     this.billingTransaction.BillStatus = this.model.PayType.toLocaleLowerCase() != "credit" ? "paid" : "unpaid";
@@ -1521,7 +1537,7 @@ export class PatientIpSummaryComponent {
       else {
         this.billingTransaction.NonTaxableAmount += item.NonTaxableAmount;
       }
-      item.DiscountSchemeId = this.MembershipTypeId;
+      item.DiscountSchemeId = this.DiscountSchemeId;
       item.PaidCounterId = this.billingTransaction.PaidCounterId;
       this.billingTransaction.TotalQuantity += item.Quantity;
       this.billingTransaction.BillStatus = this.billingTransaction.BillStatus;
@@ -1618,9 +1634,12 @@ export class PatientIpSummaryComponent {
         //Yubraj 30th July -- Disable discount TextBox in case of DiscableApplicable is false
         let serviceItemId = this.selItemForEdit.ServiceItemId;
         let itmName = this.selItemForEdit.ItemName;
-        var selItemDetails = this.allItemslist.find(a => a.ServiceItemId == serviceItemId && a.ItemName == itmName)
-        this.discountApplicable = selItemDetails.DiscountApplicable;
-        this.selItemForEdit.IsDoctorMandatory = selItemDetails.IsDoctorMandatory;
+        let selItemDetails = this.allItemslist.find(a => a.ServiceItemId == serviceItemId)
+        if (selItemDetails) {
+          this.discountApplicable = selItemDetails.DiscountApplicable;
+          this.selItemForEdit.IsDoctorMandatory = selItemDetails.IsDoctorMandatory;
+        }
+
 
         //Anish: 14 Aug, 2020
         this.selItemForEdit.AllowCancellation = true;
@@ -1726,7 +1745,13 @@ export class PatientIpSummaryComponent {
   }
 
   CloseDischargePopUp($event) {
-    this.CloseRecieptView();
+    if ($event) {
+      if (this.IsProvisionalDischarge) {
+        this.router.navigate(['/Billing/SearchPatient']);
+      } else {
+        this.CloseRecieptView();
+      }
+    }
   }
 
   public InvoiceLevelDiscountChanged: boolean = false;
@@ -1816,11 +1841,11 @@ export class PatientIpSummaryComponent {
     this.model.PayType = $event.PaymentMode.toLocaleLowerCase();
     if (this.model.PayType === ENUM_BillPaymentMode.cash && this.model.DepositBalance) {
       this.DisplayDeductDepositCheckbox = true;
-      this.UseDeposit = true;
+      // this.UseDeposit = true;
     }
     else {
       this.DisplayDeductDepositCheckbox = false;
-      this.UseDeposit = false;
+      // this.UseDeposit = false;
     }
     this.CalculationForAll();
     this.model.PaymentDetails = $event.PaymentDetails;
@@ -1937,7 +1962,7 @@ export class PatientIpSummaryComponent {
         //if (itm.DiscountApplicable) {
         itm.DiscountPercent = this.model.DiscountPercent ? this.model.DiscountPercent : 0;
         //}
-        itm.DiscountSchemeId = this.MembershipTypeId;
+        itm.DiscountSchemeId = this.DiscountSchemeId;
       });
       this.loading = false;
       this.InvalidDiscount = false;
@@ -2070,7 +2095,6 @@ export class PatientIpSummaryComponent {
       this.model.OtherCurrencyDetail = null;
     }
   }
-  public OtherCurrencyDetail: OtherCurrencyDetail;
   OtherCurrencyCalculationCallback($event): void {
     if ($event && $event.ExchangeRate > 0) {
       this.OtherCurrencyDetail = $event;
@@ -2078,5 +2102,59 @@ export class PatientIpSummaryComponent {
       this.OtherCurrencyDetail = null;
     }
     this.model.OtherCurrencyDetail = JSON.stringify(this.OtherCurrencyDetail);
+  }
+
+  ConfirmProvisionalDischarge(): void {
+    if (this.AllowProvisionalDischarge) {
+      this.ShowProvisionalDischargeConfirmation = true;
+    } else {
+      this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, [`Provisional Discharge is not Allowed!`])
+    }
+  }
+
+  PostProvisionalDischarge(): void {
+    const provisionalDischarge = this.PrepareProvisionalDischargeObject();
+    if (provisionalDischarge) {
+      if (!provisionalDischarge.PatientId) {
+        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, [`Patient is not set to Provisional Discharge Object`]);
+        return;
+      }
+      if (!provisionalDischarge.PatientVisitId) {
+        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, [`Patient Visit is not set to Provisional Discharge Object`]);
+        return;
+      }
+      if (!provisionalDischarge.DiscountSchemeId) {
+        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, [`Discount Scheme is not set to Provisional Discharge Object`]);
+        return;
+      }
+
+      this.loading = true;
+      this.billingBLService.PostProvisionalDischarge(provisionalDischarge).finally(() => this.loading = false).subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK && res.Results) {
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Success, [res.Results]);
+          this.ShowProvisionalDischargeConfirmation = false;
+          this.IsProvisionalDischarge = true;
+          this.showEstimationBill = true;
+        } else {
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
+        }
+      }, err => {
+        console.log(err);
+      });
+    } else {
+      console.log(`Provisional Discharge object is not formatted Correctly!`);
+    }
+  }
+
+  PrepareProvisionalDischargeObject(): ProvisionalDischarge_DTO {
+    let provisionalDischarge = new ProvisionalDischarge_DTO();
+    provisionalDischarge.DischargeDate = this.dischargeDetail.DischargeDate;;
+    provisionalDischarge.PatientId = this.patientId;
+    provisionalDischarge.PatientVisitId = this.ipVisitId;
+    provisionalDischarge.ProcedureType = this.admissionInfo.ProcedureType;
+    provisionalDischarge.Remarks = this.dischargeDetail.Remarks;
+    provisionalDischarge.DiscountSchemeId = this.DiscountSchemeId;
+
+    return provisionalDischarge;
   }
 }

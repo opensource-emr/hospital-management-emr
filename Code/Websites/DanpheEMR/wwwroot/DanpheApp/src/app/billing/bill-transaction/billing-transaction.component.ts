@@ -2649,7 +2649,7 @@ export class BillingTransactionComponent {
 
   OnProvisionalAmountClick() {
     this.routeFromService.RouteFrom = "BillingTransactionProvisional";
-    this.router.navigate(['/Billing/UnpaidBills']);
+    this.router.navigate(['/Billing/ProvisionalClearance']);
   }
 
   public GetBillingRequestDisplaySettings() {

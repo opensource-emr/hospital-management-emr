@@ -4,6 +4,7 @@ import { CoreService } from "../../../../core/shared/core.service";
 import { Patient } from "../../../../patients/shared/patient.model";
 import { ReportingService } from "../../../../reporting/shared/reporting-service";
 import { SecurityService } from "../../../../security/shared/security.service";
+import { GeneralFieldLabels } from "../../../../shared/DTOs/general-field-label.dto";
 import { DLService } from "../../../../shared/dl.service";
 import { MessageboxService } from "../../../../shared/messagebox/messagebox.service";
 import { GovInsuranceBlService } from "../../shared/insurance.bl.service";
@@ -29,19 +30,24 @@ export class GOVINSPatientWiseClaimsComponent {
   public isSearchByPatient: boolean = true;
   public isSearchByClaimCode: boolean = false;
   public selClaimCode: string = "";
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(_dlService: DLService,
     public msgBoxServ: MessageboxService,
     public reportServ: ReportingService,
     public changeDetector: ChangeDetectorRef,
     public insuranceBlService: GovInsuranceBlService,
     public securityService: SecurityService, public coreService: CoreService) {
+
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
     this.dlService = _dlService;
     this.coreService.FocusInputById("srch_PatientList");//default focus on Search By Patient
   }
 
   public patientSearchAsync = (searchTxt: any): Observable<any[]> => {
     return this.insuranceBlService.SearchInsurancePatients(searchTxt);
-  }
+  };
 
   public patientInfoChanged() {
     if (this.PatientObj && typeof (this.PatientObj) == "object") {

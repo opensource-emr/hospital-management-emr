@@ -36,6 +36,7 @@ import { Observable } from 'rxjs';
 import { AdtAutoBillingItem_DTO } from '../../adt/shared/DTOs/adt-auto-billingItems.dto';
 import { AdtBedFeatureSchemePriceCategoryMap_DTO } from '../../adt/shared/DTOs/adt-bedfeature-scheme-pricecategory-map.dto';
 import { BillingPackages_DTO } from '../../billing/shared/dto/billing-packages.dto';
+import { IntakeOutputParameterListModel } from '../../clinical/shared/intake-output-parameterlist.model';
 import { LabTest } from "../../labs/shared/lab-test.model";
 import { PHRMStoreModel } from '../../pharmacy/shared/phrm-store.model';
 import { RadiologyReportTemplate } from "../../radiology/shared/radiology-report-template.model";
@@ -43,6 +44,8 @@ import { DanpheHTTPResponse } from '../../shared/common-models';
 import { SchemeVsPriceCategoryModel } from '../billing/map-scheme-and-pricecategory/shared/MapSchemeVsPriceCategory.model';
 import { BillServiceItemModel, BillServiceItemsPriceCategoryMap } from '../billing/shared/bill-service-item.model';
 import { BillServiceItemSchemeSetting_DTO } from '../billing/shared/dto/bill-service-item-scheme-setting.dto';
+import { TemplateFieldMapping_DTO } from '../dynamic-templates/shared/template-field-mapping.dto';
+import { Template } from '../dynamic-templates/shared/template.model';
 import { PrinterSettingsModel } from '../printers/printer-settings.model';
 import { CfgPaymentModesSettings } from './CfgPaymentModesSettings';
 import { MinimumDepositAmount_DTO } from './DTOs/minimum-deposit-amount.dto';
@@ -1217,6 +1220,72 @@ export class SettingsBLService {
   }
   ActivateDeactivateSettingDepositAmount(AdtDepositSettingId: number) {
     return this.settingsDLService.ActivateDeactivateSettingDepositAmount(AdtDepositSettingId)
+      .map(res => { return res });
+  }
+  public GetTemplateTypeList() {
+    return this.settingsDLService.GetTemplateTypeList();
+  }
+  public GetTemplateList() {
+    return this.settingsDLService.GetTemplateList();
+  }
+  public UpdateTemplateSettings(templateId: number) {
+    return this.settingsDLService.PutTemplateSettings(templateId)
+      .map(res => { return res });
+  }
+  public GetFieldMasterList(templateTypeId: number = null) {
+    return this.settingsDLService.GetFieldMasterList(templateTypeId)
+  }
+  public GetTemplateType() {
+    return this.settingsDLService.GetTemplateType()
+  }
+  public AddNewTemplate(TemplateData: Template) {
+    let temp = _.omit(TemplateData, ['DynamicTemplateValidator']);
+    return this.settingsDLService.AddNewTemplate(temp)
+      .map(res => { return res });
+  }
+  // //update  dynamic  template
+  public UpdateDynTemplate(dynTemplate: Template) {
+    try {
+      let temp = _.omit(dynTemplate, ['DynamicTemplateValidator']);
+      return this.settingsDLService.PutDynTemplate(temp)
+        .map(res => { return res });
+    } catch (exception) {
+      throw exception;
+    }
+  }
+  public GetDynTemplateDataById(templateId: number) {
+    try {
+      return this.settingsDLService.GetDynTemplateDataById(templateId)
+        .map(res => { return res });
+    } catch (exception) {
+      throw exception;
+    }
+  }
+  public GetFieldMasterByTemplateId(templateId: number) {
+    return this.settingsDLService.GetFieldMasterByTemplateId(templateId)
+      .map(res => { return res });
+  }
+  public AddUpdateFieldMapping(selectedFields: TemplateFieldMapping_DTO[]) {
+    return this.settingsDLService.AddUpdateFieldMapping(selectedFields)
+      .map(res => { return res });
+  }
+  public GetIntakeOutputTypeList() {
+    return this.settingsDLService.GetIntakeOutputTypeList()
+      .map(res => { return res });
+  }
+  public AddIntakeOutputVariable(data: IntakeOutputParameterListModel) {
+    return this.settingsDLService.PostIntakeOutputVariable(data)
+      .map(res => { return res });
+  }
+  public GetIntakeOutputTypeListForGrid() {
+    return this.settingsDLService.GetIntakeOutputTypeListForGrid()
+      .map(res => { return res });
+  }
+  public ActivateDeactivateVariableStatus(selectedIntakeOutputData) {
+    return this.settingsDLService.PutActivateDeactivateVariableStatus(selectedIntakeOutputData).map(res => { return res; });
+  }
+  public UpdateIntakeOutputVariable(data: IntakeOutputParameterListModel) {
+    return this.settingsDLService.PutIntakeOutputVariable(data)
       .map(res => { return res });
   }
 }

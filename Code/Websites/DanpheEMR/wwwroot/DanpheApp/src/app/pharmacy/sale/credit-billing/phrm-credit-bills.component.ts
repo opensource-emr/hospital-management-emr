@@ -15,7 +15,7 @@ import { BillingTransactionItem } from '../../../billing/shared/billing-transact
 import { GridEmitModel } from '../../../shared/danphe-grid/grid-emit.model';
 import { CommonFunctions } from '../../../shared/common.functions';
 import { PatientBillingContextVM } from '../../../billing/shared/patient-billing-context-vm';
-
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 //below are for pharmacy model.
 import { PHRMInvoiceModel } from '../../shared/phrm-invoice.model';
 import { PHRMInvoiceItemsModel } from '../../shared/phrm-invoice-items.model';
@@ -83,7 +83,7 @@ export class PHRMCreditBillsComponent implements OnInit {
     public today = new Date();
     public isSubStoreCall: boolean = false;
     storeId: number = null;
-
+    public GeneralFieldLabel = new GeneralFieldLabels();
     constructor(
         public routeFromService: RouteFromService,
         public router: Router,
@@ -99,7 +99,7 @@ export class PHRMCreditBillsComponent implements OnInit {
         this.GetUnpaidTotalBills();
         this.GetAllFiscalYrs();
         this.showitemlvldiscount();
-
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
 
     ngOnInit() {

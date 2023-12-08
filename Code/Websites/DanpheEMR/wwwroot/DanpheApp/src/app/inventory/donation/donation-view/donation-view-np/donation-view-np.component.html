@@ -79,6 +79,7 @@
                     <td>{{donationItem.Unit}}</td>
                     <td>{{donationItem.DonationQuantity}}</td>
                     <td>{{donationItem.TotalAmount}}</td>
+                    <td>{{donationItem.GRDate | nepaliDate}}</td>
                     <td style="padding: 5px 2.5px; width: 7%; font-size:12px;word-break: break-all;">{{donationItem.Remarks}}</td>
                   </tr>
                 </tbody>
@@ -140,11 +141,9 @@
             </div>
           </div>
           <p style="text-align:center;z-index: 4;position: relative;">
-            <button class="btn green btn-success" (click)="Print()" id="btnPrintRecipt"><span> <i
-                   class="glyphicon glyphicon-print">&nbsp;&nbsp;</i>Print</span></button>
+            <button class="btn green btn-success" (click)="Print()" id="btnPrintRecipt"><span> <i class="glyphicon glyphicon-print">&nbsp;&nbsp;</i>Print</span></button>
             <!-- <button id="editGR" (click)="Edit(donationData.donationDetails.DonationId)" class="btn  btn-small btn-info"><span><i class="glyphicon glyphicon-edit">&nbsp;&nbsp;</i>Edit</span></button> -->
-            <button class="btn  btn-small btn-danger" (click)="Cancel()" title="Cancel Goods Receipt" data-toggle="modal"
-                    data-target="#CancelPopup"><span> <i class="fa fa-times">&nbsp;&nbsp;</i>Cancel Donation</span></button>
+            <button class="btn  btn-small btn-danger" (click)="Cancel()" title="Cancel Goods Receipt" data-toggle="modal" data-target="#CancelPopup"><span> <i class="fa fa-times">&nbsp;&nbsp;</i>Cancel Donation</span></button>
           </p>
         </div>
       </div>
@@ -169,14 +168,12 @@
             <b>Cancel Remarks<i style="color:red">*</i><span class="right">:</span></b>
           </div>
           <div class="col-md-8">
-            <textarea style="height:7em;width:100%;" [(ngModel)]="Remarks" (ngModelChange)="LoadRemarks()" type="text"
-                      name="cancelRemarks"></textarea>
+            <textarea style="height:7em;width:100%;" [(ngModel)]="Remarks" (ngModelChange)="LoadRemarks()" type="text" name="cancelRemarks"></textarea>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default btn btn-danger" data-dismiss="modal"
-                (click)="CancelDonation(donationData.donationDetails.DonationId)" [disabled]="disableButton">Yes</button>
+        <button type="button" class="btn btn-default btn btn-danger" data-dismiss="modal" (click)="CancelDonation(donationData.donationDetails.DonationId)" [disabled]="disableButton">Yes</button>
         <button type="button" class="btn btn-default btn btn-success" data-dismiss="modal">No</button>
       </div>
     </div>

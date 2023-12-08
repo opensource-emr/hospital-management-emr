@@ -26,6 +26,7 @@ export class PHRMPrescription {
     //only for show into grid list
     public PatientName: string = null;
     public CreatedByName: string = null;
+    public PatientCode: string = null;
     //Constructor of class
     constructor() {
         var _formBuilder = new FormBuilder();

@@ -124,6 +124,20 @@ namespace DanpheEMR.Controllers
             return InvokeHttpGetFunction(func);
         }
 
+        [HttpGet]
+        [Route("OutsourceApplicableLabTests")]
+        public IActionResult GetOutsourceApplicableLabTests()
+        {
+            Func<object> func = () => GetOutsourceLabTests();
+            return InvokeHttpGetFunction<object>(func);
+        }
+
+        private object GetOutsourceLabTests()
+        {
+            var result = _labDbContext.LabTests.Where(test => test.IsOutsourceTest ==  true).ToList();
+            return result;
+        }
+
         private object GetLabTestList()
         {
             List<LabTestJSONComponentModel> allLabTestComponents = (from labComponent in _labDbContext.LabTestComponents
@@ -171,7 +185,9 @@ namespace DanpheEMR.Controllers
                                    ReportTemplateName = report.ReportTemplateName,
                                    RunNumberType = test.RunNumberType,
                                    IsTaxApplicable = billItem.IsTaxApplicable,
-                                   IsOutsourceTest = test.IsOutsourceTest//sud:22Aug'23--For Outsource test
+                                   IsOutsourceTest = test.IsOutsourceTest,//sud:22Aug'23--For Outsource test
+                                   DefaultOutsourceVendorId = test.DefaultOutsourceVendorId,
+                                   IsLISApplicable = test.IsLISApplicable,
                                }).ToList();
 
 
@@ -405,6 +421,7 @@ namespace DanpheEMR.Controllers
                     billItemPrice.AllowMultipleQty = true;
                     labTest.CreatedBy = currentUser.EmployeeId;
                     labTest.CreatedOn = System.DateTime.Now;
+                    labTest.DefaultOutsourceVendorId = labTest.DefaultOutsourceVendorId == 0 ? null : labTest.DefaultOutsourceVendorId;
                     _labDbContext.LabTests.Add(labTest);
                     _labDbContext.SaveChanges();
 
@@ -413,6 +430,8 @@ namespace DanpheEMR.Controllers
                     if (labTest.TemplateType.ToLower() == "html")
                     {
                         var htmlComp = labTest.LabTestComponentsJSON[0];
+                        htmlComp.CreatedBy = currentUser.EmployeeId;
+                        htmlComp.CreatedOn = System.DateTime.Now;
                         _labDbContext.LabTestComponents.Add(htmlComp);
                         _labDbContext.SaveChanges();
                         LabTestComponentMapModel htmlCompToMap = new LabTestComponentMapModel();
@@ -914,7 +933,7 @@ namespace DanpheEMR.Controllers
                     billItemPrice.IsActive = labTest.IsActive;
                     billItemPrice.ItemName = labTest.LabTestName;
                     billItemPrice.IsValidForReporting = labTest.IsValidForReporting;
-
+                    labTest.DefaultOutsourceVendorId = labTest.DefaultOutsourceVendorId == 0 ? null : labTest.DefaultOutsourceVendorId;
                     _labDbContext.LabTests.Attach(labTest);
                     _labDbContext.BillServiceItems.Attach(billItemPrice);
                     _labDbContext.Entry(labTest).State = EntityState.Modified;

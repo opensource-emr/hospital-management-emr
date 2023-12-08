@@ -115,31 +115,31 @@
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-md-4">{{lebelForNMCNo}}<b>:</b></label>
+                    <label class="control-label col-md-4">{{GeneralFieldLabel.NMCNo}}<b>:</b></label>
                     <div class="col-md-8">
                       <input class="form-control" type="text" maxlength="20" formControlName="MedCertificationNo"
-                             [(ngModel)]="CurrentEmployee.MedCertificationNo" placeholder="{{lebelForNMCNo}}" />
+                             [(ngModel)]="CurrentEmployee.MedCertificationNo" placeholder="{{GeneralFieldLabel.NMCNo}}" />
                       <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('MedCertificationNo')"
                             [hidden]="CurrentEmployee.IsValidCheck('MedCertificationNo','maxlength')">Length is not
                         proper</span>
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-md-4">{{lebelForNNCNo}}<b>:</b></label>
+                    <label class="control-label col-md-4">{{GeneralFieldLabel.NNCNo}}<b>:</b></label>
                     <div class="col-md-8">
                       <input class="form-control" type="text" maxlength="20" formControlName="NursingCertificationNo"
-                             [(ngModel)]="CurrentEmployee.NursingCertificationNo" placeholder="{{lebelForNNCNo}}" />
+                             [(ngModel)]="CurrentEmployee.NursingCertificationNo" placeholder="{{GeneralFieldLabel.NNCNo}}" />
                       <span class="color-red font-sm" *ngIf="CurrentEmployee.IsDirty('NursingCertificationNo')"
                             [hidden]="CurrentEmployee.IsValidCheck('NursingCertificationNo','maxlength')">Length is not
                         proper</span>
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-md-4">{{lebelForNHPCNo}}<b>:</b></label>
+                    <label class="control-label col-md-4">{{GeneralFieldLabel.NHPCNo}}<b>:</b></label>
                     <div class="col-md-8">
                       <input class="form-control" type="text" maxlength="20"
                              formControlName="HealthProfessionalCertificationNo"
-                             [(ngModel)]="CurrentEmployee.HealthProfessionalCertificationNo" placeholder="{{lebelForNHPCNo}}" />
+                             [(ngModel)]="CurrentEmployee.HealthProfessionalCertificationNo" placeholder="{{GeneralFieldLabel.NHPCNo}}" />
                       <span class="color-red font-sm"
                             *ngIf="CurrentEmployee.IsDirty('HealthProfessionalCertificationNo')"
                             [hidden]="CurrentEmployee.IsValidCheck('HealthProfessionalCertificationNo','maxlength')">Length
@@ -260,14 +260,15 @@
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-md-4">{{lebelForPANNo}}<b>:</b></label>
+                    <label class="control-label col-md-4">{{GeneralFieldLabel.PANNo}}<b>:</b></label>
                     <div class="col-md-8">
                       <input class="form-control" type="text" onClick="this.select();"
-                             [(ngModel)]="CurrentEmployee.PANNumber" [ngModelOptions]="{standalone: true}" />
+                             [(ngModel)]="CurrentEmployee.PANNumber" [ngModelOptions]="{standalone: true}"
+                             placeholder="{{GeneralFieldLabel.PANNo}}" />
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-md-4">{{lebelForTDS}}<b>:</b></label>
+                    <label class="control-label col-md-4">{{GeneralFieldLabel.TDS}}<b>:</b></label>
                     <div class="col-md-8">
                       <input class="form-control" type="number" onClick="this.select();"
                              [(ngModel)]="CurrentEmployee.TDSPercent" [ngModelOptions]="{standalone: true}" />

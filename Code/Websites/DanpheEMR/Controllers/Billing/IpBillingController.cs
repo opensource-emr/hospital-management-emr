@@ -183,6 +183,8 @@ namespace DanpheEMR.Controllers
             //Check if we can apply ipVisitId condition here.. 
             var pendingItems = _billingDbContext.BillingTransactionItems.Where(itm => itm.PatientId == patientId
                                           && itm.BillStatus == ENUM_BillingStatus.provisional //"provisional" //&& itm.Quantity > 0
+                                          && itm.BillingType == ENUM_BillingType.inpatient
+                                          && itm.PatientVisitId == ipVisitId
                                           && itm.IsInsurance == false).AsEnumerable().ToList(); //Excluding insurance items
 
 

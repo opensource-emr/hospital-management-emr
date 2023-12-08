@@ -83,13 +83,13 @@
             </div>
           </div>
 				  <div class="form-group col-md-6">
-                  <label class="control-label col-md-4">PAN Number<b style="float:right;">:</b></label>
+                  <label class="control-label col-md-4">{{GeneralFieldLabel.PANNo}}<b style="float:right;">:</b></label>
                   <div class="col-md-8">
                     <input class="form-control" maxlength="20" type="text" title="newLedger.PANNO"
                                            [(ngModel)]="newLedger.PANNo"
                                            [ngModelOptions]="{standalone: true}"
                                            id="PANNO"
-                                           placeholder="PAN Number" />
+                                           placeholder="{{GeneralFieldLabel.PANNo}}" />
                   </div>
                 </div>
                 <div class="form-group col-md-6">

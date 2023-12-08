@@ -152,7 +152,7 @@
                         <th style="width: 10%;"> Opening Balance Type </th>
                         <th> Active </th>
                         <th style="width: 7%;"> TDS Percent</th>
-                        <th style="width: 8%;"> PANNo </th>
+                        <th style="width: 8%;"> {{GeneralFieldLabel.PANNo}} </th>
                         <th style="width: 8%;"> Address </th>
                         <th style="width: 8%;"> Mobile No. </th>
                         <th style="width: 8%;"> Landline No. </th>
@@ -187,7 +187,8 @@
                                      [hidden]="led.IsValidCheck('LedgerName','required')"> Please select Ledger.</div>
                             </form>
                         </td>
-                        <td><input danphe-auto-complete class="form-control" [(ngModel)]="selectedSubLedger[i]"
+                        <td *ngIf="subLedgerAndCostCenterSetting.EnableSubLedger"><input danphe-auto-complete class="form-control"
+                                   [(ngModel)]="selectedSubLedger[i]"
                                    [source]="subLedgerConsultant"
                                    placeholder="SubLedger Name" display-property-name="SubLedgerName" value-property-name=null
                                    [grid-sort]="'SubLedgerName'"

@@ -1,17 +1,18 @@
-import { Component, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
-import { LabsBLService } from '../../shared/labs.bl.service';
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { DanpheHTTPResponse } from '../../../shared/common-models';
-import { LabSticker } from '../../shared/lab-sticker.model';
-import LabGridColumnSettings from '../../shared/lab-gridcol-settings';
-import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
-import { PatientService } from '../../../patients/shared/patient.service';
-import { CommonFunctions } from '../../../shared/common.functions';
-import { CoreService } from "../../../core/shared/core.service";
-import { SecurityService } from '../../../security/shared/security.service';
+import { ChangeDetectorRef, Component } from '@angular/core';
+import { Router } from '@angular/router';
 import * as moment from 'moment/moment';
+import { CoreService } from "../../../core/shared/core.service";
+import { PatientService } from '../../../patients/shared/patient.service';
+import { SecurityService } from '../../../security/shared/security.service';
+import { DanpheHTTPResponse } from '../../../shared/common-models';
+import { CommonFunctions } from '../../../shared/common.functions';
+import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { ENUM_DanpheHTTPResponseText, ENUM_MessageBox_Status } from '../../../shared/shared-enums';
+import LabGridColumnSettings from '../../shared/lab-gridcol-settings';
+import { LabSticker } from '../../shared/lab-sticker.model';
 import { LabService } from '../../shared/lab.service';
-import { Route, Router } from '@angular/router';
+import { LabsBLService } from '../../shared/labs.bl.service';
 
 @Component({
   selector: 'lab-pending-reports',
@@ -49,11 +50,11 @@ export class LabTestsPendingReports {
     this.gridColumns = this.pendingReportGridCol.PendingReportListColumnFilter(this.coreService.GetPendingReportListColumnArray());
 
     if (this.labService.routeNameAfterverification) {
-      if (this.labService.routeNameAfterverification.toLowerCase() == 'addresult') {
+      if (this.labService.routeNameAfterverification.toLowerCase() === 'addresult') {
         this.routeAfterVerification = 'PendingLabResults';
-      } else if (this.labService.routeNameAfterverification.toLowerCase() == 'finalreports') {
+      } else if (this.labService.routeNameAfterverification.toLowerCase() === 'finalreports') {
         this.routeAfterVerification = 'FinalReports';
-      } else if (this.labService.routeNameAfterverification.toLowerCase() == 'pendingreports') {
+      } else if (this.labService.routeNameAfterverification.toLowerCase() === 'pendingreports') {
         this.routeAfterVerification = 'PendingReports';
       }
 
@@ -88,7 +89,7 @@ export class LabTestsPendingReports {
     this.labBLService.GetLabTestPendingReports(frmdate, todate, categoryList)
       .finally(() => { this.loading = false })//re-enable button after response comes back.
       .subscribe((res: DanpheHTTPResponse) => {
-        if (res.Status == "OK") {
+        if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
           this.reportList = res.Results;
           this.reportList.forEach(result => {
             let testNameCSV: string;
@@ -186,11 +187,11 @@ export class LabTestsPendingReports {
             }
           });
 
-          if (this.PatientLabInfo.VisitType.toLowerCase() == 'inpatient') {
+          if (this.PatientLabInfo.VisitType.toLowerCase() === 'inpatient') {
             this.PatientLabInfo.VisitType = 'IP';
-          } else if (this.PatientLabInfo.VisitType.toLowerCase() == 'outpatient') {
+          } else if (this.PatientLabInfo.VisitType.toLowerCase() === 'outpatient') {
             this.PatientLabInfo.VisitType = 'OP';
-          } else if (this.PatientLabInfo.VisitType.toLowerCase() == 'emergency') {
+          } else if (this.PatientLabInfo.VisitType.toLowerCase() === 'emergency') {
             this.PatientLabInfo.VisitType = 'ER';
           }
 
@@ -244,7 +245,7 @@ export class LabTestsPendingReports {
   VerifyTestsDirectlyFromList() {
     this.labBLService.VerifyAllLabTestsDirectly(this.requisitionIdList)
       .subscribe(res => {
-        if (res.Status == "OK") {
+        if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
           this.GetPendingReportList(this.fromDate, this.toDate, this.catIdList);
           if (this.routeAfterVerification && this.routeAfterVerification.trim() && this.routeAfterVerification.trim().length > 0) {
             let route = '/Lab/' + this.routeAfterVerification;
@@ -280,7 +281,7 @@ export class LabTestsPendingReports {
       if (moment(this.fromDate).isBefore(this.toDate) || moment(this.fromDate).isSame(this.toDate)) {
         this.GetPendingReportList(this.fromDate, this.toDate, this.catIdList);
       } else {
-        this.msgBoxService.showMessage('failed', ['Please enter valid From date and To date']);
+        this.msgBoxService.showMessage(ENUM_MessageBox_Status.Failed, ['Please enter valid From date and To date']);
       }
     }
   }
@@ -299,7 +300,7 @@ export class LabTestsPendingReports {
       this.timeId = null;
     }
     this.timeId = window.setTimeout(() => {
-      if(this.isInitialLoad){
+      if (this.isInitialLoad) {
         this.GetTestListFilterByCategories();
         this.isInitialLoad = false;
       }
@@ -330,8 +331,8 @@ export class LabPendingReportColumnSettings {
       { headerName: "Phone Number", field: "PhoneNumber", width: 100 },
       { headerName: "Test Name", field: "LabTestCSV", width: 170 },
       { headerName: "Requesting Dept.", field: "WardName", width: 70 },
-      { headerName: "Run Num", field: "SampleCodeFormatted", width: 60 },
-      { headerName: "BarCode Num", field: "BarCodeNumber", width: 70 },
+      { headerName: "Run No.", field: "SampleCodeFormatted", width: 60 },
+      { headerName: "Bar Code", field: "BarCodeNumber", width: 70 },
       {
         headerName: "Action",
         field: "",

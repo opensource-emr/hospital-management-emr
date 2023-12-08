@@ -5,6 +5,7 @@ import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { LabSettingsBLService } from '../../lab-settings/shared/lab-settings.bl.service';
 import { LabVendorsModel } from './lab-vendors.model';
+import { CoreService } from '../../../core/shared/core.service';
 
 
 @Component({
@@ -35,7 +36,7 @@ export class LabVendorAddComponent {
   onPopupClose: EventEmitter<object> = new EventEmitter<object>();
 
   newVendor: LabVendorsModel = new LabVendorsModel();
-  constructor(public msgBox: MessageboxService, public labSettingBLService: LabSettingsBLService, public securityService: SecurityService) {
+  constructor(public msgBox: MessageboxService, public labSettingBLService: LabSettingsBLService, public securityService: SecurityService, public coreService: CoreService) {
 
 
   }
@@ -60,7 +61,6 @@ export class LabVendorAddComponent {
   OnClose() {
     this.onPopupClose.emit({});
   }
-
   public ValidateAndAddUpdateVendor() {
     //if there is default vendor   
     if (this.defaultVendor) {
@@ -100,7 +100,6 @@ export class LabVendorAddComponent {
               console.log("Couldn't Add new vendor. Error:" + res.ErrorMessage);
               this.msgBox.showMessage('Failed', ['Sorry, Could not Add Vendor !'])
             }
-
           });
       }
       else {

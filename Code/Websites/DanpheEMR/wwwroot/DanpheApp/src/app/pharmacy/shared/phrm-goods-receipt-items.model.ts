@@ -33,7 +33,7 @@ export class PHRMGoodsReceiptItemsModel {
     public UOMName: string = "";
     public SellingPrice: number = 0;
     public GRItemPrice: number = 0;
-    public FreeGoodsAmount: number = 0;
+    public CCAmount: number = 0;
     public SubTotal: number = 0;
     public VATPercentage: number = 0;
     public CCCharge: number = 0;
@@ -74,7 +74,6 @@ export class PHRMGoodsReceiptItemsModel {
     public PackingTypeId: number;
     StoreStockId: number;
     CostPrice: number = 0;
-    CCAmount: number = 0;
     public ItemRateHistory: Array<null> = new Array<null>();
     public ItemFreeQuantityHistory: Array<FreeQuantityHistoryModel> = new Array<FreeQuantityHistoryModel>();
     public ItemMRPHistory: Array<null> = new Array<null>();

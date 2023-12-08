@@ -181,7 +181,12 @@
                     <i class="icon-user"></i> My Profile
                   </a>
                 </li>
-
+                <li (click)="openShowDatePreference()" *ngIf="!EnableEnglishCalendarOnly">
+                  <a>
+                    <i class="fa fa-calendar"></i> Date :
+                    <b> {{defaultCal}} </b> <i class="fa fa-edit"></i>
+                  </a>
+                </li>
                 <li>
                   <!--<a href="/Account/Logout">
                     <i class="icon-key"></i> Log Out
@@ -315,3 +320,47 @@
 </div>
 
 <!-- popu for change default caledar preference for user  -->
+
+<div class="popup-static portlet box portlet-fullscreen" *ngIf="showDatePopup">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="form-body clearfix">
+
+      <div class="col-md-4 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+      <div class="col-md-5">
+        <div class="col-md-10 modelbox-div">
+          <div class="row">
+            <div class="caption" style="color:blue; margin-top: -25px;"> <span>Change Date Preference</span>
+              <a style="float:right;margin-right: -10px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+              <hr />
+            </div>
+          </div>
+          <div class="row">
+
+            <div class="input-group">
+              <div class="icheck-inline">
+                <label> Current Selection :</label>
+                <label class="mt-checkbox mt-checkbox-outline">
+                  <input id="AD" name="AD" type="checkbox" (click)="ChangeDatePreference($event)"
+                         [(ngModel)]="empPre.en" />
+                  <span></span> English (AD) </label>
+                <label class="mt-checkbox mt-checkbox-outline">
+                  <input id="BS" name="BS" type="checkbox" (click)="ChangeDatePreference($event)"
+                         [(ngModel)]="empPre.np" />
+                  <span></span> Nepali (BS)</label>
+              </div>
+            </div>
+            <div class="form-actions no-border no-padding">
+              <input type="button" class="btn primary-btn" style="height: 30px; float: right;" (click)="SaveEmpPref();"
+                     value="Save" />
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+      <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>
+    </div>
+    <!--Model Box Body End-->
+  </div>
+</div>

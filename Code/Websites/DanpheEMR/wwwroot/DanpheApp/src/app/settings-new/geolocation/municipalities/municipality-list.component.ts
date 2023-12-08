@@ -1,11 +1,10 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
-import { SettingsBLService } from '../../shared/settings.bl.service';
-import { SettingsService } from '../../shared/settings-service';
-import { CountrySubdivision } from '../../shared/country-subdivision.model';
-import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
-import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { CoreService } from '../../../core/shared/core.service';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
+import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { SettingsService } from '../../shared/settings-service';
+import { SettingsBLService } from '../../shared/settings.bl.service';
 
 @Component({
     templateUrl: './municipality-list.html',
@@ -20,11 +19,16 @@ export class MunicipalityListComponent {
 
     public selectedMunicipality: any;
     public selectedIdToEnableDisable: number = 0;
+    public GeneralFieldLabel = new GeneralFieldLabels();
+
 
 
     constructor(public settingsBLService: SettingsBLService, public coreService: CoreService,
         public settingServ: SettingsService, public msgBoxServ: MessageboxService,
         public changeDetector: ChangeDetectorRef) {
+
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
         this.municipalityGridColumns = this.settingServ.settingsGridCols.MunicipalityList;
         this.GetAllMunicipalities();
     }

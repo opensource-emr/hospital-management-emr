@@ -4,8 +4,10 @@ import { forkJoin } from 'rxjs';
 import { CoreService } from '../../core/shared/core.service';
 import { SecurityService } from '../../security/shared/security.service';
 import { DanpheHTTPResponse } from '../../shared/common-models';
+import { ProvisionalDischarge_DTO } from '../ip-billing/shared/dto/provisional-discharge.dto';
 import { BillItemRequisition } from './bill-item-requisition.model';
 import { BillingDeposit } from './billing-deposit.model';
+import { DiscardProvisionalItems_DTO } from './dto/bill-discard-provisional-items.dto';
 import { BillNewSettlement_DTO } from './dto/bill-new-settlement.dto';
 import { HandOverTransactionModel } from './hand-over-transaction.model';
 import { IpBillingDiscountModel } from './ip-bill-discount.model';
@@ -40,6 +42,7 @@ export class BillingDLService {
   public GetBillItemList() {
     return this.http.get<any>('/api/billing/BillCfgItems', this.options);
   }
+
   public GetDoctorList() {
     return this.http.get<any>('/api/Billing/ListDoctors', this.options);
   }
@@ -726,6 +729,30 @@ export class BillingDLService {
   }
   public GetPatientDepositsList(patientId: number) {
     return this.http.get<any>("/api/BillingDeposit/PatientDepositsList?patientId=" + patientId, this.options);
+  }
+  public PostProvisionalDischarge(provisionalDischarge: ProvisionalDischarge_DTO) {
+    return this.http.post<DanpheHTTPResponse>("/api/ProvisionalDischarge/Discharge", provisionalDischarge, this.jsonOptions);
+  }
+  public GetProvisionalDischargeList() {
+    return this.http.get<DanpheHTTPResponse>("/api/ProvisionalDischarge/ProvisionalDischargeList", this.jsonOptions);
+  }
+  public GetProvisionalDischargeItems(patientId: number, schemeId: number, patientVisitId: number) {
+    return this.http.get<DanpheHTTPResponse>(`/api/ProvisionalDischarge/ProvisionalDischargeItems?patientId=${patientId}&schemeId=${schemeId}&patientVisitId=${patientVisitId}`, this.jsonOptions);
+  }
+  public GetPatientVisitContextForProvisionalPayment(patientId: number, patientVisitId: number) {
+    return this.http.get<DanpheHTTPResponse>(`/api/Visit/PatientVisitContextForProvisionalPayment?patientId=${patientId}&patientVisitId=${patientVisitId}`, this.jsonOptions);
+  }
+  public DiscardProvisionalItems(discardProvisionalItems: DiscardProvisionalItems_DTO) {
+    return this.http.put<DanpheHTTPResponse>(`/api/ProvisionalDischarge/DiscardAllItems`, discardProvisionalItems, this.jsonOptions);
+  }
+  public PayProvisionalForProvisionalDischarge(billTxnModel) {
+    let data = JSON.stringify(billTxnModel);
+    return this.http.post<any>("/api/ProvisionalDischarge/PayProvisional", data, this.options);
+  }
+
+  public UpdateProvisionalItems(modifiedItems) {
+    let data = JSON.stringify(modifiedItems);
+    return this.http.put<any>("/api/Billing/UpdateProvisionalBillingTxnItems", data, this.options);
   }
 }
 

@@ -1,17 +1,17 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
-import { CommonFunctions } from '../../../shared/common.functions';
-import { IncentiveBLService } from '../../shared/incentive.bl.service'; ``
-import { EmployeeBillItemsMapModel } from '../../shared/employee-billItems-map.model';
-import { ItemGroupDistributionModel } from '../../shared/item-group-distribution.model';
-import { SecurityService } from '../../../security/shared/security.service';
-import * as moment from 'moment/moment';
-import { EmployeeIncentiveInfoModel } from '../../shared/employee-incentiveInfo.model';
-import { ProfileModel } from '../../shared/profile.model';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import * as cloneDeep from 'lodash/cloneDeep';
+import * as moment from 'moment/moment';
 import { CoreService } from '../../../core/shared/core.service';
+import { SecurityService } from '../../../security/shared/security.service';
+import { CommonFunctions } from '../../../shared/common.functions';
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { EmployeeBillItemsMapModel } from '../../shared/employee-billItems-map.model';
+import { EmployeeIncentiveInfoModel } from '../../shared/employee-incentiveInfo.model';
+import { IncentiveBLService } from '../../shared/incentive.bl.service';
 import { INCTVGridColumnSettings } from '../../shared/inctv-grid-column-settings';
+import { ItemGroupDistributionModel } from '../../shared/item-group-distribution.model';
+import { ProfileModel } from '../../shared/profile.model';
+``
 
 
 
@@ -88,7 +88,7 @@ export class EmployeeItemsSetupComponentOld {
 
         // this will assign percentages etc after finding the item.. 
         this.currentEmployeeIncentiveInfo.EmployeeBillItemsMap.forEach(el => {
-          let currItm = this.currentItemList.find(a => a.BillItemPriceId == el.BillItemPriceId);
+          let currItm = this.currentItemList.find(a => a.ServiceItemId == el.ServiceItemId);
           if (currItm) {
             currItm.EmployeeBillItemsMapId = el.EmployeeBillItemsMapId;
             currItm.PerformerPercent = el.PerformerPercent;
@@ -129,7 +129,7 @@ export class EmployeeItemsSetupComponentOld {
     this.ShowPopUp = false;
     this.strSearchitem = "";//reset search string to empty
     this.selectAll = false;//set select all checkbox to false, otherwise it will remain selected.
-    this.selServiceDepartmentName="";
+    this.selServiceDepartmentName = "";
     this.ShowItemGroupDistributionPopup = false;
     this.currentEmployeeIncentiveInfo = new EmployeeIncentiveInfoModel();
     this.DocObj = null;
@@ -223,7 +223,7 @@ export class EmployeeItemsSetupComponentOld {
     }
   }
 
-  
+
 
   public GetItemsForIncentive() {
     try {
@@ -234,7 +234,7 @@ export class EmployeeItemsSetupComponentOld {
             this.allBillItems = [];//reset allbillitems to empty..
             itmList.forEach(el => {
               let itm = new EmployeeBillItemsMapModel();
-              itm.BillItemPriceId = el.BillItemPriceId;
+              itm.ServiceItemId = el.ServiceItemId;
               itm.ItemName = el.ItemName;
               itm.DepartmentName = el.ServiceDepartmentName;
               itm.DocObj = el.Doctor ? el.Doctor : { DoctorId: null, DoctorName: null };
@@ -373,7 +373,7 @@ export class EmployeeItemsSetupComponentOld {
         EmployeeBillItemsObj.EmployeeBillItemsMapId = a.EmployeeBillItemsMapId;
         EmployeeBillItemsObj.EmployeeId = this.currentEmployeeIncentiveInfo.EmployeeId;
         EmployeeBillItemsObj.PriceCategoryId = this.currentEmployeeIncentiveInfo.PriceCategoryId;
-        EmployeeBillItemsObj.BillItemPriceId = a.BillItemPriceId;
+        EmployeeBillItemsObj.ServiceItemId = a.ServiceItemId;
         EmployeeBillItemsObj.PerformerPercent = a.PerformerPercent ? a.PerformerPercent : 0;
         EmployeeBillItemsObj.PrescriberPercent = a.PrescriberPercent ? a.PrescriberPercent : 0;
         EmployeeBillItemsObj.ReferrerPercent = a.ReferrerPercent ? a.ReferrerPercent : 0;
@@ -406,7 +406,7 @@ export class EmployeeItemsSetupComponentOld {
           firstRow.DocObj = this.DocObj;
           firstRow.FromEmployeeId = this.DocObj.EmployeeId;
           firstRow.DistributeToEmployeeId = this.DocObj.EmployeeId;
-          firstRow.BillItemPriceId = EmployeeBillItemsObj.BillItemPriceId;
+          firstRow.ServiceItemId = EmployeeBillItemsObj.ServiceItemId;
           firstRow.DistributionPercent = EmployeeBillItemsObj.PerformerPercent;
           firstRow.isSelfGroupDistribution = true;
           firstRow.IsActive = true;
@@ -567,7 +567,7 @@ export class EmployeeItemsSetupComponentOld {
     if (this.ItemGroupDistribution && this.ItemGroupDistribution.length > 0) {
       this.ItemGroupDistribution.forEach(a => {
         if (a.DocObj.EmployeeId) {
-          a.BillItemPriceId = this.filteredItemList[this.index].BillItemPriceId
+          a.ServiceItemId = this.filteredItemList[this.index].ServiceItemId
           a.DistributeToEmployeeId = a.DocObj.EmployeeId;
           a.FromEmployeeId = this.DocObj.EmployeeId;
           a.EmployeeBillItemsMapId = this.filteredItemList[this.index].EmployeeBillItemsMapId ? this.filteredItemList[this.index].EmployeeBillItemsMapId : 0;
@@ -633,7 +633,7 @@ export class EmployeeItemsSetupComponentOld {
             let profile = res.Results.profileDetails;
 
             profile.MappedItems.forEach(el => {
-              let index = this.currentItemList.findIndex(a => a.BillItemPriceId == el.BillItemPriceId);
+              let index = this.currentItemList.findIndex(a => a.ServiceItemId == el.ServiceItemId);
               if (index > -1) {
                 this.currentItemList[index].PerformerPercent = el.PerformerPercent;
                 this.currentItemList[index].PrescriberPercent = el.PrescriberPercent;
@@ -647,7 +647,7 @@ export class EmployeeItemsSetupComponentOld {
               if (t1.PerformerPercent == null || t1.PerformerPercent == 0) {
                 return 1;
               }
-              else { return -1; }             
+              else { return -1; }
             });
             this.filteredItemList = cloneDeep(this.currentItemList);
             this.showEditFields = true;

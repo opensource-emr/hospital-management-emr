@@ -47,7 +47,10 @@
 
                             <td style="text-align:center;float:right;padding-right:10px;">
                               <b>Transaction Date:</b>
-
+                              <span style="float:right">
+                                &nbsp;
+                                {{transaction.TransactionDate | nepaliDate:'format':'YYYY-MM-DD hh:mm'}} 
+                              </span><br />
                               <span style="float:right">
                                 &nbsp;
                                 {{transaction.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} AD
@@ -126,7 +129,8 @@
                               {{ txnItm.SubLedgers[0]?.SubLedgerName }}
                             </td>
                             <td>
-                              {{txnItm.Description }} ({{ txnItm.CostCenterName }})
+                              {{ txnItm.Description }}
+                              {{ subLedgerAndCostCenterSetting.EnableCostCenter ? ('(' + txnItm.CostCenterName + ')') : '' }}
                             </td>
                             <td>
                               <p *ngIf="txnItm.DrCr">{{txnItm.Amount | Currency:'4'}}</p>
@@ -235,7 +239,8 @@
                         <!-- edit btn show only for edit manual Voucher  -->
                         <button
                                 [rbac-permission]="{'name':'accounting-edit-voucher-button-permission','actionOnInvalid':'hidden'}"
-                                *ngIf="Iseditable &&  !transaction.IsVerified" class="btn creamyblue btn-success hidden-print" (click)="EditVoucher()"
+                                *ngIf="Iseditable &&  (!transaction.IsVerified || AllowVoucherEditAfterVerification)"
+                                class="btn creamyblue btn-success hidden-print" (click)="EditVoucher()"
                                 value="" title="edit manual voucher" style="margin-left: 12px;">
                           Edit Voucher<i class="fa fa-pencil" style="margin-left:10px;"></i>
                         </button>
@@ -301,7 +306,10 @@
                         </td>
                         <td style="text-align:center;float:right;padding-right:10px;">
                           <b>Transaction Date:</b>
-
+                          <span style="float:right">
+                            &nbsp;
+                            {{transaction.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                          </span><br />
                           <span style="float:right">
                             &nbsp;
                             {{transaction.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
@@ -699,7 +707,10 @@
                             </td>
                             <td style="text-align:center;float:right;padding-right:10px;">
                               <b>Transaction Date:</b>
-
+                              <span style="float:right">
+                                &nbsp;
+                                {{txnDetails.TransactionDate | nepaliDate:'format':'YYYY-MM-DD hh:mm'}} 
+                              </span><br />
                               <span style="float:right">
                                 &nbsp;
                                 {{txnDetails.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} AD

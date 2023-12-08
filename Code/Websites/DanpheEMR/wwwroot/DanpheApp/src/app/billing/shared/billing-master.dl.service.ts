@@ -33,4 +33,8 @@ export class BillingMasterDlService {
   GetCurrencies() {
     return this.httpClient.get<DanpheHTTPResponse>(`${this.apiUrl}/Currencies`, this.headerOptions);
   }
+  GetServiceItemsByPriceCategoryId(priceCategoryId: number) {
+    return this.httpClient.get<DanpheHTTPResponse>(`${this.apiUrl}/ServiceItemsByPriceCategory?priceCategoryId=${priceCategoryId}`, this.headerOptions);
+  }
+
 }

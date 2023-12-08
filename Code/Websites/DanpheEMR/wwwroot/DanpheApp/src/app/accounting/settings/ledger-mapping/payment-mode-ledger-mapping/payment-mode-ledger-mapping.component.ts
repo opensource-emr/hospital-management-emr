@@ -5,6 +5,8 @@ import { AccountingService } from "../../../../accounting/shared/accounting.serv
 import { CoreService } from "../../../../core/shared/core.service";
 import { SecurityService } from "../../../../security/shared/security.service";
 import { MessageboxService } from "../../../../shared/messagebox/messagebox.service";
+import { ENUM_ACC_ADDLedgerLedgerType, ENUM_DanpheHTTPResponses, ENUM_Data_Type, ENUM_MessageBox_Status } from "../../../../shared/shared-enums";
+import { SubLedger_DTO } from "../../../transactions/shared/DTOs/subledger-dto";
 import { AccountingSettingsBLService } from "../../shared/accounting-settings.bl.service";
 import { LedgerModel } from "../../shared/ledger.model";
 import { ledgerGroupModel } from "../../shared/ledgerGroup.model";
@@ -59,6 +61,20 @@ export class PaymentModeLedgerMappingComponent {
     public paymentModeLedgerList: Array<LedgerModel> = new Array<LedgerModel>();
     public paymentModeList: any;
     // END: PaymentMode Ledger
+    public SubLedgerAndCostCenterSetting = {
+        "EnableSubLedger": false,
+        "EnableCostCenter": false
+    };
+    public SelectedSubLedger: Array<any> = [];
+    public PaymentModeSubLedgers: Array<SubLedger_DTO> = new Array<SubLedger_DTO>();
+    public SubLedgerMaster: Array<SubLedger_DTO> = new Array<SubLedger_DTO>();
+    public PaymentModeLedgerParam = {
+        LedgergroupUniqueName: "",
+        LedgerType: "",
+        COA: "",
+        LedgerName: ""
+    }
+
 
     constructor(public accountingSettingsBLService: AccountingSettingsBLService,
         public securityService: SecurityService,
@@ -67,6 +83,7 @@ export class PaymentModeLedgerMappingComponent {
         public accountingBLService: AccountingBLService,
         public coreService: CoreService,
         public accountingService: AccountingService) {
+        this.SubLedgerMaster = this.accountingService.accCacheData.SubLedgerAll ? this.accountingService.accCacheData.SubLedgerAll : [];
         //this.GetProvisionalLedgerCode();
         this.GetLedgerGroup();
         this.getLedgerList();
@@ -93,8 +110,13 @@ export class PaymentModeLedgerMappingComponent {
             let ledgers = this.coreService.Parameters.filter(p => p.ParameterGroupName == "Accounting" && p.ParameterName == "LedgerGroupMapping");
             if (ledgers.length > 0) {
                 this.ledgerTypeParamter = JSON.parse(ledgers[0].ParameterValue);
+                this.PaymentModeLedgerParam = this.ledgerTypeParamter.find(a => a.LedgerType === ENUM_ACC_ADDLedgerLedgerType.PaymentModes);
             } else {
-                this.msgBoxServ.showMessage("error", ['Ledgers type not found.']);
+                this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ['Ledgers type not found.']);
+            }
+            let subLedgerParam = this.coreService.Parameters.find(a => a.ParameterGroupName === "Accounting" && a.ParameterName === "SubLedgerAndCostCenter");
+            if (subLedgerParam) {
+                this.SubLedgerAndCostCenterSetting = JSON.parse(subLedgerParam.ParameterValue);
             }
         } catch (ex) {
             this.ShowCatchErrMessage(ex);
@@ -126,9 +148,17 @@ export class PaymentModeLedgerMappingComponent {
     }
     //adding new Ledger
     AddLedger() {
+        this.NewledgerList = this.paymentModeList.filter(a => a.IsSelected == true);
+        this.NewledgerList.forEach(led => {
+            let ledData = this.ledgerListAutoComplete.filter(l => l.LedgerName == led.LedgerName);
+            if (ledData.length == 0) {
+                led.Code = "";
+                led.LedgerId = 0;
+            }
+        });
         this.CheckDrCrValidation();
         if (this.CurrentLedger.LedgerGroupId == 0 || this.CurrentLedger.LedgerGroupId == null) {
-            this.msgBoxServ.showMessage("error", ["Please select ledger group"]);
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ["Please select ledger group"]);
         }
         else {
             let ledgerValidation = true;
@@ -142,21 +172,26 @@ export class PaymentModeLedgerMappingComponent {
                     ledgerValidation = false;
                     return;
                 }
+                if (this.SubLedgerAndCostCenterSetting.EnableSubLedger && ledger.SubLedgerName.trim() === "") {
+                    ledgerValidation = false;
+                    this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Warning, [`Please Select SubLedger Or Give SubLedgerName.`]);
+                    break;
+                }
             };
-            if (ledgerValidation) {
+            if (ledgerValidation && this.NewledgerList.length > 0) {
                 this.loading = true;
                 ///During First Time Add Current Balance and Opening Balance is Equal                 
                 this.accountingSettingsBLService.AddLedgerList(this.NewledgerList)
                     .subscribe(
                         res => {
-                            if (res.Status == "OK") {
-                                this.msgBoxServ.showMessage("success", ["Ledgers Added"]);
+                            if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+                                this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Success, ["Ledgers Added"]);
                                 this.CallBackAddLedger(res);
                                 //this.GetProvisionalLedgerCode();
                                 this.loading = false;
                             }
                             else {
-                                this.msgBoxServ.showMessage("error", ["Duplicate ledger not allowed"]);
+                                this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ["Duplicate ledger not allowed"]);
                                 this.loading = false;
                             }
                         },
@@ -166,13 +201,14 @@ export class PaymentModeLedgerMappingComponent {
                         });
             } else {
                 this.loading = false;
+                this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, [`Please select at least one paymentmode for mapping.`]);
             }
         }
     }
 
     //after adding Ledger is succesfully added  then this function is called.
     CallBackAddLedger(res) {
-        if (res.Status == "OK" && res.Results != null) {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK && res.Results != null) {
             res.Results.forEach(ledger => {//mumbai-team-june2021-danphe-accounting-cache-change
                 ledger.PrimaryGroup = this.CurrentLedger.PrimaryGroup;
                 ledger.COA = this.CurrentLedger.COA;
@@ -183,11 +219,11 @@ export class PaymentModeLedgerMappingComponent {
                 this.accountingService.accCacheData.LedgersALL.push(ledger);//mumbai-team-june2021-danphe-accounting-cache-change
             });
         }
-        else if (res.Status == "OK" && res.Results == null) {
-            this.msgBoxServ.showMessage("notice-message", ["Ledger under LedgerGroup already exist.Please deactivate the previous ledger to add a new one with same name"]);
+        else if (res.Status === ENUM_DanpheHTTPResponses.OK && res.Results == null) {
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ["Ledger under LedgerGroup already exist.Please deactivate the previous ledger to add a new one with same name"]);
         }
         else {
-            this.msgBoxServ.showMessage("error", ["Check log for details"]);
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ["Check log for details"]);
             console.log(res.ErrorMessage);
         }
     }
@@ -230,7 +266,7 @@ export class PaymentModeLedgerMappingComponent {
                 let ledgerGroupUnqName = this.ledgerTypeParamter.filter(l => l.LedgergroupUniqueName == this.selLedgerGroup.Name);
                 if (ledgerGroupUnqName.length > 0) {
                     this.disabledRow = false;
-                    this.msgBoxServ.showMessage('Notice', ['Create ledger for this ledgerGroup from respective tab']);
+                    this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ['Create ledger for this ledgerGroup from respective tab']);
                 }
                 else {
                     this.disabledRow = true;
@@ -279,7 +315,7 @@ export class PaymentModeLedgerMappingComponent {
 
             if (count > 0 || check > 1) {
                 this.NewledgerList[index].LedgerName = null;
-                this.msgBoxServ.showMessage("notice", ['duplicate ledger not allowed']);
+                this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ['duplicate ledger not allowed']);
                 this.loading = false;
             }
 
@@ -390,6 +426,7 @@ export class PaymentModeLedgerMappingComponent {
 
     AssignSelectedLedger(index) {
         try {
+            let oldLedgerId = this.paymentModeList[index] ? this.paymentModeList[index].LedgerId : 0;
             var ledgerNameSelected = (typeof (this.paymentModeList[index].LedgerName) == 'object') ? this.paymentModeList[index].LedgerName.LedgerName.trim().toLowerCase() : this.paymentModeList[index].LedgerName.trim().toLowerCase();
             var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase() == ledgerNameSelected);
             if (ledger.length > 0) {
@@ -400,6 +437,11 @@ export class PaymentModeLedgerMappingComponent {
                 this.paymentModeList[index].Code = "";
                 this.paymentModeList[index].LedgerId = 0;
             }
+            if (oldLedgerId !== this.paymentModeList[index].LedgerId) {
+                this.paymentModeList[index].SubLedgerName = "";
+                this.paymentModeList[index].SubLedgerId = 0;
+                this.SelectedSubLedger[index] = new SubLedger_DTO();
+            }
         }
         catch (ex) {
 
@@ -407,25 +449,30 @@ export class PaymentModeLedgerMappingComponent {
     }
     SelectAllChkOnChange() {
         if (this.isSelectAll) {
-
-            this.paymentModeList.forEach(a => {
+            let ledgerObj = this.ledgerListAutoComplete.find(a => a.Name === this.PaymentModeLedgerParam.LedgerName)
+            this.paymentModeList.forEach((a, index) => {
                 a.IsSelected = true;
                 a.IsActive = true;
                 if (a.IsSelected) {
                     if (a.IsMapped == false) {
-                        a.LedgerName = a.OrganizationName;
-                        a.Code = "";
-                        a.LedgerId = 0;
+                        a.LedgerName = this.SubLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj.LedgerName) : a.PaymentMode;
+                        a.Code = this.SubLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj ? ledgerObj.Code : "") : "";
+                        a.LedgerId = this.SubLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj ? ledgerObj.LedgerId : 0) : 0;
+                        a.SubLedgerName = a.PaymentMode;
+                        this.SelectedSubLedger[index] = a.PaymentMode;
                     }
                 }
+                a.LedgerValidator.get("LedgerName").enable();
             });
         }
         else {
-            this.paymentModeList.forEach(a => {
+            this.paymentModeList.forEach((a, index) => {
                 if (a.IsMapped == false) {
                     a.LedgerName = "";
                     a.Code = "";
                     a.LedgerId = 0;
+                    a.SubLedgerName = "";
+                    this.SelectedSubLedger[index] = "";
                 }
                 else {
                     var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName == a.LedgerName);
@@ -437,6 +484,7 @@ export class PaymentModeLedgerMappingComponent {
                     }
                 }
                 a.IsSelected = false;
+                a.LedgerValidator.get("LedgerName").disable();
             });
         }
         this.ShowSaveButtonOnCkboxChange();
@@ -452,12 +500,16 @@ export class PaymentModeLedgerMappingComponent {
                 this.paymentModeList[index].LedgerId = 0;
                 this.paymentModeList[index].IsActive = true;
             }
+            this.paymentModeList[index].LedgerValidator.get("LedgerName").enable();
         }
         else if ((this.paymentModeList[index].IsSelected == false)) {
             if (this.paymentModeList[index].IsMapped == false) {
                 this.paymentModeList[index].LedgerName = "";
                 this.paymentModeList[index].Code = "";
                 this.paymentModeList[index].LedgerId = 0;
+                this.paymentModeList[index].SubLedgerId = 0;
+                this.paymentModeList[index].SubLedgerName = "";
+                this.SelectedSubLedger[index] = "";
             }
             else {
                 var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName == this.paymentModeList[index].LedgerName);
@@ -498,9 +550,9 @@ export class PaymentModeLedgerMappingComponent {
         this.changeDetector.detectChanges();
         this.getPaymentModes();
         this.CurrentLedger = new LedgerModel();
-        let Ledgertype = this.ledgerTypeParamter.find(a => a.LedgerType == 'paymentmodes');
+        let Ledgertype = this.ledgerTypeParamter.find(a => a.LedgerType === ENUM_ACC_ADDLedgerLedgerType.PaymentModes);
         if (Ledgertype && Ledgertype.LedgergroupUniqueName) {
-            let consultLedger = this.sourceLedGroupList.find(a => a.Name == Ledgertype.LedgergroupUniqueName);
+            let consultLedger = this.sourceLedGroupList.find(a => a.Name === Ledgertype.LedgergroupUniqueName);
 
             if (consultLedger != null || consultLedger != undefined) {
                 let primaryGroupId = this.primaryGroupList.filter(p => p.PrimaryGroupName == consultLedger.PrimaryGroup)[0].PrimaryGroupId;
@@ -510,10 +562,11 @@ export class PaymentModeLedgerMappingComponent {
                 this.CurrentLedger.LedgerGroupName = consultLedger.LedgerGroupName;
                 this.CurrentLedger.LedgerGroupId = consultLedger.LedgerGroupId;
                 this.ledgerListAutoComplete = this.sourceLedgerList.filter(emp => emp.LedgerGroupId == this.CurrentLedger.LedgerGroupId && emp.LedgerName != "");
+                this.PaymentModeSubLedgers = this.SubLedgerMaster.filter(a => this.ledgerListAutoComplete.some(b => a.LedgerId === b.LedgerId));
             }
         }
         else {
-            this.msgBoxServ.showMessage('notice', ['Please first create ledger group for Credit Organizations']);
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ['Please first create ledger group for Credit Organizations']);
         }
 
     }
@@ -521,11 +574,11 @@ export class PaymentModeLedgerMappingComponent {
     getPaymentModes() {
         this.accountingSettingsBLService.GetPaymentModes()
             .subscribe(res => {
-                if (res.Status == "OK") {
+                if (res.Status === ENUM_DanpheHTTPResponses.OK) {
                     this.paymentModeLedgerList = new Array<LedgerModel>();
                     let data = res.Results;
-                    data.forEach(emp => {
-                        var led = new LedgerModel();
+                    data.forEach((emp, index) => {
+                        let led = new LedgerModel();
                         led = Object.assign(led, emp);
                         led.LedgerId = (emp.LedgerId != null) ? emp.LedgerId : 0,
                             led.LedgerGroupId = (emp.LedgerGroupId != null) ? emp.LedgerGroupId : this.CurrentLedger.LedgerGroupId,
@@ -535,7 +588,14 @@ export class PaymentModeLedgerMappingComponent {
                             led.Dr = (emp.DrCr == true) ? emp.DrCr : null;
                         led.Cr = (emp.DrCr == false) ? true : null;
                         led.LedgerType = "paymentmodes",
-                            this.paymentModeLedgerList.push(led);
+                            led.LedgerValidator.get("COA").setValue(this.CurrentLedger.COA);
+                        led.LedgerValidator.get("PrimaryGroup").setValue(this.CurrentLedger.PrimaryGroup);
+                        led.LedgerValidator.get("LedgerGroupName").setValue(this.CurrentLedger.LedgerGroupName);
+                        if (!led.IsSelected)
+                            led.LedgerValidator.get("LedgerName").disable();
+                        led.LedgerGroupId = this.CurrentLedger.LedgerGroupId;
+                        this.paymentModeLedgerList.push(led);
+                        this.SelectedSubLedger[index] = emp.SubLedgerName;
                     });
 
                     this.paymentModeList = this.paymentModeLedgerList;
@@ -557,11 +617,11 @@ export class PaymentModeLedgerMappingComponent {
         try {
             this.accountingSettingsBLService.GetProvisionalLedgerCode()
                 .subscribe(res => {
-                    if (res.Status == "OK") {
+                    if (res.Status === ENUM_DanpheHTTPResponses.OK) {
                         this.provisionalLedgerCode = parseInt(res.Results);
                     }
                     else {
-                        this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+                        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, [res.ErrorMessage]);
                     }
                 },
                     err => {
@@ -570,5 +630,33 @@ export class PaymentModeLedgerMappingComponent {
         } catch (ex) {
             this.ShowCatchErrMessage(ex);
         }
+    }
+
+    AssignSelectedSubLedger(index) {
+        if (typeof this.SelectedSubLedger[index] === ENUM_Data_Type.Object && this.SelectedSubLedger[index].SubLedgerId > 0) {
+            this.paymentModeList[index].Code = this.SelectedSubLedger[index].SubLedgerCode
+            this.paymentModeList[index].LedgerId = this.SelectedSubLedger[index].LedgerId;
+            this.paymentModeList[index].SubLedgerName = this.SelectedSubLedger[index].SubLedgerName;
+            this.paymentModeList[index].SubLedgerId = this.SelectedSubLedger[index].SubLedgerId;
+            var Ledger = this.ledgerListAutoComplete.find(a => a.LedgerId === this.SelectedSubLedger[index].LedgerId);
+            if (Ledger) {
+                this.paymentModeList[index].LedgerName = Ledger.LedgerName;
+            }
+        }
+        else {
+            if (this.SelectedSubLedger[index].trim() === "") {
+                this.paymentModeList[index].LedgerId = 0;
+                this.paymentModeList[index].SubLedgerId = 0;
+                this.paymentModeList[index].LedgerName = "";
+                this.paymentModeList[index].SubLedgerName = "";
+            }
+            else {
+                this.paymentModeList[index].SubLedgerName = this.SelectedSubLedger[index];
+            }
+        }
+    }
+
+    public SubLedgerListFormatter(subLedger: SubLedger_DTO): string {
+        return `${subLedger["SubLedgerName"]} (${subLedger["LedgerName"]})`;
     }
 }

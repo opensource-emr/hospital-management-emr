@@ -33,6 +33,7 @@ export class SchemeParameters {
       retValue.MembershipLoadButtonDisplayName = "Load SSF Details";
       retValue.SelectEmployer = true;
       retValue.ShowOpIpBalance = true;
+      retValue.ShowGeneralBalance = true;
 
     }
     else if (settingName === "ECHS") {

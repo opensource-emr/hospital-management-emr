@@ -21,6 +21,8 @@
                         <span>&nbsp;
                             {{dispatchItems[0].DispatchedDate |date : 'yyyy-MM-dd'}}
                             &nbsp;&nbsp;
+                            <i *ngIf="dispatchItems[0].DispatchedDate ">({{dispatchItems[0].DispatchedDate | nepaliDate:'format':'YYYY-MM-DD'}} 
+                                )</i>
                         </span>
                     </label>
                 </div>

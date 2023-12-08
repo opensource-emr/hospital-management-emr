@@ -20,7 +20,7 @@
         font-size: 15px;
     }
 
-    div>span {
+    div > span{
         margin: 4px;
     }
 </style>
@@ -30,25 +30,23 @@
     <div class="portlet-body form">
         <div class="modelbox-div" style="margin-left:30%;margin-right:16%">
             <div style="margin-left:60px"> <i class="btn btn-danger" style="float: right"
-                   (click)="ClosePrintStickerPopup()">X</i>
+                    (click)="ClosePrintStickerPopup()">X</i>
 
                 <div class="wrapper">
                     <div class="row">
                         <div id="patientSticker" style="border: 1px dotted black;font-size: 12px;">
                             <div id="patientprintpage" [ngClass]="'opdstkcontainer-' + hospitalCode"
-                                 class="patientstickercontainer">
+                                class="patientstickercontainer">
                                 <div [ngClass]="'topsec-' + hospitalCode" class="stkrtopsection">
                                     <div>
                                         <div>
                                             <div align="center">
                                                 <h3
                                                     *ngIf="maternityPatientPaymentData.TransactionType != 'MaternityAllowanceReturn'">
-                                                    <u>Maternity Allowance Payment Receipt</u>
-                                                </h3>
+                                                    <u>Maternity Allowance Payment Receipt</u></h3>
                                                 <h3
                                                     *ngIf="maternityPatientPaymentData.TransactionType == 'MaternityAllowanceReturn'">
-                                                    <u>Maternity Allowance Return Receipt</u>
-                                                </h3>
+                                                    <u>Maternity Allowance Return Receipt</u></h3>
                                             </div>
 
                                             <hr style="border:0.5px solid black;margin:0px;" />
@@ -71,8 +69,7 @@
                                                 <span style="display:inline-block;">
                                                     Patient Name : {{maternityPatientPaymentData.PatientName}}
                                                 </span>
-                                                <span style="float:right;padding-right: 5px;"> Age/Sex :
-                                                    {{this.maternityPatientPaymentData.Age}}/{{this.maternityPatientPaymentData.Gender}}
+                                                <span style="float:right;padding-right: 5px;"> Age/Sex : {{this.maternityPatientPaymentData.Age}}/{{this.maternityPatientPaymentData.Gender}}
                                                 </span>
                                             </div>
 
@@ -82,8 +79,7 @@
                                                     {{maternityPatientPaymentData.OutAmount}}
                                                 </span>
                                             </div>
-                                            <div style="margin-left: 4px;"
-                                                 *ngIf="maternityPatientPaymentData.TransactionType != 'MaternityAllowanceReturn'">
+                                            <div style="margin-left: 4px;" *ngIf="maternityPatientPaymentData.TransactionType != 'MaternityAllowanceReturn'">
                                                 (In Words :&nbsp; {{maternityPatientPaymentData.OutAmount |
                                                 Currency:'4' | NumberInWords | CapitalFirstLetter}} Only)
                                             </div>
@@ -95,38 +91,35 @@
                                                 </span>
                                                 <span style="float:right;padding-right: 5px;"></span>
                                             </div>
-                                            <div style="margin-left: 4px;"
-                                                 *ngIf="maternityPatientPaymentData.TransactionType == 'MaternityAllowanceReturn'">
+                                            <div style="margin-left: 4px;" *ngIf="maternityPatientPaymentData.TransactionType == 'MaternityAllowanceReturn'">
                                                 (In Words :&nbsp; {{maternityPatientPaymentData.InAmount |
                                                 Currency:'4' | NumberInWords | CapitalFirstLetter}} Only
                                             </div>
 
-                                            <div style="margin-top: 10px;">
-                                                <div style="width: 80%"
-                                                     *ngIf="maternityPatientPaymentData.TransactionType != 'MaternityAllowanceReturn'">
-                                                    <span>
-                                                        {{coreService.currencyUnit}}
-                                                        {{maternityPatientPaymentData.OutAmount}} paid to
-                                                        {{maternityPatientPaymentData.PatientName}} , Hospital No :
-                                                        {{maternityPatientPaymentData.HospitalNo}}&nbsp;&nbsp;
-                                                    </span>
+                                                <div style="margin-top: 10px;">
+                                                    <div style="width: 80%" *ngIf="maternityPatientPaymentData.TransactionType != 'MaternityAllowanceReturn'">
+                                                        <span>
+                                                            {{coreService.currencyUnit}}
+                                                            {{maternityPatientPaymentData.OutAmount}} paid to
+                                                            {{maternityPatientPaymentData.PatientName}} , Hospital No :
+                                                            {{maternityPatientPaymentData.HospitalNo}}&nbsp;&nbsp;
+                                                        </span>
+                                                    </div>
+                                                    <div style="width: 80%" *ngIf="maternityPatientPaymentData.TransactionType == 'MaternityAllowanceReturn'">
+                                                        <span>
+                                                            {{coreService.currencyUnit}}
+                                                            {{maternityPatientPaymentData.InAmount}} returned from
+                                                            {{maternityPatientPaymentData.PatientName}} , Hospital No :
+                                                            {{maternityPatientPaymentData.HospitalNo}}&nbsp;&nbsp;
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div style="width: 80%"
-                                                     *ngIf="maternityPatientPaymentData.TransactionType == 'MaternityAllowanceReturn'">
-                                                    <span>
-                                                        {{coreService.currencyUnit}}
-                                                        {{maternityPatientPaymentData.InAmount}} returned from
-                                                        {{maternityPatientPaymentData.PatientName}} , Hospital No :
-                                                        {{maternityPatientPaymentData.HospitalNo}}&nbsp;&nbsp;
-                                                    </span>
-                                                </div>
-                                            </div>
                                             <div style="clear: both;"></div>
                                             <hr style="border:0.5px solid black;margin:0px;" />
                                         </div>
 
                                         <div style="display: flex; width: 100%; flex-direction: column;"
-                                             [ngClass]="'dptdescleft-' + hospitalCode" class="dptdesc-left">
+                                            [ngClass]="'dptdescleft-' + hospitalCode" class="dptdesc-left">
 
                                             <div style="padding-top: 10px;">
                                                 <span> User&nbsp;: {{maternityPatientPaymentData.EmployeeName}} </span>
@@ -140,16 +133,16 @@
                             </div>
 
                             <div
-                                 style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
+                                style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
                                 <button class="btn green btn-success" value="" (click)="print()"
-                                        id="btnPrintOpdSticker">
+                                    id="btnPrintOpdSticker">
                                     <span>Print</span>&nbsp;&nbsp;
                                     &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
                                 </button>
                             </div>
 
                             <select-printer [group-name]="'bill-receipt'" [storage-key]="'opd-sticker'"
-                                            (on-printer-change)="OnPrinterChanged($event)">
+                                (on-printer-change)="OnPrinterChanged($event)">
                             </select-printer>
 
                         </div>

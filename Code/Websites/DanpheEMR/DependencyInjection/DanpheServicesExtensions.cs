@@ -4,6 +4,7 @@ using DanpheEMR.Services.Billing;
 using DanpheEMR.Services.ClaimManagement;
 using DanpheEMR.Services.Dispensary;
 using DanpheEMR.Services.DispensaryTransfer;
+using DanpheEMR.Services.DynamicTemplates;
 using DanpheEMR.Services.IMU;
 using DanpheEMR.Services.Inventory.InventoryDonation;
 using DanpheEMR.Services.LIS;
@@ -14,6 +15,7 @@ using DanpheEMR.Services.Pharmacy.PharmacyPO;
 using DanpheEMR.Services.Pharmacy.Rack;
 using DanpheEMR.Services.Pharmacy.SupplierLedger;
 using DanpheEMR.Services.ProcessConfirmation;
+using DanpheEMR.Services.ProvisionalDischarge;
 using DanpheEMR.Services.QueueManagement;
 using DanpheEMR.Services.SSF;
 using DanpheEMR.Services.Utilities;
@@ -69,6 +71,8 @@ namespace DanpheEMR.DependencyInjection
             services.AddTransient<IProcessConfirmationService, ProcessConfirmationService>();
             services.AddTransient<IAdmissionMasterService, AdmissionMasterService>();
             services.AddTransient<IMarketingReferralService, MarketingReferralService>();
+            services.AddTransient<IProvisionalDischargeService, ProvisionalDischargeService>();
+            services.AddTransient<IDynamicTemplateService, DynamicTemplateService>();
             return services;
         }
     }

@@ -1,6 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
-
 import { CoreService } from "../../core/shared/core.service";
 import { InventoryFieldCustomizationService } from '../../shared/inventory-field-customization.service';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
@@ -10,7 +9,9 @@ import { RequisitionDispatchItem_DTO } from '../shared/dtos/requisition-dispatch
 import { RequisitionDispatch_DTO } from '../shared/dtos/requisition-dispatch.dto';
 import { InventoryBLService } from "../shared/inventory.bl.service";
 import { InventoryService } from '../shared/inventory.service';
+import { GeneralFieldLabels } from '../../shared/DTOs/general-field-label.dto';
 @Component({
+    selector: 'dispatch-receipt-details',
     templateUrl: "./dispatch-receipt-details.component.html"
 })
 export class DispatchReceiptDetailsComponent implements OnInit {
@@ -23,6 +24,11 @@ export class DispatchReceiptDetailsComponent implements OnInit {
     DispatchId: number;
     showSpecification: boolean = false;
     showBarcode: boolean = false;
+    showDispatchRequisitionPopup: boolean = false;
+    @Output('call-back-dispatch-detail-popup-close')
+    callBackPopupClose: EventEmitter<Object> = new EventEmitter<Object>();
+
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
 
     constructor(
@@ -40,6 +46,7 @@ export class DispatchReceiptDetailsComponent implements OnInit {
         // }
         this.GetInventoryBillingHeaderParameter();
         this.GetInventoryFieldCustomization();
+        this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
     }
     ngOnInit(): void {
         //check for english or nepali receipt style
@@ -48,6 +55,12 @@ export class DispatchReceiptDetailsComponent implements OnInit {
         if (this.showNepaliReceipt == false) {
             this.LoadRequsitionDispatchDetails(this.DispatchId, this.requisitionId, this.inventoryService.CreatedOn);
         }
+    }
+
+    ngOnDestroy() {
+        this.inventoryService.DispatchId = 0;
+        this.inventoryService.RequisitionId = 0;
+
     }
 
     LoadRequsitionDispatchDetails(DispatchId: number, RequisitionId: number, CreatedDate?: string) {
@@ -72,6 +85,7 @@ export class DispatchReceiptDetailsComponent implements OnInit {
             this.setFocusById('printBtn');
             this.requisitionDispatch = res.Results.RequisitionDispatch;
             this.requisitionItemsDetails = res.Results.RequisitionDispatchItems;
+            this.showDispatchRequisitionPopup = true;
         }
         else {
             this.messageBoxService.showMessage("notice-message", ["There is no Requisition details !"]);
@@ -120,5 +134,11 @@ export class DispatchReceiptDetailsComponent implements OnInit {
         this.showSpecification = parameter.showSpecification;
         this.showBarcode = parameter.showBarcode;
 
+    }
+
+    Close(): void {
+        this.showDispatchRequisitionPopup = false;
+        this.router.navigate(['/Inventory/InternalMain/Requisition/RequisitionList']);
+        this.callBackPopupClose.emit();
     }
 }

@@ -8,6 +8,7 @@ import { PatientService } from '../../../patients/shared/patient.service';
 import { SecurityService } from '../../../security/shared/security.service';
 import { CommonFunctions } from "../../../shared/common.functions";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { ENUM_DanpheHTTPResponseText, ENUM_ExternalLab_SampleStatus } from "../../../shared/shared-enums";
 import { LabSticker } from "../../shared/lab-sticker.model";
 import { PatientLabSample } from '../../shared/lab-view.models';
 import { LabTestResultService } from '../../shared/lab.service';
@@ -213,7 +214,7 @@ export class LabTestsCollectSampleComponent {
 
   //int his converting the testname into csv(comma separated values) using join and .map
   CallBackPatientTestCSVs(res): void {
-    if (res.Status == 'OK') {
+    if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
       if (res.Results.length != 0) {
         res.Results.forEach(res => {
           var labTest: PatientLabSample = new PatientLabSample();
@@ -238,6 +239,10 @@ export class LabTestsCollectSampleComponent {
           labTest.PatientId = this.patientId;
           labTest.VisitType = this.visitType;
           labTest.IsOutsourceTest = res.IsOutsourceTest ? res.IsOutsourceTest : false;
+          if (labTest.IsOutsourceTest) {
+            labTest.ExternalLabSampleStatus = ENUM_ExternalLab_SampleStatus.SampleCollected;
+          }
+          labTest.DefaultOutsourceVendorId = res.DefaultOutsourceVendorId;
           //labTest.SmCode = res.SmCode;
 
           //labTest.SmNumber = res.SmNumber;
@@ -387,8 +392,18 @@ export class LabTestsCollectSampleComponent {
         return -1;
       return 0;
     });
+    this.AddMachineOrder();
   }
 
+  public AddMachineOrder() {
+    this.labBLService.AddMachineOrder(this.requisitionlist)
+      .then(response => {
+        console.log(response);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }
 
   public ManagePatientLabInfo(sampleCollOnDateTime: any) {
     this.PatientLabInfo.HospitalNumber = this.patientService.globalPatient.PatientCode;

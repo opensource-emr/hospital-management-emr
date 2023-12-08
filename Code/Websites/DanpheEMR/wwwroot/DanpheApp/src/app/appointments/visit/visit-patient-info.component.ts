@@ -9,6 +9,7 @@ import { SsfPatient_DTO, SsfService } from "../../insurance/ssf/shared/service/s
 import { Patient } from "../../patients/shared/patient.model";
 import { PatientService } from "../../patients/shared/patient.service";
 import { CountrySubdivision } from "../../settings-new/shared/country-subdivision.model";
+import { GeneralFieldLabels } from "../../shared/DTOs/general-field-label.dto";
 import { Municipality } from "../../shared/address-controls/municipality-model";
 import { DanpheCache, MasterType } from "../../shared/danphe-cache-service-utility/cache-services";
 import { MessageboxService } from "../../shared/messagebox/messagebox.service";
@@ -16,6 +17,7 @@ import { RouteFromService } from "../../shared/routefrom.service";
 import { ENUM_Country, ENUM_DanpheHTTPResponseText } from "../../shared/shared-enums";
 import { VisitBLService } from "../shared/visit.bl.service";
 import { VisitService } from "../shared/visit.service";
+
 @Component({
   selector: "visit-patient-info",
   templateUrl: "./visit-patient-info.html",
@@ -51,6 +53,7 @@ export class VisitPatientInfoComponent implements OnInit {
   patientLastName: string = ""
   public PatientInfoSubscription = new Subscription();
   public ssfPatientDetail: SsfPatient_DTO = new SsfPatient_DTO();
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(public patientService: PatientService,
     public msgBoxServ: MessageboxService,
@@ -67,6 +70,7 @@ export class VisitPatientInfoComponent implements OnInit {
     this.LoadCalendarTypes();
     this.GetCountries();
     this.initialLoad = true;
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
 
     if (this.coreService.Masters.UniqueDataList && this.coreService.Masters.UniqueDataList.UniqueAddressList) {
       this.olderAddressList = this.coreService.Masters.UniqueDataList.UniqueAddressList;

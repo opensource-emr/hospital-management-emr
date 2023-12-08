@@ -1,15 +1,14 @@
-import { Component, Directive, ViewChild } from '@angular/core';
-import { ReportingService } from "../../shared/reporting-service"
-import { DynamicReport } from "../../shared/dynamic-report.model"
-import { DLService } from "../../../shared/dl.service"
 import { HttpClient } from '@angular/common/http';
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { Component } from '@angular/core';
 import * as moment from 'moment/moment';
-import { CommonFunctions } from '../../../shared/common.functions';
 import { Patient } from "../../../patients/shared/patient.model";
 import { DanpheCache, MasterType } from "../../../shared/danphe-cache-service-utility/cache-services";
+import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { DLService } from "../../../shared/dl.service";
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { DynamicReport } from "../../shared/dynamic-report.model";
+import { ReportingService } from "../../shared/reporting-service";
 import { RPT_PAT_PatientRegistrationReportModel } from './patient-registration-report.model';
-import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
 @Component({
   templateUrl: "./patient-registration-report.html"
 })
@@ -45,7 +44,7 @@ export class RPT_PAT_PatientRegistrationReportComponent {
     this, this.LoadGender('Male');
     this.currentPatRegreport.fromDate = moment().format('YYYY-MM-DD');
     this.currentPatRegreport.toDate = moment().format('YYYY-MM-DD');
-   
+
   }
 
   gridExportOptions = {
@@ -106,13 +105,13 @@ export class RPT_PAT_PatientRegistrationReportComponent {
   Success(res) {
     if (res.Status == "OK" && res.Results.length > 0) {
       this.PatientWiseRegReportColumns = this.reportServ.reportGridCols.PatientRegistrationReport;
-      this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RegisteredDate', false));
+      this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RegisteredDate', false), new NepaliDateInGridColumnDetail('DateOfBirth', false));
       this.PatientWiseRegReportData = res.Results;
     }
     else if (res.Status == "OK" && res.Results.length == 0) {
       this.msgBoxServ.showMessage("notice-message", ['Data is Not Available Between Selected Parameter ....Try Different'])
       this.PatientWiseRegReportColumns = this.reportServ.reportGridCols.PatientRegistrationReport;
-      this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RegisteredDate', false));
+      this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RegisteredDate', false), new NepaliDateInGridColumnDetail('DateOfBirth', false));
       this.PatientWiseRegReportData = res.Results;
     }
     else {

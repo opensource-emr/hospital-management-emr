@@ -40,7 +40,7 @@ export class Bed {
     var _formbuilder = new FormBuilder();
     this.BedMainValidator = _formbuilder.group({
       'WardId': ['', Validators.compose([Validators.required])],
-      //'BedNumber': ['', Validators.compose([Validators.required])]
+      'BedNumber': ['', Validators.compose([Validators.required])]
     });
   }
   public IsDirty(fieldName): boolean {

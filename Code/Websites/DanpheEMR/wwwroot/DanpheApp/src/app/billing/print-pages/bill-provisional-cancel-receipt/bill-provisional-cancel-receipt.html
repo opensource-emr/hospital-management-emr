@@ -101,7 +101,9 @@
                     <strong>Hospital No:</strong> {{ProvisionalDetails.PatientCode}}
                   </p>
                 </td>
-
+                <td colspan="5" style="text-align: right; padding: 0 !important;">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Date:</strong> {{CurrentDate| nepaliDate}}</p>
+                </td>
               </tr>
               <tr>
                 <td colspan="5" style="text-align: left; padding: 0 !important;">
@@ -191,7 +193,7 @@
           <td colspan="10" style="padding: 5px 5px; vertical-align: top; text-align: center;">
             <p class="c_paragraphs" style="margin: 0px;"><b>
                 {{billCancellationReceiptFooter.EnglishText}} </b> <br *ngIf="billCancellationReceiptFooter.VerticalAlign" />
-
+              <b> {{billCancellationReceiptFooter.NepaliText}} </b>
             </p>
           </td>
         </tr>

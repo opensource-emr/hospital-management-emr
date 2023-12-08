@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef, Renderer2 } from "@angular/core";
+import { Component, EventEmitter, Input, Output, Renderer2 } from "@angular/core";
+import { CoreService } from "../../../core/shared/core.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
+import { DanpheHTTPResponse } from "../../../shared/common-models";
+import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { ExternalReferralModel } from "../../shared/external-referral.model";
 import { SettingsService } from "../../shared/settings-service";
 import { SettingsBLService } from "../../shared/settings.bl.service";
-import { DanpheHTTPResponse } from "../../../shared/common-models";
-import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
-
 @Component({
   selector: "ext-referral-add",
   templateUrl: "./add-ext-referral.html"
@@ -24,8 +25,12 @@ export class AddExternalReferralComponent {
   public externalRef: ExternalReferralModel = new ExternalReferralModel();
   public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
 
-  constructor(public settingsServ: SettingsService, public settingsBlService: SettingsBLService,
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
+
+  constructor(public settingsServ: SettingsService, public settingsBlService: SettingsBLService, public coreservice: CoreService,
     public msgBoxServ: MessageboxService, public renderer: Renderer2) {
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
     let abc = 0;
     this.SetFocusById('referrerName');
     this.globalListenFunc = this.renderer.listen('document', 'keydown', e => {

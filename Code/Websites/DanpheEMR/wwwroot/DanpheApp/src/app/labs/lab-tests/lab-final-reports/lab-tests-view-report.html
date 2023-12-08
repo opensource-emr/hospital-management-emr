@@ -10,6 +10,11 @@
         " (click)="loading=true;Export('print')">
                 Print <i class="fa fa-print"></i>
             </button>
+            <div style="float:right;margin-right: 10px;">
+                <input type="checkbox" id="myCheckbox" name="myCheckbox" style="transform: scale(1.4); margin-bottom: 7px; margin-left:10px;"
+                       [(ngModel)]="showHeader">
+                <label for="myCheckbox" style="margin-left:10px;">Show Header Image</label>
+            </div>
         </div>
         <div #exportContent id="lab-report" class="padding-15-hr margin-50-tp">
             <div class="lab-rpt-container" id="lab-report-main">
@@ -129,8 +134,8 @@
                                                             <strong>Collection Date</strong> :
                                                             {{templateReport.Lookups.ReceivingDate |
                                                             DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}
-                                                            ({{templateReport.Lookups.ReceivingDate |
-                                                            nepaliDate }})
+                                                            {{templateReport.Lookups.ReceivingDate |
+                                                            nepaliDate }}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -154,9 +159,11 @@
                                                 <div class="single-head">
                                                     <div class="right-col-data">
                                                         <div [ngClass]="showBarCode ? 'right-hdrwith-barcode right-hdr':'right-hdr'">
-                                                            <strong>Reporting Date</strong> : {{templateReport.Lookups.ReportingDate |
-                                                            DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}} ({{templateReport.Lookups.ReportingDate |
-                                                            nepaliDate }})
+                                                            <strong>Reporting Date</strong> : {{verificationEnabled ?
+                                                            (templateReport.Lookups.VerifiedOn | DanpheDateTime: 'format':'YYYY-MM-DD hh:mm A'):
+                                                            (templateReport.Lookups.ReportingDate | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A')}}
+                                                            {{ verificationEnabled ? (templateReport.Lookups.VerifiedOn | nepaliDate):
+                                                            (templateReport.Lookups.ReportingDate |nepaliDate )}}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -196,7 +203,7 @@
                                                         <div class="signature-image-holder"
                                                              *ngIf="showDigitalSignature && emp.SignatoryImageName && emp.SignatoryImageName.trim() != ''">
                                                             <div class="all-signature-images">
-                                                                <button *ngIf="!hidePrintButton" id="hideSignImage{{i}}"
+                                                                <button *ngIf="showDigitalSignature" id="hideSignImage{{i}}"
                                                                         data-html2canvas-ignore="true"
                                                                         [style.display]="emp.Show ? 'inline-block':'none'"
                                                                         (click)="ShowHideDigitalImage(emp)"
@@ -204,7 +211,7 @@
                                                                         data-html2canvas-ignore="true">
                                                                     X
                                                                 </button>
-                                                                <button *ngIf="!hidePrintButton" id="showSignImage{{i}}"
+                                                                <button *ngIf="showDigitalSignature" id="showSignImage{{i}}"
                                                                         [style.display]="emp.Show ? 'none':'inline-block'"
                                                                         (click)="ShowHideDigitalImage(emp)" class="signature-image-show no-print">
                                                                     Show ESignature

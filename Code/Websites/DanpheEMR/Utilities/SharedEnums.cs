@@ -14,6 +14,7 @@
         public static readonly string returned = "returned";
         public static readonly string free = "free";
         public static readonly string adtCancel = "adtCancel";//this needs review on what it's impacts are.
+        public static readonly string discard = "discarded"; //this is for provisional discharged patients Provisional Items if discarded
     }
 
     public static class ENUM_BillingType
@@ -299,6 +300,7 @@
         public static readonly string InventoryOtherCharge = "INVOtherCharge";
         public static readonly string PharmacyCreditOrganization = "PHRMCreditOrganization";
         public static readonly string MedicareTypes = "MedicareMember";
+        public static readonly string InventoryConsumption = "InventoryConsumption";
     }
     public static class ENUM_ACC_VoucherCode
     {
@@ -533,6 +535,27 @@
     public static class ENUM_SchemeName
     {
         public static readonly string General = "General";
+    }public static class ENUM_ERStatus
+    {
+        public static readonly string New = "New";
+        public static readonly string finalized = "finalized";
+        public static readonly string triaged = "triaged";
+    }
+
+    public static class ENUM_SSF_ApiEndPoints
+    {
+        public static readonly string PatientDetails = "Patient/?identifier=";
+        public static readonly string CoverageEligibilityRequest = "CoverageEligibilityRequest/";
+        public static readonly string EmployeeList = "Employee/";
+        public static readonly string Claim = "Claim/";
+        public static readonly string ClaimDetail = "Claim/";
+        public static readonly string BookingService = "BookingService";
+    }
+    //Krishna, 5thNov'23, Below used values are hardcoded values, Please do not change unless changed from SSF side, These values are provided from SSF Side.
+    public static class ENUM_SSF_SchemeTypes
+    {
+        public static readonly string Accident = "1";
+        public static readonly string Medical = "2";
     }
 
 }

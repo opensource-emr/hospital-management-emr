@@ -17,7 +17,7 @@ export class PHRMPrescriptionItem {
   public PatientFullName: string = null;
   public IsOutdoorPat: boolean = true;
   // public ProviderId: number = null;
-  public PerformerId: number = null; //Krishna, 16th,jun'22 changed ProviderId to PerformerId.
+  public PrescriberId: number = null; //Krishna, 16th,jun'22 changed ProviderId to PerformerId.
   //public PrescriptionId: number = 0;
   //public CompanyId: number = null;
   public ItemId: number = null;
@@ -58,6 +58,7 @@ export class PHRMPrescriptionItem {
 
   //Added by Anish While making Diagnosis
   public DiagnosisId: number = 0;
+  PerformerFullName: any;
 
 
   constructor() {

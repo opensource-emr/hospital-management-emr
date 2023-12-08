@@ -8,6 +8,7 @@ import { UnicodeService } from "../../common/unicode.service";
 import { MembershipType } from "../../patients/shared/membership-type.model"; //remove this or merge to one type with membership. 
 import { Patient } from "../../patients/shared/patient.model";
 import { Membership } from "../../settings-new/shared/membership.model";
+import { GeneralFieldLabels } from "../../shared/DTOs/general-field-label.dto";
 import { NepaliCalendarService } from '../../shared/calendar/np/nepali-calendar.service';
 import { NepaliDate } from '../../shared/calendar/np/nepali-dates';
 import { CommonFunctions } from "../../shared/common.functions";
@@ -59,6 +60,9 @@ export class SSU_PatientComponent {
 
   public showMunicipality: boolean = false;
 
+  //public Muncipalitylable: string = "";
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   public TargetGroupList =
     [{ TargetGroupId: 1, TargetGroup: "Poor/Ultra Poor" },
     { TargetGroupId: 2, TargetGroup: "Helpless" },
@@ -76,6 +80,7 @@ export class SSU_PatientComponent {
     { Id: 6, IncomeSource: "Others" },
     ];
 
+
   constructor(public unicode: UnicodeService, _serv: PatientService,
     public ssuBLService: SSU_BLService,
     public coreService: CoreService,
@@ -83,6 +88,7 @@ export class SSU_PatientComponent {
     public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef) {
 
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     this.patientService = _serv;
     this.showMunicipality = this.coreService.ShowMunicipality().ShowMunicipality;
 

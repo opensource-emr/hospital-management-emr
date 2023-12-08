@@ -68,6 +68,8 @@ namespace DanpheEMR.ServerModel
         [NotMapped]
         public int? SchemeId { get; set; }
         [NotMapped]
-        public int PatientId { get; set; }
+        public int PatientId { get; set; }   
+        [NotMapped]
+        public int PriceCategoryId { get; set; }
     }
 }

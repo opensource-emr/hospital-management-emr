@@ -94,6 +94,7 @@
               <tr>
                 <!--<td style="text-align:center"><b>Sr No.</b></td>-->
                 <td style="text-align:left; width:200px;"><b>Item Name</b></td>
+                <td style="text-align:left; width:200px;"><b>PriceCategory</b></td>
                 <td style="text-align:center; width:100px;">
                   <b>Date </b><b *ngIf="!isDateFormatBS">(AD)</b><b *ngIf="isDateFormatBS">(BS)</b>
                   <span style="display: inline-block; background: #D8DEF1;cursor: pointer;">
@@ -124,8 +125,12 @@
               <tr *ngFor="let row of InTyrow.report;let i=index">
                 <!--<td style="text-align:center">{{i+1}}</td>-->
                 <td style="text-align:left; width:200px;">{{row.ItemName}}</td>
+                <td style="text-align:left; width:200px;">{{row.PriceCategoryName}}</td>
                 <td style="text-align:center; width:100px;" *ngIf="!isDateFormatBS">
                   {{row.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                </td>
+                <td style="text-align:center; width:100px;" *ngIf="isDateFormatBS">
+                  {{row.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}
                 </td>
                 <td style="text-align:center; width:100px;">{{row.InvoiceNoFormatted}}</td>
                 <td style="text-align:center; width:100px;">{{row.IncentiveAmount | ParseAmount}}</td>

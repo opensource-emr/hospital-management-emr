@@ -7,7 +7,6 @@ using DanpheEMR.ServerModel.BillingModels.Config;
 using DanpheEMR.ServerModel.BillingModels.DischargeStatementModels;
 using DanpheEMR.ServerModel.MedicareModels;
 using DanpheEMR.ServerModel.PatientModels;
-using DanpheEMR.ServerModel.PharmacyModels;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -111,6 +110,8 @@ namespace DanpheEMR.DalLayer
         public DbSet<BillingCancellationModel> BillingCancellation { get; set; }
         public DbSet<BillingPackageServiceItemModel> BillingPackageServiceItems { get; set; }
         public DbSet<CurrencyModel> Currencies { get; set; }
+        public DbSet<DischargeStatementModel> DischargeStatements { get; set; }
+
 
         public object ReportingItemsModel { get; set; }
         public BillingDbContext(string conn) : base(conn)

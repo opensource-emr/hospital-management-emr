@@ -88,7 +88,7 @@
                     <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
                       <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                       <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                      <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
+                      <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{
                         headerDetail.tel}}</span><br />
                       <span style="font-size:15px;"><strong> Pharmacy Unit </strong></span><br />
                     </div>
@@ -108,10 +108,11 @@
                 </div>
                 <div class="right" style="text-align:right;">
                   <p>Dispatch Date:<b> {{innerDispatchdetails.CreatedOn | date}}</b>&nbsp;
-                    
+                    <i *ngIf="innerDispatchdetails.CreatedOn">{{innerDispatchdetails.CreatedOn |
+                      nepaliDate:'format':'YYYY-MM-DD'}} </i>
                   </p>
                   <p>Requisition Date:<b> {{requisitionDate | date}}</b>
-                    
+                    <i *ngIf="requisitionDate">{{requisitionDate | nepaliDate:'format':'YYYY-MM-DD'}}</i>
                   </p>
 
                 </div>

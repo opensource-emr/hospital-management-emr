@@ -39,7 +39,7 @@
             </select-referrer>
             <button class="btn btn-success" style="margin-top: 5px;width: 25%;"
                     *ngIf="currSale.MedicalCertificateNo==null  && currSale.PrescriberId>1" (click)="OpenAddNMCPopup()"> &nbsp;&nbsp;Add
-              NMC No.</button>
+              {{GeneralFieldLabel.NMCNo}}.</button>
             <div class="row">
               <div class="col-md-12"> <span class="color-red font-sm" *ngIf="currSale.IsDirty('Prescriber')"
                       [hidden]="currSale.IsValidCheck('Prescriber','required')">Select Doctor</span> </div>
@@ -123,14 +123,14 @@
               <th><b>Qty</b></th>
               <th><b>SalePrice</b></th>
               <th><b>SubTotal</b></th>
-              <th *ngIf="IsitemlevlDis && IsCurrentDispensaryInsurace == false && !currSale.SchemeDiscountPercentage"><b>Dis%</b></th>
+              <th *ngIf="IsitemlevlDis && IsCurrentDispensaryInsurace == false"><b>Dis%</b></th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>
-                <input danphe-auto-complete class="form-control" id="generic" [(ngModel)]="invoiceItem.selectedGeneneric"
+                <input danphe-auto-complete class=" form-control" id="generic" [(ngModel)]="invoiceItem.selectedGeneneric"
                        [source]="FilteredGenericList" [list-formatter]="phrmGenericListFormatter" placeholder="--Select Generic Name--"
                        display-property-name="GenericName" value-property-name=null onClick="this.select();"
                        (valueChanged)="AssignSelectedGenName(invoiceItem)" min-chars="1" [grid-sort]="'GenericName'" match-formatted="true"
@@ -537,10 +537,10 @@
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-md-4">NMC Number<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                    <label class="control-label col-md-4">{{GeneralFieldLabel.NMCNo}}<b class="color-red"> *</b><b style="float:right;">:</b></label>
                     <div class="col-md-8">
                       <input class="form-control" type="text" maxlength="100" [(ngModel)]="narcoticsRecord.NMCNumber"
-                             [ngModelOptions]="{standalone: true}" value="" placeholder="Enter NMC Number" />
+                             [ngModelOptions]="{standalone: true}" value="" placeholder="{{GeneralFieldLabel.NMCNo}}" />
                     </div>
                   </div>
                 </div>
@@ -665,7 +665,7 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <label class="control-label col-md-5">NMC No<span style="color:red;">*</span><b>:</b></label>
+                  <label class="control-label col-md-5">{{GeneralFieldLabel.NMCNo}}<span style="color:red;">*</span><b>:</b></label>
                   <div class="col-md-7">
                     <input type="number" [(ngModel)]="MedicalCertificateNo" name="MedicalCertificateNo" id="MedicalCertificateNo">
                   </div>

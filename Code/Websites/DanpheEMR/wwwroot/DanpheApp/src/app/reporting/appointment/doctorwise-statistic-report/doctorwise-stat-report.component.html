@@ -1,0 +1,117 @@
+<style>
+    .summ-title {
+        font-weight: bold;
+        font-size: 16px;
+    }
+</style>
+<div class="wrapper">
+    <div class="row">
+        <form class="form-horizontal">
+            <div class="form-body">
+                <div class="col-md-12">
+                    <div class="caption custom-caption" style="float: left;"> <i class="glyphicon glyphicon-asterisk"></i> <span
+                              class="caption-subject">Doctor Wise Statistic Report</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="col-md-5 col-xs-12">
+                        <from-to-date-select (on-change)="OnFromToDateChange($event)" [date-settings-name]="'billing-reports'">
+                        </from-to-date-select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group row">
+                            <label class="control-label col-md-5">Doctor<b style="float:right;">:</b></label>
+                            <div class="col-md-7">
+                                <input class="form-control" danphe-auto-complete
+                                       [(ngModel)]="doctors" [ngModelOptions]="{standalone: true}"
+                                       [list-formatter]="DoctorListFormatter" [source]="doctorList"
+                                       placeholder="Enter Doctor Name"
+                                       display-property-name="PerformerName" onClick="this.select();"
+                                       (ngModelChange)="AssignSelectedDoctor($event)" />
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        Gender:
+                        <select [(ngModel)]="selGenderName" id="ddlGender" [ngModelOptions]="{standalone: true}">
+                            <option value="All">All</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <button class="btn green btn-success" type="button" (click)="Load()"> <i class="fa fa-search"></i> Show
+                                Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="row">
+        <div class="col-lg-12 col-sm-12" *ngIf="DoctorWiseStatisticsReportData">
+            <danphe-grid [grid-colDefaults]=" DoctorWiseStatisticsReportColumns" [grid-data]="DoctorWiseStatisticsReportData"
+                         [grid-exportOptions]="gridExportOptions" [grid-showExport]="true" [show-header]="true"
+                         [report-for]="'billing'" [filter-parameters]="FilterParameters" [grid-footer-content]="footer"> </danphe-grid>
+        </div>
+        <div class="col-md-12" style="margin-bottom: 50px;margin-top: 20px;" id="id-doctorwise-stat-summaryFooter">
+            <div id="deptStatSummary" *ngIf="DoctorWiseStatisticsReportData && DoctorWiseStatisticsReportData.length>0">
+                <div>
+                    <label class="summ-title"> Summary: </label>
+                    &nbsp;&nbsp;&nbsp;
+                    <label *ngIf="selGenderName !='All'" class="summ-title"
+                           style="text-transform: uppercase;">({{selGenderName}})</label>
+                </div>
+                <table border="1" style="width: 20%;">
+                    <thead>
+                        <tr>
+                            <td style="width: 250px;">Total Adult-New Visit</td>
+                            <td style="text-align: center;">{{summary.tot_AdultNew}}</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Total Child-New Visit</td>
+                            <td style="text-align: center; width: 100px;">{{summary.tot_ChildNew}}</td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <td>Total New Patient Visit</td>
+                            <td style="text-align: center;">{{summary.tot_NewVisitPatients}}</td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <td>Total Old Adult Visit</td>
+                            <td style="text-align: center;">{{summary.tot_Old_Adult}}</td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <td>Total Old Child Visit</td>
+                            <td style="text-align: center;">{{summary.tot_Old_Child}}</td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <td>Total Old Visit Patient</td>
+                            <td style="text-align: center;">{{summary.tot_Old_Patients}}</td>
+                        </tr>
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <td>Total Registered Patient</td>
+                            <td style="text-align: center;">{{summary.tot_RegisteredVisitPatients}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

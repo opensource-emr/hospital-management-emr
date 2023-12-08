@@ -366,6 +366,9 @@ export class NursingOutPatientComponent {
     this.globalPatient.Address = data.Address;
     this.globalPatient.Age = data.Age;
     this.globalVisit = this.visitService.CreateNewGlobal();
+    this.globalVisit.ShortName = data.ShortName;
+    this.globalVisit.Age = data.Age;
+    this.globalVisit.Gender = data.Gender;
     this.globalVisit.PatientVisitId = data.PatientVisitId;
     this.globalVisit.PatientId = data.PatientId;
     this.globalVisit.PerformerName = data.PerformerName;
@@ -506,6 +509,15 @@ export class NursingOutPatientComponent {
       this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ['Please select patient before checkin']);
     }
   }
+  NursingTriage() {
+    if (this.IsPatientSelected) {
+      this.showOpdTriage = true;
+      this.SetPatDataToGlobal(this.selectedVisit);
+    }
+    else {
+      this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ['Please select patient before Triage']);
+    }
+  }
   SelectFilteredList(row: Visit) {
     if (row.IsSelected) {
       this.IsPatientSelected = true;
@@ -529,6 +541,10 @@ export class NursingOutPatientComponent {
         this.showNursingCheckin = false;
         this.showChangeDoctor = false;
         this.showNursingCheckout = false;
+        this.showExchangeDoctorPopUp = false;
+        this.LoadVisitList();
+        this.selectedVisit = new Visit();
+        this.IsPatientSelected = false;
       }
     }
   }

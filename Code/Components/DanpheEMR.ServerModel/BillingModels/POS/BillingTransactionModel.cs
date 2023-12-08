@@ -121,6 +121,8 @@ namespace DanpheEMR.ServerModel
         [NotMapped]
         public string MemberNo { get; set; }
         public string OtherCurrencyDetail { get; set; }
+        [NotMapped]
+        public bool IsProvisionalDischargeCleared { get; set; }
 
         public static BillingTransactionModel GetCloneWithItems(BillingTransactionModel txnToClone)
         {

@@ -51,7 +51,8 @@
         </div>
         <div class="right" style="text-align:right;">
           <p *ngIf="issueNo!=null">Issue No:<b> {{issueNo}}</b></p>
-          <p>Requisition Date:<b> {{requisitionDate}}</b> </p>
+          <p>Requisition Date:<b> {{requisitionDate}}</b> <i *ngIf="requisitionDate"> 
+              {{requisitionDate | nepaliDate:'format':'YYYY-MM-DD'}}  </i> </p>
         </div>
         <div class="clear"></div>
         <p class="text-center btm-pad border-up-down"><b> REQUISITION DETAILS PRINT</b></p>
@@ -77,8 +78,7 @@
                 <td>{{row.Quantity}}</td>
                 <td>{{row.ReceivedQuantity}}</td>
                 <td>{{row.PendingQuantity}}</td>
-                <td>{{row.RequisitionItemStatus}} <span *ngIf="row.IsActive == false" id="CancellationToolTip" class="tooltip"> <span
-                          class="fa fa-info" style="margin-left:5px;padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;">
+                <td>{{row.RequisitionItemStatus}} <span *ngIf="row.IsActive == false" id="CancellationToolTip" class="tooltip"> <span class="fa fa-info" style="margin-left:5px;padding: 3px 6px 3px 6px;background-color: #c8c8d2;border-radius: 9px;">
                     </span>
                     <p class="tooltiptext ttptextdown no-print"> Cancelled&nbsp;By:&nbsp;{{row.CancelBy}}<br />
                       Cancelled&nbsp;On:&nbsp;{{row.CancelOn | date : 'medium'}}<br />

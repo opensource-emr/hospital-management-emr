@@ -187,13 +187,13 @@
                 </div>
                 <!-- START: Vikas: 2 Apr 2020 -->
                 <div class="form-group col-md-6">
-                  <label class="control-label col-md-4">PAN Number<b>:</b></label>
+                  <label class="control-label col-md-4">{{GeneralFieldLabel.PANNo}}<b>:</b></label>
                   <div class="col-md-8">
                     <input class="form-control" maxlength="200" type="text" title="CurrentLedger.PANNO"
                              [(ngModel)]="CurrentLedger.PANNo"
                              [ngModelOptions]="{standalone: true}"
                              id="PANNO"
-                             placeholder="PAN Number" />
+                             placeholder="{{GeneralFieldLabel.PANNo}}" />
                   </div>
                 </div>
                 <div class="form-group col-md-6">

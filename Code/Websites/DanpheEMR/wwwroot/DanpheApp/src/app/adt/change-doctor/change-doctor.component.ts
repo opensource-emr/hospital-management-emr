@@ -113,8 +113,13 @@ export class ChangeDoctorComponent implements OnInit {
             this.selectedDoctor.PerformerName = "";
             this.selectedDoctor.PerformerId = 0;
         }
-        if (this.departmentId && Number(this.departmentId) != 0)
+        if (this.departmentId && Number(this.departmentId) != 0) {
             this.filteredDocList = this.doctorList.filter(doc => doc.DepartmentId == this.departmentId);
+            if (this.filteredDocList) {
+                this.newAdmittingInfo.DepartmentId = this.filteredDocList[0].DepartmentId;
+                this.newAdmittingInfo.Department = this.filteredDocList[0].DepartmentName;
+            }
+        }
         else
             this.filteredDocList = this.doctorList;
     }

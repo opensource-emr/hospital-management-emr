@@ -47,7 +47,7 @@ export class SchemeRefundPrintComponent implements OnInit {
   public isSchemePrintDetailsLoaded: boolean = false;
   public printDetails: any;
 
-
+  public EnableEnglishCalendarOnly: boolean = false;
 
 
   constructor(public msgBoxService: MessageboxService,
@@ -58,10 +58,19 @@ export class SchemeRefundPrintComponent implements OnInit {
     public securityService: SecurityService,
 
     public changeDetector: ChangeDetectorRef) {
+    this.GetCalendarParameter();
+
     let paramValue = this.coreService.Parameters.find(a => a.ParameterName === 'BillingHeader').ParameterValue;
     if (paramValue)
       this.headerDetail = JSON.parse(paramValue);
     //this.SetPrinterFromParam();
+  }
+  GetCalendarParameter(): void {
+    const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+    if (param && param.ParameterValue) {
+      const paramValue = JSON.parse(param.ParameterValue);
+      this.EnableEnglishCalendarOnly = paramValue;
+    }
   }
 
   ngOnInit() {
@@ -104,8 +113,13 @@ export class SchemeRefundPrintComponent implements OnInit {
   }
 
   GetLocalDate(engDate: string): string {
-    let npDate = this.nepaliCalendarServ.ConvertEngToNepDateString(engDate);
-    return npDate + " BS";
+    if (this.EnableEnglishCalendarOnly) {
+      return null;
+    } else {
+      let npDate = this.nepaliCalendarServ.ConvertEngToNepDateString(engDate);
+      // return npDate + " BS";
+      return `(${npDate} BS)`;
+    }
   }
   logError(err: any): void {
     console.log(err);

@@ -16,9 +16,11 @@ import { PatientScannedImages } from "../clinical/scanned-images/patient-scanned
 import { PatientOverviewMainComponent } from "../doctors/patient/patient-overview-main.component";
 import { AuthGuardService } from "../security/shared/auth-guard.service";
 import { ResetNursingContextGuard } from "../shared/reser-nursingcontext-guard";
+import { ConsultationRequestsComponent } from "./consultation-requests/consultation-requests.component";
 import { ActivateWardComponent } from "./department/activate-ward/activate-ward.component";
 import { DrugRequestListComponent } from "./drugs-request/drug-request-list.component";
 import { DrugsRequestComponent } from "./drugs-request/drugs-request.component";
+import { InvestigationResultsComponent } from "./investigation-results/investigation-results.component";
 import { DischargeSummaryListComponent } from "./nursing-discharge-summary/discharge-summary-list.component";
 import { NursingTransferComponent } from "./nursing-transfer/nursing-transfer.component";
 import { WardSelectionGuardService } from "./shared/ward-selection-guard.service";
@@ -81,6 +83,11 @@ import { WardSelectionGuardService } from "./shared/ward-selection-guard.service
                 canActivate: [AuthGuardService],
               },
               {
+                path: "InvestigationResults",
+                component: InvestigationResultsComponent,
+                canActivate: [AuthGuardService],
+              },
+              {
                 path: "Clinical",
                 loadChildren: "../clinical/clinical.module#ClinicalModule",
                 canActivate: [AuthGuardService, SelectVisitCanActivateGuard],
@@ -105,6 +112,12 @@ import { WardSelectionGuardService } from "./shared/ward-selection-guard.service
                 component: NursingTransferComponent,
                 canActivate: [AuthGuardService],
               },
+              {
+                path: "ConsultationRequests",
+                component: ConsultationRequestsComponent,
+                canActivate: [AuthGuardService],
+              },
+
               {
                 path: "Notes",
                 loadChildren: "../clinical-notes/notes.module#NotesModule",

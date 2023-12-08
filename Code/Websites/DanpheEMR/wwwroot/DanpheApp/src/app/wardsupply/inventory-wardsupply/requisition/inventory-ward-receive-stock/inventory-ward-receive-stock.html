@@ -1,27 +1,27 @@
 <style>
-  .receiveContainer {
+  .receiveContainer{
     border: dotted 1px rgb(58, 57, 57);
     box-shadow: 0.5px 0.5px rgba(36, 15, 15, 0.527) !important;
     margin: 5px;
     padding: 15px;
   }
-
-  .receiveStamp {
-    transform: rotate(12deg);
-    color: #555;
-    font-size: 2rem;
-    font-weight: 700;
-    border: 0.25rem solid #555;
-    display: inline-block;
-    text-transform: uppercase;
-    border-radius: 1rem;
-    font-family: 'Courier';
-    mix-blend-mode: multiply;
-    color: #0A9928;
-    border: 0.5rem solid #0A9928;
-    transform: rotate(-14deg);
-    border-radius: 0;
-  }
+  
+.receiveStamp {
+	transform: rotate(12deg);
+	color: #555;
+	font-size: 2rem;
+	font-weight: 700;
+	border: 0.25rem solid #555;
+	display: inline-block;
+	text-transform: uppercase;
+	border-radius: 1rem;
+	font-family: 'Courier';
+	mix-blend-mode: multiply;
+  color: #0A9928;
+	border: 0.5rem solid #0A9928;
+	transform: rotate(-14deg);
+  border-radius: 0;
+}
 </style>
 <div class="wrapper">
   <div class="row">
@@ -52,6 +52,7 @@
                 <p class="media-body small border-bottom border-gray">
                   <strong>Requisition Date:</strong>
                   {{Requisition.RequisitionDate | date : 'yyyy-MM-dd'}}&nbsp;
+                  <i *ngIf="Requisition.RequisitionDate">{{Requisition.RequisitionDate | nepaliDate:'format':'YYYY-MM-DD'}} </i>
                 </p>
                 <p class="media-body small border-bottom border-gray">
                   <strong>Requisition Status:</strong>
@@ -73,6 +74,7 @@
                     <strong>Received On:</strong>
                     <div *ngIf="!!dispatch.ReceivedOn; else elseBlockTwo">
                       {{dispatch.ReceivedOn | date : "yyyy-MM-dd"}}
+                      <i *ngIf="dispatch.ReceivedOn">{{dispatch.ReceivedOn | nepaliDate:'format':'YYYY-MM-DD'}} </i>
                     </div>
                     <ng-template #elseBlockTwo>Not Received</ng-template>
                   </span>
@@ -100,17 +102,16 @@
                     <strong class="col-md-2">Remarks :</strong>
                     <span *ngIf="!!dispatch.ReceivedBy; else elseBlockThree">{{dispatch.ReceivedRemarks}}</span>
                     <ng-template #elseBlockThree>
-                      <textarea id="ReceivedRemarks" class="col-md-7" [(ngModel)]="dispatch.ReceivedRemarks" name="ReceiveRemarks" rows="3"
-                                (keyup.enter)="setFocusById('ReceiveButton')"></textarea>
+                      <textarea id="ReceivedRemarks" class="col-md-7" [(ngModel)]="dispatch.ReceivedRemarks" name="ReceiveRemarks" rows="3" (keyup.enter)="setFocusById('ReceiveButton')"></textarea>
                     </ng-template>
                   </div>
                   <div class="text-center">
-                    <button id="ReceiveButton" class="btn green btn-success margin-7-hr" *ngIf="dispatch.ReceivedBy == null; else elseBlockFour"
-                            [disabled]="loading == true"
-                            (click)="ReceiveDispatchById(dispatch.DispatchId,dispatch.ReceivedRemarks)">Receive</button>
-                    <ng-template #elseBlockFour>
-                      <div class="receiveStamp"> Received </div>
-                    </ng-template>
+                    <button id="ReceiveButton" class="btn green btn-success margin-7-hr" *ngIf="dispatch.ReceivedBy == null; else elseBlockFour"      
+                      [disabled]="loading == true"              
+                      (click)="ReceiveDispatchById(dispatch.DispatchId,dispatch.ReceivedRemarks)">Receive</button>
+                      <ng-template #elseBlockFour>
+                        <div class="receiveStamp"> Received </div>
+                      </ng-template>
                   </div>
                 </div>
               </div>

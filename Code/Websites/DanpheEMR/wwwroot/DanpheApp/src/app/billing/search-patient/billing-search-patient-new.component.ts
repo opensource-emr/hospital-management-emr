@@ -94,11 +94,13 @@ export class BillingSearchPatientNewComponent {
         //this.LoadPatientList("");
       }
       else if ($event.action && $event.action == "register-and-billing") {
-        var data = $event.data;
+        let data = $event.data;
         //sud/anjana:7May'21--Assigning default visittype after registration. [LPH-904]
         if (!data["LatestVisitType"]) {
           data["LatestVisitType"] = "outpatient";//by default visittype will be outpatient after registration.
         }
+        this.ServiceBillingContext = ENUM_ServiceBillingContext.OpBilling;
+        this.FetchServiceItemBasedOnSchemeAndPriceCategory(this.ServiceBillingContext, null, null);
         this.AssignPatientGlobalValues_PatientService(data);
         let currPat = this.patientService.globalPatient;
         this.billingService.CreateNewGlobalBillingTransaction();
@@ -256,7 +258,9 @@ export class BillingSearchPatientNewComponent {
       //console.log(event.keyCode);
       switch (event.keyCode) {
         case 78: {// => ALT+N comes here for New Patient.
-          this.ShowOpPatAddPopUp();
+          if (this.securityService.HasPermission('btn-opbilling-addnewpatient')) {
+            this.ShowOpPatAddPopUp();
+          }
           break;
         }
 

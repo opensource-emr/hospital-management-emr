@@ -30,6 +30,8 @@ import { SearchService } from "../search.service";
 import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from "./NepaliColGridSettingsModel";
 import { GridEmitModel } from "./grid-emit.model";
 import { IGridFilterParameter } from "./grid-filter-parameter.interface";
+
+
 // import { DateRangeOptions } from "../common-models";
 
 @Component({
@@ -196,6 +198,11 @@ export class DanpheGridComponent implements OnInit, AfterViewInit {
 
   @Input("grid-date-range")
   public dateRange: string = '';
+  public EnableEnglishCalendarOnly: boolean = false;
+
+
+
+
 
   constructor(
     public searchService: SearchService,
@@ -205,19 +212,42 @@ export class DanpheGridComponent implements OnInit, AfterViewInit {
     public securityService: SecurityService, public coreService: CoreService,
     public msgBoxServ: MessageboxService, public nepaliCalendarService: NepaliCalendarService
   ) {
+
     // we pass an empty gridOptions in, so we can grab the api out
     this.gridOptions = <GridOptions>{};
     this.showGrid = true;
     this.searchMinTxtLeng = +this.searchService.getSerachCharLength() + 1;
-    this.showAdBsButton = this.coreservice.showCalendarADBSButton;
+    // this.showAdBsButton = this.coreservice.showCalendarADBSButton;
     // this.GetHeaderParameter(this.reportFor);
     // this.GetBillingHeaderParameter()
+    this.GetCalendarParameter();
   }
 
+  GetCalendarParameter(): void {
+    const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+    if (param && param.ParameterValue) {
+      const paramValue = JSON.parse(param.ParameterValue);
+      this.EnableEnglishCalendarOnly = paramValue;
+    }
+  }
   ngOnInit() {
-    if (this.nepaliDateInGridColDetail) {
+    //! Krishna, Changes for Nepali Date for Testing purpose only, delete later.
+    //* If English Calendar only is enabled then reset the nepaliDateInGridColDetail object as per English Calendar only.
+    if (this.nepaliDateInGridColDetail && this.EnableEnglishCalendarOnly) {
       this.nepaliDateInGridColDetail.ShowNepaliDateInGrid = false;
       this.nepaliDateInGridColDetail.NepaliDateColumnList = new Array<NepaliDateInGridColumnDetail>();
+    }
+    //! Krishna, 26thSept'23, showAdBsButton on top of grid on the basis of EnableEnglishCalendarOnly Parameter.
+    /*
+      ! Workflow for below logic:
+      * When EnglishCalendarOnly is not enabled, then configure showAdBs on the basis of another parameter (specific to it).
+      * When English CalendarOnly is enabled, then ignore other and automatically set showAdBsButton to false.
+    */
+
+    if (!this.EnableEnglishCalendarOnly) {
+      this.showAdBsButton = this.coreService.showCalendarADBSButton;
+    } else {
+      this.showAdBsButton = false;
     }
     this.GetHeaderParameter(this.reportFor);
     if (!this.defaultDateRange) {
@@ -614,7 +644,7 @@ export class DanpheGridComponent implements OnInit, AfterViewInit {
                           <p class='aligncenter'>${this.dateRange}</p>
                           <p class='alignright'>
                             ${this.printBy}<br />
-                            <b>Printed On:</b> (AD)${printDate}<br /> 
+                            <b>Printed On:</b> (AD)${printDate}<br />
                           </p>
                         </div>`
       printContents += "<style> table { border-collapse: collapse; border-color: black;font-size: 11px; } th { color:black; background-color: #599be0;}"
@@ -969,7 +999,7 @@ export class DanpheGridComponent implements OnInit, AfterViewInit {
           if (date == "") { //if showdate date is false
             Header = `<tr> <td style="text-align:center;"><strong> ${printByMessage} ${printBy} </strong></td><td><strong>Exported On: ${printDate}</strong></td></tr>`;
           }
-          else if (printBy == "") { // if  printby is false. 
+          else if (printBy == "") { // if  printby is false.
             Header = `<tr> <td style="text-align:center;"><strong>${date}</strong></td><td><strong>Exported On: ${printDate}</strong></td></tr>`;
           }
           else { //if both are true
@@ -1256,6 +1286,11 @@ export class DanpheGridComponent implements OnInit, AfterViewInit {
           case "/Reports/BillingMain/BillDetailReport": {
             if (!!printSettingParameter) this.paramData = printSettingParameter["BillDetailReport"];
             if (!!exportToExcelSettingParameter) this.paramExportToExcelData = exportToExcelSettingParameter["BillDetailReport"]
+            break;
+          }
+          case "/Reports/AppointmentMain/DoctortWiseStatisticsReport": {
+            if (!!printSettingParameter) this.paramData = printSettingParameter["DoctorWiseStatisticsReport"];
+            if (!!exportToExcelSettingParameter) this.paramExportToExcelData = exportToExcelSettingParameter["DoctorWiseStatisticsReport"]
             break;
           }
           case "/Reports/InsBillingReports/TotalItemsBill": {
@@ -1647,7 +1682,7 @@ export class DanpheGridComponent implements OnInit, AfterViewInit {
             <div classs="clearfix"></div>
             <div>
               ${printedByMessage}&nbsp; ${this.printBy} &nbsp; &nbsp; &nbsp;<br>
-              <b>Printed On:</b> ${printDate} &nbsp; ${datePref}<br /> 
+              <b>Printed On:</b> ${printDate} &nbsp; ${datePref}<br />
             </div>
           </div>
        </div>`+
@@ -1659,7 +1694,7 @@ export class DanpheGridComponent implements OnInit, AfterViewInit {
       <p style="text-align:center;">${this.reportTitle}</p>
       <p style="text-align:right">
        ${printedByMessage}&nbsp; ${this.printBy}
-        <b>Printed On:</b>${printDate}&nbsp; ${datePref}<br /> 
+        <b>Printed On:</b>${printDate}&nbsp; ${datePref}<br />
       </p>
       </div>`+ filterDescription
     }
@@ -1823,7 +1858,7 @@ export class DanpheGridComponent implements OnInit, AfterViewInit {
             <div classs="clearfix"></div>
             <div>
               ${printedByMessage}&nbsp; ${this.printBy} &nbsp; &nbsp; &nbsp;<br>
-              <b>Printed On:</b> ${printDate} &nbsp; ${datePref}<br /> 
+              <b>Printed On:</b> ${printDate} &nbsp; ${datePref}<br />
             </div>
           </div>
        </div>`+
@@ -1835,7 +1870,7 @@ export class DanpheGridComponent implements OnInit, AfterViewInit {
       <p style="text-align:center;">${this.reportTitle}</p>
       <p style="text-align:right">
        ${printedByMessage}&nbsp; ${this.printBy}
-        <b>Printed On:</b>${printDate}&nbsp; ${datePref}<br /> 
+        <b>Printed On:</b>${printDate}&nbsp; ${datePref}<br />
       </p>
       </div>`+ filterDescription
     }

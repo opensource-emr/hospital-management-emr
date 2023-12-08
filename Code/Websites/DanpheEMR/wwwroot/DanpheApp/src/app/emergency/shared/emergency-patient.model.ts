@@ -1,12 +1,9 @@
 import {
-  NgForm,
+  FormBuilder,
   FormGroup,
-  FormControl,
-  Validators,
-  FormBuilder
+  Validators
 } from '@angular/forms';
-import { DischargeSummary } from '../../adt/shared/discharge-summary.model';
-import { EmergencyDischargeSummary } from './emergency-discharge-summary.model';
+import { PatientScheme } from '../../billing/shared/patient-map-scheme';
 import { EmergencyPatientCases } from './emergency-patient-cases.model';
 
 export class EmergencyPatientModel {
@@ -23,12 +20,13 @@ export class EmergencyPatientModel {
   public ShortName: string = null;
   public LastName: string = "";
   public DateOfBirth: string = null;
-  public Gender: string = 'null';
+  public Gender: string = null;
   public Age: string = null;
   public AgeSex: string = null;
   public ContactNo: string = "";
   public CareOfPersonContactNumber: string = "";
   public Address: string = null;
+  public WardNo: number = null;
   public Case: string = null;
   public ConditionOnArrival: string = null;
   public ModeOfArrivalName: string = null;
@@ -80,11 +78,17 @@ export class EmergencyPatientModel {
   public MainCase: number = 0;
   public SubCase: number = null;
   public OtherCaseDetails: string = null;
-  public MunicipalityId: number = 0;
+  public MunicipalityId: number = null;
   public MunicipalityName: string = null;
 
   public PatientCases: EmergencyPatientCases = new EmergencyPatientCases();
   public EthnicGroup: string = "";
+  public SchemeId: number = null;
+  public PriceCategoryId: number = null;
+  public PatientScheme: PatientScheme = new PatientScheme();
+  public ClaimCode: string = null;
+  public SchemeName: string = null;
+  public PriceCategoryName: string = null;
 
   constructor() {
     var _formBuilder = new FormBuilder();

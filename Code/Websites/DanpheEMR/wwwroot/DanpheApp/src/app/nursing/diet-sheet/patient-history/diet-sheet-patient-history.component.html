@@ -1,0 +1,170 @@
+<style>
+    @page {
+        size: A4 landscape;
+        margin-top: 8px;
+        margin-bottom: 10px;
+        margin-left: 20px;
+        font-size: 70%;
+        scale: 70%;
+        color: #333333;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+        font-size: 12px;
+        margin: 0;
+        padding: 0;
+        color: #333333;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    table td,
+    table th {
+        padding: 0;
+        font-size: 12px;
+    }
+
+    .column {
+        float: left;
+        padding: 5px;
+    }
+
+    .box-body {
+        padding: 0px 10px 0 10px;
+        color: #333333
+    }
+
+    .c_name {
+        font-size: 14px !important;
+        font-weight: bold !important;
+        margin-bottom: 0;
+        margin-top: 0;
+        color: #333333
+    }
+
+    .c_paragraphs {
+        font-size: 12px !important;
+        margin: 0 0 0 0;
+        padding: 0;
+        font-weight: normal;
+        color: #333333
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+        color: #333333;
+    }
+
+    table td,
+    table th {
+        text-align: left;
+        vertical-align: top !important;
+        color: #333333 !important;
+        font-weight: normal !important;
+    }
+
+    table th {
+        font-weight: bold !important;
+        /* background-color: #dee6ef; */
+    }
+</style>
+<!-- Modal -->
+<div class="popup-static portlet box portlet-fullscreen custom_modal modal-dialog modal-dialog-centered"
+     *ngIf="showPatientDietHistoryPage">
+    <div class="portlet-body form">
+        <!-- Model Box Body Start -->
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption no-margin" style="padding: 0;">
+                        <!-- <h3 class="text-center"><span>Patient Diet History</span></h3> -->
+                        <a class="btn btn-danger" (click)="CloseBillPatientDietHistoryPopUp()" title="Cancel">X</a>
+                    </div>
+                    <div class="sheet" id="id_patient_diet_history">
+                        <div class="box-body invoice header">
+                            <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td colspan="2" width="25%" *ngIf="InvoiceDisplaySettings.ShowHospLogo">
+                                        <img class="img-responsive" style="height:50px; width: 90px; position: relative; top: 10px;"
+                                             src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                                    </td>
+                                    <td colspan="4" width="50%" *ngIf="headerDetail && InvoiceDisplaySettings.ShowHeader">
+                                        <h3 class="c_name" style="text-align: center;">{{headerDetail.CustomerName}}</h3>
+                                        <p class="c_paragraphs" style="text-align: center;">{{headerDetail.Address}}</p>
+                                        <p class="c_paragraphs" style="text-align: center;">{{headerDetail.Tel}}</p>
+                                    </td>
+                                    <td colspan="2" width="25%" style="text-align: right; vertical-align: top;">
+                                        <!-- <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;"><strong>PAN No.
+                                : 300449161</strong> </p> -->
+
+                                    </td>
+                                </tr>
+                            </table>
+                            <!-- <billing-header></billing-header> -->
+                            <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td colspan="10" style="text-align: center;">
+                                        <p style="margin: 0 0 5px 0;" class="c_name"><strong>Patient Diet History</strong></p>
+                                    </td>
+
+                                </tr>
+                                <tr style="border: 1px solid #ccc;">
+                                    <td colspan="3" style="padding: 5px 5px;">
+                                        <p class="c_paragraphs" style="margin: 3px 0;">Ward:<strong>{{selectedIpd.PatientCode}}</strong></p>
+                                        <p class="c_paragraphs" style="margin: 3px 0;">Patient Name:<strong>{{selectedIpd.ShortName}}</strong></p>
+                                    </td>
+                                    <td colspan="3" style="padding: 5px 5px;">
+                                        <!-- <p class="c_paragraphs" style="margin: 3px 0; text-align: right;">Rank:<strong>{{selectedIpd.Rank}}</strong>
+                                        </p>-->
+                                        <p class="c_paragraphs" style="margin: 3px 0; text-align: right;">
+                                            Address:<strong>{{selectedIpd.Address}}</strong></p>
+                                        <p class="c_paragraphs" style="margin: 3px 0; text-align: right;">
+                                            Age/Sex:<strong>{{selectedIpd.AgeSex}}</strong></p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div *ngIf="isPatientDietHistoryFound">
+                                <table border="0" style="width: 100%; margin: 10px auto;" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                        <th>SN</th>
+                                        <th>Date Time</th>
+                                        <th>Diet Type</th>
+                                        <th>Extra Diet</th>
+                                        <th>Remarks</th>
+                                        <th>Entered By</th>
+                                    </tr>
+                                    <tr *ngFor="let diet of patientDietHistory; let i = index">
+                                        <td>{{i+1}}</td>
+                                        <td>{{diet.CreatedOn |date:'yyyy-MM-dd hh:mm'}}</td>
+                                        <td>{{diet.DietTypeName}}</td>
+                                        <td>{{diet.ExtraDiet}}</td>
+                                        <td>{{diet.Remarks}}</td>
+                                        <td>{{diet.FullName}}</td>
+                                    </tr>
+
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <div style="text-align:center;z-index: 4;position: relative; margin-bottom: 25px; margin-top: 15px;">
+                        <button class="btn green btn-success" (click)="Print()" id="btnPrintReciptEchsMrpDrugCertificate">
+                            <span>Print</span>&nbsp;&nbsp;
+                            &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Box Body End -->
+</div>
+
+<new-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</new-print-page>

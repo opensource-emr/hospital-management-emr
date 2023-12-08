@@ -69,7 +69,7 @@
 
         </div>
         <div class="form-group">
-          <label for="" class="control-label col-md-3">Caste/Ethnic Group<sup>*</sup>
+          <label for="" class="control-label col-md-3">{{GeneralFieldLabel.Caste}}<sup>*</sup>
             <b>:</b></label>
           <div class="col-md-9">
             <div class="col-wrapper">
@@ -171,12 +171,12 @@
               <div class="col" *ngIf="patient.CountryName === CountryNepal">
                 <input danphe-auto-complete id="ddlCountrySubdivision" class="form-control" formControlName="CountrySubDivisionId"
                        [(ngModel)]="countrySubDivision" [list-formatter]="districtListFormatter" [source]="countrySubDivisions"
-                       placeholder="District" display-property-name="CountrySubDivisionName"
+                       placeholder="{{GeneralFieldLabel.DistrictState}}" display-property-name="CountrySubDivisionName"
                        value-property-name=null (focusout)="AssignSelectedDistrict()" onClick="this.select();" match-formatted="true"
                        [grid-sort]="'CountrySubDivisionName'" max-num-list="10"
                        (keyup.enter)="showMunicipality? SetFocusById('municipality') : SetFocusById('address')" />
                 <span class="color-red font-sm" *ngIf="patient.IsDirty('CountrySubDivisionId')"
-                      [hidden]="patient.IsValidCheck('CountrySubDivisionId','required')"> District/State is required.</span>
+                      [hidden]="patient.IsValidCheck('CountrySubDivisionId','required')"> {{GeneralFieldLabel.DistrictState}} is required.</span>
               </div>
               <div class="col" *ngIf="patient.CountryName !== CountryNepal">
                 <input danphe-auto-complete id="ddlCountrySubdivision" class="form-control" formControlName="CountrySubDivisionId"
@@ -198,16 +198,16 @@
               </div>
             </div>
             <div class="col-wrapper">
-              <!-- <div class="col" *ngIf="patient && showMunicipality">
+              <div class="col" *ngIf="patient && showMunicipality">
                 <input class="form-control" [(ngModel)]="patient.WardNumber" placeholder="Ward Number"
                        onClick="this.select();" type="number" (wheel)="coreService.PreventNumberChangeOnScroll($event)"
                        id="wardNumber"
                        (keyup.enter)="SetFocusById('address')" [ngModelOptions]="{standalone: true}" />
-                <span class="color-red font-sm" *ngIf="patient.IsDirty('WardNumber')"
+                <!-- <span class="color-red font-sm" *ngIf="patient.IsDirty('WardNumber')"
                                       [hidden]="patient.IsValidCheck('WardNumber','required')"> Ward number is required.</span>
                                 <span class="color-red font-sm" *ngIf="patient.IsDirty('WardNumber')" [hidden]="patient.IsValidCheck('WardNumber','pattern')">
-                                    Please enter valid Ward number.</span>
-              </div> -->
+                                    Please enter valid Ward number.</span> -->
+              </div>
               <div class="col">
                 <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"
                        [(ngModel)]="patient.Address"
@@ -219,8 +219,8 @@
                        max-num-list="10" (focusout)="transFormAddress()" id="address"
                        (keyup.enter)="SetFocusTenderOrRemarks()" />
               </div>
-              <div class="col" *ngIf="patient.CountryId != defaultCountry.CountryId" class="col-md-3 pr-0 col-md-offset-3">
-                <input class="form-control" style="height: 30px !important;font-size: 0.95em !important" maxlength="15"
+              <div class="col" *ngIf="patient.CountryId != defaultCountry.CountryId">
+                <input danphe-auto-complete class="form-control" style="height: 30px !important;font-size: 0.95em !important" maxlength="15"
                        type="text"
                        [(ngModel)]="patient.PassportNumber" formControlName="PassportNumber" placeholder="Passport Number" />
               </div>

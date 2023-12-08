@@ -29,12 +29,14 @@ import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utili
 import { RouteFromService } from '../../shared/routefrom.service';
 import { ENUM_AppointmentType, ENUM_BillPaymentMode, ENUM_BillingStatus, ENUM_VisitStatus, ENUM_VisitType } from '../../shared/shared-enums';
 import { DischargeDetailBillingVM } from '../ip-billing/shared/discharge-bill.view.models';
+import { ProvisionalDischarge_DTO } from '../ip-billing/shared/dto/provisional-discharge.dto';
 import { PharmacyPendingBillItemsViewModel } from '../ip-billing/shared/pharmacy-pending-bill-item-view.model';
 import { BillingOpPatientVM } from '../op-patient-add/bill-op-patientVM';
 import { BillInvoiceReturnModel } from "./bill-invoice-return.model";
 import { BillingDeposit } from './billing-deposit.model';
 import { BillingReceiptModel } from './billing-receipt.model';
 import { BillingTransactionItem } from './billing-transaction-item.model';
+import { DiscardProvisionalItems_DTO } from './dto/bill-discard-provisional-items.dto';
 import { BillNewSettlement_DTO } from './dto/bill-new-settlement.dto';
 import { HandOverTransactionModel } from './hand-over-transaction.model';
 import { IpBillingDiscountModel } from './ip-bill-discount.model';
@@ -1730,6 +1732,74 @@ export class BillingBLService {
     return this.billingDLService.GetPatientDepositsList(patientId)
       .map(res => res);
   }
+  public PostProvisionalDischarge(provisionalDischarge: ProvisionalDischarge_DTO) {
+    return this.billingDLService.PostProvisionalDischarge(provisionalDischarge)
+      .map(res => res);
+  }
+  public GetProvisionalDischargeList() {
+    return this.billingDLService.GetProvisionalDischargeList()
+      .map(res => res);
+  }
+  public GetProvisionalDischargeItems(patientId: number, schemeId: number, patientVisitId: number) {
+    return this.billingDLService.GetProvisionalDischargeItems(patientId, schemeId, patientVisitId)
+      .map(res => res);
+  }
+  public GetPatientVisitContextForProvisionalPayment(patientId: number, patientVisitId: number) {
+    return this.billingDLService.GetPatientVisitContextForProvisionalPayment(patientId, patientVisitId)
+      .map(res => res);
+  }
+  public DiscardProvisionalItems(discardProvisionalItems: DiscardProvisionalItems_DTO) {
+    return this.billingDLService.DiscardProvisionalItems(discardProvisionalItems)
+      .map(res => res);
+  }
+
+  public PayProvisionalForProvisionalDischarge(billTxnModel: BillingTransaction) {
+
+    let billTransItemTemp = billTxnModel.BillingTransactionItems.map(function (item) {
+      item.Patient = Patient.GetClone(item.Patient);
+      //set requestedby to null when zero (Foreign key won't allow Zero in db so)
+      if (item.PrescriberId == 0) {
+        item.PrescriberId = null;
+      }
+      if (item.PatientVisitId == 0)
+        item.PatientVisitId = null;
+      var temp = _.omit(item, ['ItemList', 'BillingTransactionItemValidator', 'Patient', 'ServiceDepartment']);
+      return temp;
+    });
+    var billTxn: any;
+    billTxn = Object.assign({}, billTxnModel);
+
+    if ((!billTxn.IsCoPayment && billTxn.PaymentMode.toLowerCase() === ENUM_BillPaymentMode.credit.toLowerCase())) {
+      billTxn.ReceivedAmount = 0;
+    }
+
+    if (billTxn.PaymentMode.toLowerCase() !== ENUM_BillPaymentMode.credit.toLowerCase()) {
+      billTxn.OrganizationId = null;
+      billTxn.OrganizationName = null;
+    }
+
+    if (billTxn.IsCoPayment) {
+      billTxn.BillStatus = ENUM_BillingStatus.unpaid;
+    }
+    billTxn.BillingTransactionItems = billTransItemTemp;
+    return this.billingDLService.PayProvisionalForProvisionalDischarge(billTxn)
+      .map((responseData) => {
+        return responseData;
+      });
+  }
+
+  public UpdateProvisionalItems(modifiedItems: Array<BillingTransactionItem>) {
+    let txnItems: Array<any> = modifiedItems.map(bil => {
+      return _.omit(bil, ['ItemList', 'BillingTransactionItemValidator', 'Patient', 'ServiceDepartment']);
+    });
+    let tempBillTxnItems = Object.assign({}, modifiedItems);
+    tempBillTxnItems = txnItems;
+    return this.billingDLService.UpdateProvisionalItems(tempBillTxnItems)
+      .map((responseData) => {
+        return responseData;
+      })
+  }
+
 }
 
 

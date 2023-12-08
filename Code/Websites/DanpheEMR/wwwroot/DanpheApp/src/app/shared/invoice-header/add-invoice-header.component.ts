@@ -3,7 +3,9 @@ import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, Rend
 import { Lightbox } from "angular2-lightbox";
 import * as _ from 'lodash';
 import * as moment from "moment";
+import { CoreService } from "../../core/shared/core.service";
 import { SecurityService } from "../../security/shared/security.service";
+import { GeneralFieldLabels } from "../DTOs/general-field-label.dto";
 import { DLService } from "../dl.service";
 import { InvoiceHeaderModel } from "../invoice-header.model";
 import { MessageboxService } from "../messagebox/messagebox.service";
@@ -32,6 +34,7 @@ export class AddInvoiceHeaderComponent implements OnInit {
   public isFileValid: boolean = true;
   public globalListenFunc: Function;
   public ESCAPE_KEYCODE = 27;//to close the window on click of ESCape.
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   @Input('Module')
   public set moduleValue(value) {
@@ -44,7 +47,10 @@ export class AddInvoiceHeaderComponent implements OnInit {
     public msgBoxSrv: MessageboxService,
     public dlService: DLService,
     public lightbox: Lightbox,
-    public changeDetector: ChangeDetectorRef, public renderer2: Renderer2) {
+
+    public changeDetector: ChangeDetectorRef, public renderer2: Renderer2, public coreservice: CoreService,) {
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
+
   }
 
   @Input('showAddPage')

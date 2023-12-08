@@ -35,6 +35,7 @@ namespace DanpheEMR.ViewModel.Pharmacy
                                    SubTotal = gr.SubTotal,
                                    DiscountAmount = gr.DiscountAmount,
                                    VATAmount = gr.VATAmount,
+                                   CCAmount =gr.CCAmount,
                                    TotalAmount = gr.TotalAmount,
                                    UserName = rbacUser.UserName,
                                    CreatedOn = gr.CreatedOn,
@@ -144,6 +145,8 @@ namespace DanpheEMR.ViewModel.Pharmacy
         public decimal DiscountAmount { get; set; }
         public decimal VATAmount { get; set; }
         public decimal TotalAmount { get; set; }
+        public decimal? CCAmount { get; set; }
+
         public string UserName { get; set; }
         public DateTime CreatedOn { get; set; }
         public bool IsCancel { get; set; }

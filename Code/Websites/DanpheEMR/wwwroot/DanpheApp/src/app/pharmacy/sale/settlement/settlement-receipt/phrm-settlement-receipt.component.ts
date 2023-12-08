@@ -1,15 +1,13 @@
-﻿import { Component, Input, Output, Injector, ChangeDetectorRef, Inject } from "@angular/core";
-import { EventEmitter, OnInit } from "@angular/core"
-import { PHRMSettlementModel } from "../../../shared/pharmacy-settlementModel";
-import { MessageboxService } from "../../../../shared/messagebox/messagebox.service";
-import { PharmacyBLService } from "../../../shared/pharmacy.bl.service";
-import { NepaliCalendarService } from "../../../../shared/calendar/np/nepali-calendar.service";
-import { PharmacyService } from "../../../shared/pharmacy.service";
-import { CommonFunctions } from "../../../../shared/common.functions";
-import { ENUM_PrintingType, PrinterSettingsModel } from "../../../../settings-new/printers/printer-settings.model";
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
 import { CoreService } from "../../../../core/shared/core.service";
-import { DanpheHTTPResponse } from "../../../../shared/common-models";
 import { SecurityService } from "../../../../security/shared/security.service";
+import { ENUM_PrintingType, PrinterSettingsModel } from "../../../../settings-new/printers/printer-settings.model";
+import { NepaliCalendarService } from "../../../../shared/calendar/np/nepali-calendar.service";
+import { CommonFunctions } from "../../../../shared/common.functions";
+import { MessageboxService } from "../../../../shared/messagebox/messagebox.service";
+import { PHRMSettlementModel } from "../../../shared/pharmacy-settlementModel";
+import { PharmacyBLService } from "../../../shared/pharmacy.bl.service";
+import { PharmacyService } from "../../../shared/pharmacy.service";
 
 
 @Component({
@@ -20,7 +18,7 @@ export class PHRMSettlementReceiptComponent {
     @Input("settlementInfo")
     public settlementInfo: PHRMSettlementModel;
 
-    
+
     @Input("showReceipt")
     public showReceipt: boolean;
     public localDate: string;
@@ -37,7 +35,8 @@ export class PHRMSettlementReceiptComponent {
     public openBrowserPrintWindow: boolean = false;
     public browserPrintContentObj: any;
 
-    
+    public EnableEnglishCalendarOnly: boolean = false;
+
 
     constructor(public msgBoxService: MessageboxService,
         public pharmacyBLService: PharmacyBLService,
@@ -45,10 +44,18 @@ export class PHRMSettlementReceiptComponent {
         public pharmacyService: PharmacyService,
         public coreService: CoreService,
         public changeDetector: ChangeDetectorRef,
-        public securityService:SecurityService) {
+        public securityService: SecurityService) {
+        this.GetCalendarParameter();
 
     }
 
+    GetCalendarParameter(): void {
+        const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+        if (param && param.ParameterValue) {
+            const paramValue = JSON.parse(param.ParameterValue);
+            this.EnableEnglishCalendarOnly = paramValue;
+        }
+    }
     ngOnInit() {
         //this.currencyUnit = this.pharmacyService.currencyUnit;
         if (this.settlementInfo) {
@@ -61,17 +68,22 @@ export class PHRMSettlementReceiptComponent {
             }
         }
 
-        
+
 
         this.settlementInfo.Patient.ShortName = this.settlementInfo.Patient.FirstName
             + " " + (this.settlementInfo.Patient.MiddleName == null ? "" : this.settlementInfo.Patient.MiddleName)
             + " " + (this.settlementInfo.Patient.LastName);
     }
 
-    
+
     GetLocalDate(engDate: string): string {
-        let npDate = this.nepaliCalendarServ.ConvertEngToNepDateString(engDate);
-        return npDate + " BS";
+        if (this.EnableEnglishCalendarOnly) {
+            return null;
+        } else {
+            let npDate = this.nepaliCalendarServ.ConvertEngToNepDateString(engDate);
+            // return npDate + " BS";
+            return `(${npDate} BS)` ;
+        }
     }
     print() {
 
@@ -94,7 +106,7 @@ export class PHRMSettlementReceiptComponent {
                 .then(() => {
                     var config = this.coreService.QzTrayObject.configs.create(this.selectedPrinter.PrinterName);
 
-                   // let dataToPrint = this.MakeReceipt();
+                    // let dataToPrint = this.MakeReceipt();
                     let dataToPrint = null;
                     return this.coreService.QzTrayObject.print(config, CommonFunctions.GetEpsonPrintDataForPage(dataToPrint, this.selectedPrinter.mh, this.selectedPrinter.ml, this.selectedPrinter.ModelName));
 

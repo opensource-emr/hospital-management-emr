@@ -148,7 +148,8 @@ namespace DanpheEMR.Services.Billing
                                     IsGeneralCreditLimited = sch.IsGeneralCreditLimited,
                                     IsCreditLimited = sch.IsIpCreditLimited,
                                     GeneralCreditLimit = sch.GeneralCreditLimit,
-                                    IsClaimCodeAutoGenerate = creditOrg != null ? creditOrg.IsClaimCodeAutoGenerate : false
+                                    IsClaimCodeAutoGenerate = creditOrg != null ? creditOrg.IsClaimCodeAutoGenerate : false,
+                                    AllowProvisionalBilling = sch.AllowProvisionalBilling
                                 }).OrderBy(s => s.SchemeName).AsNoTracking().ToListAsync();
             return schemeList;
         }
@@ -258,7 +259,8 @@ namespace DanpheEMR.Services.Billing
                                                                        CoPayCreditPercent = 0,
                                                                        IntegrationItemId = serviceItem.IntegrationItemId,
                                                                        IntegrationName = servDept.IntegrationName,
-                                                                       DisplaySequence = serviceItem.DisplaySeq
+                                                                       DisplaySequence = serviceItem.DisplaySeq,
+                                                                       DefaultDoctorList = serviceItem.DefaultDoctorList
                                                                    }).AsNoTracking()
                                                                    .ToListAsync().ConfigureAwait(false);
 
@@ -271,7 +273,7 @@ namespace DanpheEMR.Services.Billing
                                                                             into grp
                                                                             from items in grp.DefaultIfEmpty()
                                                                             select new ServiceItemDetails_DTO
-                                                                            {
+                                                                            {   
                                                                                 ServiceItemId = servItemMst.ServiceItemId,
                                                                                 PriceCategoryId = servItemMst.PriceCategoryId,
                                                                                 SchemeId = servItemMst.SchemeId,
@@ -292,7 +294,8 @@ namespace DanpheEMR.Services.Billing
                                                                                 CoPayCreditPercent = items != null ? items.CoPaymentCreditPercent : 0, // Need to Review/ ReWrite this Logic
                                                                                 IntegrationItemId = servItemMst.IntegrationItemId,
                                                                                 IntegrationName = servItemMst.IntegrationName,
-                                                                                DisplaySequence = servItemMst.DisplaySequence
+                                                                                DisplaySequence = servItemMst.DisplaySequence,
+                                                                                DefaultDoctorList = servItemMst.DefaultDoctorList
                                                                             }).ToList();
             return serviceItemWithCoPayAndDiscount;
         }
@@ -554,5 +557,28 @@ namespace DanpheEMR.Services.Billing
                                              }).ToListAsync();
             return currencies;
         }
+
+        public async Task<object> GetPriceCategoryServiceItems(BillingDbContext _billingDbContext, int priceCategoryId)
+        {
+            var priceCategoryServiceItems = await (from serviceItem in _billingDbContext.BillServiceItems
+                                                   join priceCatServiceItem in _billingDbContext.BillItemsPriceCategoryMaps
+                                                   on serviceItem.ServiceItemId equals priceCatServiceItem.ServiceItemId
+                                                   join servDept in _billingDbContext.ServiceDepartment
+                                                   on serviceItem.ServiceDepartmentId equals servDept.ServiceDepartmentId
+                                                   where priceCatServiceItem.PriceCategoryId == priceCategoryId && serviceItem.IsActive == true
+                                                   select new BillingPriceCategoryServiceItem_DTO
+                                                   {
+                                                       ServiceItemId = serviceItem.ServiceItemId,
+                                                       PriceCategoryId = priceCatServiceItem.PriceCategoryId,
+                                                       ItemCode = String.IsNullOrEmpty(priceCatServiceItem.ItemLegalCode) ? serviceItem.ItemCode : priceCatServiceItem.ItemLegalCode,
+                                                       ItemName = String.IsNullOrEmpty(priceCatServiceItem.ItemLegalName) ? serviceItem.ItemName : priceCatServiceItem.ItemLegalName,
+                                                       ServiceDepartmentId = serviceItem.ServiceDepartmentId,
+                                                       Price = priceCatServiceItem.Price,
+                                                       IntegrationItemId = serviceItem.IntegrationItemId
+                                                   }).AsNoTracking()
+                                                    .ToListAsync().ConfigureAwait(false);
+            return priceCategoryServiceItems;
+        }
+
     }
 }

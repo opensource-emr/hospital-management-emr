@@ -36,6 +36,8 @@ export class BIL_DuplicatePrint_ProvisionalListComponent {
 
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   public schemeId: number = null;
+  public ProvisionalFiscalYearId: number = null;
+  public ProvisionalReceiptNumber: string = "";
 
   constructor(
     public BillingBLService: BillingBLService,
@@ -79,9 +81,13 @@ export class BIL_DuplicatePrint_ProvisionalListComponent {
     switch ($event.Action) {
       case "showDetails":
         {
-          var data = $event.Data;
-          this.currentData = data;
-          this.showReceipt = true;
+          let data = $event.Data;
+          if (data) {
+            this.currentData = data;
+            this.ProvisionalFiscalYearId = this.currentData.ProvisionalFiscalYearId;
+            this.ProvisionalReceiptNumber = this.currentData.ProvisionalReceiptNo;
+            this.showReceipt = true;
+          }
           //this.GetByReceiptNoFiscalYear(data.ProvisionalReceiptNo, data.FiscalYearId);
         }
         break;

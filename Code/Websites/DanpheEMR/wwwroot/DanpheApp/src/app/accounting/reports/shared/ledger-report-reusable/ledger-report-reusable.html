@@ -20,7 +20,7 @@
       <div class="col-md-10 col-md-offset-1">
         <div class="modelbox-div clearfix">
           <button class="btn btn-danger history-del-btn hidden-print fa" (click)="CallBack()" value="X"
-                  title="Close">X</button>
+            title="Close">X</button>
           <div class="col-md-12">
             <div class="row" *ngIf="showLedgerDetail">
               <div class="form-body">
@@ -29,7 +29,7 @@
                     <div class="input-group" style="padding-left:20px;">
                       <div class="icheck-inline">
                         <label *ngIf="showTxnItemLevel!='true'" class="mt-checkbox mt-checkbox-outline"
-                               style="font-weight:bold;color:green;padding-left:30px;">
+                          style="font-weight:bold;color:green;padding-left:30px;">
                           <input name="showParticular" type="checkbox" value="Detail View" [(ngModel)]="IsDetailsView">
                           <span></span> Detail View
                         </label>
@@ -67,7 +67,7 @@
                     </tr>
                     <tr>
                       <td style="text-align: left;">
-                        Printed On: &nbsp; {{todayDate}}
+                        Printed On: &nbsp; {{todayDate}}  {{todayDate | nepaliDate:'format':'YYYY-MM-DD'}} 
                       </td>
                       <td style="text-align: right;">
                         (BS): &nbsp;
@@ -80,7 +80,7 @@
                   <hr style="margin-top: 0px;margin-bottom: 5px;" class="hidden-print" />
                   <div class="" style="overflow-y:auto">
                     <table class="table table-bordered table-hover table-condensed" id="exportTable" border="1"
-                           style="width:100%;">
+                      style="width:100%;">
                       <tr>
                         <th>
                           Date
@@ -113,7 +113,7 @@
                         <td><b>{{ledgerResult.OpeningBalanceCrAmount | Currency:'4'}}</b></td>
 
                         <td><b
-                             *ngIf="ledgerResult.OpeningBalanceDrAmount > 0">{{ledgerResult.OpeningBalanceDrAmount | Currency:'4'}}
+                            *ngIf="ledgerResult.OpeningBalanceDrAmount > 0">{{ledgerResult.OpeningBalanceDrAmount | Currency:'4'}}
                             &nbsp; <span> Dr</span>
                           </b>
                           <b *ngIf="ledgerResult.OpeningBalanceCrAmount > 0">{{ledgerResult.OpeningBalanceCrAmount | Currency:'4'}}
@@ -123,7 +123,7 @@
                         <td></td>
                       </tr>
                       <tr *ngFor="let txnItm of ledgerResult" [ngClass]="{'tr-highlight': txnItm.IsHighlighted}"
-                          (click)="HotKeysOnOff(txnItm)">
+                        (click)="HotKeysOnOff(txnItm)">
                         <!-- | DanpheDateTime:'format':'YYYY-MM-DD' -->
                         <td>{{txnItm.TransactionDate}}</td>
                         <td>{{txnItm.VoucherNumber}}</td>
@@ -192,7 +192,7 @@
                           </p>
                         </td>
                         <td *ngIf="actionView && IsOpeningBalance!=true"
-                            (click)="ViewTransactionDetails(txnItm.VoucherNumber)" class="hidden-print">
+                          (click)="ViewTransactionDetails(txnItm.VoucherNumber)" class="hidden-print">
                           <a class="hidden-print">View Detail</a>
                         </td>
                       </tr>
@@ -223,7 +223,7 @@
                     <b>In Words :</b>
                     {{ledgerResult.DrNetAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}}
                     {{ledgerResult.CrNetAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}}<span
-                          *ngIf="ledgerResult.DrNetAmount !=0 || ledgerResult.CrNetAmount !=0">Only</span>
+                      *ngIf="ledgerResult.DrNetAmount !=0 || ledgerResult.CrNetAmount !=0">Only</span>
                   </div>
                   <br />
 
@@ -235,17 +235,17 @@
                       <tr>
                         <td>
                           <input type="text" class="signature"
-                                 style="border: 0;border-bottom: 1px solid #cecece; border-radius: 0 !important; margin-bottom: 10px" /><br />
+                            style="border: 0;border-bottom: 1px solid #cecece; border-radius: 0 !important; margin-bottom: 10px" /><br />
                           <b> Prepared By</b>
                         </td>
                         <td>
                           <input type="text" class="signature"
-                                 style="border: 0;border-bottom: 1px solid #cecece; border-radius: 0 !important; margin-bottom: 10px" /><br />
+                            style="border: 0;border-bottom: 1px solid #cecece; border-radius: 0 !important; margin-bottom: 10px" /><br />
                           <b> Checked By</b>
                         </td>
                         <td>
                           <input type="text" class="signature"
-                                 style="border: 0;border-bottom: 1px solid #cecece; border-radius: 0 !important; margin-bottom: 10px" /><br>
+                            style="border: 0;border-bottom: 1px solid #cecece; border-radius: 0 !important; margin-bottom: 10px" /><br>
                           <b> Approved By</b>
                         </td>
                       </tr>
@@ -261,7 +261,7 @@
                 Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i>
               </button>
               <button class="btn btn-primary hidden-print" (click)="ExportToExcel('exportTable')" value=""
-                      title="export to excel">
+                title="export to excel">
                 Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i>
               </button>
             </div>

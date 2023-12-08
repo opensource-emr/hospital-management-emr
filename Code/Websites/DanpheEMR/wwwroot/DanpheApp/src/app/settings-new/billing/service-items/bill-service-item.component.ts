@@ -34,13 +34,15 @@ export class BillServiceItemComponent {
   public docterList: Array<Employee> = [];
   public defaultDoctorList: string;
   public PreSelectedDoctors: Array<Employee> = [];
-  public BillItemsPriceCatMap: Array<BillServiceItemsPriceCategoryMap> = new Array<BillServiceItemsPriceCategoryMap>();
+  public BillItemsPriceCatMap: BillServiceItemsPriceCategoryMap[] = [];
+  public tempBillItemsPriceCatMap: BillServiceItemsPriceCategoryMap[] = [];
   public isSrvDeptValid: boolean;
   public selectedServiceCategory: ServiceCategories;
   public isServiceCategoryValid: boolean = false;
-  public selectedSrvDept: string = null;
+  public selectedSrvDept: ServiceDepartment = new ServiceDepartment();
   @Input('update') update: boolean = false;
   public selectedIntegration: IntegrationName;
+  public tempData: { tempItemName: string, tempItemCode: string } = { tempItemName: '', tempItemCode: '' };
 
   constructor(
     public settingsBLService: SettingsBLService,
@@ -66,7 +68,7 @@ export class BillServiceItemComponent {
     if (this.selectedItem) {
       this.update = true;
       this.CurrentBillingItem = Object.assign(this.CurrentBillingItem, this.selectedItem);
-      this.selectedIntegration = this.integrationNameList.find(i => i.IntegrationNameID === this.selectedItem.IntegrationItemId);
+      this.selectedIntegration = this.integrationNameList.find(i => i.IntegrationName === this.selectedItem.IntegrationName);
       this.selectedServiceCategory = this.ServiceCategoryList.find(c => c.ServiceCategoryId === this.selectedItem.ServiceCategoryId);
 
 
@@ -74,7 +76,7 @@ export class BillServiceItemComponent {
         this.AssignPreSelectedDocter();
       }
 
-      this.selectedSrvDept = this.CurrentBillingItem.ServiceDepartmentName;
+      this.selectedSrvDept.ServiceDepartmentName = this.CurrentBillingItem.ServiceDepartmentName;
       this.CurrentBillingItem.EnableControl("ServiceDepartmentId", false);
       this.CurrentBillingItem.CreatedOn = moment().format('YYYY-MM-DD HH:mm:ss');
       this.CurrentBillingItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
@@ -97,9 +99,9 @@ export class BillServiceItemComponent {
       let temp = new BillServiceItemsPriceCategoryMap();
       temp.PriceCategoryId = activePriceCategories[index].PriceCategoryId;
       temp.PriceCategoryName = activePriceCategories[index].PriceCategoryName;
-      temp.ItemLegalCode = "";
+      temp.ItemLegalCode = '';
       temp.Price = 0;
-      temp.ItemLegalName = "";
+      temp.ItemLegalName = '';
       this.BillItemsPriceCatMap.push(temp);
     }
   }
@@ -140,6 +142,28 @@ export class BillServiceItemComponent {
     }
   }
 
+  AssignSelectedDepartment() {
+    if (this.selectedSrvDept) {
+      const selectedServiceDept = this.srvdeptList.find(dept => dept.ServiceDepartmentName === this.selectedSrvDept.ServiceDepartmentName);
+
+      if (selectedServiceDept) {
+        this.CurrentBillingItem.BillingItemValidator.get('IntegrationName').setValue(selectedServiceDept.IntegrationName);
+        let selIntegration = this.integrationNameList.find(i => i.IntegrationName === selectedServiceDept.IntegrationName);
+        if (selIntegration) {
+          this.CurrentBillingItem.IntegrationItemId = selIntegration.IntegrationNameID;
+          this.CurrentBillingItem.IntegrationName = selIntegration.IntegrationName;
+        }
+      }
+      if (selectedServiceDept && selectedServiceDept.IntegrationName == null) {
+        let selIntegration = this.integrationNameList.find(i => i.IntegrationName === 'None');
+        if (selIntegration) {
+          this.CurrentBillingItem.IntegrationItemId = selIntegration.IntegrationNameID;
+          this.CurrentBillingItem.IntegrationName = selIntegration.IntegrationName;
+          this.CurrentBillingItem.BillingItemValidator.get('IntegrationName').setValue(selIntegration.IntegrationName);
+        }
+      }
+    }
+  }
 
   public GetSrvDeptList() {
     try {
@@ -288,7 +312,7 @@ export class BillServiceItemComponent {
       this.isSrvDeptValid = false;
     }
     else if (typeof (this.selectedSrvDept) === 'string') {
-      srvDept = this.srvdeptList.find(a => a.ServiceDepartmentName.toLowerCase() == this.selectedSrvDept.toLowerCase());
+      srvDept = this.srvdeptList.find(a => a.ServiceDepartmentName.toLowerCase() == this.selectedSrvDept.ServiceDepartmentName.toLowerCase());
     }
     else if (typeof (this.selectedSrvDept) === "object") {
       srvDept = this.selectedSrvDept;
@@ -367,7 +391,7 @@ export class BillServiceItemComponent {
       var serviceDepartment = $event.servDepartment;
       this.srvdeptList.push(serviceDepartment);
       this.srvdeptList = this.srvdeptList.slice();
-      this.selectedSrvDept = serviceDepartment.ServiceDepartmentName;
+      this.selectedSrvDept = serviceDepartment;
       this.OnSrvDeptValueChanged();
 
     }
@@ -409,6 +433,23 @@ export class BillServiceItemComponent {
   KeysPressed(event) {
     if (event.keyCode == 27) {
       this.Close();
+    }
+  }
+
+  AssignItemLegalNameCode(index: number) {
+    if (this.BillItemsPriceCatMap[index].IsSelected) {
+      const item = this.BillItemsPriceCatMap[index];
+      if (!item.ItemLegalCode) {
+        item.ItemLegalCode = this.CurrentBillingItem.ItemCode;
+      }
+      if (!item.ItemLegalName) {
+        item.ItemLegalName = this.CurrentBillingItem.ItemName;
+      }
+    }
+    else {
+      const item = this.BillItemsPriceCatMap[index];
+      item.ItemLegalCode = '';
+      item.ItemLegalName = '';
     }
   }
 }

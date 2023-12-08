@@ -15,7 +15,8 @@ export class ServiceItemDetails_DTO {
   public Price: number = 0;
   public IsTaxApplicable: boolean = false;
   public IsDiscountApplicable: boolean = false;
-  public DiscountPercent: number;
+  public DiscountPercent: number = 0;
+  public DiscountAmount: number = 0;
   public IsPriceChangeAllowed: boolean = false;
   public IsZeroPriceAllowed: boolean = false;
   public HasAdditionalBillingItems: boolean = false;
@@ -28,4 +29,5 @@ export class ServiceItemDetails_DTO {
   public DisplaySequence: number = null;
   public IsPackageBilling: boolean = false;
   public PerformerId: number = null;
+  public DefaultDoctorList: string = null;
 }

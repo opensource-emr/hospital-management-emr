@@ -3,18 +3,20 @@
         <div class="modelbox-div" style="margin-bottom: 10px;width: 490px;padding: 30px 30px 10px 30px;">
             <div>
                 <div class="row">
-                    <div id="sticker" style="width: 400px;height: 175px;border: 1px dotted black;padding: 10px;margin: 0 auto 15px auto;font-size: 12px;">
+                    <div id="sticker"
+                         style="width: 400px;height: 175px;border: 1px dotted black;padding: 10px;margin: 0 auto 15px auto;font-size: 12px;">
                         <div id="adtPrintPage" style="width: 380px; margin:0px;display:block;font-size: 12px;font-weight: normal;">
 
                             <div style="width:100%; display: flex;justify-content: space-between;">
                                 <div><span> DOA : {{stickerDetail.AdmissionDate |
-                                        DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}&nbsp;({{localDateTime}}) </span></div>
+                                        DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}&nbsp;{{localDateTime}} </span></div>
                                 <div><span>IP No. :
                                         {{stickerDetail.InPatientNo}} </span></div>
                             </div>
 
                             <div style="width:100%; display: flex;justify-content: space-between;">
-                                <div>Name&nbsp;:&nbsp;<span style="text-transform: uppercase;font-weight: bold;">{{stickerDetail.PatientName}}&nbsp;&nbsp;&nbsp;{{stickerDetail.DateOfBirth
+                                <div>Name&nbsp;:&nbsp;<span
+                                          style="text-transform: uppercase;font-weight: bold;">{{stickerDetail.PatientName}}&nbsp;&nbsp;&nbsp;{{stickerDetail.DateOfBirth
                                         | DanpheDateTime:'age'}}/{{stickerDetail.Gender |
                                         slice:0:1}}</span>
                                 </div>
@@ -30,22 +32,28 @@
                             <div style="width:100%; display: flex;justify-content: space-between;">
                                 <div *ngIf="stickerDetail.CountryName === CountryNepal">
                                     <div>
-                                        Address: <span *ngIf="showMunicipality && stickerDetail.MunicipalityName">{{stickerDetail.MunicipalityName}}<span *ngIf="stickerDetail.WardNumber">-{{stickerDetail.WardNumber}}</span>, </span><span>{{stickerDetail.CountrySubDivisionName}}</span>
+                                        Address: <span
+                                              *ngIf="showMunicipality && stickerDetail.MunicipalityName">{{stickerDetail.MunicipalityName}}<span
+                                                  *ngIf="stickerDetail.WardNumber">-{{stickerDetail.WardNumber}}</span>,
+                                        </span><span>{{stickerDetail.CountrySubDivisionName}}</span>
                                     </div>
                                 </div>
                                 <div *ngIf="stickerDetail.CountryName !== CountryNepal">
                                     <div>
-                                        Address: <span *ngIf="stickerDetail.Address">{{stickerDetail.Address}}, </span><span>{{stickerDetail.CountrySubDivisionName}}, </span><span>{{stickerDetail.CountryName}}</span>
+                                        Address: <span *ngIf="stickerDetail.Address">{{stickerDetail.Address}},
+                                        </span><span>{{stickerDetail.CountrySubDivisionName}}, </span><span>{{stickerDetail.CountryName}}</span>
                                     </div>
                                 </div>
-                                <div *ngIf="stickerDetail.Ins_HasInsurance"> NSHI No. : {{stickerDetail.Ins_NshiNumber}} </div>
+                                <div *ngIf="stickerDetail.Ins_HasInsurance"> {{GeneralFieldLabel.NSHINo}} . : {{stickerDetail.Ins_NshiNumber}}
+                                </div>
                             </div>
 
                             <div style="width:100%; display: flex;justify-content: space-between;">
                                 <div>
                                     Type: {{stickerDetail.MembershipTypeName}}
                                 </div>
-                                <div *ngIf="stickerDetail.PriceCategoryName === SSFPriceCategoryName">SSF Policy No. : {{stickerDetail.SSFPolicyNo}}</div>
+                                <div *ngIf="stickerDetail.PriceCategoryName === SSFPriceCategoryName">SSF Policy No. : {{stickerDetail.SSFPolicyNo}}
+                                </div>
                                 <div *ngIf="stickerDetail.MembershipTypeName === ECHSMembershipTypeName">ECHS No. : {{stickerDetail.PolicyNo}}</div>
                             </div>
 

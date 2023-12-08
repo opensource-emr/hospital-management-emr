@@ -139,7 +139,7 @@
 
                       <div class="col-right">
                         <span class="text-uppercase text-bold txt-val">
-                          ({{invoice.DischargeInfo.StatementDate | nepaliDate}})
+                          {{invoice.DischargeInfo.StatementDate | nepaliDate}}
                         </span>
                       </div>
                     </div>
@@ -149,7 +149,8 @@
                       <div class="col-left flex-2">
                         <span class="text-uppercase text-bold txt-label">DOA&nbsp;:&nbsp;</span>
                         <span class="text-uppercase text-bold txt-val">{{invoice.VisitInfo.AdmissionDate
-                          | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                          | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                          {{invoice.VisitInfo.AdmissionDate | nepaliDate}}</span>
                       </div>
 
                       <!-- <div class="col-right">
@@ -163,7 +164,7 @@
                         <span class="text-uppercase text-bold txt-val">{{invoice.VisitInfo.DischargeDate
                           |
                           DanpheDateTime:'format':'YYYY-MM-DD'}}
-                        </span>
+                          {{invoice.VisitInfo.DischargeDate | nepaliDate}}</span>
                       </div>
                       <div class="col-right" *ngIf="invoice.InvoiceInfo && invoice.InvoiceInfo.PaymentMode">
                         <span class="text-uppercase text-bold txt-label">
@@ -172,13 +173,13 @@
                         </span>
                       </div>
                     </div>
-                    <div class="discharge-bill-sm-row flx justify-sp-between" *ngIf="isInsurance">
-                      <div class="col-left flex-2">
+                    <div class="discharge-bill-sm-row flx justify-sp-between">
+                      <div class="col-left flex-2" *ngIf="invoice.PatientInfo.PolicyNo">
                         <span class="text-uppercase text-bold txt-label">
-                          NSHI: {{invoice.PatientInfo.Ins_NshiNumber}}
+                          Policy/Member: {{invoice.PatientInfo.PolicyNo}}
                         </span>
                       </div>
-                      <div class="col-right">
+                      <div class="col-right" *ngIf="invoice.InvoiceInfo.ClaimCode">
                         <span class="text-uppercase text-bold txt-label">
                           Claim Code:{{invoice.InvoiceInfo.ClaimCode}}
                         </span>
@@ -194,7 +195,7 @@
                         </span>
                       </div>
                     </div>
-                    <div *ngIf="invoice.InvoiceItems && invoice.InvoiceItems.length>0 && invoice.InvoiceItems[0].PriceCategory && invoice.InvoiceItems[0].PriceCategory.toLowerCase() === SSFPriceCategory"
+                    <!-- <div *ngIf="invoice.InvoiceItems && invoice.InvoiceItems.length>0 && invoice.InvoiceItems[0].PriceCategory && invoice.InvoiceItems[0].PriceCategory.toLowerCase() === SSFPriceCategory"
                          class="discharge-bill-sm-row flx justify-sp-between">
                       <div class="col-left flex-2">
 
@@ -205,7 +206,7 @@
                           {{invoice.PatientInfo.SSFPolicyNo}}
                         </span>
                       </div>
-                    </div>
+                    </div> -->
 
                   </div>
                   <div class="wrapper" *ngIf="invoice.InvoiceItems && invoice.InvoiceItems.length">
@@ -315,7 +316,7 @@
                           {{invoice.InvoiceInfo.DiscountAmount | number: "1.2-2"}}</div>
 
                         <div style="padding-bottom: 8px;"
-                             *ngIf="invoice.InvoiceInfo && invoice.InvoiceInfo.PaymentMode && invoice.InvoiceInfo.PaymentMode.toLowerCase() === creditPaymentMode && !invoice.InvoiceInfo.DepositReturnAmount">
+                             *ngIf="invoice.InvoiceInfo && invoice.InvoiceInfo.PaymentMode && (invoice.InvoiceInfo.PaymentMode.toLowerCase() === creditPaymentMode && !invoice.InvoiceInfo.DepositReturnAmount) || invoice.InvoiceItems[0].IsCoPayment">
                           <span class="text-uppercase">Credit Amount:</span>
                           {{ (invoice.InvoiceInfo.TotalAmount - invoice.InvoiceInfo.ReceivedAmount) | number: "1.2-2"}}
                         </div>
@@ -398,7 +399,8 @@
                     <div style="width: 100%;text-align: center;margin-top: 20px;">
                       <b *ngIf="InvoiceFooterNoteSettings.ShowEnglish">
                         {{InvoiceFooterNoteSettings.EnglishText}} </b> <br />
-
+                      <b *ngIf="InvoiceFooterNoteSettings.ShowNepali">
+                        {{InvoiceFooterNoteSettings.NepaliText}} </b>
                     </div>
                   </div>
                 </div>

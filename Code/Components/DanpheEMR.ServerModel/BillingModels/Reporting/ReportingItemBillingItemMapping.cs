@@ -12,7 +12,7 @@ namespace DanpheEMR.ServerModel
         [Key]
         public int RptItem_BillItemMappingId { get; set; }
         public int ReportingItemsId { get; set; }
-        public int? BillItemPriceId { get; set; }
+        public int? ServiceItemId { get; set; }
         public bool? IsActive { get; set; }
     }
 }

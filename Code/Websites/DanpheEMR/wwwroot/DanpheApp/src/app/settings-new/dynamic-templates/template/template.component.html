@@ -1,0 +1,126 @@
+<a feature="button" id="id_btn_template_newTemplate" class="btn blue bordered" (click)="NewTemplate()"><i class="fa fa-plus"></i>Add Template</a>
+<div *ngIf="showGrid" class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="templateGridColumns" [grid-data]="templateList "
+                 (grid-actions)="TemplateGridActions($event)" [show-print-button]="false">
+    </danphe-grid>
+  </div>
+</div>
+
+<!--Start Add, Update Popup code-->
+<!--Model Box Starting Here-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showAddEditPage">
+  <div class="portlet-body form">
+    <!--Model Box Body Start-->
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3> <span *ngIf="!IsUpdate">Add Template</span> <span *ngIf="IsUpdate">Update Template</span> </h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div class="form-body form-horizontal hm-form">
+            <div class="row">
+              <!--              <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>-->
+
+              <div class="col-md-6 col-xs-12">
+                <form [formGroup]="currentTemplate.DynamicTemplateValidator">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Template Type<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <select id="id_select_template_templateTypeName" class="form-control" formControlName="TemplateTypeId" id="TemplateTypeId"
+                              [attr.disabled]="IsUpdate ? true: null">
+                        <option *ngFor="let templateType of templateTypeList" [value]="templateType.TemplateTypeId">{{templateType.TemplateTypeName }}
+                        </option>
+                      </select>
+                      <span class="color-red font-sm"
+                            [hidden]="currentTemplate.IsValidCheck('TemplateTypeId','required') || !(currentTemplate.IsDirty('TemplateTypeId'))">template
+                        type required</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Template Name<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" name="TemplateName" required value="" class="form-control" maxlength="100"
+                             [(ngModel)]="currentTemplate.TemplateName" id="TemplateName" formControlName="TemplateName"
+                             placeholder="template name" (keyup.enter)="FocusElementById('Description')" />
+                      <span class="color-red font-sm"
+                            [hidden]="currentTemplate.IsValidCheck('TemplateName','required') || !(currentTemplate.IsDirty('TemplateName'))">template
+                        name required</span>
+                    </div>
+                  </div>
+                </form>
+                <div class="form-group">
+                  <label class="control-label col-md-4">Description<b>:</b></label>
+                  <div class="col-md-8">
+                    <textarea name="Description" class="form-control" maxlength="100"
+                              [(ngModel)]="currentTemplate.Description" id="Description" placeholder="Enter descriptions here"
+                              (keyup.enter)="FocusElementById('TemplateCode')">
+                      </textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 col-xs-12">
+                <form [formGroup]="currentTemplate.DynamicTemplateValidator">
+                  <div class="form-group">
+                    <label class="control-label col-md-4">Template Code<sup>*</sup><b>:</b></label>
+                    <div class="col-md-8">
+                      <input type="text" id="id_input_template_templateCode" name="TemplateCode" required value="" class="form-control" maxlength="30"
+                             [(ngModel)]="currentTemplate.TemplateCode" id="TemplateCode" formControlName="TemplateCode"
+                             placeholder="enter template code" (keyup.enter)="FocusElementById('TemplateContent')"
+                             [attr.disabled]="IsUpdate ? true: null " />
+                      <span class="color-red font-sm"
+                            [hidden]="currentTemplate.IsValidCheck('TemplateCode','required') || !(currentTemplate.IsDirty('TemplateCode'))">template
+                        code required</span>
+                    </div>
+                  </div>
+                </form>
+                <div class="form-group">
+                  <label class="control-label col-md-4">Default For This Type<b>:</b></label>
+                  <div class="col-md-8">
+                    <div class="input-group">
+                      <div class="icheck-inline">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input id="id_input_template_isDefaultForThisType" name="IsDefaultForThisType" type="checkbox" value=""
+                                 [(ngModel)]="currentTemplate.IsDefaultForThisType">
+                          <span></span> </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-12">
+                <div class="form-group text-center">
+                  <div class="col-md-12">
+                    <label class="control-label no-padding" style="font-size: 15px;">Print Format <b>:</b> </label>
+                    <span class="color-red font-sm" *ngIf="!isValidTemplate">print format required</span>
+                    <br>
+                    <danphe-ckeditor [readonly]="false" (get-html-content)="onChangeEditorData($event)"
+                                     [set-html-content]="currentTemplate.PrintContentHTML" id="TemplateContent"
+                                     (keyup.enter)="FocusElementById('Add')"> </danphe-ckeditor>
+                  </div>
+                </div>
+              </div>
+              <!--              <div class="col-md-1 hidden-xs hidden-sm" style="margin-right: 24px;"> </div>-->
+            </div>
+          </div>
+          <div class="panel-footer">
+            <input type="button" id="id_button_template_addNewTemplate" class="btn green btn-success margin-7-hr" *ngIf="!IsUpdate"
+                   (click)="AddNewTemplate()"
+                   value="Add" id="Add" />
+            <input type="button" id="id_button_template_update" class="btn green btn-success margin-7-hr" *ngIf="IsUpdate" (click)="Update()"
+                   value="Update" id="Add" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--</form>-->
+    <!--Model Box Body End-->
+  </div>
+</div>
+<!--End Add, Update Popup code-->
+
+
+<field-mapping *ngIf="showFieldMappingPage" [template-id]="TemplateId" [template-name]="TemplateName" (call-back-popup-close)="ClosePopup()">
+
+</field-mapping>

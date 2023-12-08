@@ -1702,8 +1702,8 @@ namespace DanpheEMR.DalLayer
         {
             List<SqlParameter> paramList = new List<SqlParameter>()
             {
-                new SqlParameter("@FromDate",fromdate),
-                new SqlParameter("@ToDate", todate)
+                new SqlParameter("@fromDate",fromdate),
+                new SqlParameter("@toDate", todate)
             };
             RadiologyDbContext radiologyDbContext = new RadiologyDbContext(this.connStr);
             DataTable data = DALFunctions.GetDataTableFromStoredProc("SP_Report_Radiology_Film_Type_Count", paramList, radiologyDbContext);
@@ -2029,7 +2029,13 @@ namespace DanpheEMR.DalLayer
 
         }
         #endregion
+        #region Inpatient Outstanding Report
+        public DataTable InpatientOutstandingReport(string Operator,decimal? Amount)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@Operator", Operator), new SqlParameter("@Amount", Amount) };
+            DataTable data = DALFunctions.GetDataTableFromStoredProc("SP_RPT_Admission_InPatientOutstandingReport", paramList, this);
+            return data;
+        }
+        #endregion
     }
-
-
 }

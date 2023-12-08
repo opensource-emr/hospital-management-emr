@@ -19,10 +19,13 @@ import { ImagingDLService } from "../../radiology/shared/imaging.dl.service";
 import { SecurityService } from "../../security/shared/security.service";
 import { NursingDLService } from "./nursing.dl.service";
 
-import { Subject } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { NotesModel } from "../../clinical-notes/shared/notes.model";
 import { ClinicalDLService } from "../../clinical/shared/clinical.dl.service";
+import { DanpheHTTPResponse } from "../../shared/common-models";
 import { DrugsRequisitonModel } from "../shared/drugs-requsition.model";
+import { DietType } from "./diet-type.model";
+import { ConsultationRequestModel } from "./consultation-request.model";
 @Injectable()
 export class NursingBLService {
 
@@ -503,5 +506,69 @@ export class NursingBLService {
     return this.nursingDLService.UpdateExchangedDoctorDepartmentDetails(exchangedDoctorDepartment).map((responseData) => {
       return responseData;
     })
+  }
+  public GetAllDietTypes() {
+    return this.nursingDLService.GetAllDietTypes().map((responseData) => {
+      return responseData;
+    })
+  }
+  public GetAllInpatientListWithDietDetail(wardId: number) {
+    return this.nursingDLService.GetAllInpatientListWithDietDetail(wardId).map((responseData) => {
+      return responseData;
+    })
+  }
+
+  public GetPatientDietHistory(PatientVisitId: number) {
+    return this.nursingDLService.GetPatientDietHistory(PatientVisitId).map((responseData) => {
+      return responseData;
+    })
+  }
+  public AddPatientDietType(diet: DietType) {
+    return this.nursingDLService.AddPatientDietType(diet).map((responseData) => {
+      return responseData;
+    })
+    }
+
+    public GetConsultationRequestsByPatientVisitId(PatientVisitId: number): Observable<DanpheHTTPResponse> {
+        return this.nursingDLService.GetConsultationRequestsByPatientVisitId(PatientVisitId).map((responseData) => {
+            return responseData;
+        });
+    }
+
+    public GetPatientDetailsByPatientVisitIdForConsultationRequest(PatientVisitId: number): Observable<DanpheHTTPResponse> {
+        return this.nursingDLService.GetPatientDetailsByPatientVisitIdForConsultationRequest(PatientVisitId).map((responseData) => {
+            return responseData;
+        });
+    }
+
+    public GetAllApptDepartment(): Observable<DanpheHTTPResponse> {
+        return this.nursingDLService.GetAllApptDepartment().map((responseData) => {
+            return responseData;
+        });
+    }
+
+    public GetAllAppointmentApplicableDoctor(): Observable<DanpheHTTPResponse> {
+        return this.nursingDLService.GetAllAppointmentApplicableDoctor().map((responseData) => {
+            return responseData;
+        });
+    }
+
+    public AddNewConsultationRequest(newConsultationRequest: ConsultationRequestModel): Observable<DanpheHTTPResponse> {
+        return this.nursingDLService.AddNewConsultationRequest(newConsultationRequest).map((responseData) => {
+            return responseData;
+        })
+    }
+
+    public ResponseConsultationRequest(responseConsultationRequest: ConsultationRequestModel): Observable<DanpheHTTPResponse> {
+        return this.nursingDLService.ResponseConsultationRequest(responseConsultationRequest).map((responseData) => {
+            return responseData;
+        })
+    }
+  public GetInvestigationResults(FromDate, ToDate, patientId, patientVisitId) {
+    return this.nursingDLService
+      .GetInvestigationResults(FromDate, ToDate, patientId, patientVisitId)
+      .map((responseData) => {
+        return responseData;
+      });
   }
 }

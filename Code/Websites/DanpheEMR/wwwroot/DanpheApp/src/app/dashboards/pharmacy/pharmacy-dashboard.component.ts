@@ -4,7 +4,7 @@ import { PharmacyBLService } from '../../pharmacy/shared/pharmacy.bl.service';
 import { DanpheHTTPResponse } from '../../shared/common-models';
 import { ENUM_DanpheHTTPResponseText } from '../../shared/shared-enums';
 import { BarchartModel, CardCalculationModel, DateRange, MedicineSaleModel, MembershipwiseMedicineSaleModel } from '../shared/pharmacy-dashboard.model';
-import { CoreService } from '../../../app/core/shared/core.service';
+
 
 
 @Component({
@@ -27,9 +27,7 @@ export class PharmacyDashboardComponent {
   MembershipwiseMedicineSales: Array<MembershipwiseMedicineSaleModel> = new Array<MembershipwiseMedicineSaleModel>();
   MedicineSolds: Array<MedicineSaleModel> = new Array<MedicineSaleModel>();
 
-  constructor(public pharmacyBLService: PharmacyBLService,
-   public coreService:CoreService ) 
-    { }
+  constructor(public pharmacyBLService: PharmacyBLService) { }
 
   ngOnInit(): void {
   }

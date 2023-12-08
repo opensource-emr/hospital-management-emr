@@ -1,10 +1,16 @@
 import * as moment from 'moment/moment';
 import { SecurityService } from '../../security/shared/security.service';
 import { CommonFunctions } from '../../shared/common.functions';
+
+
 export default class PHRMGridColumns {
-    static securityService
-    constructor(private _securityService: SecurityService) {
+    static securityService;
+
+
+    constructor(private _securityService: SecurityService,
+        ) {
         PHRMGridColumns.securityService = this._securityService;
+       
     }
     static GenericList = [
         { headerName: "Generic Name", field: "GenericName", width: 120 },
@@ -30,7 +36,7 @@ export default class PHRMGridColumns {
         { headerName: "ContactNo", field: "ContactNo", width: 100 },
         { headerName: "Description", field: "Description", width: 100 },
         { headerName: "City", field: "City", width: 100 },
-        { headerName: "Pan No.", field: "PANNumber", width: 100 },
+        { headerName: "PAN No", field: "PANNumber", width: 100 },
         { headerName: "ContactAddress", field: "ContactAddress", width: 100 },
         { headerName: "Email", field: "Email", width: 100, cellStyle: PHRMGridColumns.UserGridCellStyle },
         { headerName: "CreditPeriod", field: "CreditPeriod", width: 100 },

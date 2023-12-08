@@ -1,14 +1,14 @@
 <div class="row">
     <div class="col-md-6" style="text-align: left;">
         <a feature="button" class="btn blue bordered" (click)="AddMunicipality()"><i class="fa fa-plus"></i>Add
-            Municipality</a>
+            {{GeneralFieldLabel.Municipality}} </a>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-12 col-xs-12 col-sm-12">
         <danphe-grid [grid-colDefaults]="municipalityGridColumns" [grid-data]="municipalityList"
-            (grid-actions)="MunicipalityGridActions($event)" [show-print-button]="false">
+                     (grid-actions)="MunicipalityGridActions($event)" [show-print-button]="false">
         </danphe-grid>
     </div>
 </div>
@@ -21,15 +21,15 @@
                 <div class="modelbox-div clearfix">
                     <div class="caption custom-caption">
                         <h3 *ngIf="selectedMunicipality && selectedMunicipality.MunicipalityId"> <span>Update New
-                                Municipality</span></h3>
+                                {{GeneralFieldLabel.Municipality}}</span></h3>
                         <h3 *ngIf="!selectedMunicipality || !selectedMunicipality.MunicipalityId"> <span>Add New
-                                Municipality</span></h3>
+                                {{GeneralFieldLabel.Municipality}}</span></h3>
                         <a class="btn btn-danger" (click)="CloseAddUpdatePopUp()" title="Cancel">X</a>
                     </div>
 
                     <div class="col-md-12">
                         <municipality-add [selectedMunicipality]="selectedMunicipality"
-                            (callback-Add)="CloseAddUpdatePopUp($event)">
+                                          (callback-Add)="CloseAddUpdatePopUp($event)">
                         </municipality-add>
                     </div>
                 </div>
@@ -49,17 +49,17 @@
 
                     <div class="modelbox-body">
                         <div class="row">
-                            <div class="col-md-12">Are you sure you want to disable this municipality ?</div>
+                            <div class="col-md-12">Are you sure you want to disable this {{GeneralFieldLabel.Municipality}} ?</div>
                         </div>
                     </div>
                     <div class="modelbox-footer">
                         <div class="all-buttons text-right">
                             <button type="button" class="btn btn-primary btn-sm margin-7-hr"
-                                (click)="DisabeleEnableMunicipality()">
+                                    (click)="DisabeleEnableMunicipality()">
                                 Proceed
                             </button>
                             <button type="button" class="btn btn-cancel btn-sm margin-7-hr"
-                                (click)="showDisableAlert=false;">
+                                    (click)="showDisableAlert=false;">
                                 Close
                             </button>
                         </div>

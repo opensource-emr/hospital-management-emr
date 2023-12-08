@@ -12,9 +12,7 @@
 </div>
 <div class="row" *ngIf="showReturnList">
   <div class="col-lg-12 col-sm-12">
-    <danphe-grid [grid-colDefaults]="WardInventoryReturnGridColumns" [grid-data]="ReturnGridDataFiltered" [show-CustomDate]="true"
-                 [rangeType]="dateRange" [NepaliDateInGridParams]="NepaliDateInGridSettings" (grid-actions)="ReturnGridAction($event)"
-                 (onDateChange)="onDateChange($event)"> </danphe-grid>
+    <danphe-grid [grid-colDefaults]="WardInventoryReturnGridColumns" [grid-data]="ReturnGridDataFiltered" [show-CustomDate]="true" [rangeType]="dateRange" [NepaliDateInGridParams]="NepaliDateInGridSettings" (grid-actions)="ReturnGridAction($event)" (onDateChange)="onDateChange($event)"> </danphe-grid>
   </div>
 </div>
 <inventory-return-form *ngIf="showCreateReturn" (callback-new-req)="CallBackNewReturn($event)">
@@ -70,7 +68,8 @@
           </div>
           <div class="right" style="text-align:right;">
             <!-- <p *ngIf="issueNo!=null">Issue No:<b> {{issueNo}}</b></p> -->
-            <p>Return Date:<b> {{returnDetail.ReturnDate| date : 'mediumDate'}}</b></p>
+            <p>Return Date:<b> {{returnDetail.ReturnDate| date : 'mediumDate'}}</b> <i *ngIf="returnDate"> 
+                {{returnDate | nepaliDate:'format':'YYYY-MM-DD'}}  </i> </p>
           </div>
         </div>
         <div class="col-md-12">

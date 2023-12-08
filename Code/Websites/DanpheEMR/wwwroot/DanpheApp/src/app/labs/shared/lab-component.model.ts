@@ -67,6 +67,7 @@ export class LabTestComponent {
   public CalculationFormula: string = "";
 
   public FormulaDescription: string = "";
+  public MachineResultIndicator: string = "";
   public IsDirty(fieldname): boolean {
     if (fieldname == undefined) {
       return this.ComponentValidator.dirty;

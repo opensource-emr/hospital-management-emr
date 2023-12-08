@@ -9,6 +9,7 @@ import { CommonFunctions } from '../../../shared/common.functions';
  */
 
 export class GovINSGridColumnSettings {
+
   constructor(public coreService: CoreService) {
 
   }
@@ -31,7 +32,7 @@ export class GovINSGridColumnSettings {
       cellRenderer: this.BillingSearchActionsRenderer
     }
 
-  ]
+  ];
 
   AgeSexRendererPatient(params) {
     let dob = params.data.DateOfBirth;
@@ -182,7 +183,7 @@ export class GovINSGridColumnSettings {
     },
     { headerName: "User", field: "CreatedBy", width: 70, cellRenderer: GovINSGridColumnSettings.IPBillItemRenderer_CreatedBy },
     { headerName: "Modified By", field: "", width: 110, cellRenderer: GovINSGridColumnSettings.IPBillItemRenderer_ModifiedBy }
-  ]
+  ];
 
   static IPBillItemRenderer_CreatedBy(params) {
     if (params.data) {

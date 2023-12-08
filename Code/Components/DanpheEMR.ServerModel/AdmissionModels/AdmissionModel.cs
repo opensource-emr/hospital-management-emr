@@ -82,6 +82,8 @@ namespace DanpheEMR.ServerModel
         public virtual PatientSchemeMapModel PatientSchemesMap { get; set; }
         [NotMapped]
         public CareofPerson_DTO CareTaker { get; set; }
+        public bool IsProvisionalDischarge { get; set; }//Krishna, 29thAug'23, This will track Provisional Discharge
+        public bool IsProvisionalDischargeCleared { get; set; }//Krishna, 29thAug'23, This will track Whether Provisional Discharge is cleared or not.
 
 
     }

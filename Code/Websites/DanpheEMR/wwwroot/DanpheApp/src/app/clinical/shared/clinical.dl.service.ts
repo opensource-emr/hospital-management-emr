@@ -1,49 +1,41 @@
-import { Injectable, Directive } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 
-import { FamilyHistory } from './family-history.model';
-import { SocialHistory } from './social-history.model';
-import { SurgicalHistory } from './surgical-history.model';
 
-import { HomeMedication } from './home-medication.model';
-import { MedicationPrescription } from './medication-prescription.model';
 
-import { Vitals } from './vitals.model';
-import { Allergy } from './allergy.model';
-import { InputOutput } from './input-output.model';
 
-import { ActiveMedical } from './active-medical.model';
-import { PastMedical } from './past-medical.model';
-import { RefractionModel } from '../eye-examination/shared/Refraction.model';
-import { EyeVisuMaxModel } from '../eye-examination/shared/EyeVisuMax.model';
-import { SmileIncisionsModel } from '../eye-examination/shared/SmileIncisions.model';
-import { ORAModel } from '../eye-examination/shared/ORA.model';
-import { WavefrontModel } from '../eye-examination/shared/Wavefront.model';
-import { Pachymetry } from '../eye-examination/shared/Pachymetry.model';
-import { AblationProfileModel } from '../eye-examination/shared/AblationProfile.model';
-import { LaserDataEntryModel } from '../eye-examination/shared/LaserData.model';
-import { PreOPPachymetryModel } from '../eye-examination/shared/PreOP-Pachymetry.model';
-import { LasikRSTModel } from '../eye-examination/shared/LasikRST.model';
-import { SmileSettingsModel } from '../eye-examination/shared/SmileSettings.model';
-import { EyeModel } from '../eye-examination/shared/Eye.model';
-import { AcceptanceModel } from '../eye-examination/prescription-slip/shared/acceptance.model';
-import { HistoryModel } from '../eye-examination/prescription-slip/shared/history.model';
-import { DilateModel } from '../eye-examination/prescription-slip/shared/dilate.model';
+import { NotesModel } from '../../clinical-notes/shared/notes.model';
+import { ClinicalSubjectivePrescriptionNotes } from '../../clinical-notes/shared/subjective-note.model';
 import { IOPModel } from '../eye-examination/prescription-slip/shared/IOP.model';
+import { PrescriptionSlipModel } from '../eye-examination/prescription-slip/shared/PrescriptionSlip.model';
+import { TBUTModel } from '../eye-examination/prescription-slip/shared/TBUT.model';
+import { AcceptanceModel } from '../eye-examination/prescription-slip/shared/acceptance.model';
+import { DilateModel } from '../eye-examination/prescription-slip/shared/dilate.model';
+import { HistoryModel } from '../eye-examination/prescription-slip/shared/history.model';
 import { PlupModel } from '../eye-examination/prescription-slip/shared/plup.model';
 import { RetinoscopyModel } from '../eye-examination/prescription-slip/shared/retinoscopy.model';
 import { SchrimeModel } from '../eye-examination/prescription-slip/shared/schrime.model';
 import { VaUnaidedModel } from '../eye-examination/prescription-slip/shared/va-unaided.model';
-import { PrescriptionSlipModel } from '../eye-examination/prescription-slip/shared/PrescriptionSlip.model';
-import { TBUTModel } from '../eye-examination/prescription-slip/shared/TBUT.model';
-import { ClinicalSubjectivePrescriptionNotes } from '../../clinical-notes/shared/subjective-note.model';
-import { NotesModel } from '../../clinical-notes/shared/notes.model';
+import { AblationProfileModel } from '../eye-examination/shared/AblationProfile.model';
+import { EyeModel } from '../eye-examination/shared/Eye.model';
+import { EyeVisuMaxModel } from '../eye-examination/shared/EyeVisuMax.model';
+import { LaserDataEntryModel } from '../eye-examination/shared/LaserData.model';
+import { LasikRSTModel } from '../eye-examination/shared/LasikRST.model';
+import { ORAModel } from '../eye-examination/shared/ORA.model';
+import { Pachymetry } from '../eye-examination/shared/Pachymetry.model';
+import { PreOPPachymetryModel } from '../eye-examination/shared/PreOP-Pachymetry.model';
+import { RefractionModel } from '../eye-examination/shared/Refraction.model';
+import { SmileIncisionsModel } from '../eye-examination/shared/SmileIncisions.model';
+import { SmileSettingsModel } from '../eye-examination/shared/SmileSettings.model';
+import { WavefrontModel } from '../eye-examination/shared/Wavefront.model';
+import { DanpheHTTPResponse } from '../../shared/common-models';
 
 @Injectable()
 export class ClinicalDLService {
   public options = {
     headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
   };
+  public optionJson = { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) };
   constructor(public http: HttpClient) {
   }
   //family-history
@@ -80,8 +72,8 @@ export class ClinicalDLService {
   //   return this.http.get<any>("/api/Clinical?masterId=" + "&reqType=getrefraction", this.options);
   // }
   //input-output
-  public GetPatientInputOutputList(patientVisitId: number) {
-    return this.http.get<any>("/api/Clinical/InputOutput?patientVisitId=" + patientVisitId, this.options);
+  public GetPatientInputOutputList(patientVisitId: number, fromDate: string, toDate: string) {
+    return this.http.get<any>("/api/Clinical/InputOutput?patientVisitId=" + patientVisitId + "&fromDate=" + fromDate + "&toDate=" + toDate, this.options);
   }
   //vitals
   public GetPatientVitalsList(patientVisitId: number) {
@@ -500,5 +492,17 @@ export class ClinicalDLService {
     let data = JSON.stringify(NoteMaster);
     return this.http.put<any>("/api/Clinical/PrescriptionNote", data, this.options);
   }
+  public PostBloodSugar(currentInputOutput) {
+    return this.http.post<any>("/api/Clinical/bloodsugar", currentInputOutput, this.optionJson);
+  }
 
+  public GetPatientAdmissionInfo(patientVisitId: number) {
+    return this.http.get<any>("/api/Clinical/patient-admission-info?patientVisitId=" + patientVisitId, this.options);
+  }
+  public GetPatientBloodSugarList(patientVisitId: number) {
+    return this.http.get<any>("/api/Clinical/bloodsugar?patientVisitId=" + patientVisitId, this.options);
+  }
+  public GetClinicalIntakeOutputParameterList() {
+    return this.http.get<DanpheHTTPResponse>("/api/Clinical/getClinicalIntakeOutputParameter", this.options);
+  }
 }

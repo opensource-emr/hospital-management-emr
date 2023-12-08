@@ -39,8 +39,8 @@ namespace DanpheEMR.Controllers
             _admissionDbContext = new AdmissionDbContext(connString);
             _billingDbContext = new BillingDbContext(base.connString);
             _visitDbContext = new VisitDbContext(base.connString);
-             _masterDbContext= new MasterDbContext(connString);
-           _pharmacyDbContext = new PharmacyDbContext(connString);
+            _masterDbContext = new MasterDbContext(connString);
+            _pharmacyDbContext = new PharmacyDbContext(connString);
         }
 
 
@@ -59,17 +59,23 @@ namespace DanpheEMR.Controllers
         {
             //if (reqType == "otherRequestsOfPatient")
 
-            Func<object> func = () => (from billItemRequisition in _billingDbContext.BillItemRequisitions
-                                       where (billItemRequisition.PatientId == patientId
-                                       && billItemRequisition.PatientVisitId == patientVisitId
-                                       && (billItemRequisition.DepartmentName.ToLower() != "lab" && billItemRequisition.DepartmentName.ToLower() != "radiology"))
-                                       select billItemRequisition
-                                ).ToList();
+            //Func<object> func = () => (from billItemRequisition in _billingDbContext.BillItemRequisitions
+            //                           where (billItemRequisition.PatientId == patientId
+            //                           && billItemRequisition.PatientVisitId == patientVisitId
+            //                           && (billItemRequisition.DepartmentName.ToLower() != "lab" && billItemRequisition.DepartmentName.ToLower() != "radiology"))
+            //                           select billItemRequisition
+            //                    ).ToList();
+            Func<object> func = () => (from txnItms in _billingDbContext.BillingTransactionItems
+                                       join servDep in _billingDbContext.ServiceDepartment on txnItms.ServiceDepartmentId equals servDep.ServiceDepartmentId
+                                       where txnItms.BillStatus == ENUM_BillingStatus.provisional && txnItms.PatientId == patientId && txnItms.PatientVisitId == patientVisitId
+                                       && (String.IsNullOrEmpty(servDep.IntegrationName) ? "" : servDep.IntegrationName.ToLower()) != ENUM_IntegrationNames.LAB.ToLower()
+                                       && (String.IsNullOrEmpty(servDep.IntegrationName) ? "" : servDep.IntegrationName.ToLower()) != ENUM_IntegrationNames.Radiology.ToLower()
+                                       select txnItms).ToList();
 
 
             return InvokeHttpGetFunction(func);
         }
-       
+
         [HttpGet]
         [Route("TodaysVisits")]
         public IActionResult TodaysVisitList(DateTime toDate, string status)
@@ -79,7 +85,7 @@ namespace DanpheEMR.Controllers
             Func<object> func = () => GetTodaysVisitList(toDate, status, currentUser);
             return InvokeHttpGetFunction(func);
         }
-    
+
         [HttpGet]
         [Route("PastVisits")]
         public IActionResult PastVisits(DateTime fromDate, DateTime toDate)
@@ -89,7 +95,7 @@ namespace DanpheEMR.Controllers
             Func<object> func = () => GetPastVisitList(fromDate, toDate, currentUser);
             return InvokeHttpGetFunction(func);
         }
-      
+
         [HttpGet]
         [Route("DepartmentVisits")]
         public IActionResult DoctorDepartmentVisit(DateTime fromDate, DateTime toDate)
@@ -100,7 +106,7 @@ namespace DanpheEMR.Controllers
             return InvokeHttpGetFunction(func);
         }
 
-       
+
         [HttpGet]
         [Route("EmployeeDepartment")]
         public IActionResult DepartmentByEmployeeId(int employeeId)
@@ -121,7 +127,7 @@ namespace DanpheEMR.Controllers
         }
 
 
-       
+
         //[HttpGet]
         //public string Get(string reqType, string status, int patientId, int patientVisitId, DateTime? fromDate,
         //    DateTime? toDate, int employeeId)
@@ -429,7 +435,7 @@ namespace DanpheEMR.Controllers
             return InvokeHttpPostFunction(func);
         }
 
-       
+
 
 
         //[HttpPost]
@@ -469,23 +475,23 @@ namespace DanpheEMR.Controllers
         [Route("ReassignProvider")]
         public IActionResult ReassignProvider()
         {
-           // if (reqType == "reassignProvider")
-                String ipDataStr = this.ReadPostData();
+            // if (reqType == "reassignProvider")
+            String ipDataStr = this.ReadPostData();
             Func<object> func = () => PutReassignProvider(ipDataStr);
             return InvokeHttpPutFunction(func);
         }
-      
+
 
         [HttpPut]
         [Route("ChangeProvider")]
         public IActionResult ChangeProvider()
         {
             //if (reqType == "changeProvider")
-                String ipDataStr = this.ReadPostData();
+            String ipDataStr = this.ReadPostData();
             Func<object> func = () => UpdateProvider(ipDataStr);
             return InvokeHttpPutFunction(func);
         }
-       
+
         //[HttpPut]
         //public string Put()
         //{
@@ -495,53 +501,53 @@ namespace DanpheEMR.Controllers
         //        VisitDbContext dbContext = new VisitDbContext(base.connString);
         //        string str = this.ReadPostData();
         //        string reqType = this.ReadQueryStringData("reqType");
-                //string billingStatus = this.ReadQueryStringData("billingStatus");
-                //int patientVisitId = ToInt(this.ReadQueryStringData("billingStatus"));
-              //  bool continuedVisitStatus = ToBool(this.ReadQueryStringData("continuedVisitStatus"));
+        //string billingStatus = this.ReadQueryStringData("billingStatus");
+        //int patientVisitId = ToInt(this.ReadQueryStringData("billingStatus"));
+        //  bool continuedVisitStatus = ToBool(this.ReadQueryStringData("continuedVisitStatus"));
 
-                //if (reqType == "reassignProvider")
-                //{
-                //    VisitModel visitData = DanpheJSONConvert.DeserializeObject<VisitModel>(str);
-                //    visitData.ModifiedOn = System.DateTime.Now;
-                //    visitData.PerformerName = GetProviderName(visitData.PerformerId);
+        //if (reqType == "reassignProvider")
+        //{
+        //    VisitModel visitData = DanpheJSONConvert.DeserializeObject<VisitModel>(str);
+        //    visitData.ModifiedOn = System.DateTime.Now;
+        //    visitData.PerformerName = GetProviderName(visitData.PerformerId);
 
-                //    BillingDbContext billingDbContext = new BillingDbContext(base.connString);
+        //    BillingDbContext billingDbContext = new BillingDbContext(base.connString);
 
-                //    Boolean Flag = false;
-                //    Flag = VisitBL.ReAssignProviderTxn(dbContext, visitData, billingDbContext);
-                //    if (Flag)
-                //    {
-                //        responseData.Status = "OK";
-                //    }
-                //    else
-                //    {
-                //        responseData.Status = "Failed";
-                //    }
-                //}
-                //else
-                //if (reqType == "changeProvider")
-                //{
-                //    VisitModel data = DanpheJSONConvert.DeserializeObject<VisitModel>(str);
-                //    var visit = dbContext.Visits.Where(v => v.PatientVisitId == data.PatientVisitId).Select(p => p).FirstOrDefault();
-                //    visit.ModifiedBy = data.ModifiedBy;
-                //    visit.ModifiedOn = System.DateTime.Now;
-                //    visit.PerformerName = GetProviderName(data.PerformerId);
-                //    visit.PerformerId = data.PerformerId;
-                //    visit.Remarks = string.IsNullOrEmpty(visit.Remarks) ? data.Remarks : (visit.Remarks + data.Remarks);
+        //    Boolean Flag = false;
+        //    Flag = VisitBL.ReAssignProviderTxn(dbContext, visitData, billingDbContext);
+        //    if (Flag)
+        //    {
+        //        responseData.Status = "OK";
+        //    }
+        //    else
+        //    {
+        //        responseData.Status = "Failed";
+        //    }
+        //}
+        //else
+        //if (reqType == "changeProvider")
+        //{
+        //    VisitModel data = DanpheJSONConvert.DeserializeObject<VisitModel>(str);
+        //    var visit = dbContext.Visits.Where(v => v.PatientVisitId == data.PatientVisitId).Select(p => p).FirstOrDefault();
+        //    visit.ModifiedBy = data.ModifiedBy;
+        //    visit.ModifiedOn = System.DateTime.Now;
+        //    visit.PerformerName = GetProviderName(data.PerformerId);
+        //    visit.PerformerId = data.PerformerId;
+        //    visit.Remarks = string.IsNullOrEmpty(visit.Remarks) ? data.Remarks : (visit.Remarks + data.Remarks);
 
-                //    dbContext.Visits.Attach(visit);
-                //    dbContext.Entry(visit).Property(a => a.ModifiedBy).IsModified = true;
-                //    dbContext.Entry(visit).Property(a => a.ModifiedOn).IsModified = true;
-                //    dbContext.Entry(visit).Property(a => a.PerformerName).IsModified = true;
-                //    dbContext.Entry(visit).Property(a => a.PerformerId).IsModified = true;
-                //    dbContext.Entry(visit).Property(a => a.Remarks).IsModified = true;
+        //    dbContext.Visits.Attach(visit);
+        //    dbContext.Entry(visit).Property(a => a.ModifiedBy).IsModified = true;
+        //    dbContext.Entry(visit).Property(a => a.ModifiedOn).IsModified = true;
+        //    dbContext.Entry(visit).Property(a => a.PerformerName).IsModified = true;
+        //    dbContext.Entry(visit).Property(a => a.PerformerId).IsModified = true;
+        //    dbContext.Entry(visit).Property(a => a.Remarks).IsModified = true;
 
-                //    dbContext.SaveChanges();
+        //    dbContext.SaveChanges();
 
 
-                //    responseData.Status = "OK";
-                //    responseData.Results = visit.PerformerName;
-                //}
+        //    responseData.Status = "OK";
+        //    responseData.Results = visit.PerformerName;
+        //}
         //    }
         //    catch (Exception ex)
         //    {
@@ -648,6 +654,7 @@ namespace DanpheEMR.Controllers
                                      {
                                          MedicationId = itm.ItemId,
                                          MedicationName = itm.ItemName,
+                                         Dose = pres.Dosage,
                                          Frequency = pres.Frequency.HasValue ? pres.Frequency.Value.ToString() : "",
                                          Duration = pres.HowManyDays.Value,
                                          CreatedOn = pres.CreatedOn
@@ -665,14 +672,16 @@ namespace DanpheEMR.Controllers
                            select new
                            {
                                bed.BedNumber,
-                               ward.WardName
+                               ward.WardName,
+                               bed.BedId
                            }).FirstOrDefault();
             if (bedInfo != null)
             {
                 patientModel.BedNo = bedInfo.BedNumber;
                 patientModel.WardName = bedInfo.WardName;
+                patientModel.BedId = bedInfo.BedId;
             }
-            return  patientModel;
+            return patientModel;
         }
         private object GetTodaysVisitList(DateTime toDate, string status, RbacUser currentUser)
         {

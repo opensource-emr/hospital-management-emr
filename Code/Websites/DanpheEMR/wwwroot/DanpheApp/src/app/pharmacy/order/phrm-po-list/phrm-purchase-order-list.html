@@ -197,7 +197,7 @@
                         <p class="c_paragraphs" style="text-align: center;">Ph No: {{ headerDetail.tel }}</p>
                       </td>
                       <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
-                        <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;"><strong>PAN No.
+                        <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;"><strong>{{GeneralFieldLabel.PANNo}}
                             : {{ headerDetail.PANno }} </strong> </p>
                       </td>
                     </tr>
@@ -217,8 +217,8 @@
                               <p class="c_paragraphs">PO No.:<strong> {{PHRMPO.PurchaseOrderNo}}</strong></p>
                             </td>
                             <td colspan="6" style="text-align: right;">
-                              <p class="c_paragraphs">PO Date :<strong> {{PHRMPO.PODate | date : 'yyyy-MM-dd'}} &nbsp; ({{PHRMPO.PODate |
-                                  nepaliDate:'format':'YYYY-MM-DD'}} BS )</strong>
+                              <p class="c_paragraphs">PO Date :<strong> {{PHRMPO.PODate | date : 'yyyy-MM-dd'}} &nbsp; {{PHRMPO.PODate |
+                                  nepaliDate:'format':'YYYY-MM-DD'}} </strong>
                               </p>
                             </td>
                           </tr>
@@ -227,7 +227,7 @@
                               <p class="c_paragraphs">Supplier's Name : <strong>{{PHRMPO.SupplierName}}</strong></p>
                             </td>
                             <td colspan="6" style="text-align: right;">
-                              <p class="c_paragraphs">PAN No. :<strong>{{PHRMPO.PANNumber}}</strong></p>
+                              <p class="c_paragraphs">{{GeneralFieldLabel.PANNo}} :<strong>{{PHRMPO.PANNumber}}</strong></p>
                             </td>
                           </tr>
                           <tr>
@@ -243,8 +243,8 @@
                               <p class="c_paragraphs">Contact /Mobile Number : <strong>{{PHRMPO.ContactNo}}</strong></p>
                             </td>
                             <td colspan="6" style="text-align: right;">
-                              <p class="c_paragraphs">Delivery Date : <strong>{{PHRMPO.DeliveryDate | date : 'yyyy-MM-dd'}} ({{PHRMPO.DeliveryDate |
-                                  nepaliDate:'format':'YYYY-MM-DD'}} BS )</strong>
+                              <p class="c_paragraphs">Delivery Date : <strong>{{PHRMPO.DeliveryDate | date : 'yyyy-MM-dd'}} {{PHRMPO.DeliveryDate |
+                                  nepaliDate:'format':'YYYY-MM-DD'}} </strong>
                               </p>
                             </td>
                           </tr>

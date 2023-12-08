@@ -46,16 +46,26 @@ import { SettingsSharedModule } from "../settings-new/settings-shared.module";
 import { DanpheAutoCompleteModule } from "../shared/danphe-autocomplete/danphe-auto-complete.module";
 import { NursingOpdCheckinComponent } from "./check-in/nursing-opd-checkin.component";
 import { NursingOpdChekoutComponent } from './check-out/nursing-opd-chekout.component';
+import { ConsultationRequestViewPrintComponent } from "./consultation-requests/consultation-request-view-print/consultation-request-view-print.component";
+import { ConsultationRequestsComponent } from "./consultation-requests/consultation-requests.component";
+import { NewRequestComponent } from "./consultation-requests/new-request/new-request.component";
 import { ActivateWardComponent } from "./department/activate-ward/activate-ward.component";
 import { NursingReceiveNoteComponent } from "./department/nursing-receive-note.component";
 import { TransferredPatientPendingComponent } from "./department/transferred-patient-pending.component";
+import { AddPatientDietComponent } from "./diet-sheet/add-patient-diet.component";
+import { DietSheetComponent } from "./diet-sheet/diet-sheet.component";
+import { DietSheetPatientHistoryComponent } from "./diet-sheet/patient-history/diet-sheet-patient-history.component";
+import { DietSheetPrintComponent } from "./diet-sheet/print/diet-sheet-print.component";
 import { DrugRequestListComponent } from "./drugs-request/drug-request-list.component";
 import { ExchangeDoctorDepartmentComponent } from './exchange-doctor-department/exchange-doctor-department.component';
 import { NursingOpdFreeReferralComponent } from './free-referral/nursing-opd-free-referral.component';
+import { InvestigationResultsPrintComponent } from "./investigation-results/investigation-results-print/investigation-results-print.component";
+import { InvestigationResultsComponent } from "./investigation-results/investigation-results.component";
 import { DischargeSummaryListComponent } from "./nursing-discharge-summary/discharge-summary-list.component";
 import { NursingTransferComponent } from "./nursing-transfer/nursing-transfer.component";
 import { OPDTriageComponent } from "./opd-triage/opd-triage.component";
 import { NursingAddDiagnosisComponent } from "./shared/add-diagnosis/nursing-add-diagnosis.component";
+import { NursingService } from "./shared/nursing-service";
 import { WardSelectionGuardService } from "./shared/ward-selection-guard.service";
 import { NursingIPRequestComponent } from "./ward-billing/nursing-ip-request.component";
 
@@ -81,7 +91,8 @@ import { NursingIPRequestComponent } from "./ward-billing/nursing-ip-request.com
     VisitBLService,
     NoteTemplateBLService,
     MR_BLService,
-    MR_DLService
+    MR_DLService,
+    NursingService
   ],
   imports: [
     ReactiveFormsModule,
@@ -117,12 +128,22 @@ import { NursingIPRequestComponent } from "./ward-billing/nursing-ip-request.com
     TransferredPatientPendingComponent,
     DischargeSummaryListComponent,
     OPDTriageComponent,
+    DietSheetComponent,
+    DietSheetPrintComponent,
+    DietSheetPatientHistoryComponent,
+    AddPatientDietComponent,
+    OPDTriageComponent,
     NursingOpdCheckinComponent,
     NursingAddDiagnosisComponent,
     NursingOpdFreeReferralComponent,
     NursingOpdChekoutComponent,
     NursingOpdFreeReferralComponent,
-    ExchangeDoctorDepartmentComponent
+    ExchangeDoctorDepartmentComponent,
+    ConsultationRequestsComponent,
+    NewRequestComponent,
+    ConsultationRequestViewPrintComponent,
+    InvestigationResultsComponent,
+    InvestigationResultsPrintComponent
   ],
   bootstrap: [NursingMainComponent],
 })

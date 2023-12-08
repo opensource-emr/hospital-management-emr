@@ -93,7 +93,8 @@
     height: 100vh;
   }
 </style>
-<button class="btn btn-primary btn-sm" (click)="BackToViewNotes()" style="margin: 0 0 20px 0 !important"> <i class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;View Notes </button>
+<button class="btn btn-primary btn-sm" (click)="BackToViewNotes()" style="margin: 0 0 20px 0 !important"> <i
+     class="fa fa-backward"></i>&nbsp;&nbsp;&nbsp;View Notes </button>
 <div class="row">
   <div class="col-md-6">
     <div class="form-group">
@@ -116,7 +117,9 @@
 
                 </select>
           -->
-          <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selectedNoteType" [source]="noteTypeList" display-property-name="NoteType" value-property-name="NoteType" ngModelOptions="{standalone:true}" [list-formatter]="NoteTypeFormatter" placeholder="Select Note Type" style="width:100%;height:32px;" />
+          <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selectedNoteType" [source]="noteTypeList"
+                 display-property-name="NoteType" value-property-name="NoteType" ngModelOptions="{standalone:true}"
+                 [list-formatter]="NoteTypeFormatter" placeholder="Select Note Type" style="width:100%;height:32px;" />
         </div>
       </div>
     </div>
@@ -134,7 +137,9 @@
       <div class="row">
         <label class="control-label col-md-5">Secondary Doctor<b style="float:right;">:</b></label>
         <div class="col-md-7">
-          <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selectedSecondaryDoctor" [source]="DoctorList" placeholder="Doctor Name" ngModelOptions="{standalone:true}" display-property-name="PerformerName" value-property-name="PerformerName" [list-formatter]="DocListFormatter" max-num-list="15" style="width:100%;height:32px;" />
+          <input danphe-auto-complete onClick="this.setSelectionRange(0, this.value.length)" [(ngModel)]="selectedSecondaryDoctor"
+                 [source]="DoctorList" placeholder="Doctor Name" ngModelOptions="{standalone:true}" display-property-name="PerformerName"
+                 value-property-name="PerformerName" [list-formatter]="DocListFormatter" max-num-list="15" style="width:100%;height:32px;" />
           <!--
                 (focusout)="providersChanged()"
                 (valueChanged)="AssignSelectedSecondaryDoctor()"-->
@@ -154,7 +159,10 @@
       <div class="row">
         <label class="control-label col-md-5">Template<b style="float:right;">:</b></label>
         <div class="col-md-7">
-          <input danphe-auto-complete [disabled]="editMode" [(ngModel)]="selTemplateList" [source]="templateList" placeholder="Select Template" [ngModelOptions]="{standalone:true}" display-property-name="TemplateName" value-property-name="TemplateName" (valueChanged)="AssignSelectedTemplate($event)" [list-formatter]="TemplateListFormatter" max-num-list="9" style="width:100%;height:32px;" />
+          <input danphe-auto-complete [disabled]="editMode" [(ngModel)]="selTemplateList" [source]="templateList" placeholder="Select Template"
+                 [ngModelOptions]="{standalone:true}" display-property-name="TemplateName" value-property-name="TemplateName"
+                 (valueChanged)="AssignSelectedTemplate($event)" [list-formatter]="TemplateListFormatter" max-num-list="9"
+                 style="width:100%;height:32px;" />
 
           <!-- previously on autocomplete:
            onClick="this.select()"
@@ -171,16 +179,19 @@
   <freetext [patDetail]="patVisit" [editFreeText]="notes.FreeTextNote" (callback-freetextnotes)="CallBackFreeTexts($event)"> </freetext>
 </div>
 <div class="" *ngIf="showProcedureNote">
-  <procedure-notes [patDetail]="patVisit" [editProcedureNote]="notes.ProcedureNote" (callback-procedurenotes)="CallBackProcedureNotes($event)"> </procedure-notes>
+  <procedure-notes [patDetail]="patVisit" [editProcedureNote]="notes.ProcedureNote" (callback-procedurenotes)="CallBackProcedureNotes($event)">
+  </procedure-notes>
 </div>
 <div class="" *ngIf="showProgressNote">
-  <progress-note [patDetail]="patVisit" [editProgressNote]="notes.ProgressNote" (callback-progressnotes)="CallBackProgressNotes($event)"> </progress-note>
+  <progress-note [patDetail]="patVisit" [editProgressNote]="notes.ProgressNote" (callback-progressnotes)="CallBackProgressNotes($event)">
+  </progress-note>
 </div>
 <div class="" *ngIf="showEmergencyNote">
   <emergency-note [editErNote]="notes" (outPutErNote)="CallBackEmergencyNoteTemplate($event)"> </emergency-note>
 </div>
 <div class="note-panel" *ngIf="showDischargeSummaryAdd" style="margin-top:50px !important;">
-  <discharge-summary-add [selectedDischarge]="selectedPatient" [showDischargeSummary]="showDischargeSummaryAdd" [fromClinical]="true" (sendData)="CallBackDischargeTemplate($event)"> </discharge-summary-add>
+  <discharge-summary-add [selectedDischarge]="selectedPatient" [showDischargeSummary]="showDischargeSummaryAdd" [fromClinical]="true"
+                         (sendData)="CallBackDischargeTemplate($event)"> </discharge-summary-add>
 </div>
 
 <div class="" *ngIf="showPrescriptionNote">
@@ -191,12 +202,13 @@
 <!-- discharge summary component location:
     wwwroot\DanpheApp\src\app\discharge-summary\add-view-summary\discharge-summary-view.component.ts -->
 
-<div *ngIf=" (showHandP || showPrescriptionNote || showProgressNote || showFreeText|| showDischargeSummaryAdd || showProcedureNote ||showHandP || showEmergencyNote ) &&  !editMode " class="row">
+<div *ngIf=" (showHandP || showPrescriptionNote || showProgressNote || showFreeText|| showDischargeSummaryAdd || showProcedureNote ||showHandP || showEmergencyNote ) &&  !editMode "
+     class="row">
   <div class="col-md-12">
     <ul class="tem-action">
-      <li>
+      <!-- <li>
         <button class="btn blue"> Start (Sign) </button>
-      </li>
+      </li> -->
       <li>
         <button class="btn btn-success" (click)="SubmitTemplate(1)"> Submit </button>
       </li>

@@ -24,6 +24,7 @@ import { CoreService } from "../../../../core/shared/core.service";
 import { Patient } from "../../../../patients/shared/patient.model";
 import { PatientService } from "../../../../patients/shared/patient.service";
 import { CountrySubdivision } from "../../../../settings-new/shared/country-subdivision.model";
+import { GeneralFieldLabels } from "../../../../shared/DTOs/general-field-label.dto";
 import { DanpheCache, MasterType } from "../../../../shared/danphe-cache-service-utility/cache-services";
 import { MessageboxService } from "../../../../shared/messagebox/messagebox.service";
 import { GovInsuranceService } from "../../shared/ins-service";
@@ -51,7 +52,9 @@ export class GovInsuranceVisitPatientInfoComponent implements OnInit {
   public olderAddressList: Array<any> = [];//for Autocomplete of Address Field.
   public isPhoneMandatory: boolean = false;
 
+  //public nhifNumber: string = "";
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
 
   constructor(public insurnaceBLService: GovInsuranceBlService,
@@ -60,6 +63,15 @@ export class GovInsuranceVisitPatientInfoComponent implements OnInit {
     public renderer2: Renderer2,
     public msgBoxServ: MessageboxService,
     public coreService: CoreService, public patientService: PatientService) {
+
+    /*var nhifNumber = JSON.parse
+      (coreService.Parameters.find(p => p.ParameterGroupName == "NSHINumber" && p.ParameterName == "NSHILable").ParameterValue);
+    if (nhifNumber) {
+      this.nhifNumber = nhifNumber.NSHINo;
+    }*/
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
+
     this.LoadCalendarTypes();
     this.GetCountries();
     this.initialLoad = true;
@@ -370,7 +382,7 @@ export class GovInsuranceVisitPatientInfoComponent implements OnInit {
 
   SetFocusById(IdToBeFocused: string) {
     window.setTimeout(function () {
-      let elemToFocus = document.getElementById(IdToBeFocused)
+      let elemToFocus = document.getElementById(IdToBeFocused);
       if (elemToFocus != null && elemToFocus != undefined) {
         elemToFocus.focus();
       }

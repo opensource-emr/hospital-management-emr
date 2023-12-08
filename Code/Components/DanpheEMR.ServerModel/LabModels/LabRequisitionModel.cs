@@ -37,6 +37,7 @@ namespace DanpheEMR.ServerModel
         public int? SampleCreatedBy { get; set; }
         public string Comments { get; set; }
         public string RunNumberType { get; set; }  
+        public string ExternalLabSampleStatus { get; set; }  
         public bool IsSmsSend { get; set; }
         public List<LabTestComponentResult> LabTestComponentResults { get; set; }
 

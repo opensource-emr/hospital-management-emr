@@ -1,5 +1,6 @@
 ﻿using DanpheEMR.CommonTypes;
 using DanpheEMR.Core.Configuration;
+using DanpheEMR.Enums;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel;
 using DanpheEMR.Services.LIS;
@@ -31,12 +32,12 @@ namespace DanpheEMR.Controllers
             try
             {
                 responseData.Results = await _lisService.GetAllMasterDataAsync();
-                responseData.Status = "OK";
+                responseData.Status = ENUM_DanpheHttpResponseText.OK;
                 return Ok(responseData);
             }
             catch (Exception ex)
             {
-                responseData.Status = "Failed";
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
                 responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
                 return BadRequest(responseData);
             }
@@ -49,12 +50,12 @@ namespace DanpheEMR.Controllers
             try
             {
                 responseData.Results = await _lisService.GetAllMappedData();
-                responseData.Status = "OK";
+                responseData.Status = ENUM_DanpheHttpResponseText.OK;
                 return Ok(responseData);
             }
             catch (Exception ex)
             {
-                responseData.Status = "Failed";
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
                 responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
                 return BadRequest(responseData);
             }
@@ -67,12 +68,12 @@ namespace DanpheEMR.Controllers
             try
             {
                 responseData.Results = _lisService.GetAllNotMappedDataByMachineId(id, slectedMapId);
-                responseData.Status = "OK";
+                responseData.Status = ENUM_DanpheHttpResponseText.OK;
                 return Ok(responseData);
             }
             catch (Exception ex)
             {
-                responseData.Status = "Failed";
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
                 responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
                 return BadRequest(responseData);
             }
@@ -85,12 +86,12 @@ namespace DanpheEMR.Controllers
             try
             {
                 responseData.Results = _lisService.GetSelectedMappedDataById(id);
-                responseData.Status = "OK";
+                responseData.Status = ENUM_DanpheHttpResponseText.OK;
                 return Ok(responseData);
             }
             catch (Exception ex)
             {
-                responseData.Status = "Failed";
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
                 responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
                 return BadRequest(responseData);
             }
@@ -103,12 +104,12 @@ namespace DanpheEMR.Controllers
             try
             {
                 responseData.Results = await _lisService.GetMachineResults(machineId,fromDate,toDate);
-                responseData.Status = "OK";
+                responseData.Status = ENUM_DanpheHttpResponseText.OK;
                 return Ok(responseData);
             }
             catch (Exception ex)
             {
-                responseData.Status = "Failed";
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
                 responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
                 return BadRequest(responseData);
             }
@@ -121,12 +122,30 @@ namespace DanpheEMR.Controllers
             try
             {
                 responseData.Results = _lisService.GetAllMachines();
-                responseData.Status = "OK";
+                responseData.Status = ENUM_DanpheHttpResponseText.OK;
                 return Ok(responseData);
             }
             catch (Exception ex)
             {
-                responseData.Status = "Failed";
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
+                responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
+                return BadRequest(responseData);
+            }
+        }
+
+        [Route("GetResultByBarcodeNumber")]
+        [HttpGet]
+        public async Task<IActionResult> GetMachineResultByBarcodeNumber(Int64 BarcodeNumber)
+        {
+            try
+            {
+                responseData.Results = await _lisService.GetMachineResultByBarcodeNumber(BarcodeNumber);
+                responseData.Status = ENUM_DanpheHttpResponseText.OK;
+                return Ok(responseData);
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
                 responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
                 return BadRequest(responseData);
             }
@@ -153,12 +172,12 @@ namespace DanpheEMR.Controllers
                     }
                 }
                 _lisService.AddUpdateMapping(mapping);
-                responseData.Status = "OK";
+                responseData.Status = ENUM_DanpheHttpResponseText.OK;
                 return Ok(responseData);
             }
             catch (Exception ex)
             {
-                responseData.Status = "Failed";
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
                 responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
                 return BadRequest(responseData);
             }
@@ -180,18 +199,60 @@ namespace DanpheEMR.Controllers
                 var res = await _lisService.AddLISDataToDanphe(result);
                 if(res == false)
                 {
-                    responseData.Status = "Failed";
+                    responseData.Status = ENUM_DanpheHttpResponseText.Failed;
                     responseData.ErrorMessage = "Sorry, Result Of Some Patient Is Already Added.";
                 }
                 else
                 {
-                    responseData.Status = "OK";
+                    responseData.Status = ENUM_DanpheHttpResponseText.OK;
                 }
                 return Ok(responseData);
             }
             catch (Exception ex)
             {
-                responseData.Status = "Failed";
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
+                responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
+                return BadRequest(responseData);
+            }
+
+        }
+
+        [Route("MachineOrder")]
+        [HttpPost]
+        public async Task<IActionResult> AddMachineOrder([FromBody] List<Int64> reqIds)
+        {
+            try
+            {
+                var result = await _lisService.AddMachineOrder(reqIds);
+                responseData.Status = ENUM_DanpheHttpResponseText.OK;
+                responseData.Results = result;
+                return Ok(responseData);
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
+                responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
+                return BadRequest(responseData);
+            }
+        }
+
+        [Route("MachineResultSync")]
+        [HttpPut]
+        public async Task<IActionResult> UpdateMachineResultSyncStatus([FromBody] List<int> resultIds)
+        {
+            try
+            {
+                RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+                var res = await _lisService.UpdateMachineResultSyncStatus(resultIds);
+                if (res)
+                {
+                    responseData.Status = ENUM_DanpheHttpResponseText.OK;
+                }
+                return Ok(responseData);
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
                 responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
                 return BadRequest(responseData);
             }
@@ -207,12 +268,12 @@ namespace DanpheEMR.Controllers
             {
                 RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
                 _lisService.DeleteMapping(id, currentUser.EmployeeId);
-                responseData.Status = "OK";
+                responseData.Status = ENUM_DanpheHttpResponseText.OK;
                 return Ok(responseData);
             }
             catch (Exception ex)
             {
-                responseData.Status = "Failed";
+                responseData.Status = ENUM_DanpheHttpResponseText.Failed;
                 responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
                 return BadRequest(responseData);
             }

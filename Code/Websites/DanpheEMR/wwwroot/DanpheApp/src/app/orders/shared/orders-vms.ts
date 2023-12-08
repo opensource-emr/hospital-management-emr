@@ -12,11 +12,20 @@ export class OrderItemsVM {
 
   //these are only for medication items.
   public GenericId: null = null;
+  public GenericName: null = null;
   public IsGeneric: boolean = false;
   public Dosage: string = null;
   public Route: string = null;
   public Frequency: number = null;
   public FreqInWords: string = null;
+  public ServiceItemId: number = null;
+  public Price: number = 0;
+  public IntegrationItemId: number = null;
+  public ServiceDepartmentId: number = null;
+  public ServiceDepartmentName: string = "";
+  public SrvDeptIntegrationName: string = "";
+  public ItemCode: string = null;
+
 
 }
 

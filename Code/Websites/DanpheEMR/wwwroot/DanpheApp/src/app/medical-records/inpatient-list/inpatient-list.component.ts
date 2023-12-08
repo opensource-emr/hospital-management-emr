@@ -1,16 +1,14 @@
-import { Component, ChangeDetectorRef } from '@angular/core'
-import { RouterOutlet, RouterModule, Router } from '@angular/router';
+import { ChangeDetectorRef, Component } from '@angular/core';
+import { Router } from '@angular/router';
 //Security Service for Loading Child Route from Security Service
-import { SecurityService } from "../../security/shared/security.service";
-import * as moment from 'moment/moment';
-import * as _ from 'lodash';
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import { MR_BLService } from '../shared/mr.bl.service';
-import { CoreService } from '../../core/shared/core.service';
 import { HttpClient } from '@angular/common/http';
-import MRGridColumnSettings from '../shared/Mr-gridcol.settings';
-import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
+import { CoreService } from '../../core/shared/core.service';
+import { SecurityService } from "../../security/shared/security.service";
 import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import MRGridColumnSettings from '../shared/Mr-gridcol.settings';
+import { MR_BLService } from '../shared/mr.bl.service';
 
 @Component({
   templateUrl: "./inpatient-list.html",
@@ -161,6 +159,7 @@ export class MRInpatientListComponent {
           var ds = this.dischargedList.find(d => d.PatientVisitId == $event.medicalRecObj.PatientVisitId);
           if (ds) {
             ds.MedicalRecordId = $event.medicalRecObj.MedicalRecordId;
+            this.LoadAllDischargedPatients();
             //this refreshes the source array of discharged list so that grid reloads locally without calling the server api.
             this.dischargedList = this.dischargedList.slice();
           }
@@ -171,6 +170,7 @@ export class MRInpatientListComponent {
       else if ($event.action == 'update') {
         this.showAddMedicalRecords = false;
         this.showViewMedicalRecords = true;
+        this.LoadAllDischargedPatients();
       }
       else {
 

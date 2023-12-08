@@ -76,7 +76,10 @@ export class Bil_Print_Invoice_DefaultComponent {
   public showMunicipality: boolean = false;
   public CountryNepal: string = null;
   public OtherCurrencyDetail: OtherCurrencyDetail = { CurrencyCode: '', ExchangeRate: 0, BaseAmount: 0, ConvertedAmount: 0 };
+  public BillingPackageInvoiceColumnSelection = { Unit: false, Price: false, DiscountPercent: false, DiscountAmount: false, Amount: false, InvoiceSubTotal: false, InvoiceDiscount: false };
+  public BillingInvoiceDisplaySetting = { Unit: true, Price: true, DiscountPercent: true, DiscountAmount: true, Amount: true, InvoiceSubTotal: true, InvoiceDiscount: true };
 
+  public EnableEnglishCalendarOnly: boolean = false;
   constructor(
     public billingBLService: BillingBLService,
     public nepaliCalendarService: NepaliCalendarService,
@@ -91,8 +94,10 @@ export class Bil_Print_Invoice_DefaultComponent {
     public changeDetector: ChangeDetectorRef) {
     this.taxLabel = this.billingService.taxLabel;
     //this.currencyUnit = this.billingService.currencyUnit;
+    this.GetCalendarParameter();
     this.SetInvoiceLabelNameFromParam();
     this.GetBillingPackageInvoiceColumnSelection();
+    this.GetBillingInvoiceDisplaySetting();
     //this.ShowHideSubTotalAndDiscount();
     this.ShowProviderName = this.coreService.SetShowProviderNameFlag();
     this.LoadCreditInvoiceDisplaySettingsFromParameter();
@@ -118,23 +123,35 @@ export class Bil_Print_Invoice_DefaultComponent {
     }
     this.labCount = this.coreService.labTypes.length;
   }
-
+  GetCalendarParameter(): void {
+    const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+    if (param && param.ParameterValue) {
+      const paramValue = JSON.parse(param.ParameterValue);
+      this.EnableEnglishCalendarOnly = paramValue;
+    }
+  }
   ngAfterViewInit() {
-    var btnObj = document.getElementById('btnPrintReceipt');
+    let btnObj = document.getElementById('btnPrintReceipt');
     if (btnObj && this.focusPrintBtn) {
       btnObj.focus();
     }
   }
 
+  GetBillingInvoiceDisplaySetting() {
+    let currParam = this.coreService.Parameters.find(a => a.ParameterGroupName === "Billing" && a.ParameterName === "BillingInvoiceDisplaySettings");
+    if (currParam && currParam.ParameterValue) {
+      this.BillingInvoiceDisplaySetting = JSON.parse(currParam.ParameterValue);
+    }
+  }
   public SetInvoiceLabelNameFromParam() {
-    var currParam = this.coreService.Parameters.find(a => a.ParameterGroupName === "Billing" && a.ParameterName === "BillingInvoiceDisplayLabel");
+    let currParam = this.coreService.Parameters.find(a => a.ParameterGroupName === "Billing" && a.ParameterName === "BillingInvoiceDisplayLabel");
     if (currParam && currParam.ParameterValue) {
       this.Invoice_Label = currParam.ParameterValue;
     }
   }
-  public BillingPackageInvoiceColumnSelection: any = null;
+
   public GetBillingPackageInvoiceColumnSelection() {
-    var currParam = this.coreService.Parameters.find(a => a.ParameterGroupName === "Billing" && a.ParameterName === "BillingPackageInvoiceColumnSelection");
+    let currParam = this.coreService.Parameters.find(a => a.ParameterGroupName === "Billing" && a.ParameterName === "BillingPackageInvoiceColumnSelection");
     if (currParam && currParam.ParameterValue) {
       this.BillingPackageInvoiceColumnSelection = JSON.parse(currParam.ParameterValue);
     }
@@ -148,8 +165,13 @@ export class Bil_Print_Invoice_DefaultComponent {
   // }
 
   GetLocalDate(engDate: string): string {
-    let npDate = this.nepaliCalendarService.ConvertEngToNepDateString(engDate);
-    return npDate + " BS";
+    if (this.EnableEnglishCalendarOnly) {
+      return null;
+    } else {
+      let npDate = this.nepaliCalendarService.ConvertEngToNepDateString(engDate);
+      // return npDate + " BS";
+      return `(${npDate} BS)`;
+    }
   }
 
   public loading: boolean = false;

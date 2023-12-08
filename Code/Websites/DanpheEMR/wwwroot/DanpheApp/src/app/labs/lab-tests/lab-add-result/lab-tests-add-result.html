@@ -69,6 +69,12 @@
         <div *ngIf="patientService.globalPatient.WardName" class="info-item text-capitalize flex-2">
           <p><b>Prescribed By :</b> {{templateReport.Lookups.PrescriberName}}</p>
         </div>
+        <div *ngIf="showMachineResultLoadButton && !isEditResult" class="info-item text-capitalize">
+          <button class="btn green btn-success " [disabled]="loading" (click)="loading=true;LoadMachineResult()">
+            Load Machine Result
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
         <div class="info-item text-capitalize">
           <button class="btn green btn-success " [disabled]="loading" (click)="loading=true;Submit()">
             {{isEditResult == true ? 'Update' : 'Save Result' }}
@@ -169,29 +175,30 @@
                   </td>
                   <td width="270">
                     <div class="test-data-input-box">
+                      <span class="pull-left" style="color: green;">{{ comp.MachineResultIndicator }}</span>
                       <input autocomplete="off" id="inputbox{{i}}{{j}}{{k}}" (keyup.enter)="GoToNextBox(i,j,k)"
-                             class="cstm-res-input pull-left inputbox" [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'"
+                             class="cstm-res-input pull-right inputbox" [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'"
                              type="text" *ngIf="comp.ValueType == 'number'" tabindex="1" [(ngModel)]="comp.Value"
-                             formControlName="Value"
+                             formControlName="Value" style="width: 88% !important;"
                              (ngModelChange)="CheckComponentValueIsValid(test, comp, template.TemplateType,i,j,k)"
                              (focusout)="CheckIfAbnormal(comp,test)"
                              (focusout)="CheckForAutoCalculation(test,comp,test.Components)" />
                       <input class="testInput" autocomplete="off" id="inputbox{{i}}{{j}}{{k}}"
-                             (keyup.enter)="GoToNextBox(i,j,k)" class="cstm-res-input pull-left inputbox"
+                             (keyup.enter)="GoToNextBox(i,j,k)" class="cstm-res-input pull-right inputbox"
                              [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'" type="text"
                              *ngIf="(comp.ValueType==null || comp.ValueType == 'string') && (comp.ControlType==null || comp.ControlType=='TextBox')"
-                             tabindex="1" [(ngModel)]="comp.Value"
+                             tabindex="1" [(ngModel)]="comp.Value" style="width: 88% !important;"
                              (ngModelChange)="CheckComponentValueIsValid(test, comp, template.TemplateType,i,j,k)"
                              (focusout)="CheckIfAbnormal(comp,test)" formControlName="Value" placeholder="enter value" />
                       <span class="color-red font-sm" *ngIf="comp.ControlType=='Label'"></span>
-                      <div class="cstm-res-autocomplete pull-left"
+                      <div class="cstm-res-autocomplete pull-right"
                            *ngIf="comp.ValueType == 'string' && comp.ControlType=='SearchBox'">
                         <input autocomplete="off" danphe-auto-complete class="form-control cstm-res-input inputbox"
                                id="inputbox{{i}}{{j}}{{k}}" (keyup.enter)="GoToNextBox(i,j,k)"
                                [ngClass]="comp.IsValueValid ? 'bg-on' : 'bg-off'" formControlName="Value"
                                [(ngModel)]="comp.Value" [source]="comp.ValueDataSource" placeholder="enter text"
                                display-property-name="Value" value-property-name="null" no-match-found-text=" "
-                               onClick="this.select();"
+                               onClick="this.select();" style="width: 88% !important;"
                                (ngModelChange)="CheckComponentValueIsValid(test, comp, template.TemplateType,i,j,k)"
                                (focusout)="CheckIfAbnormal(comp,test)" [tab-to-select]="false" max-num-list="10"
                                tabindex="1" />

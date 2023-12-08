@@ -33,6 +33,7 @@ import { SSFEligibility, SsfEmployerCompany } from "../../../insurance/ssf/share
 import { Patient } from "../../../patients/shared/patient.model";
 import { BillingSchemeModel } from "../../../settings-new/shared/bill-scheme.model";
 import { PriceCategory } from "../../../settings-new/shared/price.category.model";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { NepaliCalendarService } from "../../../shared/calendar/np/nepali-calendar.service";
 import { NepaliDate } from "../../../shared/calendar/np/nepali-dates";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
@@ -151,6 +152,8 @@ export class AdmissionCreateComponent {
   public AdtBedFeatureSchemePriceCategoryMap = new Array<AdtBedFeatureSchemePriceCategoryMap_DTO>();
   public OriginalBedFeatureList = new Array<BedFeature>();
   public DisplaySchemePriceCategorySelection: boolean = false;
+  public PolicyNo: string = "";
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(
     public npCalendarService: NepaliCalendarService,
@@ -167,6 +170,8 @@ export class AdmissionCreateComponent {
     public visitBLService: VisitBLService,
     private _admissionMasterBlService: AdmissionMasterBlService,
     private _billingInvoiceBlService: BillingInvoiceBlService) {
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
     this.patientId = this.patientService.getGlobal().PatientId;
     if (this.securityService.getLoggedInCounter().CounterId < 1) {
       this.callbackservice.CallbackRoute = '/ADTMain/AdmissionSearchPatient';
@@ -403,10 +408,12 @@ export class AdmissionCreateComponent {
     this.selectedBillingRowData.splice(i, 1).slice();
   }
 
+
   public Initialize() {
     // this.CurrentAdmission.AdmissionDate = moment().format('YYYY-MM-DDTHH:mm:ss');
     this.CurrentAdmission.AdmissionDate = moment().format('YYYY-MM-DDTHH:mm');
     this.CurrentAdmission.PatientId = this.patientService.getGlobal().PatientId;
+    this.PolicyNo = this.patientService.getGlobal().PolicyNo;
     this.GetPatientLastVisitContext(this.CurrentAdmission.PatientId); //* Krishna, 13thApril'23, This method is responsible to fetch the latest VisitContext of a given  Patient.
     // let defaultMembershipType;
     // if (this.membershipTypeList && this.membershipTypeList.length > 0) {
@@ -553,7 +560,7 @@ export class AdmissionCreateComponent {
     this.admissionBLService.GetOldClaimCode(this.CurrentAdmission.PatientId)
       .subscribe(res => {
         if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
-          this.CurrentAdmission.ClaimCode = res.Results
+          this.CurrentAdmission.ClaimCode = res.Results;
         }
         else if (res.Status === ENUM_DanpheHTTPResponses.Failed) {
           this.CurrentAdmission.ClaimCode = res.Results;
@@ -635,7 +642,7 @@ export class AdmissionCreateComponent {
           this.msgBoxServ.showMessage("failed", ["Unable to get deposit detail"]);
           console.log(res.ErrorMessage);
         }
-      })
+      });
   }
 
   CalculatePatDepositBalance(data) {
@@ -1109,7 +1116,7 @@ export class AdmissionCreateComponent {
     this.selectedPerformer = "";
     if (deptId > 0) {
       this.filteredDocList = this.doctorList.filter(doc => doc.DepartmentId == deptId);
-      this.CurrentPatientBedInfo.RequestingDeptId = deptId
+      this.CurrentPatientBedInfo.RequestingDeptId = deptId;
       this.CurrentAdmission.RequestingDeptId = deptId;
     }
     else {
@@ -1127,7 +1134,7 @@ export class AdmissionCreateComponent {
       this.changeDetector.detectChanges();
       this.CurrentPatientBedInfo.BedId = null;
     } else if (bed === 0) {
-      this.msgBoxServ.showMessage("error", ["Cannot put bed value as 'Select bed'"])
+      this.msgBoxServ.showMessage("error", ["Cannot put bed value as 'Select bed'"]);
     }
   }
 
@@ -1215,7 +1222,7 @@ export class AdmissionCreateComponent {
     if (value !== null && value !== "") {
       //this.FilterDoctorList();
       if (value === "cheque" || value === "card") {
-        this.setFocusById('PaymentDetails')
+        this.setFocusById('PaymentDetails');
         return;
       }
       if (value.BedId !== null && this.CurrentAdmission.Ins_HasInsurance) {
@@ -1346,7 +1353,7 @@ export class AdmissionCreateComponent {
     if ($event && $event.MultiPaymentDetail) {
       this.CurrentAdmission.BillingTransaction.EmployeeCashTransaction = [];
       this.CurrentAdmission.BillingTransaction.EmployeeCashTransaction = $event.MultiPaymentDetail;
-      this.CurrentAdmission.BillingTransaction.PaymentDetails = $event.PaymentDetail
+      this.CurrentAdmission.BillingTransaction.PaymentDetails = $event.PaymentDetail;
     }
   }
   CreditOrganizationChanges($event) {
@@ -1569,6 +1576,7 @@ export class AdmissionCreateComponent {
     patientScheme.IpCreditLimit = +patientSchemeObj.IpCreditLimit; //*Krishna, 16thApril'23, + is used to typecast the value into number type (eg: null value cannot be mapped with non null property in server, hence need to send 0 instead of null)
     patientScheme.GeneralCreditLimit = +patientSchemeObj.GeneralCreditLimit; //*Krishna, 16thApril'23, + is used to typecast the value into number type (eg: null value cannot be mapped with non null property in server, hence need to send 0 instead of null)
     patientScheme.PolicyHolderEmployerName = patientSchemeObj.PolicyHolderEmployerName;
+    patientScheme.RegistrationCase = patientSchemeObj.RegistrationCase;
     patientScheme.LatestClaimCode = patientSchemeObj.LatestClaimCode;
     patientScheme.OtherInfo = patientSchemeObj.OtherInfo;
     patientScheme.PolicyHolderEmployerID = patientSchemeObj.PolicyHolderEmployerID;

@@ -12,6 +12,7 @@ using DanpheEMR.ServerModel.MasterModels;
 using DanpheEMR.ServerModel.MedicareModels;
 using DanpheEMR.ServerModel.PatientModels;
 using DanpheEMR.Services.Billing.DTO;
+using DanpheEMR.Services.SSF.DTO;
 using DanpheEMR.Sync.IRDNepal.Models;
 using DanpheEMR.Utilities;
 using Microsoft.AspNetCore.Mvc;
@@ -32,10 +33,12 @@ namespace DanpheEMR.Controllers.Billing
     {
         private readonly DischargeDbContext _dischargeDbContext;
         bool realTimeRemoteSyncEnabled = false;
+        bool RealTimeSSFClaimBooking = false;
 
         public DischargeBillingController(IOptions<MyConfiguration> _config) : base(_config)
         {
             realTimeRemoteSyncEnabled = _config.Value.RealTimeRemoteSyncEnabled;
+            RealTimeSSFClaimBooking = _config.Value.RealTimeSSFClaimBooking;
             _dischargeDbContext = new DischargeDbContext(connString);
         }
 
@@ -465,8 +468,7 @@ namespace DanpheEMR.Controllers.Billing
                 billTransaction = PostBillingTransaction(dischargeDbContext, billTransaction, currentUser, currentDate, DischargeStatementId);
 
                 //step:3-- if there's deposit balance, then add a return transaction to deposit table. 
-                if (billTransaction.PaymentMode != ENUM_BillPaymentMode.credit // "credit" 
-                    && billTransaction.DepositReturnAmount != null && billTransaction.DepositReturnAmount > 0)
+                if (billTransaction.DepositReturnAmount > 0 && ((billTransaction.PaymentMode != ENUM_BillPaymentMode.credit) || (billTransaction.IsCoPayment && billTransaction.PaymentMode == ENUM_BillPaymentMode.credit)))
                 {
                     var DefaultDepositHead = _dischargeDbContext.DepositHeadModels.FirstOrDefault(a => a.IsDefault == true);
                     var DepositHeadId = DefaultDepositHead != null ? DefaultDepositHead.DepositHeadId : 0;
@@ -530,18 +532,7 @@ namespace DanpheEMR.Controllers.Billing
                         });
                     }
 
-                    if (realTimeRemoteSyncEnabled)
-                    {
-                        if (billTransaction.Patient == null)
-                        {
-                            PatientModel pat = dischargeDbContext.Patient.Where(p => p.PatientId == billTransaction.PatientId).FirstOrDefault();
-                            billTransaction.Patient = pat;
-                        }
-                        //Sud:23Dec'18--making parallel thread call (asynchronous) to post to IRD. so that it won't stop the normal execution of logic.
-
-                        Task.Run(() => SyncBillToRemoteServer(billTransaction, "sales", dischargeDbContext));
-
-                    }
+                    
 
                     var allPatientBedInfos = dischargeDbContext.PatientBedInfos.Where(a => a.PatientVisitId == billTransaction.PatientVisitId
                                                                                     && a.IsActive == true).OrderByDescending(b => b.PatientBedInfoId)
@@ -562,6 +553,42 @@ namespace DanpheEMR.Controllers.Billing
                                 dischargeDbContext.SaveChanges();
                             }
                         });
+                    }
+                }
+
+                if (realTimeRemoteSyncEnabled)
+                {
+                    if (billTransaction.Patient == null)
+                    {
+                        PatientModel pat = dischargeDbContext.Patient.Where(p => p.PatientId == billTransaction.PatientId).FirstOrDefault();
+                        billTransaction.Patient = pat;
+                    }
+                    //Sud:23Dec'18--making parallel thread call (asynchronous) to post to IRD. so that it won't stop the normal execution of logic.
+
+                    Task.Run(() => SyncBillToRemoteServer(billTransaction, "sales", dischargeDbContext));
+
+                }
+
+                //Send to SSF Server for Real time ClaimBooking.
+                var patientSchemes = dischargeDbContext.PatientSchemes.Where(a => a.SchemeId == billTransaction.SchemeId && a.PatientId == billTransaction.PatientId).FirstOrDefault();
+                if (patientSchemes != null)
+                {
+                    int priceCategoryId = billTransaction.BillingTransactionItems[0].PriceCategoryId;
+                    var priceCategory = dischargeDbContext.PriceCategories.Where(a => a.PriceCategoryId == priceCategoryId).FirstOrDefault();
+                    if (priceCategory != null && priceCategory.PriceCategoryName.ToLower() == "ssf" && RealTimeSSFClaimBooking)
+                    {
+                        //making parallel thread call (asynchronous) to post to SSF Server. so that it won't stop the normal BillingFlow.
+                        SSFDbContext ssfDbContext = new SSFDbContext(connString);
+                        var billObj = new SSF_ClaimBookingBillDetail_DTO()
+                        {
+                            InvoiceNoFormatted = $"BL{billTransaction.InvoiceNo}",
+                            TotalAmount = (decimal)billTransaction.TotalAmount,
+                            ClaimCode = (long)billTransaction.ClaimCode
+                        };
+
+                        SSF_ClaimBookingService_DTO claimBooking = SSF_ClaimBookingService_DTO.GetMappedToBookClaim(billObj, patientSchemes);
+
+                        Task.Run(() => BillingBL.SyncToSSFServer(claimBooking, "billing", ssfDbContext, patientSchemes, currentUser));
                     }
                 }
             }
@@ -928,25 +955,28 @@ namespace DanpheEMR.Controllers.Billing
             return billingTransaction;
         }
 
-        private static void UpdatePatientSchemeMap(BillingTransactionModel billingTransaction, VisitModel patientVisit, DischargeDbContext DischargeDbContext, DateTime currentDate, RbacUser currentUser, BillingSchemeModel scheme)
+        private static void UpdatePatientSchemeMap(BillingTransactionModel billingTransaction, VisitModel patientVisit, DischargeDbContext dbContext, DateTime currentDate, RbacUser currentUser, BillingSchemeModel scheme)
         {
             PatientSchemeMapModel patientSchemeMap = new PatientSchemeMapModel();
-            patientSchemeMap = DischargeDbContext.PatientSchemes.Where(a => a.PatientId == billingTransaction.PatientId && a.SchemeId == patientVisit.SchemeId).FirstOrDefault();
+            patientSchemeMap = dbContext.PatientSchemes.Where(a => a.PatientId == billingTransaction.PatientId && a.SchemeId == patientVisit.SchemeId).FirstOrDefault();
 
-            if (scheme.IsGeneralCreditLimited && patientSchemeMap.GeneralCreditLimit > 0 && (decimal)billingTransaction.TotalAmount <= patientSchemeMap.GeneralCreditLimit)
+            if (scheme.IsGeneralCreditLimited && patientSchemeMap.GeneralCreditLimit > 0)
             {
-                patientSchemeMap.GeneralCreditLimit = patientSchemeMap.GeneralCreditLimit - (decimal)billingTransaction.TotalAmount;
-                patientSchemeMap.ModifiedOn = currentDate;
-                patientSchemeMap.ModifiedBy = currentUser.EmployeeId;
+                if ((decimal)billingTransaction.TotalAmount <= patientSchemeMap.GeneralCreditLimit)
+                {
+                    patientSchemeMap.GeneralCreditLimit = patientSchemeMap.GeneralCreditLimit - (decimal)billingTransaction.TotalAmount;
+                    patientSchemeMap.ModifiedOn = currentDate;
+                    patientSchemeMap.ModifiedBy = currentUser.EmployeeId;
 
-                DischargeDbContext.Entry(patientSchemeMap).Property(p => p.GeneralCreditLimit).IsModified = true;
-                DischargeDbContext.Entry(patientSchemeMap).Property(p => p.ModifiedOn).IsModified = true;
-                DischargeDbContext.Entry(patientSchemeMap).Property(p => p.ModifiedBy).IsModified = true;
-                DischargeDbContext.SaveChanges();
-            }
-            else
-            {
-                throw new Exception("General Credit Limit is less than total bill amount");
+                    dbContext.Entry(patientSchemeMap).Property(p => p.GeneralCreditLimit).IsModified = true;
+                    dbContext.Entry(patientSchemeMap).Property(p => p.ModifiedOn).IsModified = true;
+                    dbContext.Entry(patientSchemeMap).Property(p => p.ModifiedBy).IsModified = true;
+                    dbContext.SaveChanges();
+                }
+                else
+                {
+                    throw new Exception("General Credit Limit is less than total bill amount");
+                }
             }
 
             if (scheme.IsOpCreditLimited && (patientVisit != null && patientVisit.VisitType.ToLower() == ENUM_VisitType.outpatient.ToLower()))
@@ -958,10 +988,10 @@ namespace DanpheEMR.Controllers.Billing
                     patientSchemeMap.ModifiedOn = currentDate;
                     patientSchemeMap.ModifiedBy = currentUser.EmployeeId;
 
-                    DischargeDbContext.Entry(patientSchemeMap).Property(p => p.OpCreditLimit).IsModified = true;
-                    DischargeDbContext.Entry(patientSchemeMap).Property(p => p.ModifiedOn).IsModified = true;
-                    DischargeDbContext.Entry(patientSchemeMap).Property(p => p.ModifiedBy).IsModified = true;
-                    DischargeDbContext.SaveChanges();
+                    dbContext.Entry(patientSchemeMap).Property(p => p.OpCreditLimit).IsModified = true;
+                    dbContext.Entry(patientSchemeMap).Property(p => p.ModifiedOn).IsModified = true;
+                    dbContext.Entry(patientSchemeMap).Property(p => p.ModifiedBy).IsModified = true;
+                    dbContext.SaveChanges();
                 }
                 else
                 {
@@ -977,10 +1007,10 @@ namespace DanpheEMR.Controllers.Billing
                     patientSchemeMap.ModifiedOn = currentDate;
                     patientSchemeMap.ModifiedBy = currentUser.EmployeeId;
 
-                    DischargeDbContext.Entry(patientSchemeMap).Property(p => p.IpCreditLimit).IsModified = true;
-                    DischargeDbContext.Entry(patientSchemeMap).Property(p => p.ModifiedOn).IsModified = true;
-                    DischargeDbContext.Entry(patientSchemeMap).Property(p => p.ModifiedBy).IsModified = true;
-                    DischargeDbContext.SaveChanges();
+                    dbContext.Entry(patientSchemeMap).Property(p => p.IpCreditLimit).IsModified = true;
+                    dbContext.Entry(patientSchemeMap).Property(p => p.ModifiedOn).IsModified = true;
+                    dbContext.Entry(patientSchemeMap).Property(p => p.ModifiedBy).IsModified = true;
+                    dbContext.SaveChanges();
                 }
                 else
                 {
@@ -1002,10 +1032,10 @@ namespace DanpheEMR.Controllers.Billing
                         patientSchemeMap.ModifiedOn = currentDate;
                         patientSchemeMap.ModifiedBy = currentUser.EmployeeId;
 
-                        DischargeDbContext.Entry(patientSchemeMap).Property(p => p.IpCreditLimit).IsModified = true;
-                        DischargeDbContext.Entry(patientSchemeMap).Property(p => p.ModifiedOn).IsModified = true;
-                        DischargeDbContext.Entry(patientSchemeMap).Property(p => p.ModifiedBy).IsModified = true;
-                        DischargeDbContext.SaveChanges();
+                        dbContext.Entry(patientSchemeMap).Property(p => p.IpCreditLimit).IsModified = true;
+                        dbContext.Entry(patientSchemeMap).Property(p => p.ModifiedOn).IsModified = true;
+                        dbContext.Entry(patientSchemeMap).Property(p => p.ModifiedBy).IsModified = true;
+                        dbContext.SaveChanges();
                     }
                     //(if TotalBillAmount is more than IpCreditLimit and there is OPCreditlimit remaining then use both and update there value as well)
                     else if (TotalBillAmount > patientSchemeMap.IpCreditLimit && patientSchemeMap.OpCreditLimit > 0)
@@ -1016,11 +1046,11 @@ namespace DanpheEMR.Controllers.Billing
                         patientSchemeMap.ModifiedOn = currentDate;
                         patientSchemeMap.ModifiedBy = currentUser.EmployeeId;
 
-                        DischargeDbContext.Entry(patientSchemeMap).Property(p => p.IpCreditLimit).IsModified = true;
-                        DischargeDbContext.Entry(patientSchemeMap).Property(p => p.OpCreditLimit).IsModified = true;
-                        DischargeDbContext.Entry(patientSchemeMap).Property(p => p.ModifiedOn).IsModified = true;
-                        DischargeDbContext.Entry(patientSchemeMap).Property(p => p.ModifiedBy).IsModified = true;
-                        DischargeDbContext.SaveChanges();
+                        dbContext.Entry(patientSchemeMap).Property(p => p.IpCreditLimit).IsModified = true;
+                        dbContext.Entry(patientSchemeMap).Property(p => p.OpCreditLimit).IsModified = true;
+                        dbContext.Entry(patientSchemeMap).Property(p => p.ModifiedOn).IsModified = true;
+                        dbContext.Entry(patientSchemeMap).Property(p => p.ModifiedBy).IsModified = true;
+                        dbContext.SaveChanges();
                     }
                 }
                 else
@@ -1070,48 +1100,61 @@ namespace DanpheEMR.Controllers.Billing
         #endregion
 
         #region Update Medicare Member Balance
-        private static void UpdateMedicareMemberBalance(BillingTransactionModel billingTransaction, VisitModel patientVisit, DischargeDbContext dischargeDbContext, DateTime currentDate, RbacUser currentUser)
+        private static void UpdateMedicareMemberBalance(BillingTransactionModel billingTransaction, VisitModel patientVisit, DischargeDbContext dbContext, DateTime currentDate, RbacUser currentUser)
         {
             MedicareMemberBalance medicareMemberBalance = new MedicareMemberBalance();
-            var medicareMember = dischargeDbContext.MedicareMembers.FirstOrDefault(a => a.PatientId == billingTransaction.PatientId);
+            var medicareMember = dbContext.MedicareMembers.FirstOrDefault(a => a.PatientId == billingTransaction.PatientId);
             if (medicareMember != null && medicareMember.IsDependent == false)
             {
-                medicareMemberBalance = dischargeDbContext.MedicareMemberBalances.FirstOrDefault(a => a.MedicareMemberId == medicareMember.MedicareMemberId);
+                medicareMemberBalance = dbContext.MedicareMemberBalances.FirstOrDefault(a => a.MedicareMemberId == medicareMember.MedicareMemberId);
             }
             if (medicareMember != null && medicareMember.IsDependent == true)
             {
-                medicareMemberBalance = dischargeDbContext.MedicareMemberBalances.FirstOrDefault(a => a.MedicareMemberId == medicareMember.ParentMedicareMemberId);
+                medicareMemberBalance = dbContext.MedicareMemberBalances.FirstOrDefault(a => a.MedicareMemberId == medicareMember.ParentMedicareMemberId);
             }
             if (patientVisit != null)
             {
                 if (patientVisit.VisitType.ToLower() == ENUM_VisitType.outpatient.ToLower())
                 {
-                    medicareMemberBalance.OpBalance = (medicareMemberBalance.OpBalance - (decimal)billingTransaction.TotalAmount);
-                    medicareMemberBalance.OpUsedAmount = (medicareMemberBalance.OpUsedAmount + (decimal)billingTransaction.TotalAmount);
-                    medicareMemberBalance.ModifiedOn = currentDate;
-                    medicareMemberBalance.ModifiedBy = currentUser.EmployeeId;
+                    if (medicareMemberBalance.OpBalance >= (decimal)billingTransaction.TotalAmount)
+                    {
+                        medicareMemberBalance.OpBalance = (medicareMemberBalance.OpBalance - (decimal)billingTransaction.TotalAmount);
+                        medicareMemberBalance.OpUsedAmount = (medicareMemberBalance.OpUsedAmount + (decimal)billingTransaction.TotalAmount);
+                        medicareMemberBalance.ModifiedOn = currentDate;
+                        medicareMemberBalance.ModifiedBy = currentUser.EmployeeId;
 
-                    dischargeDbContext.Entry(medicareMemberBalance).Property(p => p.OpBalance).IsModified = true;
-                    dischargeDbContext.Entry(medicareMemberBalance).Property(p => p.OpUsedAmount).IsModified = true;
-                    dischargeDbContext.Entry(medicareMemberBalance).Property(p => p.ModifiedOn).IsModified = true;
-                    dischargeDbContext.Entry(medicareMemberBalance).Property(p => p.ModifiedBy).IsModified = true;
+                        dbContext.Entry(medicareMemberBalance).Property(p => p.OpBalance).IsModified = true;
+                        dbContext.Entry(medicareMemberBalance).Property(p => p.OpUsedAmount).IsModified = true;
+                        dbContext.Entry(medicareMemberBalance).Property(p => p.ModifiedOn).IsModified = true;
+                        dbContext.Entry(medicareMemberBalance).Property(p => p.ModifiedBy).IsModified = true;
 
-                    dischargeDbContext.SaveChanges();
+                        dbContext.SaveChanges();
+                    }
+                    else
+                    {
+                        throw new Exception("Op Balance for Medicare Member is less than Total Bill Amount");
+                    }
                 }
                 if (patientVisit.VisitType.ToLower() == ENUM_VisitType.inpatient.ToLower())
                 {
-                    medicareMemberBalance.IpBalance = (medicareMemberBalance.IpBalance - (decimal)billingTransaction.TotalAmount);
-                    medicareMemberBalance.IpUsedAmount = (medicareMemberBalance.IpUsedAmount + (decimal)billingTransaction.TotalAmount);
-                    medicareMemberBalance.ModifiedOn = currentDate;
-                    medicareMemberBalance.ModifiedBy = currentUser.EmployeeId;
+                    if (medicareMemberBalance.IpBalance >= (decimal)billingTransaction.TotalAmount)
+                    {
+                        medicareMemberBalance.IpBalance = (medicareMemberBalance.IpBalance - (decimal)billingTransaction.TotalAmount);
+                        medicareMemberBalance.IpUsedAmount = (medicareMemberBalance.IpUsedAmount + (decimal)billingTransaction.TotalAmount);
+                        medicareMemberBalance.ModifiedOn = currentDate;
+                        medicareMemberBalance.ModifiedBy = currentUser.EmployeeId;
 
-                    dischargeDbContext.Entry(medicareMemberBalance).Property(p => p.IpBalance).IsModified = true;
-                    dischargeDbContext.Entry(medicareMemberBalance).Property(p => p.IpUsedAmount).IsModified = true;
-                    dischargeDbContext.Entry(medicareMemberBalance).Property(p => p.ModifiedOn).IsModified = true;
-                    dischargeDbContext.Entry(medicareMemberBalance).Property(p => p.ModifiedBy).IsModified = true;
+                        dbContext.Entry(medicareMemberBalance).Property(p => p.IpBalance).IsModified = true;
+                        dbContext.Entry(medicareMemberBalance).Property(p => p.IpUsedAmount).IsModified = true;
+                        dbContext.Entry(medicareMemberBalance).Property(p => p.ModifiedOn).IsModified = true;
+                        dbContext.Entry(medicareMemberBalance).Property(p => p.ModifiedBy).IsModified = true;
 
-                    dischargeDbContext.SaveChanges();
-
+                        dbContext.SaveChanges();
+                    }
+                    else
+                    {
+                        throw new Exception("Ip Balance for Medicare Member is less than Total Bill Amount");
+                    }
                 }
             }
 
@@ -1209,7 +1252,7 @@ namespace DanpheEMR.Controllers.Billing
                         txnItem.ServiceDepartmentName = (from b in srvDepts where b.ServiceDepartmentId == txnItem.ServiceDepartmentId select b.ServiceDepartmentName).FirstOrDefault();
 
                         txnItem = GetBillStatusMapped(txnItem, billStatus, currentDate, currentUser.EmployeeId, counterId);
-                        UpdateRequisitionItemsBillStatus(dbContext, txnItem.ServiceDepartmentName, billStatus, currentUser, txnItem.RequisitionId, currentDate);
+                        //UpdateRequisitionItemsBillStatus(dbContext, txnItem.ServiceDepartmentName, billStatus, currentUser, txnItem.RequisitionId, currentDate);
                         dbContext.BillingTransactionItems.Add(txnItem);
                     }
                     else
@@ -1285,8 +1328,9 @@ namespace DanpheEMR.Controllers.Billing
             string serviceDepartmentName,
             string billStatus, //provisional,paid,unpaid,returned
             RbacUser currentUser,
-            long? requisitionId,
-            DateTime? modifiedDate)
+            int billingTransactionItemId,
+            DateTime? modifiedDate,
+            int? patientVisitId)
         {
 
             string integrationName = dischargeDbContext.ServiceDepartment
@@ -1298,7 +1342,7 @@ namespace DanpheEMR.Controllers.Billing
                 //update return status in lab 
                 if (integrationName.ToLower() == "lab")
                 {
-                    var labItem = dischargeDbContext.LabRequisitions.Where(req => req.RequisitionId == requisitionId).FirstOrDefault();
+                    var labItem = dischargeDbContext.LabRequisitions.Where(req => req.BillingTransactionItemId == billingTransactionItemId).FirstOrDefault();
                     if (labItem != null)
                     {
                         labItem.BillingStatus = billStatus;
@@ -1313,7 +1357,7 @@ namespace DanpheEMR.Controllers.Billing
                 //update return status for Radiology
                 else if (integrationName.ToLower() == "radiology")
                 {
-                    var radioItem = dischargeDbContext.RadiologyImagingRequisitions.Where(req => req.ImagingRequisitionId == requisitionId).FirstOrDefault();
+                    var radioItem = dischargeDbContext.RadiologyImagingRequisitions.Where(req => req.BillingTransactionItemId == billingTransactionItemId).FirstOrDefault();
                     if (radioItem != null)
                     {
                         radioItem.BillingStatus = billStatus;
@@ -1328,7 +1372,7 @@ namespace DanpheEMR.Controllers.Billing
                 //update return status for Visit
                 else if (integrationName.ToLower() == "opd" || integrationName.ToLower() == "er")
                 {
-                    var visitItem = dischargeDbContext.Visit.Where(vis => vis.PatientVisitId == requisitionId).FirstOrDefault();
+                    var visitItem = dischargeDbContext.Visit.Where(vis => vis.PatientVisitId == patientVisitId).FirstOrDefault();
                     if (visitItem != null)
                     {
                         visitItem.BillingStatus = billStatus;
@@ -1498,7 +1542,7 @@ namespace DanpheEMR.Controllers.Billing
             dischargeDbContext.SaveChanges();
 
 
-            UpdateRequisitionItemsBillStatus(dischargeDbContext, billItem.ServiceDepartmentName, billStatus, currentUser, billItem.RequisitionId, modifiedDate);
+            UpdateRequisitionItemsBillStatus(dischargeDbContext, billItem.ServiceDepartmentName, billStatus, currentUser, billItem.BillingTransactionItemId, modifiedDate, billItem.PatientVisitId);
 
             //update bill status in BillItemRequistion (Order Table)
             BillItemRequisition billItemRequisition = (from bill in dischargeDbContext.BillItemRequisitions

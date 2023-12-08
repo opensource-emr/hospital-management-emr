@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 import * as moment from 'moment/moment';
+import { CoreService } from "../../../../core/shared/core.service";
 import { Patient } from '../../../../patients/shared/patient.model';
+import { GeneralFieldLabels } from "../../../../shared/DTOs/general-field-label.dto";
 
 
 @Component({
@@ -15,6 +17,7 @@ export class GovInsPatientDuplicateWarningBox {
 
   @Input("matchedPatResult")
   public matchedPatResult: any;
+  public coreService: CoreService;
 
   public matchedPatientList: Array<Patient> = new Array<Patient>();
 
@@ -25,8 +28,11 @@ export class GovInsPatientDuplicateWarningBox {
   public byPassClientCheck: boolean = false;;
 
   loading: boolean = false;
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor() {
+    this.GeneralFieldLabel = this.coreService.GetFieldLabelParameter();
+
   }
 
   ngOnInit() {
@@ -45,7 +51,7 @@ export class GovInsPatientDuplicateWarningBox {
         if (this.Patient.AgeUnit == 'Y') {
           this.matchedPatResult.forEach(patient => {
             var originalYear: number = Number(moment(patient.DateOfBirth).format("YYYY"));
-            var diff: number = (nowYear - originalYear - patYear)
+            var diff: number = (nowYear - originalYear - patYear);
             if ((diff > -3 && diff < 3) || (this.Patient.PhoneNumber == patient.PhoneNumber || this.Patient.Ins_NshiNumber == patient.Ins_NshiNumber)) {
               this.matchedPatientList.push(patient);
               return true;
@@ -82,7 +88,7 @@ export class GovInsPatientDuplicateWarningBox {
           } else {
             a["Ins_NshiNumberExists"] = false;
           }
-        })
+        });
       }
     }
 

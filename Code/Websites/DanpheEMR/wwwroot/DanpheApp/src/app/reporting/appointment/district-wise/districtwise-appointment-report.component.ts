@@ -1,10 +1,12 @@
-import { Component, Directive, ViewChild } from '@angular/core';
-import { ReportingService } from "../../../reporting/shared/reporting-service";
-import { RPT_APPT_DistrictWiseAppointmentReportModel } from "./districtwise-appointment-report.model"
-import { DLService } from "../../../shared/dl.service"
 import { HttpClient } from '@angular/common/http';
+import { Component } from '@angular/core';
 import * as moment from 'moment/moment';
+import { CoreService } from '../../../core/shared/core.service';
+import { ReportingService } from "../../../reporting/shared/reporting-service";
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
+import { DLService } from "../../../shared/dl.service";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { RPT_APPT_DistrictWiseAppointmentReportModel } from "./districtwise-appointment-report.model";
 
 @Component({
   templateUrl: "./districtwise-appointment-report.html"
@@ -14,8 +16,8 @@ export class RPT_APPT_DistrictWiseAppointmentReportComponent {
   public toDate: string = null;
   public distProvider: string = "";
   public doctorList: any;
-  public dateRange : string = "";
-  public footer='';
+  public dateRange: string = "";
+  public footer = '';
   DistrictWiseAppointmentReportColumns: Array<any> = null;
   DistrictWiseAppointmentReportData: Array<any> = new Array<RPT_APPT_DistrictWiseAppointmentReportModel>();
   dynamicColumns: Array<string> = new Array<string>();
@@ -24,12 +26,14 @@ export class RPT_APPT_DistrictWiseAppointmentReportComponent {
   http: HttpClient = null;
   public summary = { tot_new: 0, tot_followup: 0, tot_referral: 0, tot_all: 0 };
   public selGenderName: string = "all";
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
 
   constructor(
     _http: HttpClient,
     _dlService: DLService,
     public msgBoxServ: MessageboxService,
+    public coreservice: CoreService,
     public reportServ: ReportingService) {
     // this.DistrictWiseAppointmentReportColumns = ReportGridColumnSettings.DistrictWiseAppointmentReport;
     this.http = _http;
@@ -37,6 +41,8 @@ export class RPT_APPT_DistrictWiseAppointmentReportComponent {
     this.districtwiseappointment.fromDate = moment().format('YYYY-MM-DD');
     this.districtwiseappointment.toDate = moment().format('YYYY-MM-DD');
     this.DistrictWiseAppointmentReportColumns = this.reportServ.reportGridCols.RPT_APPT_DistrictWiseAppointmentCounts;
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
+    this.DistrictWiseAppointmentReportColumns[0].headerName = `${this.GeneralFieldLabel.DistrictState} `;
 
   }
   gridExportOptions = {
@@ -72,7 +78,7 @@ export class RPT_APPT_DistrictWiseAppointmentReportComponent {
   }
   Success(res) {
     if (res.Status == "OK" && res.Results && res.Results.length > 0) {
-     
+
       this.DistrictWiseAppointmentReportData = res.Results;
 
       if (this.DistrictWiseAppointmentReportData && this.DistrictWiseAppointmentReportData.length > 0) {

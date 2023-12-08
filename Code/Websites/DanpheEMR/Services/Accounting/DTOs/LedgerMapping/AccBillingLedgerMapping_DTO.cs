@@ -19,7 +19,7 @@ namespace DanpheEMR.Services.Accounting.DTOs
         public int ItemId { get; set; }
         public string ItemName { get; set; }
         public string ItemCode { get; set; }
-        public int SubLedgerId { get; set; }
+        public int? SubLedgerId { get; set; }
         public string SubLedgerName { get; set; }
         public bool IsActive { get; set; }
         public int BillLedgerMappingId { get; set; }

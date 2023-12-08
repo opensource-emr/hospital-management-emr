@@ -32,24 +32,27 @@
                                         </thead>
                                         <tbody>
                                             <tr class="tr-block" *ngFor="let add of problems; let i = index">
-                                                <td><i *ngIf="add.PrincipleProblem==true" title="Principle Problem" class="fa fa-star" style="color: #599acd;font-size: 16px;"></i>({{add.ICD10Code}}){{add.ICD10Description}}</td>
-                                                <td>{{add.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
-                                                <td class="text-center">
-                                                    <div class="tooltip">
-                                                        <i class="fa fa-sticky-note-o"></i>
-                                                        <span class="tooltiptext ttptextup">{{add.Note}}</span>
+                                                <td style="width: 40%;"><i *ngIf="add.PrincipleProblem==true" title="Principle Problem"
+                                                       class="fa fa-star"
+                                                       style="color: #599acd;font-size: 16px;"></i>({{add.ICD10Code}}){{add.ICD10Description}}</td>
+                                                <td style="width: 15%;">{{add.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                                                <td style="width: 25%;" class="text">
+                                                    <div class="text">
+                                                        <span>{{add.Note}}</span>
                                                     </div>
                                                 </td>
-                                                <td class="text-center">
+                                                <td style="width: 10%;" class="text-center">
                                                     <div class="icheck-inline" style="margin-top: 0px;">
                                                         <label class="mt-checkbox mt-checkbox-outline">
-                                                            <input type="checkbox" id="Resolved" (click)="Resolved(add,i)"><span style="background: #fff; border: 1px solid #b3b2b9;"></span>
+                                                            <input type="checkbox" id="Resolved" (click)="Resolved(add,i)"><span
+                                                                  style="background: #fff; border: 1px solid #b3b2b9;"></span>
                                                         </label>
                                                     </div>
                                                 </td>
 
-                                                <td>
-                                                    <a (click)="Edit(add,i)" class="bs-glyphicon-class btn yello" style="padding: 0px;"><span class="glyphicon glyphicon-edit"></span>Edit</a>
+                                                <td style="width: 10%;">
+                                                    <a (click)="Edit(add,i)" class="bs-glyphicon-class btn yello" style="padding: 0px;"><span
+                                                              class="glyphicon glyphicon-edit"></span>Edit</a>
                                                 </td>
                                             </tr>
 
@@ -83,7 +86,9 @@
                                         <tbody>
 
                                             <tr class="tr-block" *ngFor="let pastMed of pastMedicals;let i=index">
-                                                <td><i *ngIf="pastMed.PrincipleProblem==true" title="Principle Problem" class="fa fa-star" style="color: #599acd;font-size: 16px;"></i>({{pastMed.ICD10Code}}){{pastMed.ICD10Description}}</td>
+                                                <td><i *ngIf="pastMed.PrincipleProblem==true" title="Principle Problem" class="fa fa-star"
+                                                       style="color: #599acd;font-size: 16px;"></i>({{pastMed.ICD10Code}}){{pastMed.ICD10Description}}
+                                                </td>
                                                 <td>{{pastMed.OnSetDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
                                                 <td>{{pastMed.ResolvedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
                                                 <td><a style="cursor:pointer" (click)="SetAsActive(pastMed)">Set as Active</a></td>
@@ -98,10 +103,12 @@
 
                     <!-- @*-------------Add---------------*@-->
                     <div class="col-md-4">
-                        <active-medical-add [selected-active-medical]="selectedActiveMedical" [show-active-medical-add]="addActiveProblemBox" (callback-addupdate)="CallBackAddActiveUpdate($event)"></active-medical-add>
+                        <active-medical-add [selected-active-medical]="selectedActiveMedical" [show-active-medical-add]="addActiveProblemBox"
+                                            (callback-addupdate)="CallBackAddActiveUpdate($event)"></active-medical-add>
 
                         <!--  @* --Past Medical Add-- *@-->
-                        <past-medical-add [selected-past-medical]="selectedPastMedical" [show-past-medical-add]="addPastProblemBox" (callback-addupdate)="CallBackAddPastUpdate($event)"></past-medical-add>
+                        <past-medical-add [selected-past-medical]="selectedPastMedical" [show-past-medical-add]="addPastProblemBox"
+                                          (callback-addupdate)="CallBackAddPastUpdate($event)"></past-medical-add>
                     </div>
                 </div>
 

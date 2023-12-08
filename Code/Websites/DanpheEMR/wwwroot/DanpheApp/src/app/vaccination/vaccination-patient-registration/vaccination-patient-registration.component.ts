@@ -1,17 +1,16 @@
-import { ChangeDetectorRef, Component, HostListener, ViewChild } from '@angular/core'
-import { RouterOutlet, RouterModule, Router } from '@angular/router';
-import { Input, Output, EventEmitter } from "@angular/core";
-import { SecurityService } from "../../security/shared/security.service"
+import { ChangeDetectorRef, Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { Router } from '@angular/router';
+import * as moment from 'moment/moment';
 import { CoreService } from '../../core/shared/core.service';
+import { PatientService } from '../../patients/shared/patient.service';
+import { SecurityService } from "../../security/shared/security.service";
+import { CountrySubdivision } from '../../settings-new/shared/country-subdivision.model';
+import { GeneralFieldLabels } from "../../shared/DTOs/general-field-label.dto";
+import { CommonFunctions } from '../../shared/common.functions';
+import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { VaccinationPatient } from '../shared/vaccination-patient.model';
-import * as moment from 'moment/moment';
-import { CommonFunctions } from '../../shared/common.functions';
-import { PatientService } from '../../patients/shared/patient.service';
 import { VaccinationBLService } from '../shared/vaccination.bl.service';
-import { CountrySubdivision } from '../../settings-new/shared/country-subdivision.model';
-import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
-import { PatientsBLService } from '../../patients/shared/patients.bl.service';
 import { VaccinationService } from '../shared/vaccination.service';
 
 
@@ -46,12 +45,24 @@ export class VaccinationPatientRegistrationComponent {
     public IsEditMode: boolean;
     public showMunicipality: boolean = false;
     public vaccDeptName: string = "IMMUNIZATION";
+    // public Muncipalitylable: string = "";
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
     constructor(public securityService: SecurityService, public router: Router,
         public coreService: CoreService, public patientService: PatientService,
         public msgBoxServ: MessageboxService, public vaccinationBlService: VaccinationBLService,
         public changeDetector: ChangeDetectorRef, public vaccinationService: VaccinationService
     ) {
+
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
+        /*var Muncipalitylable = JSON.parse(coreService.Parameters.find(p => p.ParameterGroupName == "Patient" && p.ParameterName == "Municipality").ParameterValue);
+        if (Muncipalitylable) {
+            this.Muncipalitylable = Muncipalitylable.Municipality;
+        }
+        */
+
+
         this.LoadCastEthnicGroupList();
         this.LoadCalendarTypes();
         if (this.coreService.Masters.UniqueDataList && this.coreService.Masters.UniqueDataList.UniqueAddressList) {
@@ -92,14 +103,12 @@ export class VaccinationPatientRegistrationComponent {
                 this.model.DateOfBirth = moment().format('YYYY-MM-DD');
             }
             this.AssignCountryAndSubDivision();
-            if (this.isVaccRegNumAutoIncreaseEnabled)
-             { 
-                 this.model.PatientValidator.controls["VaccinationRegNo"].disable();
-             }
-              else
-               {
-                    this.GetLatestVaccRegNumber();
-                 }
+            if (this.isVaccRegNumAutoIncreaseEnabled) {
+                this.model.PatientValidator.controls["VaccinationRegNo"].disable();
+            }
+            else {
+                this.GetLatestVaccRegNumber();
+            }
 
         }
     }

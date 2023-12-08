@@ -7,6 +7,7 @@ using DanpheEMR.Security;
 using DanpheEMR.ServerModel;
 using DanpheEMR.Services.Billing;
 using DanpheEMR.Services.Billing.DTO;
+using DanpheEMR.Services.BillSettings.DTOs;
 using DanpheEMR.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -135,7 +136,17 @@ namespace DanpheEMR.Controllers.Billing
             Func<Task<object>> func = () => _billingMasterService.Getcurrencies(_billingDbContext);
             return await InvokeHttpGetFunctionAsync(func);
         }
-        
+
+        [HttpGet]
+        [Route("ServiceItemsByPriceCategory")]
+        [Produces(typeof(PriceCategoryServiceItem_DTO))]
+        public async Task<IActionResult> GetPricecCategoryServiceItems(int priceCategoryId)
+        {
+            Func<Task<object>> func = () => _billingMasterService.GetPriceCategoryServiceItems(_billingDbContext, priceCategoryId);
+            return await InvokeHttpGetFunctionAsync(func);
+        }
+
+
 
         [HttpPost]
         [Route("ServiceItemSetting")]

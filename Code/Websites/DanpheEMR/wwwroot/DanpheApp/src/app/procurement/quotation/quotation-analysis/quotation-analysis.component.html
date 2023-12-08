@@ -26,8 +26,7 @@
         <i class="fa fa-print"></i>
         Print
       </button>
-      <button class="btn green btn-success" type="button" data-toggle="modal" data-target="#confirmVendor" title="Save selected Vendor"
-              [disabled]="loading">
+      <button class="btn green btn-success" type="button" data-toggle="modal" data-target="#confirmVendor" title="Save selected Vendor" [disabled]="loading">
         <i class="fa fa-save"></i>
         Select Vendor for PO
       </button>
@@ -38,10 +37,7 @@
 
 <div class="row" *ngIf="showQuotationDetails">
   <ng-container *ngIf="showInNepali;else EnglishQuotationAnalysis">
-    <app-quotation-analysis-np #NepaliQuotationAnalysis [active-fiscal-year]="activeFiscalYear" [quotation-items]="QuotItemList"
-                               [vendor-list]="VendorList" [total-amount-list]="TotalAmount"
-                               (call-back-selected-vendor)="selectedVendorEventHandler($event)"
-                               (call-back-selected-date)="selectedDateEventHandler($event)"></app-quotation-analysis-np>
+    <app-quotation-analysis-np #NepaliQuotationAnalysis [active-fiscal-year]="activeFiscalYear" [quotation-items]="QuotItemList" [vendor-list]="VendorList" [total-amount-list]="TotalAmount" (call-back-selected-vendor)="selectedVendorEventHandler($event)" (call-back-selected-date)="selectedDateEventHandler($event)"></app-quotation-analysis-np>
   </ng-container>
   <ng-template #EnglishQuotationAnalysis>
     <br>
@@ -53,8 +49,7 @@
           <div class="form-group row clearfix ">
             <label class="control-label col-md-4">Issue Date<sup class="color-red"> *</sup><b>:</b></label>
             <div class="col-md-8">
-              <danphe-date-picker [(ngModel)]="issuedDate" [ngModelOptions]="{standalone: true}" [CalendarTypes]="'en,np'" [allow-future-date]="true"
-                                  ngDefaultControl>
+              <danphe-date-picker [(ngModel)]="issuedDate" [ngModelOptions]="{standalone: true}" [CalendarTypes]="'en,np'" [allow-future-date]="true" ngDefaultControl>
               </danphe-date-picker>
             </div>
           </div>
@@ -74,8 +69,7 @@
           </tr>
           <tr>
             <th *ngFor="let itm of VendorList, let i= index" style="font-size:15px;">
-              <input class="zoomcheckbox noPrint" [(ngModel)]="itm.IsSelected" name="IsSelected" width="100" type="checkbox"
-                     ng-checked="itm.IsSelected=true" (change)="ToggleItemSelection(i)"> {{itm.VendorName}}
+              <input class="zoomcheckbox noPrint" [(ngModel)]="itm.IsSelected" name="IsSelected" width="100" type="checkbox" ng-checked="itm.IsSelected=true" (change)="ToggleItemSelection(i)"> {{itm.VendorName}}
               ({{itm.Currency}})
             </th>
           </tr>
@@ -126,20 +120,19 @@
 
 <div id="confirmVendor" class="modal fade inv_modal" role="dialog">
   <div class="modal-dialog modal-md">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="caption lb-caption">
-        <button type="button" class="btn btn-danger" data-dismiss="modal">X</button>
+      <!-- Modal content-->
+      <div class="modal-content">
+          <div class="caption lb-caption">
+              <button type="button" class="btn btn-danger" data-dismiss="modal">X</button>
+          </div>
+          <div class="modal-body">
+              <p *ngIf="selectedVendor.VendorId==null" style="text-align: center; color: red;">!!!Please Select Vendor for Quotation Analysis!!!</p>
+              <p *ngIf="selectedVendor.VendorId!=null" style="text-align: center;">!!!<i>Are you sure you want to select Vendor:</i><b>{{selectedVendor.VendorName}}?</b><br /> on Issued Date: &nbsp;{{issuedDate}}<span *ngIf="issuedDate"> &nbsp;{{issuedDate | nepaliDate}}</span></p>
+          </div>
+          <div *ngIf="selectedVendor.VendorId!=null" class="modal-footer">
+              <button type="button" (click)="SaveSelectedVendor()" class="btn btn-danger" data-dismiss="modal">Yes</button>
+              <button type="button" class="btn btn-success" data-dismiss="modal">No</button>
+          </div>
       </div>
-      <div class="modal-body">
-        <p *ngIf="selectedVendor.VendorId==null" style="text-align: center; color: red;">!!!Please Select Vendor for Quotation Analysis!!!</p>
-        <p *ngIf="selectedVendor.VendorId!=null" style="text-align: center;">!!!<i>Are you sure you want to select
-            Vendor:</i><b>{{selectedVendor.VendorName}}?</b><br /> on Issued Date: &nbsp;{{issuedDate}}</p>
-      </div>
-      <div *ngIf="selectedVendor.VendorId!=null" class="modal-footer">
-        <button type="button" (click)="SaveSelectedVendor()" class="btn btn-danger" data-dismiss="modal">Yes</button>
-        <button type="button" class="btn btn-success" data-dismiss="modal">No</button>
-      </div>
-    </div>
   </div>
 </div>

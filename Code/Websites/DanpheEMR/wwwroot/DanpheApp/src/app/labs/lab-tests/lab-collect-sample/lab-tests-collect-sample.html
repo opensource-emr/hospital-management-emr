@@ -52,6 +52,7 @@
           <tbody>
             <tr class="align-vertical-middle" *ngFor="let requ of patientTestCSVs;let i = index">
               <td *ngIf="!IsLocalDate">{{requ.OrderDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
+              <td *ngIf="IsLocalDate">{{requ.OrderDateTime | nepaliDate:'format':'YYYY-MM-DD hh:mm A'}}</td>
               <td>{{requ.PrescriberName}}</td>
               <!--below td is for insurance flag-->
               <td *ngIf="showInsuranceFlag"><span class="bold green" title="Government Insurance"> {{ requ &&

@@ -1,13 +1,13 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 import * as _ from 'lodash';
 import { CoreService } from "../../../core/shared/core.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from "../../../shared/shared-enums";
 import { VerificationBLService } from "../../shared/verification.bl.service";
 import { PharmacySubStoreRequisitionItemVerification_DTO } from "../shared/pharmacy-substore-requisition-item-verification.dto";
 import { PharmacySubStoreRequisitionVerification_DTO } from "../shared/pharmacy-substore-requisition-verification.dto";
-
 
 @Component({
     selector: 'pharmacy-verification-requisition',
@@ -28,8 +28,11 @@ export class PharmacyVerificationRequisitionComponent {
     CopyOfRequisitionItems: PharmacySubStoreRequisitionItemVerification_DTO[] = [];
     loading: boolean = false;
 
+    public GeneralFieldLabel = new GeneralFieldLabels();
+
     constructor(public coreService: CoreService, public verificationBLService: VerificationBLService, public messageBoxService: MessageboxService) {
         this.GetPharmacyBillingHeaderParameter();
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
 
     ngOnInit() {

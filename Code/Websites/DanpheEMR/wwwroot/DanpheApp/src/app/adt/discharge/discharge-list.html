@@ -155,14 +155,16 @@
           <table class="table">
             <tr>
               <td>Admission Date:</td>
-              <td> {{selectedDischarge.AdmittedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+              <td> {{selectedDischarge.AdmittedDate | DanpheDateTime:'format':'YYYY-MM-DD'}} A.D {{selectedDischarge.AdmittedDate |
+                nepaliDate:'format':'YYYY-MM-DD'}} </td>
             </tr>
             <tr>
               <td> Discharge Date :</td>
               <td>
                 <span>
 
-                  {{selectedDischarge.DischargedDate | DanpheDateTime:'format':'YYYY-MM-DD'}} 
+                  {{selectedDischarge.DischargedDate | DanpheDateTime:'format':'YYYY-MM-DD'}} A.D {{selectedDischarge.DischargedDate |
+                  nepaliDate:'format':'YYYY-MM-DD'}}
                 </span>
               </td>
             </tr>

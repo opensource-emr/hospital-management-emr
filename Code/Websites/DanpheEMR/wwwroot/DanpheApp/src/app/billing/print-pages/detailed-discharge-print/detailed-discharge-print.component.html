@@ -134,12 +134,15 @@
                 </td>
                 <td colspan="5" style="text-align: right;">
                   <p class="c_paragraphs" style="margin: 3px 0;">IP No:<strong> {{PatientDetail.InpatientNo}}</strong></p>
-                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="IsDischarged">Invoice No:<strong> {{InvoiceInfo.InvoiceNumFormatted}}</strong>
+                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="IsDischarged && !IsProvisionalDischarge">Invoice No:<strong>
+                      {{InvoiceInfo.InvoiceNumFormatted}}</strong>
                   </p>
-                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="IsDischarged">
+                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="IsDischarged && !IsProvisionalDischarge">
                     Invoice Date:<strong> {{InvoiceInfo.TransactionDate | DanpheDateTime: 'format':'YYYY-MM-DD'}}</strong>
                   </p>
-
+                  <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="IsDischarged && !IsProvisionalDischarge">
+                    <strong> {{InvoiceInfo.TransactionDate | nepaliDate: 'format':'YYYY-MM-DD'}} </strong>
+                  </p>
                   <p class="c_paragraphs" style="margin: 3px 0;">
                     Admission Date:<strong> {{AdmissionInfo.AdmissionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</strong></p>
                   <p class="c_paragraphs" style="margin: 3px 0;" *ngIf="!IsDischarged">Discharge Date:<strong> C </strong></p>

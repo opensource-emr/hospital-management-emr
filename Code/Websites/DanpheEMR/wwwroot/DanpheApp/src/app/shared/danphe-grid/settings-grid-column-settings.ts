@@ -1299,4 +1299,81 @@ export class SettingsGridColumnSettings {
       return template;
     }
   }
+  public TemplateTypeList = [
+    { headerName: "TemplateType Code", field: "TemplateTypeCode", width: 100 },
+    { headerName: "TemplateType Name", field: "TemplateTypeName", width: 120 },
+    { headerName: "Description", field: "Description", width: 120 },
+    { headerName: "IsActive", field: "IsActive", width: 120 },
+
+  ]
+  public TemplateList = [
+    { headerName: "Template Type", field: "TemplateTypeName", width: 100 },
+    { headerName: "Template Code", field: "TemplateCode", width: 120 },
+    { headerName: "Template Name", field: "TemplateName", width: 120 },
+    { headerName: "Description", field: "Description", width: 120 },
+    { headerName: "IsActive", field: "IsActive", width: 120 },
+    {
+      headerName: "Action",
+      field: "",
+
+      width: 120,
+      cellRenderer: this.ManageTemplateSettingAction
+    }
+
+  ]
+  public ManageTemplateSettingAction(params) {
+    if (params.data.IsActive == true) {
+      let template =
+        `<a danphe-grid-action="field-mapping" class="grid-action" >
+        Field Mapping
+        </a>
+        <a danphe-grid-action="edit" class="grid-action" >
+        Edit
+        </a>
+        <a danphe-grid-action="activate-deactivate" class="grid-action" >
+        Deactivate
+        </a>`
+      return template;
+    }
+    else {
+      let template =
+        `<a danphe-grid-action="activate-deactivate" class="grid-action" >
+        Activate
+        </a>`
+      return template;
+    }
+  }
+  public FieldMasterList = [
+    { headerName: "Template Type Name", field: "TemplateTypeName", width: 100 },
+    { headerName: "Filed Name", field: "FieldName", width: 120 },
+    { headerName: "Description", field: "Description", width: 120 },
+    { headerName: "IsActive", field: "IsActive", width: 120 },
+
+  ]
+  public IntakeOutputList = [
+    { headerName: "Parameter Type", field: "ParameterType", width: 100 },
+    { headerName: "Parameter Value", field: "ParameterValue", width: 100 },
+    { headerName: "Parent Parameter Value", field: "ParentParameterValue", width: 100 },
+    { headerName: "IsActive", field: "IsActive", width: 50 },
+    {
+      headerName: "Action",
+      field: "",
+      width: 100,
+      cellRenderer: this.ManageIntakeOutputTemplate,
+    },
+  ]
+  public ManageIntakeOutputTemplate(params) {
+    if (params.data.IsActive == true) {
+      let template = `
+            <a danphe-grid-action="activateDeactivateBasedOnStatus" class="grid-action">Deactivate</a>
+            <a danphe-grid-action="edit" class="grid-action">Edit</a >
+            `;
+      return template;
+    } else {
+      let template = `
+            <a danphe-grid-action="activateDeactivateBasedOnStatus" class="grid-action">Activate</a>
+            `;
+      return template;
+    }
+  }
 }

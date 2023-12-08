@@ -1,17 +1,22 @@
 ﻿using DanpheEMR.AccTransfer;
 using DanpheEMR.CommonTypes;
+using DanpheEMR.Controllers.Billing.Shared;
 using DanpheEMR.Core.Configuration;
 using DanpheEMR.DalLayer;
 using DanpheEMR.Enums;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel;
 using DanpheEMR.ServerModel.AccountingModels;
+using DanpheEMR.ServerModel.AccountingModels.DTOs;
+using DanpheEMR.ServerModel.ClinicalModels;
 using DanpheEMR.Services.Accounting.DTOs;
 using DanpheEMR.Utilities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -205,9 +210,74 @@ namespace DanpheEMR.Controllers
         }
 
 
+        [HttpPost]
+        [Route("SubLedger")]
+        public IActionResult SubLedger([FromBody] List<SubLedgerForMakePayment_DTO> subLedger_DTOs)
+        {
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>(ENUM_SessionVariables.CurrentUser);
+            Func<object> func = () => AddSubLedgerFromMakePayment(subLedger_DTOs, currentUser);
+            return InvokeHttpPostFunction(func);
+        }
 
+        private object AddSubLedgerFromMakePayment(List<SubLedgerForMakePayment_DTO> subLedger_DTOs, RbacUser currentUser)
+        {
+            int currHospitalId = HttpContext.Session.Get<int>(ENUM_SessionValues.CurrentHospitalId);
+            using (var dbContextTransaction = _accountingDbContext.Database.BeginTransaction())
+            {
+                try
+                {List<SubLedgerModel> subLedgers = new List<SubLedgerModel>();
+                    var subLedger = new SubLedgerModel();
+                    subLedger_DTOs.ForEach(sub =>
+                    {                       
+                        Random subLedgerCodeGenerator = new Random();
+                        int subledgerCode = subLedgerCodeGenerator.Next(1, 999999);
+                        subLedger.SubLedgerCode = subledgerCode.ToString(); 
+                        subLedger.SubLedgerName = sub.SubLedgerName;
+                        subLedger.DrCr = sub.DrCr;
+                        subLedger.LedgerId = sub.LedgerId;
+                        subLedger.Description= sub.Description;
+                        subLedger.IsActive = sub.IsActive;
+                        subLedger.CreatedBy= currentUser.UserId;
+                        subLedger.CreatedOn=DateTime.Now;
+                        subLedger.OpeningBalance= sub.OpeningBalance;
+                        subLedger.HospitalId = currHospitalId;
+                        subLedger.IsDefault = sub.IsDefault;
+                        subLedgers.Add(subLedger);
+                    });
+                    _accountingDbContext.SubLedger.AddRange(subLedgers);
+                    _accountingDbContext.SaveChanges();
+                    var flag = AccountingTransferData.SubLedgerBalanceHisotrySave(subLedgers, _accountingDbContext, currHospitalId, currentUser.UserId);
 
+                    if (flag)
+                    {
+                        subLedger_DTOs.ForEach(sub =>
+                        {
+                            LedgerMappingModel ledgerMapping = new LedgerMappingModel();
+                            ledgerMapping.LedgerId = sub.LedgerId;
+                            ledgerMapping.SubLedgerId = subLedger.SubLedgerId;
+                            ledgerMapping.LedgerType = sub.LedgerType;
+                            ledgerMapping.ReferenceId = (int)sub.ReferenceId;
+                            ledgerMapping.HospitalId = currHospitalId;
+                            _accountingDbContext.LedgerMappings.Add(ledgerMapping);
+                        });
+                        
+                        _accountingDbContext.SaveChanges();
 
+                        dbContextTransaction.Commit();
+                    }
+                    else
+                    {
+                        dbContextTransaction.Rollback();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    dbContextTransaction.Rollback();
+                    throw new Exception("Unable to Post SubLedger.");
+                }
+                return true;
+            }
+        }
 
         [HttpGet]
         [Route("VoucherHeads")]
@@ -2117,6 +2187,8 @@ namespace DanpheEMR.Controllers
             int currentHospitalId = HttpContext.Session.Get<int>(ENUM_SessionValues.CurrentHospitalId);
             InventoryDbContext inventoryDBContext = new InventoryDbContext(connString);
             List<LedgerModel> Ledgrs = DanpheJSONConvert.DeserializeObject<List<LedgerModel>>(ipDataStr);
+            var subLedgerParam = _accountingDbContext.CFGParameters.Where(a => a.ParameterGroupName == "Accounting" && a.ParameterName == "SubLedgerAndCostCenter").FirstOrDefault().ParameterValue;
+            var parmValue = DanpheJSONConvert.DeserializeObject<SubLedgerAndCostCenterConfig_DTO>(subLedgerParam);
             bool ledBalnce = false;
             using (var dbContextTransaction = _accountingDbContext.Database.BeginTransaction())
             {
@@ -2191,15 +2263,15 @@ namespace DanpheEMR.Controllers
                         }
 
                         var existedSubLedger = _accountingDbContext.SubLedger.Where(sub => sub.LedgerId == ledger.LedgerId && sub.SubLedgerName.Trim().ToLower() == ledger.SubLedgerName.Trim().ToLower()).FirstOrDefault();
-                        if (existedSubLedger == null)
+                        if (existedSubLedger == null && parmValue.EnableSubLedger)
                         {
                             // Dev: 4 Jan '23 : Add Default SubLedger for each ledger 
                             var subLedger = new SubLedgerModel();
-                            subLedger.SubLedgerName = ledger.SubLedgerName;
+                            subLedger.SubLedgerName = ledger.SubLedgerName == "" ? ledger.LedgerName : ledger.SubLedgerName;
                             subLedger.IsDefault = true;
                             subLedger.OpeningBalance = ledger.OpeningBalance;
                             subLedger.DrCr = true;
-                            subLedger.Description = "Default subledger inserted during ledger creation.";
+                            subLedger.Description = "Default subledger";
                             subLedger.IsActive = true;
                             subLedger.LedgerId = ledger.LedgerId;
                             /*Manipal-RevisionNeeded*/
@@ -2220,7 +2292,8 @@ namespace DanpheEMR.Controllers
                         }
                         else
                         {
-                            ledger.SubLedgerId = existedSubLedger.SubLedgerId;
+                            ledger.SubLedgerId = existedSubLedger != null ? (int?)existedSubLedger.SubLedgerId : null;
+
                         }
 
 

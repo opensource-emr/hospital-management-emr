@@ -1,10 +1,17 @@
 import * as moment from "moment/moment";
+
 import { SecurityService } from '../../security/shared/security.service';
 import VerificationGridColumns from "../../verification/shared/verification-grid-column";
 import { CommonFunctions } from "../common.functions";
+import { ENUM_ConsultationRequestStatus } from "../shared-enums";
 export default class GridColumnSettings {
   static securityService;
-  constructor(private _securityService: SecurityService) {
+
+
+  constructor(private _securityService: SecurityService
+  ) {
+    console.log("GridColumnSettings.insIpBillPatientSearch");
+
     GridColumnSettings.securityService = this._securityService;
   }
   static LeaveRuleList = [
@@ -287,7 +294,7 @@ export default class GridColumnSettings {
     let template = "";
 
     if (GridColumnSettings.securityService.HasPermission("btn-patient-edit-view")) {
-      template += `<a danphe-grid-action="edit" class="grid-action">Edit</a>`
+      template += `<a danphe-grid-action="edit" class="grid-action">Edit</a>`;
     }
     template += `<a danphe-grid-action="showHistory" class="grid-action">History</a>
     <div class="dropdown" style="display:inline-block;">
@@ -298,7 +305,7 @@ export default class GridColumnSettings {
        <li><a danphe-grid-action="showHealthCard" >Health Card</a></li>
        <li><a danphe-grid-action="showNeighbourCard" >Visitor Card</a></li>`;
     if (GridColumnSettings.securityService.HasPermission("patient-pat-sticker-button")) {
-      template += `<li><a danphe-grid-action="showPatientSticker" >Patient Sticker</a></li>`
+      template += `<li><a danphe-grid-action="showPatientSticker" >Patient Sticker</a></li>`;
     }
     +`</ul>
     </div>`;
@@ -450,6 +457,11 @@ export default class GridColumnSettings {
       field: "",
       width: 90,
       cellRenderer: GridColumnSettings.VisitDaysPassedRenderer,
+    },
+    {
+      headerName: "SchemeName",
+      field: "SchemeName",
+      width: 90,
     },
     {
       headerName: "Queue No.",
@@ -2685,8 +2697,7 @@ export default class GridColumnSettings {
     } else {
       template = `<a danphe-grid-action="activateDeactivateBasedOnStatus" class="grid-action">
                 Activate
-               </a>
-               <a danphe-grid-action="edit" class="grid-action">Edit</a >`;
+               </a>`;
     }
     return template;
   }
@@ -2715,7 +2726,6 @@ export default class GridColumnSettings {
     } else {
       let template = `
             <a danphe-grid-action="activateDeactivateBasedOnStatus" class="grid-action">Activate</a>
-            <a danphe-grid-action="edit" class="grid-action">Edit</a >
             `;
       return template;
     }
@@ -4166,7 +4176,7 @@ export default class GridColumnSettings {
       //Transfer/Referr option is not available from previous doctor.
       const maxInternalReferralDays = +currVisit.MaxInternalReferralDays;
       const dateDiff = moment(todaysdate).diff(visitdate, 'days');
-      if (dateDiff <= maxInternalReferralDays) {
+      if (dateDiff <= maxInternalReferralDays && !currVisit.IsFreeVisit) {
         //Sud:3May'21--Hiding Transfer Action from List Visit, after Credit Note is introduced in Billing.
         // //Transfer Option not required for Followup Visits.: Sud-26June'19:[EMR-450]
         // if (currVisit.AppointmentType != "followup") {
@@ -4179,7 +4189,7 @@ export default class GridColumnSettings {
       }
       //show followup button only for past visits.
       //else {
-      if (moment(todaysdate).diff(visitdate) > 0) {
+      if ((moment(todaysdate).diff(visitdate) > 0) && !currVisit.IsFreeVisit) {
         //Ashim:31stOct2017- Commented the below condition as the requirement was changed.
         //New Req: Followup should be available to all the transfered/referred doctors.
         //if (!currVisit.IsVisitContinued)
@@ -4187,9 +4197,10 @@ export default class GridColumnSettings {
                                 followup </a>`;
       }
     }
-
-    templateHtml += `<a danphe-grid-action="printsticker" class="grid-action" title="Print OPD-Sticker">
-                               <i class="glyphicon glyphicon-print" ></i>&nbsp;sticker </a>`;
+    if (!currVisit.IsFreeVisit) {
+      templateHtml += `<a danphe-grid-action="printsticker" class="grid-action" title="Print OPD-Sticker">
+                                 <i class="glyphicon glyphicon-print" ></i>&nbsp;sticker </a>`;
+    }
 
     //sud:1June'19-commented below for MNK. un-comment it if needed for some other hospital.
     //templateHtml += `<a danphe-grid-action="generic-sticker" title="Generic Sticker" class="grid-action">
@@ -4789,7 +4800,7 @@ Department:` +
         ${params.data.GRStatus == "verified" ? "(Receive)" : ""} View
         </a>`;
     if (params.data.canGRDispatch && params.data.ReceivedRemarks != null && params.data.IsQuantityAvailableToDispatchFromGR) {
-      template += `<a danphe-grid-action="gr-dispatch" class="grid-action">GR Dispatch</a>`
+      template += `<a danphe-grid-action="gr-dispatch" class="grid-action">GR Dispatch</a>`;
     }
     return template;
   }
@@ -5132,7 +5143,7 @@ Department:` +
         <a danphe-grid-action="Receive" title="Receive Dispatched Items"
         class="grid-action ${(params.data.Status == "Pending") ? "animated-btn blinking-btn-warning grid-action" : ""}">
           Receive Items
-        </a>`
+        </a>`;
       return template;
     }
     // else if (params.data.Status == "Received") {
@@ -5221,7 +5232,6 @@ Department:` +
     } else {
       let template = `
             <a danphe-grid-action="activate/deactivate" class="grid-action">Activate</a>
-            <a danphe-grid-action="edit" class="grid-action">Edit</a >
             `;
       return template;
     }
@@ -5243,7 +5253,7 @@ Department:` +
     } else {
       template = `<a danphe-grid-action="activate-deactivate" class="grid-action">
                 Activate
-               </a>`
+               </a>`;
     }
     return template;
   }
@@ -5264,7 +5274,7 @@ Department:` +
   static ViewMedicarePatientList(params) {
     let template;
     template = `
-        <a danphe-grid-action="medicarePatient" class="grid-action">View/Edit</a>`
+        <a danphe-grid-action="medicarePatient" class="grid-action">View/Edit</a>`;
     return template;
   }
 
@@ -5587,7 +5597,7 @@ Department:` +
       Print
       </a>`
     }
-  ]
+  ];
 
   static IPPharmacyBillItemGridCol = [
     { headerName: "Date", field: "CreatedOn", width: 90 },
@@ -5615,7 +5625,7 @@ Department:` +
       width: 250,
       cellRenderer: GridColumnSettings.InvoiceEnteredCellRenderer,
     }
-  ]
+  ];
   static InvoiceDateRenderer(params) {
     if (params.data.CreatedOn)
       return moment(params.data.CreatedOn).format("YYYY-MM-DD");
@@ -5640,7 +5650,7 @@ Department:` +
     } else {
       template = `<a danphe-grid-action="No" class="grid-action">
                 No(${params.data.ReferralCount})
-               </a>`
+               </a>`;
     }
     return template;
   }
@@ -5658,7 +5668,7 @@ Department:` +
       cellRenderer: GridColumnSettings.ActivateDeactivateReferringOrganizationTemplate,
 
     },
-  ]
+  ];
   public static ActivateDeactivateReferringOrganizationTemplate(params) {
     let template;
     if (params.data.IsActive) {
@@ -5691,7 +5701,7 @@ Department:` +
       cellRenderer: GridColumnSettings.ActivateDeactivateReferringPartyTemplate,
 
     },
-  ]
+  ];
   public static ActivateDeactivateReferringPartyTemplate(params) {
     let template;
     if (params.data.IsActive) {
@@ -5724,5 +5734,90 @@ Department:` +
     { headerName: "EnteredBy", field: "EnteredBy", width: 120 },
     { headerName: "EnteredOn", field: "EnteredOn", width: 120 },
 
-  ]
+  ];
+  static ProvisionalDischargeListGridColumns = [
+    { headerName: "Ip Number", field: "IpNumber", width: 120 },
+    { headerName: "Hospital No.", field: "HospitalNumber", width: 120 },
+    { headerName: "Patient Name", field: "PatientName", width: 140 },
+    { headerName: "Age/Sex", field: "AgeSex", width: 90, cellRenderer: GridColumnSettings.AgeSexRendererPatient },
+    { headerName: "Contacts", field: "Contacts", width: 120 },
+    { headerName: "Ward/Bed", field: "WardBed", width: 120 },
+    { headerName: "Deposit Amt.", field: "DepositAmount", width: 90 },
+    { headerName: "Admitted On", field: "AdmittedOn", width: 120 },
+    { headerName: "Prov. Discharge On", field: "ProvisionalDischargedOn", width: 120 },
+    { headerName: "Prov. Discharge By", field: "ProvisionalDischargedBy", width: 90 },
+    { headerName: "Remarks", field: "Remarks", width: 90 },
+    {
+      headerName: "Actions", field: "", width: 140,
+      cellRenderer: GridColumnSettings.ProvisionalDischargeListActions
+    },
+  ];
+
+  private static ProvisionalDischargeListActions(params) {
+    let template;
+    if (params.data) {
+      template = `<a danphe-grid-action="viewDetails" class="grid-action">  <i class="fa fa-eye"></i>View Details</a>`;
+    }
+    return template;
+  }
+  BloodSugar = [
+    { headerName: "Date", field: "CreatedOn", width: 100, cellRenderer: GridColumnSettings.CreatedOnDate, },
+    { headerName: "Time", field: "CreatedOn", width: 100, cellRenderer: GridColumnSettings.CreatedOnTime, },
+    { headerName: "RBS", field: "RbsValue", width: 100 },
+    { headerName: "Insulin", field: "Insulin", width: 100 },
+    { headerName: "Entered By", field: "EnteredBy", width: 100 },
+    { headerName: "Remarks", field: "Remarks", width: 100 },
+  ];
+  static CreatedOnDate(params) {
+    return moment(params.data.CreatedOn).format("YYYY-MM-DD");
+  }
+  static CreatedOnTime(params) {
+    return moment(params.data.CreatedOn).format("h:mm A");
+    }
+
+    ConsultationRequest = [
+        { headerName: "Requested On", field: "RequestedOn", width: 100, cellRenderer: GridColumnSettings.FormatRequestedOnDateTime, },
+        { headerName: "Requesting Dept", field: "RequestingDepartmentName", width: 100, },
+        { headerName: "Requesting Dr.", field: "RequestingConsultantName", width: 100 },
+        { headerName: "Consulted On", field: "ConsultedOn", width: 100, cellRenderer: GridColumnSettings.FormatConsultedOnDateTime },
+        { headerName: "Consulting Dept", field: "ConsultingDepartmentName", width: 100 },
+        { headerName: "Consulting Dr.", field: "ConsultingDoctorName", width: 100 },
+        { headerName: "Status", field: "Status", width: 100 },
+        { headerName: "Action", field: "Status", width: 100, cellRenderer: GridColumnSettings.ConsultationRequestActionTemplate },
+    ];
+
+    static FormatRequestedOnDateTime(params) {
+        return moment(params.data.RequestedOn).format("YYYY-MM-DD HH:mm A");
+    }
+    static FormatConsultedOnDateTime(params) {
+        return moment(params.data.ConsultedOn).format("YYYY-MM-DD HH:mm A");
+    }
+
+    static ConsultationRequestActionTemplate(params) {
+        let template = ``;
+        if (params.data.Status.toLowerCase() === ENUM_ConsultationRequestStatus.Requested.toLowerCase()
+            && GridColumnSettings.securityService.HasPermission("btn-nursing-consultation-request-respond")
+        ) {
+            template += `<a danphe-grid-action="respond" class="grid-action">
+      Respond
+      </a>`;
+        }
+        if (GridColumnSettings.securityService.HasPermission("btn-nursing-consultation-request-view")) {
+            template += `<a danphe-grid-action="view" class="grid-action">
+                 View
+                </a>`;
+        }
+        return template;
+    }
+  IntakeOutput = [
+    { headerName: "Recorded On", field: "CreatedOn", width: 100, cellRenderer: GridColumnSettings.CreatedOn, },
+    { headerName: "Intake Output Type", field: "IntakeOutputType", width: 100 },
+    { headerName: "Total Intake/Output(ml)", field: "IntakeOutputValue", width: 100 },
+    { headerName: "Balance", field: "Balance", width: 100 },
+  ];
+
+
+  static CreatedOn(params) {
+    return moment(params.data.CreatedOn).format("YYYY-MM-DD HH:mm A");
+  }
 }

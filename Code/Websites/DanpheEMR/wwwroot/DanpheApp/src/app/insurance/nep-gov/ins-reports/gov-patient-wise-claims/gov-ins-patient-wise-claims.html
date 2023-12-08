@@ -74,7 +74,7 @@
           <div class="col-md-9">
             <input danphe-auto-complete id="srch_PatientList" class="form-control searchtbx" [(ngModel)]="PatientObj"
                    [list-formatter]="patientListFormatter" [source]="patientSearchAsync.bind(this)"
-                   [path-to-data]="'Results'" placeholder="Search by Patient No, NSHI No, Patient Name"
+                   [path-to-data]="'Results'" placeholder="Search by Patient No, {{GeneralFieldLabel.NSHINo}} No, Patient Name"
                    display-property-name="ShortName" value-property-name=null (ngModelChange)="patientInfoChanged()"
                    onClick="this.select();" max-num-list="500" (keyup.enter)="setFocusOnButton('btn_showClaims')"
                    [min-chars]="5" match-formatted="true" [no-match-found-text]="'Patient Not found'"
@@ -100,7 +100,7 @@
                 <i class="fa fa-male"></i>&nbsp;Age/Sex : {{selPatient.Age}}/ {{selPatient.Gender}}
               </span>
               <span *ngIf="selPatient.Ins_NshiNumber">
-                NSHI No &nbsp;:&nbsp;{{selPatient.Ins_NshiNumber}}
+                {{GeneralFieldLabel.NSHINo}} &nbsp;:&nbsp;{{selPatient.Ins_NshiNumber}}
               </span>
               <span *ngIf="selPatient.Address">
                 <i class="fa fa-user"></i>&nbsp;Address&nbsp; : &nbsp;<b>{{selPatient.Address}}</b>
@@ -134,6 +134,7 @@
                     </td>
                     <td style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
                       {{claim.ClaimCodeFirstGeneratedOn| DanpheDateTime:'format':'YYYY-MM-DD'}}&nbsp;
+                      ({{claim.ClaimCodeFirstGeneratedOn| nepaliDate:'format':'YYYY-MM-DD'}} BS)</td>
                     <td style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
                       <button class="btn green btn-success" (click)="loadSingleClaimDetails(claim)"
                               [disabled]="loading">View Details</button>
@@ -184,7 +185,7 @@
               <td style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
                 Hosp. No: {{claim.PatientCode}}&nbsp;&nbsp; <b
                    style="font-size: 15px;color: green;text-transform: uppercase;">{{claim.ShortName}}</b>
-                &nbsp;({{claim.Age}}|{{claim.Gender}})&nbsp;&nbsp;NSHI: {{claim.NSHI}}
+                &nbsp;({{claim.Age}}|{{claim.Gender}})&nbsp;&nbsp;{{GeneralFieldLabel.NSHINo}}: {{claim.NSHI}}
               </td>
               <td style="border: 1px solid #000;font-family: 'Verdana'; padding: 7px; font-size: 12px;">
                 <button class="btn green btn-success" (click)="AssignPatientInfo(claim);loadSingleClaimDetails(claim)" [disabled]="loading">

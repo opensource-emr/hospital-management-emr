@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component } from "@angular/core";
-import { FormGroup } from "@angular/forms";
+import { FormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import * as _ from "lodash";
 import * as moment from "moment";
@@ -74,7 +74,8 @@ export class BillingTransactionComponent_New {
   public currentCounter: number = null;
   public taxPercent: number = 0;
   public taxId: number = 0;
-
+  public SelectedServiceItemFromPackage = new InvoiceItem_DTO();
+  public IsPackageServiceItemEditMode: boolean = false;
   public currentBillingFlow: string;
   public param_allowAdditionalDiscOnProvisional: boolean = false;//sud:12Mar'19
   public patBillHistory = {
@@ -163,6 +164,7 @@ export class BillingTransactionComponent_New {
   public EnableShowOtherCurrency: boolean = false;
   public ShowOtherCurrency: boolean = false;
   public DisplayOtherCurrencyDetail: boolean = false;
+  public IsPackageServiceItemDiscountChanged: boolean = false;
 
   constructor(
     public billingService: BillingService,
@@ -225,7 +227,7 @@ export class BillingTransactionComponent_New {
         this.serviceBillingContext = ENUM_ServiceBillingContext.IpBilling;
       }
 
-      this.GetParametertoShowHideOtherCurrencyOption();
+      this.GetParameterToShowHideOtherCurrencyOption();
     }
   }
 
@@ -247,7 +249,7 @@ export class BillingTransactionComponent_New {
     }
   }
 
-  GetParametertoShowHideOtherCurrencyOption(): void {
+  GetParameterToShowHideOtherCurrencyOption(): void {
     const params = this.coreService.Parameters.find(a => a.ParameterGroupName === "Billing" && a.ParameterName === "ShowOtherCurrency");
     if (params) {
       this.EnableShowOtherCurrency = params.ParameterValue === "true" ? true : false;;
@@ -275,12 +277,14 @@ export class BillingTransactionComponent_New {
   public SelectedInvoiceItemForAdditionalItemCalculation = new InvoiceItem_DTO();
   public EnablePrice: boolean = false;
   public IsPackageSelectedAsItem: boolean = false;
+  public PackageDiscountAmount: number = 0;
   AssignSelectedInvoiceItem(): void {
     if (this.selectedInvoiceItem && typeof (this.selectedInvoiceItem) === 'object') {
       this.SelectedInvoiceItemForAdditionalItemCalculation = this.selectedInvoiceItem; //! Krishna, 4thApril, Using this variable only while calculating the Price of Additional Item (Incase selected Invoice Item has Additional Items)
       let DiscountPercent = 0;
       if (this.selectedInvoiceItem.IsPackageBilling) {
         DiscountPercent = this.selectedInvoiceItem.DiscountPercent;
+        this.PackageDiscountAmount = this.selectedInvoiceItem.DiscountAmount;
       } else {
         if (this.SchemePriceCategory.IsDiscountApplicable) {
           DiscountPercent = this.SchemePriceCategory.DiscountPercent;
@@ -291,6 +295,12 @@ export class BillingTransactionComponent_New {
         if (!this.selectedInvoiceItem.IsDiscountApplicable) {
           DiscountPercent = 0;
         }
+      }
+      this.doctorsList = this.billingService.GetDoctorsListForBilling();
+
+      if (this.selectedInvoiceItem.IsDoctorMandatory) {
+        this.AssignPerformer();
+
       }
 
       this.HasAdditionalServiceItem = this.HasAdditionalServiceItemSelected = this.selectedInvoiceItem.HasAdditionalBillingItems;
@@ -316,6 +326,48 @@ export class BillingTransactionComponent_New {
         IntegrationItemId: this.selectedInvoiceItem.IntegrationItemId
       });
       this.SetInvoiceItemTotalAmountIncludingDiscountAmount();
+    }
+  }
+
+  private AssignPerformer(): void {
+    /*
+             !Step 1: First update validation for Performer to required it Doctor is Mandatory for the selected item.
+             !Step 2: Check if the DoctorList of that item is null. If Doctor List is not empty, Parse the string DoctorList to local variable in the form of array of numbers.
+             !Step 3: If the DoctorList contains single doctor, Find that doctor from all AppointmentApplicable DoctorList & assign that doctor as performer of that service item.
+             !Step 4: Else if the DoctorList contains multiple doctors,
+                       !- Assign selected default to one variable, say defaultDoctors by filtering from the main DoctorList.
+                       !- Assign other remaining doctors to one variable, say otherDoctors by filtering from the main DoctorList and excluding defaultDoctors.
+                       !- Then combine defaultDoctors and otherDoctors to AssignedDoctorList in order that defaultDoctors comes first and then otherDoctors on the dropDown Menu.
+     */
+    //!Step 1:
+    this.InvoiceItemFormGroup.get('PerformerId').setValidators(this.selectedInvoiceItem.IsDoctorMandatory ? Validators.required : null);
+    this.InvoiceItemFormGroup.get('PerformerId').updateValueAndValidity();
+
+    //!Step 2:
+    if (this.selectedInvoiceItem.DefaultDoctorList !== null) {
+      let defaultDoctorsIdsList = JSON.parse(this.selectedInvoiceItem.DefaultDoctorList);
+
+      //!Step 3:
+      if (defaultDoctorsIdsList.length === 1) {
+        let doctor = this.doctorsList.find(d => d.EmployeeId === defaultDoctorsIdsList[0]);
+        if (doctor) {
+          this.SelectedPerformer = doctor;
+          this.AssignSelectedPerformer();
+        }
+      }
+
+      //!Step 4:
+      else if (defaultDoctorsIdsList.length > 1) {
+        let defaultDoctors = [];
+        defaultDoctorsIdsList.forEach(doctorId => {
+          let matchingDoctor = this.doctorsList.find(d => d.EmployeeId === doctorId);
+          if (matchingDoctor) {
+            defaultDoctors.push(matchingDoctor);
+          }
+        });
+        let otherDoctors = this.doctorsList.filter(doctor => !defaultDoctorsIdsList.includes(doctor.EmployeeId));
+        this.doctorsList = [...defaultDoctors, ...otherDoctors];
+      }
     }
   }
 
@@ -364,6 +416,12 @@ export class BillingTransactionComponent_New {
         PerformerName: this.SelectedPerformer.FullName
       });
     }
+    else {
+      this.InvoiceItemFormGroup.patchValue({
+        PerformerId: null,
+        PerformerName: null
+      });
+    }
   }
 
   CalculateAfterPriceChanged(): void {
@@ -388,6 +446,9 @@ export class BillingTransactionComponent_New {
     this.SetInvoiceItemTotalAmountIncludingDiscountAmount();
   }
   OnItemDiscountPercentChanged(): void {
+    if (this.IsPackageServiceItemEditMode) {
+      this.IsPackageServiceItemDiscountChanged = true;
+    }
     this.SetInvoiceItemTotalAmountIncludingDiscountAmount();
   }
   OnItemDiscountAmountChanged(): void {
@@ -397,12 +458,22 @@ export class BillingTransactionComponent_New {
     if (this.InvoiceItemsDto && this.InvoiceItemsDto.length) {
       if (!this.SchemePriceCategory.IsCoPayment) {
         this.model.SubTotal = this.InvoiceItemsDto.reduce((acc, curr) => curr.SubTotal + acc, 0);
-        this.model.DiscountAmount = this.InvoiceItemsDto.reduce((acc, curr) => curr.DiscountAmount + acc, 0);
-        this.model.DiscountPercent = this.billingInvoiceBlService.CalculatePercentage(this.model.DiscountAmount, this.model.SubTotal);
+        if (!this.IsPackageSelectedAsItem && !this.isPackageBilling) {
+          this.model.DiscountAmount = this.InvoiceItemsDto.reduce((acc, curr) => curr.DiscountAmount + acc, 0);
+          this.model.DiscountPercent = this.billingInvoiceBlService.CalculatePercentage(this.model.DiscountAmount, this.model.SubTotal);
+        }
+        else if (this.IsPackageServiceItemEditMode && this.IsPackageServiceItemDiscountChanged) {
+          this.model.DiscountAmount = this.InvoiceItemsDto.reduce((acc, curr) => curr.DiscountAmount + acc, 0);
+          this.model.DiscountPercent = Math.round(this.billingInvoiceBlService.CalculatePercentage(this.model.DiscountAmount, this.model.SubTotal));
+        }
+        else {
+          this.model.DiscountAmount = this.PackageDiscountAmount;
+          this.model.DiscountPercent = this.billingInvoiceBlService.CalculatePercentage(this.model.DiscountAmount, this.model.SubTotal);
+        }
         this.model.TotalAmount = this.model.SubTotal - this.model.DiscountAmount;
-
         this.model.SubTotal = CommonFunctions.parseAmount(this.model.SubTotal, 4);
         this.model.DiscountAmount = CommonFunctions.parseAmount(this.model.DiscountAmount, 4);
+
         this.model.DiscountPercent = CommonFunctions.parseAmount(this.model.DiscountPercent, 4);
         this.model.TotalAmount = CommonFunctions.parseAmount(this.model.TotalAmount, 4);
         this.model.ReceivedAmount = this.model.TotalAmount;
@@ -410,7 +481,11 @@ export class BillingTransactionComponent_New {
         this.model.Tender = this.model.ReceivedAmount;
       } else {
         this.model.SubTotal = this.InvoiceItemsDto.reduce((acc, curr) => curr.SubTotal + acc, 0);
-        this.model.DiscountAmount = this.InvoiceItemsDto.reduce((acc, curr) => curr.DiscountAmount + acc, 0);
+        if (this.IsPackageSelectedAsItem && this.isPackageBilling) {
+          this.model.DiscountAmount = this.PackageDiscountAmount;
+        } else {
+          this.model.DiscountAmount = this.InvoiceItemsDto.reduce((acc, curr) => curr.DiscountAmount + acc, 0);
+        }
         this.model.DiscountPercent = this.billingInvoiceBlService.CalculatePercentage(this.model.DiscountAmount, this.model.SubTotal);
         this.model.TotalAmount = this.model.SubTotal - this.model.DiscountAmount;
         this.model.ReceivedAmount = this.InvoiceItemsDto.reduce((acc, curr) => curr.CoPaymentCashAmount + acc, 0);
@@ -439,8 +514,13 @@ export class BillingTransactionComponent_New {
 
   SetInvoiceItemTotalAmountIncludingDiscountAmount(): void {
     this.InvoiceItemFormControls.SubTotal.setValue(this.InvoiceItemFormValue.Quantity * this.InvoiceItemFormValue.Price);
-    const DiscountAmount = this.billingInvoiceBlService.CalculateAmountFromPercentage(this.InvoiceItemFormValue.DiscountPercent, this.InvoiceItemFormValue.SubTotal);
-    this.InvoiceItemFormControls.DiscountAmount.setValue(DiscountAmount);
+    let discountAmount = 0;
+    if (this.IsPackageSelectedAsItem && this.isPackageBilling) {
+      discountAmount = Math.round(this.billingInvoiceBlService.CalculateAmountFromPercentage(this.InvoiceItemFormValue.DiscountPercent, this.InvoiceItemFormValue.SubTotal));
+    } else {
+      discountAmount = this.billingInvoiceBlService.CalculateAmountFromPercentage(this.InvoiceItemFormValue.DiscountPercent, this.InvoiceItemFormValue.SubTotal);
+    }
+    this.InvoiceItemFormControls.DiscountAmount.setValue(discountAmount);
     this.InvoiceItemFormControls.TotalAmount.setValue(this.InvoiceItemFormValue.SubTotal - this.InvoiceItemFormValue.DiscountAmount);
   }
 
@@ -521,6 +601,8 @@ export class BillingTransactionComponent_New {
       } else {
         this.AssignItemsOfSelectedPackage();
       }
+      this.InvoiceItemFormGroup.get('PerformerId').setValidators(null);
+      this.InvoiceItemFormGroup.get('PerformerId').updateValueAndValidity();
     } else {
       this.msgBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Validation Error"]);
     }
@@ -528,7 +610,7 @@ export class BillingTransactionComponent_New {
   }
   public CheckForDoubleEntry() {
     this.InvoiceItemsDto.forEach(itm => {
-      if (this.InvoiceItemsDto.filter(item => item.ServiceItemId == this.InvoiceItemDto.ServiceItemId).length > 1) {
+      if (this.InvoiceItemsDto.filter(item => item.ServiceItemId === this.InvoiceItemDto.ServiceItemId).length > 1) {
         if (!itm.IsDoubleEntry_Now && itm.ServiceItemId === this.InvoiceItemDto.ServiceItemId) {
           itm.IsDoubleEntry_Now = true;
         }
@@ -752,6 +834,9 @@ export class BillingTransactionComponent_New {
 
             this.SchemePriCeCategoryFromVisitTemp = _.cloneDeep(this.SchemePriCeCategoryFromVisit);
 
+            if (this.currPatVisitContext.ClaimCode) {
+              this.isClaimed(this.currPatVisitContext.ClaimCode, this.currPatVisitContext.PatientId);
+            }
             //sud:15Mar'19--to change VisitContext for ER patients-- moved from SearchPatient to here..
             this.ShowHideChangeVisitPopup(this.currPatVisitContext);
 
@@ -1153,7 +1238,11 @@ export class BillingTransactionComponent_New {
         case 80: {// => ALT+P comes here
           if (!this.loading) {
             this.loading = true;
-            this.PostInvoice();
+            if (this.isProvisionalBilling) {
+              this.PostProvisionalBilling();
+            } else {
+              this.PostInvoice();
+            }
           }
           break;
         }
@@ -1394,6 +1483,10 @@ export class BillingTransactionComponent_New {
       return;
     }
 
+    if (this.isClaimSuccessful) {
+      this.msgBoxService.showMessage(ENUM_DanpheHTTPResponses.Failed, ["This Visit context is claimed, create a new visit"]);
+    }
+
     if (this.model && this.model.BillingTransactionItems.length) {
       //! Krishna, 27thMarch'23 Need to add all the validations here
       this.SubmitBillingTransaction();
@@ -1557,7 +1650,7 @@ export class BillingTransactionComponent_New {
   }
   OnProvisionalAmountClick() {
     this.routeFromService.RouteFrom = "BillingTransactionProvisional";
-    this.router.navigate(['/Billing/UnpaidBills']);
+    this.router.navigate(['/Billing/ProvisionalClearance']);
   }
 
   ShowPastBillHistory(): void {
@@ -1573,6 +1666,11 @@ export class BillingTransactionComponent_New {
     if (id) {
       this.coreService.FocusInputById(id, 100);
     }
+  }
+
+  GoToNext(nextField: HTMLInputElement) {
+    nextField.focus();
+    nextField.select();
   }
 
   GoToQuantityOrOtherElement(currentElement: string, nextElement: string, secondNextelement: string): void {
@@ -1707,6 +1805,10 @@ export class BillingTransactionComponent_New {
 
   public TempServiceItemDetails = new Array<ServiceItemDetails_DTO>();
   HandlePackageBillingChange(): void {
+    this.SelectedPackage = new BillingPackages_DTO();
+    this.IsPackageSelectedAsItem = false;
+    //! This will reset the PackageServiceItemEditMode
+    this.IsPackageServiceItemEditMode = false;
     this.coreService.FocusInputById('id_input_do_package_billing');
     if (this.isPackageBilling) {
       this.msgBoxService.showMessage(ENUM_MessageBox_Status.Notice, ["Package Billing Enabled"]);
@@ -1747,6 +1849,7 @@ export class BillingTransactionComponent_New {
       serviceItem.PriceCategoryId = p.PriceCategoryId;
       serviceItem.Price = p.TotalPrice;
       serviceItem.DiscountPercent = p.DiscountPercent;
+      serviceItem.DiscountAmount = Math.round(this.billingInvoiceBlService.CalculateAmountFromPercentage(serviceItem.DiscountPercent, serviceItem.Price)); //! Krishna, 15thOct'23, Rounding is used here because Package Billing Settings uses the same mechanism to calculate DiscountAmount in Settings.
       serviceItem.IsPackageBilling = true;
 
       serviceItems.push(serviceItem);
@@ -1790,10 +1893,10 @@ export class BillingTransactionComponent_New {
 
           this.InvoiceItemsDto.push(this.InvoiceItemDto);
           this.ResetAddedInvoiceItemObj();
-          this.CalculateInvoiceTotals();
-          this.coreService.FocusInputById('id_billing_serviceItemName', 500);
         }
       });
+      this.CalculateInvoiceTotals();
+      this.coreService.FocusInputById('id_billing_serviceItemName', 500);
     }
   }
 
@@ -1993,5 +2096,56 @@ export class BillingTransactionComponent_New {
       this.OtherCurrencyDetail = null;
     }
     this.model.OtherCurrencyDetail = JSON.stringify(this.OtherCurrencyDetail);
+  }
+
+  EditPackageInvoiceServiceItem(item: InvoiceItem_DTO): void {
+    this.SelectedServiceItemFromPackage = item;
+    this.IsPackageServiceItemEditMode = true;
+    this.InvoiceItemFormControls.Quantity.setValue(this.SelectedServiceItemFromPackage.Quantity);
+    this.InvoiceItemFormControls.ItemName.setValue(this.SelectedServiceItemFromPackage.ItemName);
+    this.InvoiceItemFormControls.Price.setValue(this.SelectedServiceItemFromPackage.Price);
+    this.InvoiceItemFormControls.DiscountPercent.setValue(this.SelectedServiceItemFromPackage.DiscountPercent);
+    this.InvoiceItemFormControls.DiscountAmount.setValue(this.SelectedServiceItemFromPackage.DiscountAmount);
+    this.InvoiceItemFormControls.SubTotal.setValue(this.SelectedServiceItemFromPackage.SubTotal);
+    this.InvoiceItemFormControls.TotalAmount.setValue(this.SelectedServiceItemFromPackage.TotalAmount);
+    this.InvoiceItemFormControls.PerformerName.setValue(this.SelectedServiceItemFromPackage.PerformerName ? this.SelectedServiceItemFromPackage.PerformerName : null);
+  }
+
+  UpdatePackageServiceItemInInvoice(serviceItemId: number): void {
+    this.SelectedServiceItemFromPackage.Price = this.InvoiceItemFormControls.Price.value;
+    this.SelectedServiceItemFromPackage.DiscountPercent = this.InvoiceItemFormControls.DiscountPercent.value;
+    this.SelectedServiceItemFromPackage.DiscountAmount = this.InvoiceItemFormControls.DiscountAmount.value;
+    this.SelectedServiceItemFromPackage.SubTotal = this.InvoiceItemFormControls.SubTotal.value;
+    this.SelectedServiceItemFromPackage.TotalAmount = this.InvoiceItemFormControls.TotalAmount.value;
+    this.SelectedServiceItemFromPackage.PerformerId = this.InvoiceItemFormControls.PerformerId.value;
+    this.SelectedServiceItemFromPackage.PerformerName = this.InvoiceItemFormControls.PerformerName.value;
+    let indexOfSelectedInvoiceItem = this.InvoiceItemsDto.findIndex(item => item.ServiceItemId === serviceItemId);
+    if (indexOfSelectedInvoiceItem >= 0) {
+      this.InvoiceItemsDto[indexOfSelectedInvoiceItem] = this.SelectedServiceItemFromPackage;
+    }
+    if (this.IsPackageServiceItemDiscountChanged) {
+      this.CalculateInvoiceTotals();
+    }
+    this.ResetSelectedBillingPackageItem();
+  }
+
+  ResetSelectedBillingPackageItem(): void {
+    this.SelectedServiceItemFromPackage = null;
+    this.IsPackageServiceItemEditMode = false;
+    this.InvoiceItemFormControls.Quantity.setValue(null);
+    this.InvoiceItemFormControls.ItemName.setValue(null);
+    this.InvoiceItemFormControls.Price.setValue(null);
+    this.InvoiceItemFormControls.DiscountPercent.setValue(null);
+    this.InvoiceItemFormControls.DiscountAmount.setValue(null);
+    this.InvoiceItemFormControls.SubTotal.setValue(null);
+    this.InvoiceItemFormControls.TotalAmount.setValue(null);
+    this.InvoiceItemFormControls.PerformerName.setValue(null);
+    this.SelectedPerformer = null;
+  }
+
+  AllowProvisionalBillingChange($event): void {
+    if ($event) {
+      this.isProvisionalBilling = this.DisplayPrintProvisionalButton;
+    }
   }
 }

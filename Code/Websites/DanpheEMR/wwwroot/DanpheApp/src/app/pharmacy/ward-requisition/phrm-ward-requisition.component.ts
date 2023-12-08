@@ -17,7 +17,7 @@ import { PHRMStoreRequisitionItems } from "../shared/phrm-store-requisition-item
 import { PHRMStoreRequisition } from "../shared/phrm-store-requisition.model";
 import { DispatchItemDto, DispatchItemModel, RequisitionForDispatchModel } from "../substore-requisition-dispatch/dispensary-dispatch/phrm-requisition-for-dispatch-vm.model";
 import { CancellRequisitionDTO, GetRequisitionViewDto } from "../substore-requisition-dispatch/dispensary-request/phrm-store-requisition-details.component";
-
+import { GeneralFieldLabels } from "../../shared/DTOs/general-field-label.dto";
 @Component({
   templateUrl: "./phrm-ward-requisition.html",
   host: { '(window:keydown)': 'hotkeys($event)' }
@@ -75,7 +75,7 @@ export class WardRequisitionItems implements OnInit {
   loading: boolean = false;
   showDispatchDetailPage: boolean = false;
 
-
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(public coreService: CoreService, public dispensaryRequisitionService: DispensaryRequisitionService,
     public pharmacyBLService: PharmacyBLService,
@@ -88,8 +88,8 @@ export class WardRequisitionItems implements OnInit {
 
     this.NepaliDateInRequisitionGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RequisitionDate', false));
     this.requisitionGridColumns = GridColumnSettings.PHRMStoreRequisitionList;
-
     this.CheckReceiptSettings();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
   ngOnInit() {
     this.DispatchListGridColumns = GridColumnSettings.PHRMDispatchList;

@@ -59,6 +59,7 @@ export class TransactionViewComponent {
   public showPayeeAndCheque = false;
   public showVoucherHeadCol: boolean = false;
   public useSameVoucherTypeForReverseVoucher: boolean = true;
+  public VoucherVerificationEnable: boolean = false;
   public ReverseVoucherId: number = 0;
   public subLedgerAndCostCenterSetting = {
     "EnableSubLedger": false,
@@ -95,6 +96,8 @@ export class TransactionViewComponent {
   public set valueBtn(val: boolean) {
     this.showEditbtn = val;
   }
+
+  public AllowVoucherEditAfterVerification: boolean = false;
   // Vikas : 27th Apr 2020: This method for autofocus print button.
   autofocus() {
     window.setTimeout(function () {
@@ -115,6 +118,17 @@ export class TransactionViewComponent {
     let subLedgerParma = this.coreService.Parameters.find(a => a.ParameterGroupName === "Accounting" && a.ParameterName === "SubLedgerAndCostCenter");
     if (subLedgerParma) {
       this.subLedgerAndCostCenterSetting = JSON.parse(subLedgerParma.ParameterValue);
+    }
+    let voucherVerification = this.coreService.Parameters.find(a => a.ParameterGroupName == "Accounting" && a.ParameterName == "EnableVoucherVerification");
+    if (voucherVerification) {
+      this.VoucherVerificationEnable = JSON.parse(voucherVerification.ParameterValue);
+    }
+
+    let enableVoucherEditParam = this.coreService.Parameters.find(a => a.ParameterGroupName === "Accounting" && a.ParameterName === "AllowVoucherEditAfterVerification");
+    if (enableVoucherEditParam) {
+      let param = JSON.parse(enableVoucherEditParam.ParameterValue);
+      if (param)
+        this.AllowVoucherEditAfterVerification = param.EnableVoucherEdit;
     }
   }
 
@@ -700,6 +714,12 @@ export class TransactionViewComponent {
 
 
   SaveReverseVoucher() {
+    if (this.VoucherVerificationEnable) {
+      this.txnDetails.VerifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
+    }
+    else {
+      this.txnDetails.VerifiedBy = null;
+    }
     this.accBLService.PostToTransaction(this.txnDetails).
       subscribe(res => {
         if (res.Status == 'OK') {

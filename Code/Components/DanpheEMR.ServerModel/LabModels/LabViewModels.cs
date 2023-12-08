@@ -34,6 +34,7 @@ namespace DanpheEMR.ServerModel
         public int? SampleCreatedBy { get; set; }
 
         public string RunNumberType { get; set; }
+        public string ExternalLabSampleStatus { get; set; }
         public string LastSpecimenUsed { get; set; }
         public string LastSampleCode { get; set; }
         public string SpecimenList { get; set; }
@@ -45,6 +46,7 @@ namespace DanpheEMR.ServerModel
         public string VisitType { get; set; }
 
         public bool? IsOutsourceTest { get; set; }//Sud:22Aug'23--To show If Test is outsource or not in Collect-Sample page.
+        public int? DefaultOutsourceVendorId { get; set; }
 
         //public string SmCode { get; set; }
         //public int SmNumber { get; set; }
@@ -198,6 +200,7 @@ namespace DanpheEMR.ServerModel
         public string LabTypeName{ get; set; }
         public string ProfilePictureName { get; set; }
         public string PassPortNumber { get; set; }
+        public string WardName { get; set; }
     }
     public class LabReportTemplateVM
     {
@@ -272,6 +275,7 @@ namespace DanpheEMR.ServerModel
         public string CountrySubDivisionName { get; set; }
         public string MunicipalityName { get; set; }
         public string PassPortNumber { get; set; }
+        public string WardName { get; set; }
         //Lab Report
         public int? LabReportId { get; set; }
         public int? TemplateId { get; set; }
@@ -357,6 +361,7 @@ namespace DanpheEMR.ServerModel
 
         public string Email { get; set; }
         public bool? IsFileUploadedToTeleMedicine { get; set; }
+        public bool IsLISApplicable { get; set; }
     }
 
     public class LabTest_Temp_VM
@@ -387,6 +392,7 @@ namespace DanpheEMR.ServerModel
         public DateTime? VerifiedOn { get; set; }
         public int ResultingVendorId { get; set; }
         public int? MaxResultGroup { get; set; }
+        public bool IsLISApplicable { get; set; }
     }
 
     //end: sud: 12Sept'18 -- for Lab-Result and Reports formatting

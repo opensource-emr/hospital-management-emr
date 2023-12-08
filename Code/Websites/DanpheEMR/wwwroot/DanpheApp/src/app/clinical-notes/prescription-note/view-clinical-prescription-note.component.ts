@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
-import { NoteTemplateBLService } from "../shared/note-template.bl.service";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { CoreService } from "../../core/shared/core.service";
+import { NoteTemplateBLService } from "../shared/note-template.bl.service";
 
 
 

@@ -1,8 +1,10 @@
 import { Component } from "@angular/core";
 //Remove below imports and move the dl calling logic to bl/dl later on.
 import { Router } from "@angular/router";
+import { CoreService } from "../../../core/shared/core.service";
 import { PatientService } from '../../../patients/shared/patient.service';
 import { SecurityService } from "../../../security/shared/security.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { CallbackService } from "../../../shared/callback.service";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from "../../../shared/danphe-grid/NepaliColGridSettingsModel";
@@ -25,6 +27,7 @@ export class GovINSIPDBillingComponent {
   public allInpatList: Array<any> = [];
   public ipPatientGridColumns: Array<any> = null;
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(public dlService: DLService,
     public securityService: SecurityService,
@@ -33,13 +36,17 @@ export class GovINSIPDBillingComponent {
     public router: Router,
     public messageBoxService: MessageboxService,
     public insuranceService: GovInsuranceService,
+    public coreService: CoreService,
+
     public insuranceBlService: GovInsuranceBlService) {
     this.LoadInpatientList();
     this.LoadAllBillingItems();
     this.LoadAllDoctorsList();
     this.LoadAllEmployeeList();
     this.GetOrganizationList();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     this.ipPatientGridColumns = GridColumnSettings.insIpBillPatientSearch;
+    this.ipPatientGridColumns[3].headerName = `${this.GeneralFieldLabel.NSHINo} No`;
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('AdmittedDate', true));
   }
 

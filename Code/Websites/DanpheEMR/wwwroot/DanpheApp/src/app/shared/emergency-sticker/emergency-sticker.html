@@ -5,14 +5,15 @@
 </style>
 <div *ngIf="showSticker" class="clearfix">
     <div id="EmergencySticker"
-         style="width: 400px;height: 170px;border: 1px dotted black;padding: 10px;font-size: 12px;">
+        style="width: 400px;height: 170px;border: 1px dotted black;padding: 10px;font-size: 12px;">
         <div id="emergencyStickerPrint" style="width:370px; margin:0px;display:block;font-family:sans-serif;">
             <div style="width:100%;">
                 <div>
                     <div style="font-size:12px;">
                         <div>
                             <span>
-                                Date: {{stickerDetail.VisitDate | DanpheDateTime:'format':'YYYY-MM-DD' }}
+                                Date: {{stickerDetail.VisitDate | DanpheDateTime:'format':'YYYY-MM-DD' }} 
+                                {{stickerDetail.VisitDate | nepaliDate }}
                             </span>
                             <span style="float:right">
                                 Time: {{stickerDetail.VisitTime}}
@@ -56,13 +57,10 @@
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <div *ngIf="stickerDetail.CountryName === CountryNepal">
-                            Address: <span *ngIf="showMunicipality && stickerDetail.MunicipalityName">{{stickerDetail.MunicipalityName}}<span
-                                      *ngIf="stickerDetail.WardNumber">-{{stickerDetail.WardNumber}}</span>,
-                            </span>{{stickerDetail.CountrySubDivisionName}}
+                            Address: <span *ngIf = "showMunicipality && stickerDetail.MunicipalityName">{{stickerDetail.MunicipalityName}}<span *ngIf="stickerDetail.WardNumber">-{{stickerDetail.WardNumber}}</span>, </span>{{stickerDetail.CountrySubDivisionName}}
                         </div>
                         <div *ngIf="stickerDetail.CountryName !== CountryNepal">
-                            Address: <span *ngIf="stickerDetail.Address">{{stickerDetail.Address}}, </span>{{stickerDetail.CountrySubDivisionName}},
-                            {{stickerDetail.CountryName}}
+                          Address: <span *ngIf="stickerDetail.Address">{{stickerDetail.Address}}, </span>{{stickerDetail.CountrySubDivisionName}}, {{stickerDetail.CountryName}}
                         </div>
 
                         <div *ngIf="stickerDetail.PhoneNumber">
@@ -88,7 +86,7 @@
 
                     <div style="display: flex; justify-content: space-between; padding-top: 20px;">
                         <div *ngIf="EnableShowTicketPrice && stickerDetail.OpdTicketCharge>0"
-                             style="font-weight: bold;">
+                            style="font-weight: bold;">
                             <span> Ticket Charge: {{coreService.currencyUnit}} {{stickerDetail.OpdTicketCharge}}</span>
                         </div>
                         <div>
@@ -105,14 +103,14 @@
     </div>
     <div style="text-align:center;z-index: 4;position: relative;margin-bottom: 25px; margin-top: 15px;">
         <button class="btn green btn-success" value="" (click)="print()" id="btnPrintSticker" [disabled]="coreService.loading">
-            <span>Print</span>&nbsp;&nbsp;
-            &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+          <span>Print</span>&nbsp;&nbsp;
+          &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
         </button>
-    </div>
-
-    <select-printer [group-name]="'reg-sticker'" [storage-key]="'er-sticker'"
-                    (on-printer-change)="OnPrinterChanged($event)">
-    </select-printer>
+      </div>
+  
+      <select-printer [group-name]="'reg-sticker'" [storage-key]="'er-sticker'"
+        (on-printer-change)="OnPrinterChanged($event)">
+      </select-printer>
 </div>
 
 <app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">

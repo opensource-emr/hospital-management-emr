@@ -1,0 +1,32 @@
+<div class="clearfix">
+    <button (click)="Print()" id="id_btn_print_Dischargesumary" class="btn  btn-small btn-primary" style="float: right;margin-bottom: 15px;">Print
+        This
+        Page</button>
+    <button *ngIf="(this.hasEditDischargeSunnaryPermission && this.IsFinalSubmited)||(!this.IsFinalSubmited)" (click)="AllowEditFromView()"
+            id="id_btn_edit_Dischargesumary"
+            class="btn  btn-small btn-primary" style="float: right;margin-bottom: 15px; margin-right: 25px;">Edit</button>
+</div>
+<div id="id_discharge_summary_printpage">
+    <div>
+        <table border="0" style="width: 100%; margin: 0 auto;" cellspacing="0" cellpadding="0">
+            <tr>
+                <td colspan="1" width="20%" *ngIf="InvoiceDisplaySettings.ShowHospLogo">
+                    <img class="img-responsive" style="position: relative; top: 10px;"
+                         src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                </td>
+                <td colspan="6" width="60%" *ngIf="headerDetail && InvoiceDisplaySettings.ShowHeader">
+                    <h3 class="c_name" style="text-align: center; font-size:28px; font-weight: bold;">{{headerDetail.CustomerName}}</h3>
+                    <p class="c_paragraphs" style=" text-align: center; font-size:20px; font-weight:500;">{{headerDetail.Address}}</p>
+                    <p class="c_paragraphs" style=" text-align: center; font-size:20px; font-weight:500;">{{headerDetail.Tel}}</p>
+                </td>
+                <td colspan="1" width="20%" style="text-align: right; vertical-align: top;">
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div *ngIf="this.innerHtml">
+        <div [innerHTML]="getUpdatedContent()"></div>
+    </div>
+</div>
+<new-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</new-print-page>

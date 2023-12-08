@@ -1,0 +1,334 @@
+<style>
+  .colon {
+    float: right;
+    margin-right: 6px;
+    margin-left: 4px;
+  }
+
+  .neg-amt {
+    color: red;
+  }
+
+  .prov-icon {
+    color: #006687;
+    width: 20px;
+    height: 15px;
+    /*padding-left: 2px;
+           padding-right: 2px;*/
+  }
+
+  .prov-icon:hover {
+    font-size: 15px;
+    /*padding: 0px;*/
+  }
+
+  /*Overwritting Bootstrap's class only for this page*/
+</style>
+<div class="wrapper">
+  <div class="row">
+    <div class="caption custom-caption" style="padding-left: 16px;">
+      <h3 *ngIf="model.InvoiceType != 'ip-partial'" class="header inner-header"><i class="fa fa-money"></i>Make
+        Payment</h3>
+      <h3 *ngIf="model.InvoiceType == 'ip-partial'" class="header inner-header"><i class="fa fa-money"></i>Inpatient
+        Partial Clearance</h3>
+    </div>
+    <div class="row" style="margin-bottom: 10px;">
+      <div class="col-md-12">
+
+        <div class="col-lg-9"
+             *ngIf="(SchemePriCeCategoryFromVisit && SchemePriCeCategoryFromVisit.SchemeId && SchemePriCeCategoryFromVisit.PriceCategoryId)">
+          <scheme-pricecategory-select (on-change)="OnSchemePriceCategoryChanged($event)" [service-billing-context]="serviceBillingContext"
+                                       [selected-scheme-priceCategory]="SchemePriCeCategoryFromVisit" [show-priceCategory-selection]="false"
+                                       [disable-selection]="IsCoPayment">
+          </scheme-pricecategory-select>
+        </div>
+
+        <div class="col-lg-3 col-md-3">
+          <div class="checkbox-wrapper">
+            <div class="text-wit-btn"
+                 *ngIf="BillingRequestDisplaySettings.ItemLevelDiscount && (SchemePriceCategory.IsDiscountApplicable && SchemePriceCategory.IsDiscountEditable)">
+              <div class="icheck-inline">
+                <label for="id_chk_itm_level_discount" class="is-ref mt-checkbox mt-checkbox-outline"><input type="checkbox"
+                         id="id_chk_itm_level_discount" [(ngModel)]="ShowItemLevelDiscount" title="Item Level Discount"
+                         (change)="ItemLevelDiscountChkBoxOnChange()" />
+                  <span></span>Item Level Discount</label>
+              </div>
+            </div>
+            <div class="text-wit-btn" *ngIf="(SchemePriceCategory.IsDiscountApplicable && SchemePriceCategory.IsDiscountEditable)">
+              <div class="icheck-inline">
+                <label class="is-ref mt-checkbox mt-checkbox-outline" for="id_chk_itm_discount_amount">
+                  <input type="checkbox" id="id_chk_itm_discount_amount" [(ngModel)]="EnableDiscountField"
+                         title="Enable Discount Amount" (change)="EnableDiscountAmount()">
+                  <span></span> Enable Discount Amount</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12 col-lg-9">
+      <div class=" table-responsive" style="border: 1px solid;">
+        <table class="table doc-tbl">
+          <thead>
+            <tr style="background-color:whitesmoke">
+              <th>S.N.</th>
+              <th>Department</th>
+              <th *ngIf="BillingRequestDisplaySettings.AssignedToDr">AssignedTo Dr.</th>
+              <th>ItemName </th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th> Sub Total</th>
+              <th>Disc %</th>
+              <th>Discount Amt.</th>
+              <!-- <th> Discount</th> -->
+
+              <!-- <th>Agg.Discount</th> -->
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of model.BillingTransactionItems; let i = index">
+              <td style="padding: 7px 0px 0px 0px;">
+                <label style="text-align:center; font-size:15px; display:flex;justify-content: center;">{{i+1}}</label>
+              </td>
+              <td><input class="form-control cstm-form-control" type="text" [(ngModel)]="row.ServiceDepartmentName"
+                       style="width:150px" value="row.ServiceDepartmentName" disabled name="department"></td>
+              <td *ngIf="BillingRequestDisplaySettings.AssignedToDr"><input class="form-control cstm-form-control" type="text"
+                       [(ngModel)]="row.PerformerName" style="width:120px" disabled></td>
+              <td><input class="form-control cstm-form-control" type="text" [(ngModel)]="row.ItemName" style="width:300px" disabled
+                       name="itemnames"></td>
+              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.Quantity" style="width:60px" disabled
+                       name="quantity"></td>
+              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.Price" disabled style="width:70px "
+                       name="price"></td>
+              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.SubTotal" disabled style="width:70px"
+                       name="total"></td>
+              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.DiscountPercent"
+                       [attr.disabled]="(DisableItemLevelDiscPercent === true ? true : null)"
+                       style="width:100px " name="discountPercent"
+                       (ngModelChange)="ItemDiscountPercentChanged(i)"
+                       (wheel)="coreService.PreventNumberChangeOnScroll($event)" onclick="this.select();"></td>
+              <td><input class="form-control cstm-form-control" type="number" [(ngModel)]="row.DiscountAmount"
+                       [attr.disabled]="(DisableItemLevelDiscAmount === true ? true : null)"
+                       (ngModelChange)="ItemDiscountAmountChanged(i)"
+                       style="width:100px " name="discountAmount"
+                       (wheel)="coreService.PreventNumberChangeOnScroll($event)" onclick="this.select();"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- <div class="col-lg-3 page-bar" *ngIf="patBillHistory.IsLoaded">
+        <h3 class="header-sm inner-header-sm"> Billing History </h3>
+        <table style="width: 100%;">
+          <tr>
+            <td>Credit <b class="colon">:</b></td>
+            <td>{{patBillHistory.CreditAmount}}</td>
+          </tr>
+          <tr>
+            <td> Provisional Amount <i class="fa fa-question-circle help-about prov-icon"
+                 title="Items in current page are NOT INCLUDED in this Amount"></i> <b class="colon">:</b></td>
+            <td style="text-decoration:underline;"> {{patBillHistory.ProvisionalAmt}} </td>
+          </tr>
+          <tr>
+            <td>Total Due<b class="colon">:</b></td>
+            <td>{{patBillHistory.TotalDue}}</td>
+          </tr>
+          <tr>
+            <td>Deposit Balance <b class="colon">:</b></td>
+            <td>{{patBillHistory.DepositBalance}}</td>
+          </tr>
+          <tr>
+            <td>Balance Amount <b class="colon">:</b></td>
+            <td style="font-weight: bold;color: blue;font-size: 17px;"><span
+                    [ngClass]="{'neg-amt': patBillHistory.BalanceAmount < 0}"> {{patBillHistory.BalanceAmount}} </span></td>
+          </tr>
+        </table>
+      </div> -->
+    </div>
+
+    <div class="col-12 col-lg-3 position-fixed top-0 end-0">
+      <div class="page-bar">
+        <table class="table-borderless" style="width: 100%">
+          <tr>
+            <td> SubTotal : </td>
+            <td><input type="number" [(ngModel)]="model.SubTotal" disabled id="subtotal" name="subtotal"
+                     class="form-control"></td>
+          </tr>
+          <tr class="form-group">
+            <td>Discount % Total : </td>
+            <td style="padding-top: 5px;">
+              <input type="number" *ngIf="!ShowItemLevelDiscount" [(ngModel)]="model.DiscountPercent" (ngModelChange)="InvoiceDiscountOnChange();"
+                     name="DiscountPercent" value="{{0}}" onClick="this.select();" class="form-control"
+                     [disabled]="(DisableInvoiceDiscountPercent === true ? true : null)"
+                     (keyup.enter)="coreService.FocusInputById('tenderAmount')"
+                     (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+
+              <label class="form-control pd-managed" *ngIf="ShowItemLevelDiscount" style="background-color:#eef1f5;">
+                {{model.DiscountPercent | number : "1.4-4"}} </label>
+            </td>
+          </tr>
+          <tr class="form-group">
+            <td> Discount Amt : </td>
+            <td style="padding-top: 5px;"><input class="form-control" type="number"
+                     [disabled]="(DisableInvoiceDiscountAmount === true ? true : null)"
+                     [(ngModel)]="model.DiscountAmount" name="DiscountAmount" value="{{0}}"
+                     (ngModelChange)="InvoiceDiscountAmountChanged();"
+                     (wheel)="coreService.PreventNumberChangeOnScroll($event)"></td>
+          </tr>
+          <tr class="form-group">
+            <td>Total Amount : </td>
+            <td style="padding-top: 5px;"><input class="form-control" type="number" [(ngModel)]="model.TotalAmount"
+                     disabled name="TotalAmount"></td>
+          </tr>
+          <tr class="dot">
+            <td class="text-capitalize" colspan="2" style="font-weight: bold; border: none; color: #0773bc;">
+              <span class="text-capitalize" style="font-weight: bold; border: none;">
+                (In Words :
+                <b>
+                  {{model.TotalAmount | NumberInWords}}
+                </b>Only.)
+              </span>
+            </td>
+          </tr>
+          <tr class="ht-managed" *ngIf="EnableShowOtherCurrency">
+            <td colspan="2">
+              <label for="id_showOtherCurrency_checkbox">
+                <input type="checkbox" id="id_showOtherCurrency_checkbox" [(ngModel)]="ShowOtherCurrency"
+                       (ngModelChange)="ShowOtherCurrencyCheckBoxChanged()" style="zoom:1.25; height: auto; margin-bottom: 5px;">
+                Show Other Currency
+              </label>
+            </td>
+          </tr>
+          <tr *ngIf="DisplayOtherCurrencyDetail">
+            <td colspan="2">
+              <div class="col-md-12">
+
+                <other-currency-calculation [show-otherCurrencyCalculation]="DisplayOtherCurrencyDetail" [base-TotalAmount]="model.TotalAmount"
+                                            (otherCurrencyCalculation-Callback)="OtherCurrencyCalculationCallback($event)"></other-currency-calculation>
+
+              </div>
+            </td>
+          </tr>
+          <tr class="ht-managed">
+            <td>
+              <span style="font-size: 16px;">
+                <strong *ngIf="(SchemePriceCategory.IsCoPayment || model.PaymentMode === 'cash')">CASH:</strong>
+                <strong *ngIf="(!SchemePriceCategory.IsCoPayment && model.PaymentMode !== 'cash')">CREDIT:</strong>
+              </span>
+            </td>
+            <td>
+              <input [(ngModel)]="model.ReceivedAmount"
+                     style="font-weight:bold;height: 30px;font-size:20px !important;background-color:#0773bc; color:#fff;"
+                     class="form-control pd-managed"
+                     name="cash" type="number"
+                     (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                     onclick="this.select();"
+                     disabled>
+            </td>
+          </tr>
+          <tr class="ht-managed" *ngIf="SchemePriceCategory.IsCoPayment">
+            <td>
+              CoPay Info:
+            </td>
+            <td>
+              <span>CoPayCashAmt: </span> <span><strong>{{ model.ReceivedAmount }}</strong></span>&nbsp;
+              <span>,CoPayCreditAmt: </span><span><strong>{{ model.CoPaymentCreditAmount }}</strong></span>
+            </td>
+          </tr>
+          <tr class="form-group">
+            <td style="vertical-align: top">Remarks <b *ngIf="model.PaymentMode =='credit' || model.DiscountPercent>0"
+                 class="color-red"> *</b>: </td>
+            <td style="padding-top: 5px;"><textarea [(ngModel)]="model.Remarks" placeholder="Remarks"
+                        onClick="this.select();" class="form-control"></textarea></td>
+          </tr>
+          <tr>
+            <td>Tender: </td>
+            <td>
+              <input type="number" class="form-control" [(ngModel)]="model.Tender"
+                     (ngModelChange)="ChangeTenderAmount()" name="Tender" placeholder="Rupees"
+                     [disabled]="model.PaymentMode == 'credit'" value="{{model.TotalAmount}}" onClick="this.select();"
+                     (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
+            </td>
+          </tr>
+          <tr>
+            <td>Change/Return :</td>
+            <td><span>{{coreService.currencyUnit}}<b>{{model.Change}}</b></span></td>
+          </tr>
+
+          <tr *ngIf="deductDeposit">
+            <td>Deposit Deduction:</td>
+            <td>{{depositDeductAmount}}</td>
+          </tr>
+          <tr *ngIf="deductDeposit">
+            <td>New Deposit Balance:</td>
+            <td class="text-primary">{{newDepositBalance}}</td>
+          </tr>
+          <tr *ngIf="SchemePriceCategory.IsCoPayment">
+            <td>
+              <span style="font-size: 20px;">PaymentMode:</span>
+            </td>
+            <td>
+              <span style="font-size: 20px;"> <strong>{{SchemePriceCategory.DefaultPaymentMode.toUpperCase()}}</strong> </span>
+            </td>
+          </tr>
+          <tr *ngIf="billingService.BillingFlow !='insurance'" class="ht-managed">
+            <td colspan="2">
+              <payment-mode-info [deposit-balance]="patBillHistory.DepositBalance"
+                                 [total-amount]="model.ReceivedAmount"
+                                 [page-name]="'OPBilling'"
+                                 [default-payment-mode]="SchemePriceCategory.DefaultPaymentMode"
+                                 [is-credit-only-scheme]="SchemePriceCategory.IsCreditOnlyScheme"
+                                 [is-coPayment]="SchemePriceCategory.IsCoPayment"
+                                 [disable-paymentMode-dropdown]="DisablePaymentModeDropDown"
+                                 (on-paymentMode-change)="PaymentModeChanges($event)"
+                                 (on-creditOrganization-change)="CreditOrganizationChanges($event)"
+                                 [show-deduct-from-deposit]="'true'"
+                                 [default-credit-organization]="SchemePriceCategory.DefaultCreditOrganizationId"
+                                 (on-multiple-paymentMode)="MultiplePaymentCallBack($event)">
+              </payment-mode-info>
+
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td style="text-align:right;">
+              <input DanpheConfirmationDialog
+                     type="submit"
+                     [title]="confirmationTitle"
+                     [message]="confirmationMessage"
+                     (confirm)="handleConfirm()"
+                     (cancel)="handleCancel()"
+                     class="btn blue btn-success btn-sm"
+                     style="font-weight: bold;"
+                     [disabled]="loading"
+                     value="Print Invoice">
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--Start: Invoice Print Popup-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showInvoicePrintPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseInvoicePrint()">X</a>
+          <div>
+            <bil-print-invoice-main [invoiceNumber]="bil_InvoiceNo" [fiscalYrId]="bil_FiscalYrId"
+                                    [bil-txn-id]="bil_BilTxnId" [discharge-statement-id]="DischargeStatementId" [patient-id]="PatientId"
+                                    [patient-visit-id]="PatientVisitId"
+                                    (dischargeIp)="AfterDischargePrint($event)">
+            </bil-print-invoice-main>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--End: Invoice Print Popup-->

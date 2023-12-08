@@ -1,7 +1,6 @@
 ﻿using DanpheEMR.CommonTypes;
 using DanpheEMR.Core.Configuration;
 using DanpheEMR.DalLayer;
-using DanpheEMR.Enums;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel;
 using DanpheEMR.ServerModel.MedicalRecords;
@@ -2652,39 +2651,39 @@ namespace DanpheEMR.Controllers
         }
         private async Task<object> GetEmergencyPatientsVisitDetails(DateTime fromDate, DateTime toDate)
         {
-            var emergencyPatientsData = (from patVisit in _mrDbContext.PatientVisits
-                                         join pat in _mrDbContext.Patient on patVisit.PatientId equals pat.PatientId
-                                         join dept in _mrDbContext.Department on patVisit.DepartmentId equals dept.DepartmentId
-                                         where patVisit.VisitType == "emergency" && patVisit.BillingStatus != "returned"
-                                         && patVisit.IsActive == true
-                                         && (DbFunctions.TruncateTime(patVisit.VisitDate) >= DbFunctions.TruncateTime(fromDate)
-                                         && DbFunctions.TruncateTime(patVisit.VisitDate) <= DbFunctions.TruncateTime(toDate))
-                                         select new
-                                         {
-                                             pat.PatientId,
-                                             pat.PatientCode,
-                                             pat.Gender,
-                                             pat.PhoneNumber,
-                                             pat.Address,
-                                             pat.Age,
-                                             PatientName = pat.ShortName,
-                                             patVisit.PatientVisitId,
-                                             patVisit.VisitCode,
-                                             patVisit.VisitDate,
-                                             patVisit.PerformerId,
-                                             patVisit.PerformerName,
-                                             dept.DepartmentId,
-                                             dept.DepartmentName,
-                                             FinalDiagnosisCount = _mrDbContext.EmergencyFinalDiagnosis.Count(a => a.PatientVisitId == patVisit.PatientVisitId && pat.PatientId == patVisit.PatientId && patVisit.IsActive == true),
-                                             FinalDiagnosis = (from fd in _mrDbContext.EmergencyFinalDiagnosis
-                                                               join dg in _mrDbContext.ICDEmergencyDiseaseGroup on fd.EMER_DiseaseGroupId equals dg.EMER_DiseaseGroupId
-                                                               where patVisit.PatientVisitId == fd.PatientVisitId && patVisit.PatientId == fd.PatientId && fd.IsActive == true
-                                                               select new
-                                                               {
-                                                                   dg.ICDCode,
-                                                                   dg.EMER_DiseaseGroupName
-                                                               }).ToList()
-                                         }).ToListAsync();
+            var emergencyPatientsData = await (from patVisit in _mrDbContext.PatientVisits
+                                               join pat in _mrDbContext.Patient on patVisit.PatientId equals pat.PatientId
+                                               join dept in _mrDbContext.Department on patVisit.DepartmentId equals dept.DepartmentId
+                                               where patVisit.VisitType == "emergency" && patVisit.BillingStatus != "returned"
+                                               && patVisit.IsActive == true
+                                               && (DbFunctions.TruncateTime(patVisit.VisitDate) >= DbFunctions.TruncateTime(fromDate)
+                                               && DbFunctions.TruncateTime(patVisit.VisitDate) <= DbFunctions.TruncateTime(toDate))
+                                               select new
+                                               {
+                                                   pat.PatientId,
+                                                   pat.PatientCode,
+                                                   pat.Gender,
+                                                   pat.PhoneNumber,
+                                                   pat.Address,
+                                                   pat.Age,
+                                                   PatientName = pat.ShortName,
+                                                   patVisit.PatientVisitId,
+                                                   patVisit.VisitCode,
+                                                   patVisit.VisitDate,
+                                                   patVisit.PerformerId,
+                                                   patVisit.PerformerName,
+                                                   dept.DepartmentId,
+                                                   dept.DepartmentName,
+                                                   FinalDiagnosisCount = _mrDbContext.EmergencyFinalDiagnosis.Count(a => a.PatientVisitId == patVisit.PatientVisitId && pat.PatientId == patVisit.PatientId && patVisit.IsActive == true),
+                                                   FinalDiagnosis = (from fd in _mrDbContext.EmergencyFinalDiagnosis
+                                                                     join dg in _mrDbContext.ICDEmergencyDiseaseGroup on fd.EMER_DiseaseGroupId equals dg.EMER_DiseaseGroupId
+                                                                     where patVisit.PatientVisitId == fd.PatientVisitId && patVisit.PatientId == fd.PatientId && fd.IsActive == true
+                                                                     select new
+                                                                     {
+                                                                         dg.ICDCode,
+                                                                         dg.EMER_DiseaseGroupName
+                                                                     }).ToList()
+                                               }).ToListAsync();
             return emergencyPatientsData;
         }
         [HttpGet]
@@ -2819,6 +2818,38 @@ namespace DanpheEMR.Controllers
                new List<SqlParameter>() { new SqlParameter("@FromDate", fromDate), new SqlParameter("@ToDate", toDate) }
                , _mrDbContext);
             return InvokeHttpGetFunction(func);
+        }
+
+        [HttpGet]
+        [Route("EthnicGroupStatisticsReports")]
+        public IActionResult EthnicGroupStatisticsReports(string fromDate, string toDate)
+        {
+            Func<object> func = () => GetEthnicGroupStatisticsReports(fromDate, toDate);
+            return InvokeHttpGetFunction(func);
+        }
+
+        private object GetEthnicGroupStatisticsReports(string fromDate, string toDate)
+
+        {
+            try
+            {
+                List<SqlParameter> parameters = new List<SqlParameter>
+                {
+                 new SqlParameter("@FromDate", fromDate),
+                 new SqlParameter("@ToDate", toDate)
+                };
+
+                DataSet result = DALFunctions.GetDatasetFromStoredProc("SP_MR_EthnicGroupReport", parameters, _mrDbContext);
+                return new
+                {
+                    InPatientEthnicGroupStatisticsReports = result.Tables[0],
+                    OutPatientEthnicGroupStatisticsReports = result.Tables[1]
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex + "Couldn't get the Ethnic group wise data.");
+            }
         }
 
     }

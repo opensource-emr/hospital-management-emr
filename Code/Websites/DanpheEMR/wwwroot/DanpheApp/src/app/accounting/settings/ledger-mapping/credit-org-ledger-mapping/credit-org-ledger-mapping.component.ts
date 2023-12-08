@@ -6,6 +6,7 @@ import { AccountingService } from "../../../../accounting/shared/accounting.serv
 import { SubLedger_DTO } from "../../../../accounting/transactions/shared/DTOs/subledger-dto";
 import { CoreService } from "../../../../core/shared/core.service";
 import { SecurityService } from "../../../../security/shared/security.service";
+import { GeneralFieldLabels } from "../../../../shared/DTOs/general-field-label.dto";
 import { MessageboxService } from "../../../../shared/messagebox/messagebox.service";
 import { ENUM_ACC_ADDLedgerLedgerType, ENUM_DanpheHTTPResponses, ENUM_Data_Type, ENUM_MessageBox_Status } from "../../../../shared/shared-enums";
 import { AccountingSettingsBLService } from "../../shared/accounting-settings.bl.service";
@@ -65,6 +66,7 @@ export class CreditOrganizationLedgerMappingComponent {
     public selectedSubLedger: Array<any> = [];
     public subLedgerListForCreditOrganization: Array<SubLedger_DTO> = new Array<SubLedger_DTO>();
     public subLedgerMaster: Array<SubLedger_DTO> = new Array<SubLedger_DTO>();
+    public GeneralFieldLabel = new GeneralFieldLabels();
     public subLedgerAndCostCenterSetting = {
         "EnableSubLedger": false,
         "EnableCostCenter": false
@@ -90,6 +92,7 @@ export class CreditOrganizationLedgerMappingComponent {
         this.GetLedgerMapping();
         this.getPrimaryGroupList();
         this.getCoaList();
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
 
     public getCoaList() {
@@ -173,7 +176,7 @@ export class CreditOrganizationLedgerMappingComponent {
                 else {
                     ledgerValidation = false;
                 }
-                if (ledger.SubLedgerName.trim() === "") {
+                if (this.subLedgerAndCostCenterSetting.EnableSubLedger && ledger.SubLedgerName.trim() === "") {
                     ledgerValidation = false;
                     this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Warning, [`Please Select SubLedger Or Give SubLedgerName.`]);
                     break;

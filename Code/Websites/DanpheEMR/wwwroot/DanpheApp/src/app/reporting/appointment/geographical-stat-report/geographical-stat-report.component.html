@@ -50,7 +50,7 @@
               </label>
               <label class="mt-radio mt-radio-outline mapped mapped-outline">
                 <input type="radio" [(ngModel)]="GeoStatType" value="Municipality" name="GeoReport">
-                <span></span><b>Municipality</b>
+                <span></span><b>{{GeneralFieldLabel.Municipality}}</b>
               </label>
             </div>
 
@@ -58,7 +58,7 @@
           </div>
           <div class="col-md-4" style="margin-top: 5px;">
             <label class="col-md-5" style="margin-top: 5px;">
-              Select Municipality:
+              Select {{GeneralFieldLabel.Municipality}}:
             </label>
             <div class="col-md-7">
               <input danphe-auto-complete id="ddlMunicipality" class="form-control" [ngModelOptions]="{standalone: true}"

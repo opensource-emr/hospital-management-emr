@@ -254,7 +254,8 @@ namespace DanpheEMR.Controllers
                 IsActive = outPatientVM.IsActive,
                 MunicipalityId = outPatientVM.MunicipalityId,
                 Email = outPatientVM.Email,
-                EthnicGroup = outPatientVM.EthnicGroup
+                EthnicGroup = outPatientVM.EthnicGroup,
+                WardNumber = outPatientVM.WardNumber
             };
 
 

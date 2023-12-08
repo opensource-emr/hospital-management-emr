@@ -105,6 +105,7 @@ export class NursingInPatientComponent {
   public showFavPatGrid: boolean = false;
   public showAllPatGrid: boolean = false;
   public hasFav: boolean = false;
+  public showDietSheet: boolean = false;
   public SelectedDepartmentId: number = 0;
   private data: Array<any> = [];
   public showPoliceCase: boolean = false;
@@ -194,6 +195,7 @@ export class NursingInPatientComponent {
     this.showInPatGrid = false;
     var wardId = this.securityService.getActiveWard().WardId;
     let allPat = document.getElementById('all');
+    let diet = document.getElementById('diet');
     let favPat = document.getElementById('fav');
     this.nursingBLService
       .GetAdmittedList(this.fromDate, this.toDate, searchText, wardId)
@@ -493,10 +495,13 @@ export class NursingInPatientComponent {
     this.globalPatient.Age = data.Age;
     this.globalPatient.Address = data.Address;
     this.globalPatient.PhoneNumber = data.PhoneNumber;
+    this.globalPatient.WardId = data.BedInformation.WardId;
+    this.globalPatient.AdmittedDate = data.AdmittedDate;
+    this.globalPatient.DepartmentName = data.DepartmentName;
 
     this.globalPatient.Admissions.AdmissionDate = data.AdmittedDate;
     this.globalPatient.IsPoliceCase = data.IsPoliceCase;
-
+    this.globalPatient.VisitCode = data.VisitCode;
     this.globalVisit = this.visitService.CreateNewGlobal();
     this.globalVisit.PatientVisitId = data.PatientVisitId;
     this.globalVisit.PatientId = data.PatientId;
@@ -505,6 +510,7 @@ export class NursingInPatientComponent {
     this.globalVisit.PerformerName = data.AdmittingDoctorName;
     this.globalVisit.VisitDate = data.AdmittedDate;
     this.globalPatient.MembershipTypeId = data.MembershipTypeId;
+    this.globalPatient.BedId = data.BedInformation.BedId;
     // this.globalVisit.VisitType = data.VisitType;//sud:13June-this was coming undefined.
   }
 
@@ -551,34 +557,43 @@ export class NursingInPatientComponent {
     this.showAllPatGrid = true;
     this.showFavPatGrid = false;
     this.showPatientConsumptionGrid = false;
+    this.showDietSheet = false;
     let allPat = document.getElementById('all');
     let favPat = document.getElementById('fav');
     let patConsumption = document.getElementById('consumption-list');
+    let diet = document.getElementById('diet');
     allPat.classList.add('active');
     favPat.classList.remove('active');
     patConsumption.classList.remove('active');
+    diet.classList.remove('active');
   }
   public showFavorites() {
     this.showFavPatGrid = true;
     this.showAllPatGrid = false;
+    this.showDietSheet = false;
     this.showPatientConsumptionGrid = false;
     let favPat = document.getElementById('fav');
     let allPat = document.getElementById('all');
     let patConsumption = document.getElementById('consumption-list');
+    let diet = document.getElementById('diet');
     favPat.classList.add('active');
     allPat.classList.remove('active');
     patConsumption.classList.remove('active');
+    diet.classList.remove('active');
   }
 
   ShowPatientConsumptionList() {
     this.showPatientConsumptionGrid = true;
     this.showAllPatGrid = false;
     this.showFavPatGrid = false;
+    this.showDietSheet = false;
     let favPat = document.getElementById('fav');
     let allPat = document.getElementById('all');
-    let patConsumption = document.getElementById('consumption-list')
+    let patConsumption = document.getElementById('consumption-list');
+    let diet = document.getElementById('diet');
     favPat.classList.remove('active');
     allPat.classList.remove('active');
+    diet.classList.remove('active');
     patConsumption.classList.add('active');
     this.GetPatientConsumptionList();
   }
@@ -705,8 +720,22 @@ export class NursingInPatientComponent {
       }
     })
   }
-
+  public ShowDietSheet(): void {
+    this.showDietSheet = true;
+    this.showPatientConsumptionGrid = false;
+    this.showAllPatGrid = false;
+    this.showFavPatGrid = false;
+    let favPat = document.getElementById('fav');
+    let allPat = document.getElementById('all');
+    let diet = document.getElementById('diet');
+    let patConsumption = document.getElementById('consumption-list');
+    diet.classList.add('active');
+    favPat.classList.remove('active');
+    allPat.classList.remove('active');
+    patConsumption.classList.remove('active');
+  }
 }
+
 
 export class NursingGridColSetting {
   static serv: any;

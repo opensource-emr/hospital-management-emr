@@ -5,6 +5,7 @@ import { DLService } from "../../../shared/dl.service";
 import { CoreService } from "../../../core/shared/core.service";
 import { CommonFunctions } from "../../../shared/common.functions";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 
 @Component({
   selector: 'incentive-report-summary',
@@ -32,11 +33,14 @@ export class RPT_BIL_IncentiveReportSummaryComponent {
   };
   public currentDate: string = "";
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(
     public msgBoxServ: MessageboxService,
     public dlService: DLService,
     public coreservice: CoreService,
     public changeDetector: ChangeDetectorRef) {
+      this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
     this.currentDate = moment().format('YYYY-MM-DD');
 
     //this.LoadTDSRate();

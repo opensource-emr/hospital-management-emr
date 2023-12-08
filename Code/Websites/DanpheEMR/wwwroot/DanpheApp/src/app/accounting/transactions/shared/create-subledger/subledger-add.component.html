@@ -1,0 +1,87 @@
+<div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="ShowAddPage">
+    <div class="portlet-body form">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="modelbox-div clearfix">
+                    <div class="caption lb-caption">
+                        <h3>
+                            <span>Create SubLedger</span>
+                        </h3>
+                        <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                    </div>
+                    <form class="form-horizontal hm-form">
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Ledger<sup>*</sup><b>:</b></label>
+                                <div class="col-md-7">
+                                    <!-- <input class="form-control" maxlength="30" type="text"
+                                           id="LedgerName" [(ngModel)]="LedgerForSubLedger.LedgerName"
+                                           [ngModelOptions]="{standalone: true}" disabled
+                                           placeholder="LedgerName" style="color: #000000;" /> -->
+                                    {{LedgerForSubLedger.LedgerName}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">SubLedgerName<sup>*</sup><b>:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" maxlength="30" type="text"
+                                           id="SubLedgerName" [(ngModel)]="SelectedSubledger.SubLedgerName"
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="SubLedgerName" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Opening Balance<b>:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" maxlength="30" type="number"
+                                           id="VoucherCode" [(ngModel)]="SelectedSubledger.OpeningBalance"
+                                           (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Opening Balance" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Opening Balance Type<b>:</b> </label>
+                                <div class="col-md-7">
+                                    <div class="input-group">
+                                        <div class="icheck-inline">
+                                            <label class="mt-checkbox mt-checkbox-outline not-mapped not-mapped-outline">
+                                                <input id="Dr" name="Dr"
+                                                       [(ngModel)]="Dr" [ngModelOptions]="{standalone: true}"
+                                                       (click)="ChangeOpeningBalType($event)"
+                                                       type="checkbox" />
+                                                Dr
+                                                <span></span>
+                                            </label>
+                                            <label class="mt-checkbox mt-checkbox-outline not-mapped not-mapped-outline">
+                                                <input id="Cr" name="Cr"
+                                                       [(ngModel)]="Cr" [ngModelOptions]="{standalone: true}"
+                                                       (click)="ChangeOpeningBalType($event)"
+                                                       type="checkbox" />
+                                                Cr
+                                                <span></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-5">Description<sup>*</sup><b>:</b></label>
+                                <div class="col-md-7">
+                                    <input class="form-control" maxlength="50" type="text"
+                                           id="Description" [(ngModel)]="SelectedSubledger.Description"
+                                           [ngModelOptions]="{standalone: true}"
+                                           placeholder="Description" />
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <input type="button" class="btn green btn-success margin-7-hr" (click)="AddSubLedger()" value="Add SubLedger" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

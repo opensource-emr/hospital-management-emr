@@ -79,6 +79,7 @@ namespace DanpheEMR.ServerModel
         public bool? IsOutsourceTest { get; set; }
 
         public int? DefaultOutsourceVendorId { get; set; }
+        public bool IsLISApplicable { get; set; }
 
         //public ICollection<LabTestJSONComponentModel> LabTestComponents { get; set; }
     }

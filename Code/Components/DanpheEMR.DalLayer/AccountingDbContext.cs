@@ -90,6 +90,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<SubLedgerBalanceHistory>().ToTable("ACC_SubLedgerBalanceHistory");
             modelBuilder.Entity<MedicareTypes>().ToTable("INS_MST_MedicareType");
             modelBuilder.Entity<BankAndSuspenseAccountReconciliationMapModel>().ToTable("ACC_MAP_BankAndSuspenseAccountReconciliation");
+            modelBuilder.Entity<PHRMStoreModel>().ToTable("PHRM_MST_Store");
 
         }
         public DbSet<ChartOfAccountModel> ChartOfAccounts { get; set; }
@@ -156,6 +157,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<SubLedgerBalanceHistory> SubLedgerBalanceHistory { get; set; }
         public DbSet<MedicareTypes> MedicareType { get; set; }
         public DbSet<BankAndSuspenseAccountReconciliationMapModel> SuspenseAccountReconcileMap { get; set; }
+        public DbSet<PHRMStoreModel> PHRMStore { get; set; }
 
         #region Get inventory Goods Receipt for transfer to accounting group by Date Wise
         public DataTable INVGoodsReceiptData()

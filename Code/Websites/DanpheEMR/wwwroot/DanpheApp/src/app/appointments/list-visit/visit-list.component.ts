@@ -230,9 +230,9 @@ export class VisitListComponent {
 
             //start: sud: 3June'19--Decide whether to go for paid-referral or free-referral.
             let isRefChargeApplicable = false;
-            let refChargeParam = this.coreService.Parameters.find(p => p.ParameterGroupName == "Billing" && p.ParameterName == "ReferralChargeApplicable");
+            let refChargeParam = this.coreService.Parameters.find(p => p.ParameterGroupName === "Billing" && p.ParameterName === "ReferralChargeApplicable");
             if (refChargeParam) {
-              isRefChargeApplicable = refChargeParam.ParameterValue == "true" ? true : false;
+              isRefChargeApplicable = JSON.parse(refChargeParam.ParameterValue);
             }
 
             if (isRefChargeApplicable) {
@@ -363,7 +363,11 @@ export class VisitListComponent {
     patient.DependentId = _patient.DependentId;
     patient.Rank = _patient.Rank;
     patient.Posting = _patient.Posting;
-    patient.SSFPolicyNo = _patient.SSFPolicyNo;
+    patient.SSFPolicyNo = _patient.PolicyNo;
+    patient.PolicyNo = _patient.PolicyNo;
+    patient.LatestVisitId = _patient.PatientVisitId
+    patient.PriceCategoryId = _patient.PriceCategoryId;
+    patient.SchemeId = _patient.SchemeId;
 
   }
   //PrintSticker(row): void {

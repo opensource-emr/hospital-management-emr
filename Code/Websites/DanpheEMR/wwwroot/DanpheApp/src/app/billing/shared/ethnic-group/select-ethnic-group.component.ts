@@ -1,9 +1,12 @@
-import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
+import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { CoreService } from "../../../core/shared/core.service";
+import { EthnicGroup } from "../../../patients/shared/ethnic-group.model";
+import { PatientsBLService } from "../../../patients/shared/patients.bl.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
+import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { ENUM_DanpheHTTPResponses } from "../../../shared/shared-enums";
-import { DanpheHTTPResponse } from "../../../shared/common-models";
-import { PatientsBLService } from "../../../patients/shared/patients.bl.service";
-import { EthnicGroup } from "../../../patients/shared/ethnic-group.model";
+
 
 @Component({
     selector: "select-ethnic-group",
@@ -25,9 +28,9 @@ export class SelectEthnicGroupComponent {
     public disableSelect = false;
 
     @Input("patient-ethnic-group")
-    public set patEthnicGroup(val){
+    public set patEthnicGroup(val) {
         let data = val;
-        if(this.patientEthnicGroup !== data){
+        if (this.patientEthnicGroup !== data) {
             this.patientEthnicGroup = data;
             this.selectedEthnicGroup = this.patientEthnicGroup;
             this.onEthnicGroupChanged(this.patientEthnicGroup);
@@ -41,11 +44,14 @@ export class SelectEthnicGroupComponent {
 
 
     @Output("on-ethnic-group-change")
-    public onEthnicGroupChangeCallback  = new EventEmitter<object>();
+    public onEthnicGroupChangeCallback = new EventEmitter<object>();
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
 
-    constructor(private patientBlService: PatientsBLService, private msgBoxServ: MessageboxService) {
+
+    constructor(private patientBlService: PatientsBLService, private msgBoxServ: MessageboxService, public coreService: CoreService,) {
         this.LoadEthnicGroups();
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
 
     // ngOnInit(): void {
@@ -81,29 +87,29 @@ export class SelectEthnicGroupComponent {
             if (a.CastKeyWords.length > 0 && a.CastKeyWords.find(b => b.toLowerCase() === lastName.toLowerCase())) {
                 tempEthnic = a.EthnicGroup;
                 return;
-            } 
+            }
         });
 
         if (tempEthnic) {
             this.selectedEthnicGroup = tempEthnic;
             tempEthnic = "";
-        } else {   
+        } else {
             this.selectedEthnicGroup = this.defaultEthnicGroup;
         }
         this.onEthnicGroupChanged(this.selectedEthnicGroup);
 
     }
 
-    manualChangeOfEthnicGroup($event){
-        if($event){
+    manualChangeOfEthnicGroup($event) {
+        if ($event) {
             const ethnicGroup = $event.target.value;
             this.onEthnicGroupChanged(ethnicGroup);
         }
     }
 
-    onEthnicGroupChanged(ethnicGroup:string){
-        if(ethnicGroup){
-            this.onEthnicGroupChangeCallback.emit({ethnicGroup: ethnicGroup});
+    onEthnicGroupChanged(ethnicGroup: string) {
+        if (ethnicGroup) {
+            this.onEthnicGroupChangeCallback.emit({ ethnicGroup: ethnicGroup });
         }
     }
 

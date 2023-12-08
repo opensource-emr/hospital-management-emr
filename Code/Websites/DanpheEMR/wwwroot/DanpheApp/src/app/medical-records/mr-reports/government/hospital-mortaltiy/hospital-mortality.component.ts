@@ -203,7 +203,7 @@ export class HospitalMortalityComponent {
       }
       let nepaliExportDate = NepaliCalendarService.ConvertEngToNepaliFormatted_static(moment().format('YYYY-MM-DD'), '');
 
-      dateRange = (this.fromDate.length > 0 && this.toDate.length > 0) ? `<tr><td></td><td><b>Date Range : ${fromDateNp} To ${toDateNp}</b></td><td></td><td></td><td></td><td></td><td></td>  <td></td><td ><b> Exported Date:${moment().format('YYYY-MM-DD')}  <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><b> Exported By:${this.CurrentUser}</b></td></tr>` : '';
+      dateRange = (this.fromDate.length > 0 && this.toDate.length > 0) ? `<tr><td></td><td><b>Date Range (BS): ${fromDateNp} To ${toDateNp}</b></td><td></td><td></td><td></td><td></td><td></td>  <td></td><td ><b> Exported Date:${moment().format('YYYY-MM-DD')} (${nepaliExportDate} BS) <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><b> Exported By:${this.CurrentUser}</b></td></tr>` : '';
 
 
       CommonFunctions.ConvertHTMLTableToExcelForMedicalRecord(tableId, dateRange, workSheetName,

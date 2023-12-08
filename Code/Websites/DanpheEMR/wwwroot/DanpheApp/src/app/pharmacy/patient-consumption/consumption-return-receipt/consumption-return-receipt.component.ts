@@ -7,7 +7,7 @@ import { MessageboxService } from "../../../shared/messagebox/messagebox.service
 import { ENUM_DanpheHTTPResponseText, ENUM_MessageBox_Status } from "../../../shared/shared-enums";
 import { PharmacyBLService } from "../../shared/pharmacy.bl.service";
 import { PharmacyPatientConsumptionReturnInfo_DTO } from "../shared/phrm-patient-consumption-return-info.dto.";
-
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 @Component({
   selector: 'phrm-return-consumption-receipt',
   templateUrl: './consumption-return-receipt.component.html'
@@ -34,6 +34,8 @@ export class ConsumptionReturnReceiptComponent {
   public selectedPrinter: PrinterSettingsModel = new PrinterSettingsModel();
   public openBrowserPrintWindow: boolean = false;
   public browserPrintContentObj: any = { innerHTML: '' };
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
   @Output("call-back-print") callBackPrint: EventEmitter<object> = new EventEmitter();
 
 
@@ -42,6 +44,7 @@ export class ConsumptionReturnReceiptComponent {
     public messageBoxService: MessageboxService,
     public _dispensaryService: DispensaryService
   ) {
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
 
   ngOnInit() {

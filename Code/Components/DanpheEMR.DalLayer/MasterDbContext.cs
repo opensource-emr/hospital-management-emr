@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DanpheEMR.ServerModel;
+using DanpheEMR.ServerModel.BillingModels;
 using DanpheEMR.ServerModel.EmergencyModels;
 using DanpheEMR.ServerModel.MasterModels;
 using DanpheEMR.ServerModel.WardSupplyModels;
@@ -73,6 +74,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<PHRMCreditOrganizationsModel>().ToTable("PHRM_MST_Credit_Organization");
             modelBuilder.Entity<CreditOrganizationModel>().ToTable("BIL_MST_Credit_Organization");
             modelBuilder.Entity<ServerModel.WardSupplyModels.WardSubStoresMAPModel>().ToTable("NUR_MAP_WardSubStoresMap");
+            modelBuilder.Entity<BillMapPriceCategoryServiceItemModel>().ToTable("BIL_MAP_PriceCategoryServiceItem");
 
         }
 
@@ -120,6 +122,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<PHRMCreditOrganizationsModel> PharmacyCreditOrganizations { get; set; }
         public DbSet<CreditOrganizationModel> BillingCreditOrganization { get; set; }
         public DbSet<WardSubStoresMAPModel> WardSubStoresMapDetails { get; set; }
+        public DbSet<BillMapPriceCategoryServiceItemModel> PriceCategoryServiceItems { get; set; }
 
 
     }

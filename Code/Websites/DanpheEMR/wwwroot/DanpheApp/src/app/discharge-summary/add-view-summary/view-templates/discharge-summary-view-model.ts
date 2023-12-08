@@ -41,4 +41,11 @@ export class DischargeSummaryViewModel {
     public CreatedBy: string;
     public ConsultantName: string = null;
     public ConsultantNMC: string = null;
+
+    public DischargeConditionType: string; //Bikesh: 26-jul'23 for dynamic discharge summary
+    public DischargeConditionId: string;
+    public BabyWeight: string;
+    public ResidenceDrName: string;
+    public Anaesthetists: string;
+
 }

@@ -9,6 +9,7 @@ import { PHRMPrescription } from '../../../../pharmacy/shared/phrm-prescription.
 import { GridEmitModel } from '../../../../shared/danphe-grid/grid-emit.model';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
 import { RouteFromService } from '../../../../shared/routefrom.service';
+import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from '../../../../shared/shared-enums';
 import DispensaryGridColumns from '../../../shared/dispensary-grid.column';
 
 @Component({
@@ -71,7 +72,7 @@ export class PrescriptionListComponent implements OnInit {
       switch ($event.Action) {
         case "view": {
           this.currentPrescription = $event.Data;
-          this.pharmacyBLService.GetPrescriptionItems(this.currentPrescription.PatientId, this.currentPrescription.PrescriberId)
+          this.pharmacyBLService.GetPrescriptionItems(this.currentPrescription.PatientId, this.currentPrescription.PrescriberId, this.currentPrescription.PrescriptionId)
             .subscribe(res => {
               if (res.Status == 'OK' && res.Results.length > 0) {
                 this.currentPrescription.PHRMPrescriptionItems = res.Results;
@@ -91,24 +92,42 @@ export class PrescriptionListComponent implements OnInit {
     }
 
   }
+
   Dispatch() {
-    this.pharmacyService.PatientId = this.currentPrescription.PatientId;
-    this.pharmacyService.PrescriberId = this.currentPrescription.PrescriberId;
-    //get patient details by pat id and set to patient service for sale use
-    this.pharmacyBLService.GetPatientByPatId(this.pharmacyService.PatientId)
+    this.pharmacyBLService.UpdatePrescriptionItemStatus(this.currentPrescription.PatientId)
       .subscribe(res => {
-        if (res.Status == 'OK') {
-          this.CallBackAfterPatGet(res.Results);
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Success, ["Prescription Item is dispatched"]);
+          this.isShowPrescriptionDetail = false;
+          this.LoadPrescriptions();
         }
         else {
-          this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, [res.ErrorMessage]);
         }
       },
         err => {
-          this.msgBoxServ.showMessage("error", ["failed to get  patients"]);
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ["failed to dispatch"]);
 
         });
   }
+  // Dispatch() {
+  //   this.pharmacyService.PatientId = this.currentPrescription.PatientId;
+  //   this.pharmacyService.PrescriberId = this.currentPrescription.PrescriberId;
+  //   //get patient details by pat id and set to patient service for sale use
+  //   this.pharmacyBLService.GetPatientByPatId(this.pharmacyService.PatientId)
+  //     .subscribe(res => {
+  //       if (res.Status == 'OK') {
+  //         this.CallBackAfterPatGet(res.Results);
+  //       }
+  //       else {
+  //         this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+  //       }
+  //     },
+  //       err => {
+  //         this.msgBoxServ.showMessage("error", ["failed to get  patients"]);
+
+  //       });
+  // }
   ////Method to get patient details by Patient Id for set value to patient service
   public CallBackAfterPatGet(results) {
     try {

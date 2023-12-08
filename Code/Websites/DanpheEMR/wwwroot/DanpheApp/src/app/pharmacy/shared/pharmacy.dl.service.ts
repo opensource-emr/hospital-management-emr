@@ -5,7 +5,6 @@ import { InvoiceDetailToBeReturn } from '../../dispensary/dispensary-main/sales-
 import { PHRMPatientConsumptionItem } from '../patient-consumption/shared/phrm-patient-consumption-item.model';
 import { PHRMPatientConsumption } from '../patient-consumption/shared/phrm-patient-consumption.model';
 import { PHRMPurchaseOrder } from './phrm-purchase-order.model';
-import { PHRMInvoiceItemsModel } from './phrm-invoice-items.model';
 
 
 @Injectable()
@@ -605,9 +604,9 @@ export class PharmacyDLService {
     return this.http.get<any>("/api/PharmacyPrescription/PatientsPrescriptions", this.options);
   }
   //GET: Prescription Items list by PatientId && ProviderId for sale purpose
-  public GetPrescriptionItems(PatientId: number, PrescriberId: number) {
+  public GetPrescriptionItems(PatientId: number, PrescriberId: number, PrescriptionId: number) {
     try {
-      return this.http.get<any>("/api/Pharmacy?reqType=getPrescriptionItems&patientId=" + PatientId + "&prescriberId=" + PrescriberId, this.options);
+      return this.http.get<any>(`/api/PharmacySales/PrescriptionItems?patientId=${PatientId}&prescriberId=${PrescriberId}&prescriptionId=${PrescriptionId}`, this.options);
     }
     catch (ex) {
       throw ex;
@@ -1698,6 +1697,15 @@ export class PharmacyDLService {
   }
   public GetProvisionalReturns(FromDate: string, ToDate: string, StoreId: number) {
     return this.http.get(`/api/PharmacySalesReturn/ProvisionalReturns?fromDate=${FromDate}&toDate=${ToDate}&storeId=${StoreId}`, this.options);
+  }
+
+  public UpdatePrescriptionItemStatus(PatientId: number) {
+    try {
+      return this.http.put<any>(`/api/PharmacySales/UpdatePrescriptionOrderStatus?patientId=${PatientId}`, this.options);
+    }
+    catch (ex) {
+      throw ex;
+    }
   }
 
 }

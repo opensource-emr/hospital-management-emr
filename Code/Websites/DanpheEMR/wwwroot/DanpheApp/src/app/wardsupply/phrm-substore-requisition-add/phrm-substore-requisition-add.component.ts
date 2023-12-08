@@ -16,6 +16,7 @@ import WARDGridColumns from '../shared/ward-grid-cloumns';
 import { WardSupplyBLService } from '../shared/wardsupply.bl.service';
 import { PHRMSubStoreRequisitionDispatchToReceive_DTO } from './shared/phrm-substore-requisition-dispatch-to-receive.dto';
 import { PharmacyWardRequisitionVerifier_DTO } from './shared/phrm-ward-requisition-verifier.dto';
+import { GeneralFieldLabels } from '../../shared/DTOs/general-field-label.dto';
 @Component({
   selector: 'app-requisition-add',
   templateUrl: './phrm-substore-requisition-add.component.html',
@@ -49,7 +50,7 @@ export class PHRMSubStoreRequisitionAddComponent implements OnInit {
   IsVerificationActivated: boolean = false;
   VerifierList: PharmacyWardRequisitionVerifier_DTO[] = [];
 
-
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(
     public phrmBLService: PharmacyBLService,
     public phrmService: PharmacyService,
@@ -64,7 +65,7 @@ export class PHRMSubStoreRequisitionAddComponent implements OnInit {
     this.GetPharmacyBillingHeaderParameter();
     this.PHRMWardRequisitionGridColumns = WARDGridColumns.WARDRequestList;
     this.LoadVerifiersForRequisition();
-
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
   ngOnInit(): void {
     this.setFocusById(`itemName${0}`);

@@ -12,6 +12,7 @@ import { PrinterSettingsModel } from '../../../settings-new/printers/printer-set
 import { CommonFunctions } from '../../../shared/common.functions';
 import { CoreService } from '../../../core/shared/core.service';
 import { ENUM_PrintingType } from '../../../settings-new/printers/printer-settings.model';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 @Component({
     templateUrl: './provisional-return.html'
 })
@@ -38,6 +39,7 @@ export class PHRMProvisionalReturnComponent {
     //we're assigning these values to separate child component afterwards..
     public openBrowserPrintWindow: boolean = false;
     public browserPrintContentObj: any;
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
     constructor(public pharmacyBLService: PharmacyBLService,
         public msgBoxServ: MessageboxService,
@@ -48,6 +50,7 @@ export class PHRMProvisionalReturnComponent {
         this.toDate = moment().format('YYYY-MM-DD');
         this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('LastCreditBillDate', false));
         // this.GetAllProvisionalReturn();
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
     //must be implemented later in dispensary model
     //gets summary of all patients

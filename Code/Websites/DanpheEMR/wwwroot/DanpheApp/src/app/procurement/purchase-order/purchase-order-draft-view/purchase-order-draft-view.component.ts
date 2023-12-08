@@ -10,7 +10,7 @@ import { ENUM_DanpheHTTPResponseText, ENUM_MessageBox_Status } from '../../../sh
 import { ProcurementBLService } from '../../shared/procurement.bl.service';
 import { PurchaseOrderDraftItem } from '../purchase-order-draft-item.model';
 import { PurchaseOrderDraft } from '../purchase-order-draft.model';
-
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 @Component({
     selector: 'purchase-order-draft-view',
     templateUrl: './purchase-order-draft-view.html',
@@ -25,9 +25,12 @@ export class PurchaseOrderDraftViewComponent implements OnInit {
     public callBackClose: EventEmitter<Object> = new EventEmitter<Object>()
     public showPurchaseOrderDraftDiscardPopup: boolean = false;
     public showPurchaseOrderDraftAddEditPage: boolean = false;
+
+    public GeneralFieldLabel = new GeneralFieldLabels();
     constructor(public inventoryService: InventoryService, public procBLService: ProcurementBLService, public messageBoxService: MessageboxService, public router: Router, public coreService: CoreService, public inventoryBlService: InventoryBLService) {
         this.GetInventoryBillingHeaderParameter();
         this.LoadPurchaseOrderDraftDetails(this.inventoryService.DraftPurchaseOrderId);
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
     ngOnInit() {
     }

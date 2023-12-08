@@ -8,6 +8,7 @@ import { PatientsBLService } from '../../shared/patients.bl.service';
 //import { CoreDLService } from '../../../../core/shared/core.dl.service';
 import * as moment from 'moment/moment';
 import { UnicodeService } from "../../../common/unicode.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { NepaliCalendarService } from '../../../shared/calendar/np/nepali-calendar.service';
 import { NepaliDate } from '../../../shared/calendar/np/nepali-dates';
 import { CommonFunctions } from "../../../shared/common.functions";
@@ -42,6 +43,10 @@ export class PatientBasicInfoComponent implements IRouteGuard {
   public showLocalName: boolean = true;
   public submitDone: boolean = true;
 
+  //public Muncipalitylable: string = "";
+  public showNam_Thar: boolean = true;
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   // @Output('emitToRegisterButton')
   // public emitToRegisterButton: EventEmitter<boolean>  = new EventEmitter<boolean>();
   constructor(public unicode: UnicodeService, _serv: PatientService,
@@ -51,6 +56,13 @@ export class PatientBasicInfoComponent implements IRouteGuard {
     public npCalendarService: NepaliCalendarService,
     public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef) {
+
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+    this.showNam_Thar = this.GeneralFieldLabel.showNam_Thar;
+    /*var Muncipalitylable = JSON.parse(coreService.Parameters.find(p => p.ParameterGroupName == "Patient" && p.ParameterName == "Municipality").ParameterValue);
+    if (Muncipalitylable) {
+      this.Muncipalitylable = Muncipalitylable.Municipality;
+    }*/
 
     if (this.coreService.Masters.UniqueDataList && this.coreService.Masters.UniqueDataList.UniqueAddressList) {
       this.olderAddressList = this.coreService.Masters.UniqueDataList.UniqueAddressList;
@@ -222,7 +234,6 @@ export class PatientBasicInfoComponent implements IRouteGuard {
     }
     return countryId;
   }
-
 
 
   NepCalendarOnDateChange() {

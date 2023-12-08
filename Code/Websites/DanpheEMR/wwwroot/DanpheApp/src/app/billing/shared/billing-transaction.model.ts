@@ -97,6 +97,7 @@ export class BillingTransaction {
   public CoPaymentCreditAmount: number = 0;
   public BillingTxnCreditStatus: Array<BillingTransactionCreditStatus> = new Array<BillingTransactionCreditStatus>();
   public PatientMapPriceCategoryId: number = null;
+  public PriceCategoryId: number = null;
   public IsMedicarePatientBilling: boolean = false;
   public SchemeId: number = null;
   public MemberNo: string = null;
@@ -106,6 +107,7 @@ export class BillingTransaction {
   public InvoiceOf: string = ''; //* Krishna, 24thApril'23, Added this to identify Pharmacy invoice and Billing Invoice in Settlement Page
   public VisitType: string = ENUM_VisitType.outpatient; //Bibek 14thJune'23
   public OtherCurrencyDetail: string = null;
+  public IsProvisionalDischargeCleared: boolean = false;
   constructor() {
     this.CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");
   }

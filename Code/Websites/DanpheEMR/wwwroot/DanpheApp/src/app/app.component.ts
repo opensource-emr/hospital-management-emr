@@ -24,7 +24,7 @@ import { LabTypesModel } from './labs/lab-selection/lab-type-selection.component
 import { DanpheHTTPResponse } from './shared/common-models';
 import { DanpheCache, MasterType } from './shared/danphe-cache-service-utility/cache-services';
 import { NavigationService } from './shared/navigation-service';
-import { ENUM_LocalStorageKeys, ENUM_ServiceBillingContext } from './shared/shared-enums';
+import { ENUM_CalendarTypes, ENUM_DanpheHTTPResponses, ENUM_LocalStorageKeys, ENUM_MessageBox_Status, ENUM_ServiceBillingContext } from './shared/shared-enums';
 // import { parse } from 'path';
 
 
@@ -47,7 +47,7 @@ export class AppComponent {
   public empPre = { np: false, en: false };
   public selectedDatePref: string = "";
   public defaultCal = "";
-
+  public EnableEnglishCalendarOnly: boolean = false;
   constructor(public _http: HttpClient, _serv: PatientService,
     public router: Router,
     public VisService: VisitService,
@@ -74,7 +74,7 @@ export class AppComponent {
     this.GetAllValidRouteList();
     this.http = _http;
     //we're initializing parameters in the First component that will be loaded into the application.
-    //i.e: bootstrap component. 
+    //i.e: bootstrap component.
     this.coreService.InitializeParameters().subscribe(res => {
       this.CallBackLoadParameters(res);
     });
@@ -114,7 +114,7 @@ export class AppComponent {
     this.LoadAccountingHospitalInfo();
 
     //to show-hide loading image when route changes from one to another.
-    //we've to subscribe to the router event to do that. 
+    //we've to subscribe to the router event to do that.
     router.events.subscribe((event: RouterEvent) => {
       this.navigationInterceptor(event);
     });
@@ -142,11 +142,11 @@ export class AppComponent {
     this.coreService.getCalenderDatePreference().subscribe(res => {
       this.coreService.SetCalenderDatePreference(res);
       if (this.coreService.DatePreference != "") {
-        if (this.coreService.DatePreference == 'en') {
-          this.DatePreferenceData('en');
+        if (this.coreService.DatePreference == 'np') {
+          this.DatePreferenceData('np');
         }
         else {
-          this.DatePreferenceData('np');
+          this.DatePreferenceData('en');
         }
       }
     });
@@ -172,7 +172,7 @@ export class AppComponent {
 
   // Sets initial value to true to show loading spinner on first load
   loading: boolean = true;
-  public loadingScreen: boolean = false; //default not showing loading screen 
+  public loadingScreen: boolean = false; //default not showing loading screen
   ngAfterViewChecked() {
     this.changeDetector.detectChanges();
   }
@@ -182,7 +182,7 @@ export class AppComponent {
     this.elementRef.nativeElement.setAttribute('loginToken', ''); //! We need to clear the elementRef variable otherwise it will display our token into SourceCode, Krishna,13than'23
   }
 
-  //this function takes parameter value from database for shwo or hide every http request loading screen   
+  //this function takes parameter value from database for shwo or hide every http request loading screen
   setLoadingScreenVal() {
     try {
       var parVal = this.coreService.Parameters.filter(p => p.ParameterName == "showLoadingScreen" && p.ParameterGroupName.toLowerCase() == "common");
@@ -300,7 +300,7 @@ export class AppComponent {
         });
   }
 
-  //sud: 20June'20--To Do Later-- Bring ACtive hospital and assign to security service.. 
+  //sud: 20June'20--To Do Later-- Bring ACtive hospital and assign to security service..
   // GetActiveAccHospital(): void {
   //   this.securityBlService.GetActiveBillingCounter()
   //     .subscribe(res => {
@@ -364,7 +364,7 @@ export class AppComponent {
   }
 
 
-  //set valid permissions of user 
+  //set valid permissions of user
   //Ajay 09-10-2018
   SetValidUserPermissions(): void {
     this.securityBlService.GetValidUserPermissionList()
@@ -387,6 +387,7 @@ export class AppComponent {
         });
   }
 
+
   public CallBackLoadParameters(res) {
     if (res.Status == "OK") {
       this.coreService.Parameters = res.Results;
@@ -399,12 +400,14 @@ export class AppComponent {
       //commented: customername, landingpage, empilabels etc for UAT: sudarshan--13jul2017
       //this.pageParameters.CustomerName = res.Results.filter(a => a.ParameterName == 'CustomerName')[0]["ParameterValue"];
       //this.pageParameters.LandingPageCustLogo = res.Results.filter(a => a.ParameterName == 'LandingPageCustLogo')[0]["ParameterValue"];
-      //remove below hardcode value for image path as possible..sudarshan:13Apr'17-- 
+      //remove below hardcode value for image path as possible..sudarshan:13Apr'17--
       //this.pageParameters.LandingPageCustLogo = "/themes/theme-default/images/hospitals-logo/" + this.pageParameters.LandingPageCustLogo;
       //this.pageParameters.EmpiLabel = res.Results.filter(a => a.ParameterName == 'UniquePatientIdLabelName')[0]["ParameterValue"];
 
       //this.pageParameters.CustomerName = res.Results.filter(a => a.ParameterName == 'CustomerName')[0];
       //this.pageParameters.Logo
+      //! Check for EnglishCalendar Parameter and Set default date preference to English if EnableEnglishCalendarOnly is enabled.
+      this.CheckForEnglishCalendarParameterAndSetDefaultPreference();
     }
     else {
 
@@ -414,7 +417,23 @@ export class AppComponent {
     }
   }
 
+  CheckForEnglishCalendarParameterAndSetDefaultPreference(): void {
+    const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+    if (param && param.ParameterValue) {
+      const paramValue = JSON.parse(param.ParameterValue);
+      this.EnableEnglishCalendarOnly = paramValue;
 
+      if (this.EnableEnglishCalendarOnly) {
+        this.empPre.np = false;
+        this.empPre.en = true;
+        this.selectedDatePref = ENUM_CalendarTypes.English;
+        this.defaultCal = "English (AD)";
+        this.coreService.DatePreference = ENUM_CalendarTypes.English;
+
+        this.SaveEmpPref(); //! this is to save default date into employee preference;
+      }
+    }
+  }
 
   DownloadUserManual() {
     this.dlService.ReadExcel("/Home/GetUserManual").map(res => res)
@@ -449,7 +468,7 @@ export class AppComponent {
 
   }
 
-  // START: VIKAS : default caledar date preference for user 
+  // START: VIKAS : default caledar date preference for user
   openShowDatePreference() {
     this.showDatePopup = true;
   }
@@ -487,13 +506,15 @@ export class AppComponent {
   SaveEmpPref() {
     this.dlService.Add(this.selectedDatePref, "/api/Core/EmployeeDatePreference")
       .subscribe(res => {
-        if (res.Status = "OK") {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           let data = res.Results;
           this.coreService.DatePreference = (data != null) ? data.PreferenceValue : null;
           if (this.coreService.DatePreference != null) {
             this.DatePreferenceData(this.coreService.DatePreference);
           }
-          this.msgBoxServ.showMessage('success', ['Saved your date preference']);
+          if (!this.EnableEnglishCalendarOnly) {
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Success, ['Saved your date preference']);
+          }
           this.Close();
         }
       })

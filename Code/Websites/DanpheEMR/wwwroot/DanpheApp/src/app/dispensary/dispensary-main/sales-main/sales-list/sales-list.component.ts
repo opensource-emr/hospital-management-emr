@@ -9,6 +9,7 @@ import { PHRMInvoiceReturnModel } from '../../../../pharmacy/shared/phrm-invoice
 import { PHRMInvoiceModel } from '../../../../pharmacy/shared/phrm-invoice.model';
 import { PHRMStoreModel } from '../../../../pharmacy/shared/phrm-store.model';
 import { SecurityService } from '../../../../security/shared/security.service';
+import { GeneralFieldLabels } from '../../../../shared/DTOs/general-field-label.dto';
 import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../../shared/danphe-grid/NepaliColGridSettingsModel';
 import { GridEmitModel } from '../../../../shared/danphe-grid/grid-emit.model';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
@@ -40,6 +41,8 @@ export class SalesListComponent implements OnInit {
   public pharmacyReceipt: PharmacyReceiptModel = new PharmacyReceiptModel();
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   public currentDispensary: PHRMStoreModel;
   public isCurrentDispensaryInsurance: boolean;
   loading: boolean = false;
@@ -54,6 +57,7 @@ export class SalesListComponent implements OnInit {
     private _dispensaryService: DispensaryService,
     private coreService: CoreService
 
+
   ) {
     this.fromDate = moment().format('YYYY-MM-DD');
     this.toDate = moment().format('YYYY-MM-DD');
@@ -62,6 +66,11 @@ export class SalesListComponent implements OnInit {
     this.saleGridColumns = this.isCurrentDispensaryInsurance ? DispensaryGridColumns.PHRMInsuranceSaleList : DispensaryGridColumns.PHRMSaleList;
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('CreateOn', false));
     this.checkSalesCustomization();
+    if (this.isCurrentDispensaryInsurance) {
+
+      this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+      this.saleGridColumns[2].headerName = `${this.GeneralFieldLabel.NSHINo} No.`;
+    }
   }
   ngOnInit() {
     // To add VAT amount column in the grid.

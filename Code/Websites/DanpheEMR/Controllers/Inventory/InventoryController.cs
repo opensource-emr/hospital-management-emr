@@ -10,6 +10,7 @@ using DanpheEMR.Services;
 using DanpheEMR.Services.Inventory.DTO.InventoryRequisition;
 using DanpheEMR.Services.Inventory.DTO.RequisitionDispatch;
 using DanpheEMR.Services.Verification;
+using DanpheEMR.Services.WardSupply.Inventory.Requisition.DTOs;
 using DanpheEMR.Utilities;
 using DanpheEMR.ViewModel;
 using DanpheEMR.ViewModel.Inventory;
@@ -18,6 +19,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Ocsp;
 using Syncfusion.XlsIO;
 using System;
 using System.Collections.Generic;
@@ -169,136 +171,82 @@ namespace DanpheEMR.Controllers
         }
         private object GetRequisitionItemsForViewing(int requisitionId)
         {
-            var reqdetail = _inventoryDbContext.Requisitions.Where(req => req.RequisitionId == requisitionId).Select(req => new { req.RequisitionDate, req.RequisitionNo, req.IssueNo, req.RequisitionStatus, req.Remarks, req.VerificationId, req.IsDirectDispatched }).FirstOrDefault();
 
-            var requisitionItems = (from reqItems in _inventoryDbContext.RequisitionItems
-                                    join itm in _inventoryDbContext.Items on reqItems.ItemId equals itm.ItemId
-                                    join grplj in _inventoryDbContext.GoodsReceiptItems on itm.ItemId equals grplj.ItemId into reqItemLJ
-                                    where reqItems.RequisitionId == requisitionId && (reqdetail.RequisitionStatus == "withdrawn" || reqdetail.RequisitionStatus == "cancelled" || reqdetail.RequisitionStatus == "complete" || reqItems.IsActive == true)
-                                    from reqItm in reqItemLJ.DefaultIfEmpty()
-                                    select new
+            var requisition = (from req in _inventoryDbContext.Requisitions.Where(req => req.RequisitionId == requisitionId)
+                               join emp in _inventoryDbContext.Employees on req.CreatedBy equals emp.EmployeeId
+                               join dis in _inventoryDbContext.Dispatch on req.RequisitionId equals dis.RequisitionId into dispGroup
+                               from dispatch in dispGroup.DefaultIfEmpty()
+                               join dispEmp in _inventoryDbContext.Employees on dispatch.CreatedBy equals dispEmp.EmployeeId into DispEmpGroup
+                               from dispatchEmp in DispEmpGroup.DefaultIfEmpty()
+                               select new SubStoreRequisition_DTO
+                               {
+                                   CreatedOn = req.CreatedOn,
+                                   RequisitionNo = req.RequisitionNo,
+                                   IssueNo = req.IssueNo,
+                                   DispatchNo = dispatch.DispatchNo,
+                                   CreatedByName = emp.FullName,
+                                   ReceivedBy = dispatchEmp != null ? dispatchEmp.FullName : null,
+                                   Remarks = req.Remarks,
+                                   IsDirectDispatched = req.IsDirectDispatched,
+                                   RequisitionStatus = req.RequisitionStatus,
+                                   VerificationId = req.VerificationId,
+                               }).FirstOrDefault();
+
+
+            var requisitionItems = (from reqitm in _inventoryDbContext.RequisitionItems.Where(reqitm => reqitm.RequisitionId == requisitionId)
+                                    join emp in _inventoryDbContext.Employees on reqitm.CancelBy equals emp.EmployeeId into cancelledByGroup
+                                    from cancelledDetails in cancelledByGroup.DefaultIfEmpty()
+                                    join itm in _inventoryDbContext.Items on reqitm.ItemId equals itm.ItemId
+                                    join dispitmGrouped in (
+                                                    from dispitm in _inventoryDbContext.DispatchItems.Where(disitm => disitm.RequisitionId == requisitionId)
+                                                    group dispitm by new { dispitm.ItemId, dispitm.RequisitionItemId, dispitm.ReceivedById } into grouped
+                                                    select new
+                                                    {
+                                                        grouped.Key.ItemId,
+                                                        grouped.Key.RequisitionItemId,
+                                                        grouped.Key.ReceivedById,
+                                                        DispatchedQuantity = grouped.Sum(x => x.DispatchedQuantity)
+                                                    }
+                                                ) on new { reqitm.RequisitionItemId, reqitm.ItemId } equals new { dispitmGrouped.RequisitionItemId, dispitmGrouped.ItemId } into dispitmGroupedJoin
+                                    from dispitm in dispitmGroupedJoin.DefaultIfEmpty()
+                                    join disEmp in _inventoryDbContext.Employees on dispitm.ReceivedById equals disEmp.EmployeeId into disEmpGroupedJoin
+                                    from dispatchingEmployee in disEmpGroupedJoin.DefaultIfEmpty()
+                                    select new SubStoreRequisitionItems_DTO
                                     {
-                                        reqItems.ItemId,
-                                        reqItems.RequisitionItemId,
-                                        reqItems.PendingQuantity,
-                                        reqItems.Quantity,
-                                        reqItems.Remark,
-                                        reqItems.ReceivedQuantity,
-                                        reqItems.CreatedBy,
-                                        reqItems.CancelQuantity,
-                                        reqItems.CancelBy,
-                                        reqItems.FirstWeekQty,
-                                        reqItems.SecondWeekQty,
-                                        reqItems.ThirdWeekQty,
-                                        reqItems.FourthWeekQty,
-                                        reqItems.MINDate,
-                                        reqItems.MINNo,
-                                        reqItems.MSSNO,
-                                        reqItems.CancelOn,
-                                        reqItems.CancelRemarks,
-                                        // CreatedByName= emp.FirstName +' '+emp.LastName,
-                                        CreatedOn = reqdetail.RequisitionDate,
-                                        reqItems.RequisitionItemStatus,
-                                        itm.ItemName,
-                                        itm.Code,
-                                        reqItems.RequisitionId,
-                                        reqdetail.IssueNo,
-                                        reqdetail.RequisitionNo,
-                                        ItemRate = (reqItm != null) ? reqItm.ItemRate : 0,
-                                        reqItems.IsActive,
-                                        reqItems.ItemCategory
-                                    }
-                                 ).ToList();
-            var employeeList = (from emp in _inventoryDbContext.Employees select emp).ToList();
+                                        RequisitionId = reqitm.RequisitionId,
+                                        RequisitionItemId = reqitm.RequisitionItemId,
+                                        RequisitionNo = reqitm.RequisitionNo,
+                                        RequisitionItemStatus = reqitm.RequisitionItemStatus,
+                                        Remark = reqitm.Remark,
+                                        CreatedBy = reqitm.CreatedBy,
+                                        CreatedOn = reqitm.CreatedOn,
+                                        Quantity = reqitm.Quantity,
+                                        PendingQuantity = reqitm.PendingQuantity,
+                                        ReceivedQuantity = dispitm != null ? dispitm.DispatchedQuantity : 0,
+                                        DispatchedQuantity = dispitm != null ? dispitm.DispatchedQuantity : 0,
+                                        CancelQuantity = reqitm.CancelQuantity ?? 0,
+                                        CancelBy = reqitm.CancelBy,
+                                        CancelOn = reqitm.CancelOn,
+                                        CancelRemarks = reqitm.CancelRemarks,
+                                        CancelledByName = cancelledDetails != null ? cancelledDetails.FullName : null,
+                                        ItemName = itm.ItemName,
+                                        ItemCategory = reqitm.ItemCategory,
+                                        Code = itm.Code,
+                                        IsActive = reqitm.IsActive,
+                                        ReceivedBy = dispatchingEmployee != null ? dispatchingEmployee.FullName : null
+                                    }).ToList();
 
-            var requestDetails = (from reqItem in requisitionItems
-                                  join emp in _inventoryDbContext.Employees on reqItem.CreatedBy equals emp.EmployeeId
-                                  join dispt in _inventoryDbContext.DispatchItems on reqItem.RequisitionItemId equals dispt.RequisitionItemId into dispTemp
-                                  from disp in dispTemp.DefaultIfEmpty()
-                                  select new
-                                  {
-                                      reqItem.ItemId,
-                                      PendingQuantity = reqItem.PendingQuantity,
-                                      DispatchedQuantity = dispTemp.Where(a => a.RequisitionItemId == reqItem.RequisitionItemId).Select(x => x.DispatchedQuantity).LastOrDefault(),
-                                      reqItem.Quantity,
-                                      reqItem.Remark,
-                                      ReceivedQuantity = disp == null ? 0 : (reqItem.Quantity - (double)Convert.ToDecimal(reqItem.PendingQuantity)),
-                                      reqItem.CreatedBy,
-                                      CreatedByName = emp.FullName,
-                                      reqItem.CreatedOn,
-                                      reqItem.RequisitionItemStatus,
-                                      reqItem.ItemName,
-                                      reqItem.CancelQuantity,
-                                      CancelBy = reqItem.CancelBy != null ? VerificationBL.GetNameByEmployeeId(reqItem.CancelBy ?? 0, _inventoryDbContext) : "",
-                                      reqItem.CancelOn,
-                                      reqItem.CancelRemarks,
-                                      reqItem.Code,
-                                      reqItem.FirstWeekQty,
-                                      reqItem.SecondWeekQty,
-                                      reqItem.ThirdWeekQty,
-                                      reqItem.FourthWeekQty,
-                                      reqItem.MINDate,
-                                      reqItem.MINNo,
-                                      reqItem.MSSNO,
-                                      TotalAmount = reqItem.ItemRate * (decimal)(dispTemp.Where(a => a.RequisitionItemId == reqItem.RequisitionItemId).Select(x => x.DispatchedQuantity).LastOrDefault()),
-                                      reqdetail.RequisitionNo,
-                                      reqdetail.IssueNo,
-                                      Remarks = reqdetail.Remarks, //this is the main remark against the whole requisition.
-                                      reqItem.RequisitionId,
-                                      ReceivedBy = disp == null ? "" : disp.ReceivedBy,
-                                      DispatchRemarks = disp == null ? "" : disp.Remarks,
-                                      DispatchedByName = disp == null ? "" : employeeList.Find(a => a.EmployeeId == disp.CreatedBy).FullName,
-                                      RequisitionItemId = reqItem.RequisitionItemId,
-                                      reqItem.IsActive,
-                                      reqItem.ItemCategory
-                                  }
-                ).ToList().GroupBy(a => a.ItemId).Select(g => new
-                {
-                    ItemId = g.Key,
-                    PendingQuantity = g.Select(a => a.PendingQuantity).FirstOrDefault(),
-                    Quantity = g.Select(a => a.Quantity).FirstOrDefault(),
-                    DispatchedQuantity = g.Select(a => a.DispatchedQuantity).FirstOrDefault(),
-                    Remark = g.Select(a => a.Remark).FirstOrDefault(),
-                    Remarks = g.Select(a => a.Remarks).FirstOrDefault(),
-                    ReceivedQuantity = g.Select(a => a.ReceivedQuantity).FirstOrDefault(),
-                    CancelQuantity = g.Select(a => a.CancelQuantity).FirstOrDefault(),
-                    CreatedBy = g.Select(a => a.CreatedBy).FirstOrDefault(),
-                    CancelBy = g.Select(a => a.CancelBy).FirstOrDefault(),
-                    CancelOn = g.Select(a => a.CancelOn).FirstOrDefault(),
-                    CancelRemarks = g.Select(a => a.CancelRemarks).FirstOrDefault(),
-                    CreatedByName = g.Select(a => a.CreatedByName).FirstOrDefault(),
-                    CreatedOn = g.Select(a => a.CreatedOn).FirstOrDefault(),
-                    RequisitionItemStatus = g.Select(a => a.RequisitionItemStatus).FirstOrDefault(),
-                    ItemName = g.Select(a => a.ItemName).FirstOrDefault(),
-                    Code = g.Select(a => a.Code).FirstOrDefault(),
-                    TotalAmount = g.Select(a => a.TotalAmount).LastOrDefault(),
-                    RequisitionNo = g.Select(a => a.RequisitionNo).FirstOrDefault(),
-                    IssueNo = g.Select(a => a.IssueNo).FirstOrDefault(),
-                    RequisitionId = g.Select(a => a.RequisitionId).FirstOrDefault(),
-                    ReceivedBy = g.Select(a => a.ReceivedBy).FirstOrDefault(),
-                    FirstWeekQty = g.Select(a => a.FirstWeekQty).FirstOrDefault(),
-                    SecondWeekQty = g.Select(a => a.SecondWeekQty).FirstOrDefault(),
-                    ThirdWeekQty = g.Select(a => a.ThirdWeekQty).FirstOrDefault(),
-                    FourthWeekQty = g.Select(a => a.FourthWeekQty).FirstOrDefault(),
-                    MINDate = g.Select(a => a.MINDate).FirstOrDefault(),
-                    MINNo = g.Select(a => a.MINNo).FirstOrDefault(),
-                    MSSNO = g.Select(a => a.MSSNO).FirstOrDefault(),
-                    DispatchRemarks = g.Select(a => a.DispatchRemarks).FirstOrDefault(),
-                    DispatchedByName = g.Select(a => a.DispatchedByName).FirstOrDefault(),
-                    RequisitionItemId = g.Select(a => a.RequisitionItemId).FirstOrDefault(),
-                    IsActive = g.Select(a => a.IsActive).FirstOrDefault(),
-                    ItemCategory = g.Select(a => a.ItemCategory).FirstOrDefault(),
-                    IsDirectDispatched = reqdetail.IsDirectDispatched
-                }).ToList();
 
-            var verifiers = (reqdetail.VerificationId != null) ? VerificationBL.GetVerifiersList(reqdetail.VerificationId ?? 0, _inventoryDbContext) : null;
+            requisition.RequisitionItems = requisitionItems;
+
+            var verifiers = (requisition.VerificationId != null) ? VerificationBL.GetVerifiersList(requisition.VerificationId ?? 0, _inventoryDbContext) : null;
             var dispatchers = VerificationBL.GetDispatchersList(requisitionId, _inventoryDbContext);
-            return (new
+            return new
             {
-                requestDetails,
+                Requisition = requisition,
                 Verifiers = verifiers,
                 Dispatchers = dispatchers
-            });
+            };
         }
 
         [HttpGet]
@@ -3279,12 +3227,16 @@ namespace DanpheEMR.Controllers
 
         private static string SerializeVerifiers(List<Verifier_DTO> verifiers)
         {
-            var VerifierList = new List<object>();
-            verifiers.ForEach(verifier =>
+            if (verifiers != null && verifiers.Count() > 0)
             {
-                VerifierList.Add(new { Id = verifier.Id, Type = verifier.Type });
-            });
-            return DanpheJSONConvert.SerializeObject(VerifierList).Replace(" ", String.Empty);
+                var VerifierList = new List<object>();
+                verifiers.ForEach(verifier =>
+                {
+                    VerifierList.Add(new { Id = verifier.Id, Type = verifier.Type });
+                });
+                return DanpheJSONConvert.SerializeObject(VerifierList).Replace(" ", String.Empty);
+            }
+            return null;
         }
 
         [HttpPost]
@@ -3303,7 +3255,7 @@ namespace DanpheEMR.Controllers
             if (flag)
             {
                 responseData.Status = "OK";
-                responseData.Results = 1;
+                responseData.Results = flag;
             }
             else
             {

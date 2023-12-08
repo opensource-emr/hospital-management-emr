@@ -103,10 +103,10 @@
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-md-5">Pan No<b>:</b></label>
+                    <label class="control-label col-md-5">{{GeneralFieldLabel.PANNo}}<b>:</b></label>
                     <div class="col-md-7">
                       <input class="form-control" maxlength="50" type="text" [(ngModel)]="CurrentVendor.PanNo" formControlName="PanNo" id="txtPanNo"
-                             placeholder="Pan Number" (keyup.enter)="FocusElementById('AssignItemIdToVendor')" />
+                             placeholder="{{GeneralFieldLabel.PANNo}}" (keyup.enter)="FocusElementById('AssignItemIdToVendor')" />
                       <span class="color-red font-sm" *ngIf="CurrentVendor.IsDirty('PanNo')"
                             [hidden]="CurrentVendor.IsValidCheck('PanNo','maxlength')"> Must be of 50 digits</span>
                     </div>

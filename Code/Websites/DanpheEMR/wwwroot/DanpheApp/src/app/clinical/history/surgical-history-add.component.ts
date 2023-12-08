@@ -1,12 +1,13 @@
-﻿import { Input, Output, EventEmitter, Component, ChangeDetectorRef } from "@angular/core";
-import { PatientService } from "../../patients/shared/patient.service";
-import { HistoryBLService } from '../shared/history.bl.service';
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import { SurgicalHistory } from "../shared/surgical-history.model";
-import { ICD10 } from '../shared/icd10.model';
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
 import * as moment from 'moment/moment';
-import { DanpheCache, MasterType } from "../../shared/danphe-cache-service-utility/cache-services";
 import { CoreService } from "../../core/shared/core.service";
+import { PatientService } from "../../patients/shared/patient.service";
+import { DanpheHTTPResponse } from "../../shared/common-models";
+import { DanpheCache, MasterType } from "../../shared/danphe-cache-service-utility/cache-services";
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from "../../shared/shared-enums";
+import { HistoryBLService } from '../shared/history.bl.service';
+import { SurgicalHistory } from "../shared/surgical-history.model";
 
 @Component({
     selector: "surgical-history-add",
@@ -121,17 +122,21 @@ export class SurgicalHistoryAddComponent {
         this.CurrentSurgicalHistory.PatientId = this.patientServ.getGlobal().PatientId;
         this.loading = false;
         this.historyBLService.PostSurgicalHistory(this.CurrentSurgicalHistory)
-            .subscribe(res => {
-                if (res.Status == "OK") {
+            .subscribe((res: DanpheHTTPResponse) => {
+                if (res.Status === ENUM_DanpheHTTPResponses.OK) {
                     if (res.Results) {
                         this.CurrentSurgicalHistory.SurgicalHistoryId = res.Results.SurgicalHistoryId;
                         this.CurrentSurgicalHistory.CreatedOn = res.Results.CreatedOn;
-                        this.CurrentSurgicalHistory.SurgeryDate = moment(new Date()).format('YYYY-MM-DD');
+                        this.CurrentSurgicalHistory.SurgeryDate = moment(res.Results.SurgeryDate).format('YYYY-MM-DD');
                         this.CloseSurgicalHistoryBox(this.CurrentSurgicalHistory);
-                        this.msgBoxServ.showMessage("success", ["Added Successfully"]);
+                        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Success, ["Added Successfully"]);
                         // this.Initialize();
                     }
                 }
+                else {
+                    this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ["Failed To Add Social History"]);
+                }
+
             },
                 err => { this.msgBoxServ.showMessage("error", [err.ErrorMessage]); });
     }

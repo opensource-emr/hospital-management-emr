@@ -1,0 +1,141 @@
+<!-- Modal -->
+<div
+     class="popup-static portlet box portlet-fullscreen custom_modal"
+     *ngIf="ShowViewPrintPopup">
+    <div class="portlet-body form">
+        <!--Model Box Body Start-->
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption no-margin">
+                        <a
+                           class="btn btn-danger"
+                           (click)="CloseViewPrintPopup()"
+                           title="Cancel">X</a>
+                    </div>
+
+                    <!-- body -->
+                    <div id="id_consultation_form">
+                        <div style="display: flex;">
+                            <div style="width: 15%;"></div>
+                            <div style="width: 70%;"><billing-header *ngIf="InvoiceDisplaySettings.ShowHeader"></billing-header></div>
+                            <div style="width: 15%;"></div>
+                        </div>
+                        <hr style="margin: 20px 0px 10px 0px !important;">
+                        <div style="text-align: center; margin: 5px 0px 0px 0px;">
+                            <label><b>Consultation Form</b></label>
+                        </div>
+                        <hr style="margin: 0px 0px 15px 0px;">
+                        <div style="display: flex; width: 100%; margin: 15px 0px 0px 0px !important">
+                            <div style="width: 70%; padding-left: 30px !important">
+                                <label><b>Patient Name:&nbsp;</b></label>{{ patientService.globalPatient.ShortName }}
+                            </div>
+                            <div style="width: 30%;">
+                                <label><b>Hospital Number:&nbsp;</b></label>{{ patientService.globalPatient.PatientCode }}
+                            </div>
+                        </div>
+                        <div style="display: flex; width: 100%; margin: 0px !important">
+                            <div style="width: 70%; padding-left: 30px !important">
+                                <label><b>Age/Sex:&nbsp;</b></label>{{ patientService.globalPatient.Age }}/{{ patientService.globalPatient.Gender }}
+                            </div>
+                            <div style="width: 30%;">
+                                <label><b>IP Number:&nbsp;</b></label>{{ patientService.globalPatient.VisitCode }}
+                            </div>
+                        </div>
+                        <div style="display: flex; width: 100%; margin: 0px !important">
+                            <div style="width: 70%; padding-left: 30px !important">
+                                <label><b>Ward/Bed:&nbsp;</b></label>{{ patientService.globalPatient.WardName }}/{{ patientService.globalPatient.BedNo
+                                }}
+                            </div>
+                            <div style="width: 30%;">
+                                <label><b>To Doctor:&nbsp;</b></label>{{ SelectedConsultationRequest.ConsultingDoctorName }}
+                            </div>
+                        </div>
+                        <div style="display: flex; width: 100%; margin: 0px !important">
+                            <div style="width: 70%; padding-left: 30px !important">
+                                <label><b>Date of Request :&nbsp;</b></label>{{ ConsultationRequest.RequestedOn | DanpheDateTime:'format':'YYYY-MM-DD
+                                HH:mm A'}}
+                            </div>
+                            <div style="width: 30%;">
+                                <label><b>Department:&nbsp;</b></label>{{ SelectedConsultationRequest.ConsultingDepartmentName }}
+                            </div>
+                        </div>
+
+                        <div
+                             class="row"
+                             style="
+              margin: 15px 15px 15px 15px !important;
+              padding-bottom: 10px;">
+                            <div class="col-md-12">
+                                <span style="text-decoration: underline"><b>Purpose of Consultation:</b></span>
+                            </div>
+                            <p style="height: fit-content; margin: 15px 15px 0px 15px;">{{ SelectedConsultationRequest.PurposeOfConsultation }}</p>
+                            <div style="display: flex; text-align: left; margin-top: 15px;">
+                                <div style="width: 70%;"></div>
+                                <label style="width: 30%;"><b>Requesting Doctor:&nbsp;{{ SelectedConsultationRequest.RequestingConsultantName
+                                        }}</b></label>
+                            </div>
+                            <div style="display: flex; text-align: left;">
+                                <div style="width: 70%;"></div>
+                                <label style="width: 30%;"><b>Department:&nbsp;{{ SelectedConsultationRequest.RequestingDepartmentName }}</b></label>
+                            </div>
+                            <div style="display: flex; margin-top: 20px; text-align: left;">
+                                <div style="width: 70%;"></div>
+                                <label style="width: 30%;"><b>Signature:</b>&nbsp;</label>
+                            </div>
+                        </div>
+
+                        <div
+                             class="row"
+                             style="margin: 15px 15px 15px 15px !important; padding-bottom: 10px;">
+                            <div class="col-md-12">
+                                <span style="text-decoration: underline"><b>
+                                        Consultant's Reports (Including evidence/Physical examination/ and review of Medical Record):</b></span>
+                            </div>
+                            <p style="height: fit-content; margin: 15px 15px 0px 15px !important;">{{ SelectedConsultationRequest.ConsultantResponse
+                                }}</p>
+                            <div style="display: flex; width: 100%; text-align: left; margin-top: 15px;">
+                                <div style="width: 70%;"></div>
+                                <label style="width: 30%;"><b>Consulting Doctor:&nbsp;{{ SelectedConsultationRequest.ConsultingDoctorName
+                                        }}</b></label>
+                            </div>
+                            <div style="display: flex; width: 100%; text-align: left;">
+                                <div style="width: 70%;"></div>
+                                <label style="width: 30%;"><b>Department:&nbsp;{{ SelectedConsultationRequest.ConsultingDepartmentName }}</b></label>
+                            </div>
+                            <div style="display: flex; width: 100%; margin-top: 20px; text-align: left;">
+                                <div style="width: 70%;"></div>
+                                <label style="width: 30%;"><b>Signature:</b>&nbsp;</label>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <!-- footer -->
+                    <div id="id_add_new_request" style="margin-top: 15px">
+                        <div class="col-md-12">
+                            <div class="modelbox-footer">
+                                <div class="all-buttons text-center" style="display: flex; justify-content: center; align-items: center;">
+                                    <input
+                                           type="button"
+                                           id="add"
+                                           class="btn green btn-success margin-7-hr"
+                                           (click)="PrintConsultationForm()"
+                                           value="Print" />
+                                </div>
+                                <!-- <select-printer [group-name]="'bill-receipt'" [storage-key]="'bil-invoice-default'"
+                                (on-printer-change)="OnPrinterChanged($event)">
+                </select-printer> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--Model Box Body End-->
+        </div>
+    </div>
+</div>
+
+<app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj">
+</app-print-page>

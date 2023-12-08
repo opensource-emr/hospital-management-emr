@@ -988,6 +988,13 @@ namespace DanpheEMR.Services.ClaimManagement
             }
         }
 
+        public object GetECHSPatientWithVisitInformation(string search, ClaimManagementDbContext _claimManagementgDbContext)
+        {
+           DataTable dtEchsPatient = DALFunctions.GetDataTableFromStoredProc("SP_PAT_ECHSPatientsListWithVisitinformation",
+                    new List<SqlParameter>() { new SqlParameter("@SearchTxt", search) }, _claimManagementgDbContext);
+            return dtEchsPatient;
+        }
+
         #endregion
     }
 }

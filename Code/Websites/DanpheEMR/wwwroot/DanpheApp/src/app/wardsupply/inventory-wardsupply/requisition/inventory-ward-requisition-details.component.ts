@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
 
 import { RequisitionItems } from "../../../inventory/shared/requisition-items.model";
@@ -12,7 +12,11 @@ import * as moment from 'moment/moment';
 import { SecurityService } from '../../../security/shared/security.service';
 import { DispatchVerificationActor } from '../../../inventory/shared/track-requisition-vm.model';
 import { VerificationActor } from '../../../verification/inventory/requisition-details/inventory-requisition-details.component';
+import { SubStoreRequisitionItems_DTO } from '../../../inventory/shared/dtos/substore-requisition-item.dto';
+import { SubStoreRequisition_DTO } from '../../../inventory/shared/dtos/substore-requisition.dto';
+import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from '../../../shared/shared-enums';
 @Component({
+  selector: 'inventory-ward-requisition-details',
   templateUrl: "./inventory-ward-requisition-details.html"  // "/InventoryView/RequisitionDetails"
 })
 export class InventoryRequisitionDetailsComponent {
@@ -30,14 +34,21 @@ export class InventoryRequisitionDetailsComponent {
   public verifiers: VerificationActor[] = null; // by default, this wil be null
   public receivedby: string = "";
   public requisition: Requisition = new Requisition();
-  public showCancelRequisitonPopUp: boolean = false;
+  public showCancelRequisitionPopUp: boolean = false;
   public IsCancel: boolean = false;
   public isModificationAllowed: boolean = true;
   public mainRemarks: string;
   public showNepaliReceipt: boolean;
   public printDetaiils: HTMLElement;
   public showPrint: boolean;
-  public IsDirectDispatched: boolean = false;
+
+  public Requisition: SubStoreRequisition_DTO = new SubStoreRequisition_DTO();
+  public Verifiers: VerificationActor[] = [];
+  public Dispatchers: VerificationActor[] = [];
+  @Output('call-back-inventory-requisition-details-popup-close') callBackInventoryRequisitionDetailsPopupClose: EventEmitter<Object> = new EventEmitter<Object>();
+  loading: boolean = false;
+
+
   constructor(public securityService: SecurityService,
     public InventoryBLService: InventoryBLService,
     public inventoryService: InventoryService,
@@ -49,6 +60,10 @@ export class InventoryRequisitionDetailsComponent {
     this.SetFocusById('print');
     this.CheckReceiptSettings();
     this.CheckForSubstoreActivation();
+  }
+
+  ngOnDestroy() {
+    this.inventoryService.isModificationAllowed = false;
   }
   CheckReceiptSettings() {
     //check for english or nepali receipt style
@@ -80,14 +95,15 @@ export class InventoryRequisitionDetailsComponent {
     if (RequisitionId != null) {
       this.requisitionId = RequisitionId;
       this.CheckIfModificationApplicable();
-
-      //this.departmentName = this.inventoryService.Name;
       this.InventoryBLService.GetRequisitionItemsByRID(RequisitionId)
-        .subscribe(res => this.ShowRequisitionDetails(res));
+        .subscribe(
+          res => this.ShowRequisitionDetails(res),
+          err => {
+            this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ['Failed to retrieve requisition details' + err]);
+          });
     }
     else {
-      this.messageBoxService.showMessage("notice-message", ['Please, Select Requisition for Details.']);
-      // this.router.navigate(['/Inventory/InternalMain/RequisitionList']);
+      this.messageBoxService.showMessage(ENUM_MessageBox_Status.Notice, ['Please, Select Requisition for Details.']);
       this.requisitionList();
     }
   }
@@ -100,43 +116,55 @@ export class InventoryRequisitionDetailsComponent {
   }
 
   ShowRequisitionDetails(res) {
-    if (res.Status == "OK") {
-      this.requisitionItemsDetails = res.Results.requestDetails;
-      this.dispatchers = res.Results.Dispatchers;
-      this.verifiers = res.Results.Verifiers;
-      //Check if there is requisition created without any Requisition Item then simply go to requisition List 
-      //Because If there is no Items then we can't show anything.
-      if (this.requisitionItemsDetails.length > 0) {
-        this.requisitionItemsDetails.forEach(itm => {
-          itm.CreatedOn = moment(itm.CreatedOn).format('YYYY-MM-DD');
-        });
-        this.requisitionDate = this.requisitionItemsDetails[0].CreatedOn;
-        this.requisitionNo = this.requisitionItemsDetails[0].RequisitionNo;
-        this.issueNo = this.requisitionItemsDetails[0].IssueNo;
-        this.createdby = this.requisitionItemsDetails[0].CreatedByName;
-        this.receivedby = this.requisitionItemsDetails[0].ReceivedBy;
-        this.mainRemarks = this.requisitionItemsDetails[0].Remarks;
-        var status = this.requisitionItemsDetails.find(a => a.RequisitionId == this.requisitionId);
-        var updatedstatus = status.RequisitionItemStatus;
-        this.IsDirectDispatched = this.requisitionItemsDetails[0].IsDirectDispatched;
-
-      }
-      else {
-        this.messageBoxService.showMessage("notice-message", ["Selected Requisition is without Items"]);
+    if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+      this.Requisition = res.Results.Requisition;
+      this.Verifiers = res.Results.Verifiers;
+      this.Dispatchers = res.Results.Dispatchers;
+      if (!this.Requisition && !this.Requisition.RequisitionItems && !this.Requisition.RequisitionItems.length) {
+        this.messageBoxService.showMessage(ENUM_MessageBox_Status.Notice, ["Selected Requisition is without Items"]);
         this.requisitionList();
       }
-
-
+      else {
+        this.receivedby = res.Results.Requisition.RequisitionItems[0].ReceivedBy;
+      }
     }
     else {
-      this.messageBoxService.showMessage("notice-message", ["There is no Requisition details !"]);
+      this.messageBoxService.showMessage(ENUM_MessageBox_Status.Notice, ["There is no Requisition details !"]);
       this.requisitionList();
-
     }
   }
 
   print() {
     this.printDetaiils = document.getElementById("printpage");
+    const style = document.createElement('style');
+    style.textContent = `<style>
+          .printStyle {
+    border: dotted 1px;
+    margin: 10px 100px;
+  }
+
+  .print-border-top {
+    border-top: dotted 1px;
+  }
+
+  .print-border-bottom {
+    border-bottom: dotted 1px;
+  }
+
+  .print-border {
+    border: dotted 1px;
+  }
+
+  .center-style {
+    text-align: center;
+  }
+
+  .border-up-down {
+    border-top: dotted 1px;
+    border-bottom: dotted 1px;
+  }
+          </style>`
+    document.getElementById('printpage').appendChild(style)
     this.showPrint = true;
   }
   callBackPrint() {
@@ -158,29 +186,32 @@ export class InventoryRequisitionDetailsComponent {
 
   WithdrawRequisition() {
 
-    this.showCancelRequisitonPopUp = true;
+    this.showCancelRequisitionPopUp = true;
     this.requisition.CancelRemarks = '';
   }
 
   WithdrawRequisitionByRequisitionId() {
 
     if (this.requisition.CancelRemarks && this.requisition.CancelRemarks.trim() != "") {
+      this.loading = true;
       this.InventoryBLService.WithdrawRequisitionById(this.requisitionId, this.requisition.CancelRemarks)
+        .finally(() => this.loading = false)
         .subscribe(
           res => {
-            if (res.Status == "OK") {
-              this.requisitionList();
-              this.messageBoxService.showMessage("Success", ["Requisition " + this.requisitionId + " Withdrawn"]);
+            if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+              this.messageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["Requisition " + this.requisitionId + " Withdrawn"]);
+              this.showCancelRequisitionPopUp = false;
+              this.callBackInventoryRequisitionDetailsPopupClose.emit({ context: 'requisitionWidthDrawn' });
             } else {
-              this.messageBoxService.showMessage("Error", ["Requisition Withdrawal Failed"]);
+              this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Requisition Withdrawal Failed"]);
             }
           },
           err => {
-            this.messageBoxService.showMessage("Error", [err.ErrorMessage]);
+            this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, [err.ErrorMessage]);
           });
     }
     else {
-      this.msgBoxServ.showMessage("failed", [" Remarks is mandatory."]);
+      this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, [" Remarks is mandatory."]);
     }
 
   }
@@ -196,5 +227,9 @@ export class InventoryRequisitionDetailsComponent {
         elementToBeFocused.focus();
       }
     }, 600);
+  }
+
+  Close() {
+    this.callBackInventoryRequisitionDetailsPopupClose.emit();
   }
 }

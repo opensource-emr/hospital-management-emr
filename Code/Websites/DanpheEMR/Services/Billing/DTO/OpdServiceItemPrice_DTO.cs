@@ -27,5 +27,7 @@ namespace DanpheEMR.Services.Billing.DTO
         public decimal CoPaymentCashPercent { get; set; }
         public decimal CoPaymentCreditPercent { get; set; }
         public decimal DiscountPercent { get; set; }
+
+        public bool IsDiscountApplicable { get; set; }
     }
 }

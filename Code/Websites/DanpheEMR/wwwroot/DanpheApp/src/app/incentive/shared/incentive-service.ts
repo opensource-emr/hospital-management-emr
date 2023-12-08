@@ -94,7 +94,7 @@ export class IncentiveService {
     frcItem.CreatedBy = 1;//this.securityService.loggedInUser.EmployeeId;
     frcItem.CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");
 
-    frcItem.BillItemPriceId = txnItem.BillItemPriceId;
+    frcItem.ServiceItemId = txnItem.ServiceItemId;
     frcItem.BillingTransactionId = txnItem.BillingTransactionId;
     //frcItem.
 

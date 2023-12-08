@@ -34,9 +34,15 @@
       </div>
     </div>
 
-    <registration-scheme-select (on-change)="OnRegistrationSchemeChanged($event)" [patient-id]="quickVisit.Patient.PatientId"
-                                [service-billing-context]="serviceBillingContext">
+    <registration-scheme-select *ngIf="!IsReferred" (on-change)="OnRegistrationSchemeChanged($event)" [patient-id]="quickVisit.Patient.PatientId"
+                                [service-billing-context]="serviceBillingContext" [policy-no]="quickVisit.Patient.PolicyNo">
+    </registration-scheme-select>
 
+    <registration-scheme-select *ngIf="IsReferred && (SchemePriCeCategoryFromVisit && SchemePriCeCategoryFromVisit.SchemeId && SchemePriCeCategoryFromVisit.PriceCategoryId)"
+                                (on-change)="OnRegistrationSchemeChanged($event)"
+                                [patient-id]="quickVisit.Patient.PatientId"
+                                [selected-scheme-priceCategory]="SchemePriCeCategoryFromVisit"
+                                [service-billing-context]="serviceBillingContext" [policy-no]="quickVisit.Patient.PolicyNo">
     </registration-scheme-select>
 
 

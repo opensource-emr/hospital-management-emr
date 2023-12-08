@@ -38,7 +38,8 @@
          *ngIf="(SchemePriceCategoryFromVisit && SchemePriceCategoryFromVisit.SchemeId && SchemePriceCategoryFromVisit.PriceCategoryId) || DisplaySchemePriceCategorySelection">
       <div class="col-md-12" style="margin-bottom: 15px;">
         <registration-scheme-select (on-change)="OnSchemePriceCategoryChanged($event)" [patient-id]="CurrentAdmission.PatientId"
-                                    [selected-scheme-priceCategory]="SchemePriceCategoryFromVisit" [service-billing-context]="serviceBillingContext">
+                                    [selected-scheme-priceCategory]="SchemePriceCategoryFromVisit" [service-billing-context]="serviceBillingContext"
+                                    [policy-no]="PolicyNo">
 
         </registration-scheme-select>
 
@@ -67,7 +68,7 @@
             <form class="form-horizontal hm-form">
               <div class="form-body">
                 <div class="form-group">
-                  <label class="control-label col-md-5" style="font-size: 20px !important;">NSHI :</label>
+                  <label class="control-label col-md-5" style="font-size: 20px !important;">{{GeneralFieldLabel.NSHINo}}:</label>
                   <label class="control-label col-md-6"
                          style="font-size: 20px !important;">{{CurrentAdmission.Ins_NshiNumber}}</label>
                 </div>

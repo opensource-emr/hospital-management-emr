@@ -1,7 +1,5 @@
 //This grid is to show list of Lab Report Templates
 import * as moment from 'moment/moment';
-import { CommonFunctions } from '../../shared/common.functions';
-import { EmergencyPatientModel } from './emergency-patient.model';
 
 export default class EmergencyGridColumnSettings {
   static ERPatientList = [
@@ -232,8 +230,8 @@ export default class EmergencyGridColumnSettings {
   }
 
   static SelectButtonsToBeDisplayed(params) {
-    if (params.data.IsAddVitalBeforeTriage == true && params.data.vitals != null
-      && params.data.uploadedfiles != null) {
+    if (Boolean(params.data.IsAddVitalBeforeTriage) === true && params.data.vitals !== null
+      && params.data.uploadedfiles !== null) {
       let template = `
         <a danphe-grid-action="edit" class="grid-action">
           Edit
@@ -248,7 +246,7 @@ export default class EmergencyGridColumnSettings {
            View Consent
          </a>`;
       return template;
-    } else if (params.data.IsAddVitalBeforeTriage == false && params.data.uploadedfiles != null) {
+    } else if (Boolean(params.data.IsAddVitalBeforeTriage) === false && params.data.uploadedfiles !== null) {
       let template = `<a danphe-grid-action="edit" class="grid-action">
             Edit
          </a>
@@ -263,7 +261,7 @@ export default class EmergencyGridColumnSettings {
          </a>`;
       return template;
     }
-    else if (params.data.IsAddVitalBeforeTriage == true && params.data.uploadedfiles != null) {
+    else if (Boolean(params.data.IsAddVitalBeforeTriage) === true && params.data.uploadedfiles !== null) {
       let template = `<a danphe-grid-action="edit" class="grid-action">
             Edit
          </a>
@@ -276,7 +274,7 @@ export default class EmergencyGridColumnSettings {
          </a>`;
       return template;
     }
-    else if (params.data.IsAddVitalBeforeTriage == true) {
+    else if (Boolean(params.data.IsAddVitalBeforeTriage) === true) {
       let template = `
         <a danphe-grid-action="edit" class="grid-action">
           Edit
@@ -292,7 +290,7 @@ export default class EmergencyGridColumnSettings {
          </a>`;
       return template;
     }
-    else if (params.data.IsAddVitalBeforeTriage == true) {
+    else if (Boolean(params.data.IsAddVitalBeforeTriage) === true) {
       let template = `
         <a danphe-grid-action="edit" class="grid-action">
           Edit

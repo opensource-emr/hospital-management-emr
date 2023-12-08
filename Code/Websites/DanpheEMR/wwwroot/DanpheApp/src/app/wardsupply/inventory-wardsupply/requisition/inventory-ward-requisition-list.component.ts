@@ -46,6 +46,7 @@ export class InventoryRequisitionListComponent {
   public selectedInventoryId: number = null;
   ItemList: InventoryWardItem_DTO[] = [];
   IsItemLoaded: boolean = false;
+  showInventoryRequisitionDetails: boolean = false;
 
   constructor(
     public InventoryBLService: InventoryBLService,
@@ -179,7 +180,10 @@ export class InventoryRequisitionListComponent {
     switch ($event.Action) {
       case "view": {
         var data = $event.Data;
-        this.RouteToViewDetail(data);
+        this.inventoryService.RequisitionId = data.RequisitionId;
+        this.inventoryService.DepartmentName = data.DepartmentName;
+        this.inventoryService.isModificationAllowed = this.CheckIfModificationApplicable(data);
+        this.showInventoryRequisitionDetails = true;
         break;
       }
       case "receiveDispatchedItems": {
@@ -207,13 +211,6 @@ export class InventoryRequisitionListComponent {
     this.inventoryService.isRecreateMode = true;
     this.router.navigate(['WardSupply/Inventory/InventoryRequisitionItem'])
 
-  }
-  RouteToViewDetail(data) {
-    //pass the Requisition Id to RequisitionView page for List of Details about requisition
-    this.inventoryService.RequisitionId = data.RequisitionId;//sud:3Mar'20-Property Rename in InventoryService
-    this.inventoryService.DepartmentName = data.DepartmentName;//sud:3Mar'20-Property Rename in InventoryService
-    this.inventoryService.isModificationAllowed = this.CheckIfModificationApplicable(data);
-    this.router.navigate(['/WardSupply/Inventory/InventoryRequisitionDetails']);
   }
   private CheckIfModificationApplicable(data: Requisition): boolean {
     return ((data.RequisitionStatus == "active" || data.RequisitionStatus == "pending") && data.CurrentVerificationLevelCount == 0) ? true : false;
@@ -253,5 +250,13 @@ export class InventoryRequisitionListComponent {
         err => {
           this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ['failed to get Item.. please check log for details.']);
         });
+  }
+
+
+  CloseInventoryRequisitionDetailsPopup(event) {
+    this.showInventoryRequisitionDetails = false;
+    if (event) {
+      this.LoadDeptwiseList();
+    }
   }
 }

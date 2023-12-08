@@ -111,14 +111,18 @@
                         </span><span>{{dischargeBill.PatientDetail.CountrySubDivisionName}}, </span>{{dischargeBill.PatientDetail.CountryName}}
                       </span>
                     </div>
-
+                    <div class="col-right">
+                      <span class="text-uppercase text-bold txt-val">
+                        {{printDate| nepaliDate}}
+                      </span>
+                    </div>
                   </div>
                   <div class="discharge-bill-sm-row flx justify-sp-between">
 
                     <div class="col-left flex-2">
                       <span class="text-uppercase text-bold txt-label">DOA&nbsp;:&nbsp;</span>
                       <span class="text-uppercase text-bold txt-val">{{dischargeBill.AdmissionDetail.AdmissionDate
-                        | DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                        | DanpheDateTime:'format':'YYYY-MM-DD'}}{{dischargeBill.AdmissionDetail.AdmissionDate | nepaliDate}}</span>
                     </div>
 
 
@@ -127,7 +131,7 @@
                     <div class="col-left flex-2"><span class="text-uppercase text-bold txt-label">DOD&nbsp;:&nbsp;</span>
                       <span class="text-uppercase text-bold txt-val">{{estDischargeDate
                         |
-                        DanpheDateTime:'format':'YYYY-MM-DD'}}</span>
+                        DanpheDateTime:'format':'YYYY-MM-DD'}}{{dischargeBill.AdmissionDetail.DischargeDate | nepaliDate}}</span>
                     </div>
 
                   </div>

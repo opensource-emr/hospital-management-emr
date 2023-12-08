@@ -1,9 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
-import { IncentiveBLService } from '../shared/incentive.bl.service';
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import { CommonFunctions } from '../../shared/common.functions';
 import { CoreService } from '../../core/shared/core.service';
+import { CommonFunctions } from '../../shared/common.functions';
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import { IncentiveBLService } from '../shared/incentive.bl.service';
 
 @Component({
   selector: 'view-emp-inctv-settings',
@@ -97,7 +97,7 @@ export class ViewIncentiveSettingsComponent implements OnInit {
         AssignedPercent: {}
       };
       data.PercentageDetails.forEach(profile => {
-        const i = profile.Items.find(a => a.BillItemPriceId == item.BillItemPriceId);
+        const i = profile.Items.find(a => a.ServiceItemId == item.ServiceItemId);
         itm.ReferredPercent[profile.ProfileName] = i ? i.ReferredByPercent : null; // default is null
         itm.AssignedPercent[profile.ProfileName] = i ? i.AssignedToPercent : null; // default is null
       });

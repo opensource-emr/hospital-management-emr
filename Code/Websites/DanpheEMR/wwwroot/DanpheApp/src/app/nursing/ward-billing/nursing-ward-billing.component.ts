@@ -1,30 +1,25 @@
-import { Component, ChangeDetectorRef, Input } from "@angular/core";
-import { BillingBLService } from "../../billing/shared/billing.bl.service";
-import { BillingTransactionItem } from "../../billing/shared/billing-transaction-item.model";
-import { PatientService } from "../../patients/shared/patient.service";
-import { Patient } from "../../patients/shared/patient.model";
-import { VisitService } from "../../appointments/shared/visit.service";
+import { ChangeDetectorRef, Component, Input } from "@angular/core";
+import { CurrentVisitContextVM } from "../../appointments/shared/current-visit-context.model";
 import { Visit } from "../../appointments/shared/visit.model";
-import { MessageboxService } from "../../shared/messagebox/messagebox.service";
-import { NursingBLService } from "../shared/nursing.bl.service";
+import { VisitService } from "../../appointments/shared/visit.service";
+import { BillingBLService } from "../../billing/shared/billing.bl.service";
+import { CoreService } from "../../core/shared/core.service";
 import { InPatientLabTest } from "../../labs/shared/InpatientLabTest";
 import { LabsBLService } from "../../labs/shared/labs.bl.service";
-import * as moment from "moment/moment";
-import { DanpheHTTPResponse, CancelStatusHoldingModel } from "../../shared/common-models";
-import { CurrentVisitContextVM } from "../../appointments/shared/current-visit-context.model";
+import { Patient } from "../../patients/shared/patient.model";
+import { PatientService } from "../../patients/shared/patient.service";
+import { CancelStatusHoldingModel } from "../../shared/common-models";
 import {
   DanpheCache,
   MasterType,
 } from "../../shared/danphe-cache-service-utility/cache-services";
-import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
 import {
-  NepaliDateInGridParams,
   NepaliDateInGridColumnDetail,
+  NepaliDateInGridParams,
 } from "../../shared/danphe-grid/NepaliColGridSettingsModel";
-import { log } from "util";
-import { CoreService } from "../../core/shared/core.service";
-import { ENUM_OrderStatusNumber } from "../../shared/shared-enums";
-import { NursingIPRequestComponent } from "./nursing-ip-request.component";
+import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
+import { MessageboxService } from "../../shared/messagebox/messagebox.service";
+import { NursingBLService } from "../shared/nursing.bl.service";
 
 @Component({
   selector: "nursing-ward-billing",
@@ -66,7 +61,7 @@ export class NursingWardBillingComponent {
 
   public nursingCancellationNumber: number = 0;
   public HidePriceCol: boolean = true;
-  @Input("price-category-id") 
+  @Input("price-category-id")
   public PriceCategoryId: number = 0;
 
 
@@ -122,7 +117,7 @@ export class NursingWardBillingComponent {
     //   { headerName: "Status", field: "OrderStatus", width: 80 },
     //   { headerName: "Action", cellRenderer: this.GetActionList, width: 80 },
     // ];
-    
+
     this.currentPatient = this.patientService.globalPatient;
     this.currentVisit = this.visitService.globalVisit;
 
@@ -171,6 +166,12 @@ export class NursingWardBillingComponent {
         width: 80,
       },
       {
+        headerName: "ProvisionalReceiptNo",
+        field: "ProvisionalReceiptNo",
+        width: 100,
+        cellRenderer: NursingWardBillingComponent.ProvisionalReceitNoRenderer
+      },
+      {
         headerName: "Department",
         field: "ServiceDepartmentName",
         width: 100,
@@ -191,6 +192,11 @@ export class NursingWardBillingComponent {
       { headerName: "Status", field: "OrderStatus", width: 80 },
       { headerName: "Action", cellRenderer: this.GetActionList, width: 80 },
     ];
+  }
+
+  static ProvisionalReceitNoRenderer(params) {
+    let data: string = 'PR/' + params.data.ProvisionalReceiptNo;
+    return data;
   }
 
   GetActionList(params) {
@@ -260,9 +266,9 @@ export class NursingWardBillingComponent {
 
         if (this.isCancelRuleEnabled) {
           res.Results.BillItems.forEach(val => {
-            if (val.IntegrationName && (val.IntegrationName.toLowerCase() == 'lab' || val.IntegrationName.toLowerCase() == 'radiology')) {
-              if (!val.RequisitionId || (val.IntegrationName.toLowerCase() == 'lab' && this.nursingCancellationRule.labStatus.includes(val.OrderStatus))
-                || (val.IntegrationName.toLowerCase() == 'radiology' && this.nursingCancellationRule.radiologyStatus.includes(val.OrderStatus))) {
+            if (val.IntegrationName && (val.IntegrationName.toLowerCase() === 'lab' || val.IntegrationName.toLowerCase() === 'radiology')) {
+              if ((val.IntegrationName.toLowerCase() === 'lab' && this.nursingCancellationRule.labStatus.includes(val.OrderStatus))
+                || (val.IntegrationName.toLowerCase() === 'radiology' && this.nursingCancellationRule.radiologyStatus.includes(val.OrderStatus))) {
                 val.AllowCancellation = true;
               }
             }

@@ -109,8 +109,8 @@ import { SettingsSharedModule } from "../settings-new/settings-shared.module";
 import { PageNotFound } from "../404-error/404-not-found.component";
 import { ResetAccountingServiceGuard } from "../accounting/shared/reset-accounting-service-guard";
 import { ADT_BLService } from "../adt/shared/adt.bl.service";
-import { DischargeSummaryAddComponent } from "../discharge-summary/add-view-summary/discharge-summary-add.component";
-import { DischargeSummaryViewComponent } from "../discharge-summary/add-view-summary/discharge-summary-view.component";
+import { OldDischargeSummaryAddComponent } from "../discharge-summary/add-view-summary/old-discharge-summary-add.component";
+import { OldDischargeSummaryViewComponent } from "../discharge-summary/add-view-summary/old-discharge-summary-view.component";
 import { DischargeSummaryBLService } from "../discharge-summary/shared/discharge-summary.bl.service";
 import { DischargeSummaryDLService } from "../discharge-summary/shared/discharge-summary.dl.service";
 import { PatientOverviewMainComponent } from "../doctors/patient/patient-overview-main.component";
@@ -141,8 +141,12 @@ import { CMHDischargeSummaryTemplateComponent } from "../discharge-summary/add-v
 import { FishTailDischargeSummaryViewTemplateComponent } from "../discharge-summary/add-view-summary/view-templates/FishTail/fishtail-discharge-summary-template.comonent";
 import { SCHDischargeSummaryTemplateComponent } from "../discharge-summary/add-view-summary/view-templates/SCH/sch-discharge-summary-template.comonent";
 import { DefaultDischargeSummaryTemplateComponent } from "../discharge-summary/add-view-summary/view-templates/default-discharge-summary-template.comonent";
+import { DischargeSummaryAddComponent } from "../discharge-summary/add/discharge-summary-add.component";
+import { DischargeSummaryViewComponent } from "../discharge-summary/view/discharge-summary-view.component";
 import { PharmacyCreditNotePrintComponent } from "../pharmacy/receipt/pharmacy-credit-note-print/pharmacy-credit-note-print.component";
 import { PharmacyInvoicePrintComponent } from "../pharmacy/receipt/pharmacy-invoice-print/pharmacy-invoice-print.component";
+import { PharmacyProvisionalInvoicePrintComponent } from "../pharmacy/receipt/pharmacy-provisional-invoice-print/pharmacy-provisional-invoice-print.component";
+import { PharmacyProvisionalReturnInvoicePrintComponent } from "../pharmacy/receipt/pharmacy-provisional-invoice-return/pharmacy-provisional-invoice-return-print.component";
 import { PharmacyReceiptComponent } from "../pharmacy/receipt/pharmacy-receipt.component";
 import { PhrmInvoiceViewComponent } from "../pharmacy/sale/invoice-view/phrm-invoice-view.component";
 import { PHRMUpdateMRPComponent } from "../pharmacy/setting/mrp/phrm-update-mrp.component";
@@ -161,8 +165,6 @@ import { DanphePrintNewComponent } from "./print-service/print-new.component";
 import { ProgressBarComponent } from "./progress-bar/progress-bar.component";
 import { StickerComponent } from "./stickers/registration-sticker.component";
 import { authInterceptorProviders } from "./token-interceptor/token-interceptor.service";
-import { PharmacyProvisionalInvoicePrintComponent } from "../pharmacy/receipt/pharmacy-provisional-invoice-print/pharmacy-provisional-invoice-print.component";
-import { PharmacyProvisionalReturnInvoicePrintComponent } from "../pharmacy/receipt/pharmacy-provisional-invoice-return/pharmacy-provisional-invoice-return-print.component";
 
 
 
@@ -272,6 +274,8 @@ import { PharmacyProvisionalReturnInvoicePrintComponent } from "../pharmacy/rece
     PHRMItemMasterManageComponent, //1/7/20 migrated from Pharmacy module because wardsupply needs to access this component
     PHRMPackingTypeAddComponent,
     PHRMPackingTypeListComponent,
+    OldDischargeSummaryAddComponent,
+    OldDischargeSummaryViewComponent,
     DischargeSummaryAddComponent,
     DischargeSummaryViewComponent,
     TrackInventoryRequisitionComponent,
@@ -378,6 +382,8 @@ import { PharmacyProvisionalReturnInvoicePrintComponent } from "../pharmacy/rece
     PHRMItemMasterManageComponent, //1/7/20 migrated from Pharmacy module because wardsupply needs to access this component
     DischargeSummaryAddComponent,
     DischargeSummaryViewComponent,
+    OldDischargeSummaryAddComponent,
+    OldDischargeSummaryViewComponent,
     TrackInventoryRequisitionComponent,
     InlineEditComponent,
     DanpheDateRangeSelectComponent,

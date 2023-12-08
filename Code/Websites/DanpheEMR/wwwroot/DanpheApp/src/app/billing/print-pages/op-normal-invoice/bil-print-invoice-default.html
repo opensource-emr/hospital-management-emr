@@ -73,7 +73,7 @@
              *ngIf="InvoiceDisplaySettings.ShowHeader && InvoiceDisplaySettings.HeaderType === 'custom'">
         <tr>
           <td colspan="2" width="25%">
-            <img src="\themes\theme-default\images\office-logo-new.png" alt="" height="50px" width="100px">
+            <img src="\themes\theme-default\images\office-logo-new.png" alt="Hospital Logo" width="100px">
           </td>
           <td colspan="4" width="50%">
             <h3 class="c_name" style="text-align: center; margin-bottom: 0px;"><strong>{{headerDetail.CustomerName}}</strong></h3>
@@ -135,9 +135,17 @@
                 <td colspan="4" style="text-align: left;">
                   <p class="c_paragraphs" style="margin-bottom: 0px;"><strong>Patient's Name: {{invoice.PatientInfo.ShortName}}</strong></p>
                 </td>
+                <td colspan="4" style="text-align: right;" *ngIf="localDateTime">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">Date:<strong>{{localDateTime}}</strong></p>
+                </td>
+              </tr>
+
+              <tr>
+                <td colspan="4" style="text-align: left;">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">Contact No: <strong>{{invoice.PatientInfo.PhoneNumber}}</strong></p>
+                </td>
                 <td colspan="4" style="text-align: right;">
-                  <p class="c_paragraphs" style="margin-bottom: 0px;">Date:<strong>{{invoice.InvoiceInfo |
-                    DanpheDateTime:'format':'YYYY-MM-DD'}}</strong></p>
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">Age/Sex : <strong>{{finalAge}}</strong></p>
                 </td>
               </tr>
               <tr>
@@ -155,16 +163,8 @@
                   </p>
                 </td>
                 <td colspan="4" style="text-align: right;">
-                  <!-- <p class="c_paragraphs" style="margin-bottom: 0px;"><strong>Date: </strong>
-                    ({{localDateTime}})</p> -->
-                </td>
-              </tr>
-              <tr>
-                <td colspan="4" style="text-align: left;">
-                  <p class="c_paragraphs" style="margin-bottom: 0px;">Contact No: <strong>{{invoice.PatientInfo.PhoneNumber}}</strong></p>
-                </td>
-                <td colspan="4" style="text-align: right;">
-                  <p class="c_paragraphs" style="margin-bottom: 0px;">Age/Sex : <strong>{{finalAge}}</strong></p>
+                  <p class="c_paragraphs" style="margin-bottom: 0px;" *ngIf="invoice.InvoiceInfo.ClaimCode"><strong>ClaimCode: </strong>
+                    ({{invoice.InvoiceInfo.ClaimCode}})</p>
                 </td>
               </tr>
               <tr>
@@ -201,31 +201,44 @@
         </tr>
         <tr>
           <th style="padding: 5px !important; width: 5%">SN.</th>
+          <th *ngIf="invoice.InvoiceInfo.PackageId" style="padding: 5px !important; width: 5%">ItemCode</th>
           <th colspan="4" style="padding: 5px !important; width: 70%">Particular(s)</th>
-          <th style="padding: 5px !important; width: 5%">ItemCode</th>
-          <th style="padding: 5px !important; width: 5%">Unit</th>
-          <th style="padding: 5px !important; width: 10%">Price</th>
-          <th style="padding: 5px !important; width: 10%">Dis%</th>
-          <th style="padding: 5px !important; width: 10%">Dis.Amt</th>
-          <th style="padding: 5px !important; width: 10%">Amount</th>
+          <th *ngIf="!invoice.InvoiceInfo.PackageId" style="padding: 5px !important; width: 5%">ItemCode</th>
+          <th *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.Unit) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.Unit)"
+              style="padding: 5px !important; width: 5%">Unit</th>
+          <th *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.Price) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.Price)"
+              style="padding: 5px !important; width: 10%">Price</th>
+          <th *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.DiscountPercent) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.DiscountPercent)"
+              style="padding: 5px !important; width: 10%">Dis%</th>
+          <th *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.DiscountAmount) ||  (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.DiscountAmount)"
+              style="padding: 5px !important; width: 10%">Dis.Amt</th>
+          <th *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.Amount) ||  (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.Amount)"
+              style="padding: 5px !important; width: 10%">Amount</th>
         </tr>
         <tr *ngFor="let row of invoice.InvoiceItems; let i=index">
           <td style="padding: 0px 5px;  width: 5%">{{i+1}}.</td>
+          <td *ngIf="invoice.InvoiceInfo.PackageId" style="padding: 0px 5px;  width: 5%">
+            {{row.ItemCode}}</td>
           <td colspan="4" style="padding: 0px 5px; width: 70%; text-transform: uppercase;">
             {{row.ItemName}}
             <span *ngIf="row.PerformerName!=null && ShowProviderName"> ({{row.PerformerName}})</span>
           </td>
-          <td style="padding: 0px 5px;  width: 5%">
+          <td *ngIf="!invoice.InvoiceInfo.PackageId" style="padding: 0px 5px;  width: 5%">
             {{row.ItemCode}}</td>
-          <td style="padding: 0px 5px;  width: 5%">
+          <td *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.Unit) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.Unit)"
+              style="padding: 0px 5px;  width: 5%">
             {{row.Quantity}}</td>
-          <td style="padding: 0px 5px;  width: 10%">
+          <td *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.Price) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.Price)"
+              style="padding: 0px 5px;  width: 10%">
             {{row.Price | number : "1.2-2"}}</td>
-          <td style="padding: 0px 5px;  width: 10%">
+          <td *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.DiscountPercent) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.DiscountPercent)"
+              style="padding: 0px 5px;  width: 10%">
             {{row.DiscountPercent | number : "1.2-2"}}</td>
-          <td style="padding: 0px 5px;  width: 10%">
+          <td *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.DiscountAmount) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.DiscountAmount)"
+              style="padding: 0px 5px;  width: 10%">
             {{row.DiscountAmount | number : "1.2-2"}}</td>
-          <td style="padding: 0px 5px;  width: 10%">
+          <td *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.Amount) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.Amount)"
+              style="padding: 0px 5px;  width: 10%">
             {{row.Quantity * row.Price | number : "1.2-2"}}
           </td>
         </tr>
@@ -240,8 +253,10 @@
             </p>
           </td>
           <td colspan="6" style="padding: 5px !important; text-align: right;">
-            <p class="c_paragraphs" style="margin: 0px"><strong>SubTotal: </strong></p>
-            <p class="c_paragraphs" style="margin: 0px"><strong>Discount: </strong></p>
+            <p *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.InvoiceSubTotal) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.InvoiceSubTotal)"
+               class="c_paragraphs" style="margin: 0px"><strong>SubTotal: </strong></p>
+            <p *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.InvoiceDiscount) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.InvoiceDiscount)"
+               class="c_paragraphs" style="margin: 0px"><strong>Discount: </strong></p>
             <p class="c_paragraphs" style="margin: 0px"><strong>Total Amount: </strong></p>
             <p class="c_paragraphs" style="margin: 0px" *ngIf="OtherCurrencyDetail && OtherCurrencyDetail.CurrencyCode"><strong>Total
                 Amount({{OtherCurrencyDetail.CurrencyCode}}): </strong></p>
@@ -249,8 +264,10 @@
             <p class="c_paragraphs" style="margin: 0px" *ngIf="invoice.InvoiceItems[0].IsCoPayment"><strong>Received Amount: </strong></p>
           </td>
           <td style="padding: 5px !important;">
-            <p class="c_paragraphs" style="margin: 0px">{{invoice.InvoiceInfo.SubTotal | number : "1.2-2"}}</p>
-            <p class="c_paragraphs" style="margin: 0px">{{invoice.InvoiceInfo.DiscountAmount | number : "1.2-2"}}</p>
+            <p *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.InvoiceSubTotal) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.InvoiceSubTotal)"
+               class="c_paragraphs" style="margin: 0px">{{invoice.InvoiceInfo.SubTotal | number : "1.2-2"}}</p>
+            <p *ngIf="(invoice.InvoiceInfo.PackageId && BillingPackageInvoiceColumnSelection.InvoiceDiscount) || (!invoice.InvoiceInfo.PackageId && BillingInvoiceDisplaySetting.InvoiceDiscount)"
+               class="c_paragraphs" style="margin: 0px">{{invoice.InvoiceInfo.DiscountAmount | number : "1.2-2"}}</p>
             <p class="c_paragraphs" style="margin: 0px">{{invoice.InvoiceInfo.TotalAmount | number : "1.2-2"}}</p>
             <p class="c_paragraphs" style="margin: 0px" *ngIf="OtherCurrencyDetail && OtherCurrencyDetail.CurrencyCode">
               {{OtherCurrencyDetail.ConvertedAmount | number : "1.2-2"}}</p>
@@ -307,7 +324,7 @@
         <tr>
           <td colspan="11" style="padding: 0px 5px 0px 5px !important; vertical-align: top; text-align: center;">
             <div *ngIf="InvoiceFooterNoteSettings.ShowFooter">
-
+              <p class="c_paragraphs"><b *ngIf="InvoiceFooterNoteSettings.ShowNepali"> {{InvoiceFooterNoteSettings.NepaliText}} </b></p>
               <p class="c_paragraphs"><b *ngIf="InvoiceFooterNoteSettings.ShowEnglish"> {{InvoiceFooterNoteSettings.EnglishText}} </b></p>
             </div>
           </td>

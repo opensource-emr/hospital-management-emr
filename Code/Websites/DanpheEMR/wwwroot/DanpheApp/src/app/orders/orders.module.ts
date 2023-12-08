@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Routes, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule,HttpClientJsonpModule } from '@angular/common/http';
+import { HttpClientModule, HttpClientJsonpModule } from '@angular/common/http';
 
 import { LabsBLService } from '../labs/shared/labs.bl.service';
 import { LabsDLService } from '../labs/shared/labs.dl.service';
@@ -26,6 +26,7 @@ import { OrderService } from '../orders/shared/order.service';
 import { SharedModule } from "../shared/shared.module";
 import { PrintMedicationsComponent } from './order/print-order';
 import { OrdersBLService } from './shared/orders.bl.service';
+import { OrdersDLService } from './shared/orders.dl.service';
 
 @NgModule({
     providers: [OrderService,
@@ -37,7 +38,10 @@ import { OrdersBLService } from './shared/orders.bl.service';
         BillingDLService,
         MedicationBLService,
         OrdersBLService,
-        ClinicalDLService],
+        ClinicalDLService,
+        OrdersBLService,
+        OrdersDLService
+    ],
     imports: [ReactiveFormsModule,
         FormsModule,
         CommonModule,

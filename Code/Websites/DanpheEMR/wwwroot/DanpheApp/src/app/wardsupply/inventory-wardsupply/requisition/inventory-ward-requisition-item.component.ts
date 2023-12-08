@@ -42,20 +42,27 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
 
     public IsVerificationActivated: boolean = true;
     public VerifierList: InventoryWardRequisitionVerifier_DTO[] = [];
+    showInventoryRequisitionDetails: boolean = false;
 
     constructor(public changeDetectorRef: ChangeDetectorRef, public inventoryBLService: InventoryBLService, public inventoryService: InventoryService, public wardsupplyBLService: WardSupplyBLService, public securityService: SecurityService, public router: Router, public messageBoxService: MessageboxService, public coreBLService: CoreBLService, public coreService: CoreService) {
-        //whatever you need to write in constructor, write inside CheckForSubstoreActivation()
-        this.CheckForSubstoreActivation();
         this.GetInventoryList();
         this.LoadItemCategory();
-        this.SetFocusById('activeInventory');
         this.LoadVerifiersForRequisition();
+        this.GetSigningPanelConfiguration();
+
+    }
+
+    ngOnInit() {
+        this.CheckForSubstoreActivation();
+    }
+    ngAfterViewInit() {
+        this.SetFocusById('activeInventory');
 
     }
     GetInventoryList() {
         this.inventoryBLService.GetActiveInventoryList()
             .subscribe(res => {
-                if (res.Status == "OK") {
+                if (res.Status === ENUM_DanpheHTTPResponses.OK) {
                     this.inventoryList = res.Results;
                 }
             })
@@ -69,7 +76,6 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         ReqItem.filteredItemList = ReqItem.filteredItemList.slice();
         ReqItem.SelectedItem = new ItemMaster();
         ReqItem.RequisitionItemValidator.get("ItemId").setValue("");
-        // this.GoToNextInput("itemName" + indx,600);
         window.setTimeout(function () {
             let itmNameBox = document.getElementById("itemName" + indx);
             if (itmNameBox) {
@@ -205,9 +211,8 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
     }
 
     AddRowRequest() {
-        for (var i = 0; i < this.requisition.RequisitionItems.length; i++) {
-            // for loop is used to show RequisitionItemValidator message ..if required  field is not filled
-            for (var a in this.requisition.RequisitionItems[i].RequisitionItemValidator.controls) {
+        for (let i = 0; i < this.requisition.RequisitionItems.length; i++) {
+            for (let a in this.requisition.RequisitionItems[i].RequisitionItemValidator.controls) {
                 this.requisition.RequisitionItems[i].RequisitionItemValidator.controls[a].markAsDirty();
                 this.requisition.RequisitionItems[i].RequisitionItemValidator.controls[a].updateValueAndValidity();
             }
@@ -221,14 +226,13 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         this.requisition.RequisitionItems.push(this.currentRequItem);
 
         let nextInputIndex = this.requisition.RequisitionItems.length - 1;
-        //this.SetFocusOnItemName(nextInputIndex);
     }
     public SetFocusOnItemName(index: number) {
         let elementToBeFocused = 'itemName' + index;
         this.SetFocusById(elementToBeFocused);
     }
     OnPressedEnterKeyInQuantityField(index) {
-        var isinputvalid = this.requisition.RequisitionItems.every(item => item.Quantity > 0)
+        let isinputvalid = this.requisition.RequisitionItems.every(item => item.Quantity > 0)
         if (isinputvalid == true) {
             //If index is last element of array, then create new row
             if (index == (this.requisition.RequisitionItems.length - 1)) {
@@ -239,7 +243,6 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
     }
     OnPressedEnterKeyInItemField(index) {
         if (this.requisition.RequisitionItems[index].SelectedItem != null && this.requisition.RequisitionItems[index].ItemId != null) {
-            // this.SetFocusById(`qtyip${index}`);
             this.SetFocusById(`qtyip${index}`);
         }
         else {
@@ -343,7 +346,7 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         //if proper item is selected then the below code runs ..othewise it goes out side the function
         if (typeof Item === "object" && !Array.isArray(Item) && Item !== null) {
             this.CurrentItemId = Item.ItemId;
-            this.GetAvailableQuantityByItemIdAndStoreId(this.CurrentItemId, this.CurrentStoreId, index);
+            this.GetAvailableQuantityByItemIdAndStoreId(this.CurrentItemId, this.requisition.RequestToStoreId, index);
             //this for loop with if conditon is to check whether the  item is already present in the array or not
             //means to avoid duplication of item
             for (var i = 0; i < this.requisition.RequisitionItems.length; i++) {
@@ -390,25 +393,20 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
     }
     ////posting to db
     AddRequisition() {
-        // this CheckIsValid varibale is used to check whether all the validation are proper or not ..
-        //if the CheckIsValid == true the validation is proper else no
-        var CheckIsValid = true;
+        let CheckIsValid = true;
         this.requisition.RequestFromStoreId = this.CurrentStoreId;
         this.requisition.ReqDisGroupId = this.ReqDisGroupId;
         this.requisition.RequisitionValidator.get("RequestFromStoreId").setValue(this.CurrentStoreId);
 
         if (this.requisition.IsValidCheck(undefined, undefined) == false) {
-            // for loop is used to show RequisitionValidator message ..if required  field is not filled
-            for (var a in this.requisition.RequisitionValidator.controls) {
+            for (let a in this.requisition.RequisitionValidator.controls) {
                 this.requisition.RequisitionValidator.controls[a].markAsDirty();
                 this.requisition.RequisitionValidator.controls[a].updateValueAndValidity();
             }
             CheckIsValid = false;
         }
-        for (var i = 0; i < this.requisition.RequisitionItems.length; i++) {
+        for (let i = 0; i < this.requisition.RequisitionItems.length; i++) {
             if (this.requisition.RequisitionItems[i].IsValidCheck(undefined, undefined) == false) {
-
-                // for loop is used to show RequisitionItemValidator message ..if required  field is not filled
                 for (var a in this.requisition.RequisitionItems[i].RequisitionItemValidator.controls) {
                     this.requisition.RequisitionItems[i].RequisitionItemValidator.controls[a].markAsDirty();
                     this.requisition.RequisitionItems[i].RequisitionItemValidator.controls[a].updateValueAndValidity();
@@ -416,18 +414,7 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
                 CheckIsValid = false;
             }
         }
-
-        //this.requisition.RequisitionItems.forEach(function (value) {
-        //    if (value.Quantity == 0) {
-        //        validQuantity = false;
-        //    }
-        //});
-
-        //if (this.requisition.RequisitionItems.length == 0) {
-        //    this.messageBoxService.showMessage("notice-message", ["Please Add Item ...Before Requesting"]);
-        //}
         if (CheckIsValid == true && this.requisition.RequisitionItems != null) {
-            //Updating the Status
             this.requisition.RequisitionStatus = "active";
             //Comment by Nagesh on 11-Jun-17 Employee Id not getting so, now passing static id
             this.requisition.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
@@ -449,9 +436,9 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
                         this.currentRequItem = new RequisitionItems();
                         this.currentRequItem.Quantity = 1;
                         this.requisition.RequisitionItems.push(this.currentRequItem);
-                        //route back to requisition list
-                        this.RouteToViewDetail(res.Results);
-                        //this.router.navigate(['/Inventory/InternalMain/RequisitionList']);
+                        this.inventoryService.RequisitionId = res.Results;
+                        this.inventoryService.isModificationAllowed = true;
+                        this.showInventoryRequisitionDetails = true;
                     }
                     else {
                         err => {
@@ -466,17 +453,12 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
 
     }
 
-    //this is to update requistion
-
     UpdateRequisition() {
-        // this CheckIsValid varibale is used to check whether all the validation are proper or not ..
-        //if the CheckIsValid == true the validation is proper else no
-        var CheckIsValid = true;
+        let CheckIsValid = true;
         this.requisition.RequestFromStoreId = this.CurrentStoreId;
         this.requisition.RequisitionValidator.get("RequestFromStoreId").setValue(this.CurrentStoreId);
         if (this.requisition.IsValidCheck(undefined, undefined) == false) {
-            // for loop is used to show RequisitionValidator message ..if required  field is not filled
-            for (var b in this.requisition.RequisitionValidator.controls) {
+            for (let b in this.requisition.RequisitionValidator.controls) {
                 this.requisition.RequisitionValidator.controls[b].markAsDirty();
                 this.requisition.RequisitionValidator.controls[b].updateValueAndValidity();
                 CheckIsValid = false;
@@ -484,9 +466,8 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         }
 
 
-        for (var i = 0; i < this.requisition.RequisitionItems.length; i++) {
+        for (let i = 0; i < this.requisition.RequisitionItems.length; i++) {
             if (this.requisition.RequisitionItems[i].IsValidCheck(undefined, undefined) == false) {
-                // for loop is used to show RequisitionItemValidator message ..if required  field is not filled
                 for (var a in this.requisition.RequisitionItems[i].RequisitionItemValidator.controls) {
                     this.requisition.RequisitionItems[i].RequisitionItemValidator.controls[a].markAsDirty();
                     this.requisition.RequisitionItems[i].RequisitionItemValidator.controls[a].updateValueAndValidity();
@@ -495,14 +476,14 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
             }
             if (this.requisition.RequisitionItems[i].IsActive == false && this.requisition.RequisitionItems[i].CancelRemarks.length == 0) {
                 CheckIsValid = false;
-                this.messageBoxService.showMessage("notice-message", ["Please write withdraw remarks for item ", this.requisition.RequisitionItems[i].ItemName]);
+                this.messageBoxService.showMessage(ENUM_MessageBox_Status.Notice, ["Please write withdraw remarks for item ", this.requisition.RequisitionItems[i].ItemName]);
                 break;
             }
         }
 
 
         if (this.requisition.RequisitionItems.length == 0 || this.requisition.RequisitionItems.every(a => a.IsActive == false)) {
-            this.messageBoxService.showMessage("notice-message", ["Please Add Item ...Before Requesting"]);
+            this.messageBoxService.showMessage(ENUM_MessageBox_Status.Notice, ["Please Add Item ...Before Requesting"]);
             CheckIsValid = false;
         }
 
@@ -511,32 +492,27 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
             this.requisition.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
             this.requisition.RequisitionItems.map(a => {
                 a.ModifiedBy = this.securityService.GetLoggedInUser().EmployeeId;
-                // a.ModifiedOn = new Date();
-                // a.CreatedOn = new Date();
                 a.RequisitionId = this.requisition.RequisitionId;
                 a.IssueNo = this.requisition.IssueNo;
             })
             this.loading = true;
             this.wardsupplyBLService.PutUpdateRequisition(this.requisition).finally(() => { this.loading = false })
                 .subscribe(res => {
-                    if (res.Status == 'OK') {
+                    if (res.Status === ENUM_DanpheHTTPResponses.OK) {
                         this.changeDetectorRef.detectChanges();
-                        this.messageBoxService.showMessage("success", ["Requisition is Updated."]);
+                        this.messageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["Requisition is Updated."]);
 
                         this.requisition.RequisitionItems = new Array<RequisitionItems>();
                         this.requisition = new Requisition();
                         this.currentRequItem = new RequisitionItems();
                         this.currentRequItem.Quantity = 1;
                         this.requisition.RequisitionItems.push(this.currentRequItem);
-
-
                         this.inventoryService.RequisitionId = res.Results;
-                        this.router.navigate(['WardSupply/Inventory/InventoryRequisitionDetails']);
-
+                        this.showInventoryRequisitionDetails = true;
                     }
                     else {
 
-                        this.messageBoxService.showMessage("failed", ['failed to add Requisition.. please check log for details.']);
+                        this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ['failed to add Requisition.. please check log for details.']);
                         this.logError(res.ErrorMessage);
 
                     }
@@ -550,20 +526,12 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         this.currentRequItem = new RequisitionItems()
         this.currentRequItem.Quantity = 1;
         this.requisition.RequisitionItems.push(this.currentRequItem);
-        //route back to requisition list
         this.router.navigate(['/WardSupply/Inventory/InventoryRequisitionList']);
     }
     logError(err: any) {
         console.log(err);
     }
 
-    RouteToViewDetail(reqId: number) {
-        //pass the Requisition Id to RequisitionView page for List of Details about requisition
-        this.inventoryService.RequisitionId = reqId;
-        this.inventoryService.isModificationAllowed = true;
-        this.router.navigate(['/WardSupply/Inventory/InventoryRequisitionDetails']);
-
-    }
     //for item add popup
     AddItemPopUp(i) {
         this.showAddItemPopUp = false;
@@ -649,27 +617,9 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
         return this.requisition.VerifierList.length <= 1;
     }
     CheckIfAddVerifierAllowed() {
-        return this.requisition.VerifierList.some(V => V.Id == undefined) || this.requisition.VerifierList.length >= 4;
+        return this.requisition.VerifierList.some(V => V.Id == undefined) || this.requisition.VerifierList.length >= this.VerificationLevel;
     }
 
-    GetSignatotyName(index: number): string {
-        let signatory = "";
-        switch (index) {
-            case 0:
-                signatory = 'Inventory Incharge';
-                break;
-            case 1:
-                signatory = 'Finance Head';
-                break;
-            case 2:
-                signatory = 'Hospital Director';
-                break;
-            case 3:
-                signatory = 'CEO/Dean';
-                break;
-        }
-        return signatory;
-    }
 
     public SetDefaultVerifier() {
         let SubStoreRequisitionVerificationSetting = this.coreService.Parameters.find(param => param.ParameterGroupName == "Inventory" && param.ParameterName == "SubStoreRequisitionVerificationSetting").ParameterValue;
@@ -708,6 +658,29 @@ export class InventoryWardRequisitionItemComponent implements OnDestroy {
             }, err => {
                 this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, [err.error.ErrorMessage]);
             })
+    }
+
+    CloseInventoryRequisitionDetailsPopup() {
+        this.showInventoryRequisitionDetails = false;
+        this.router.navigate(['/WardSupply/Inventory/InventoryRequisitionList']);
+    }
+
+    GetSignatoryName(index: number): string {
+        if (this.VerifierSignatories && this.VerifierSignatories.length) {
+            return this.VerifierSignatories[index];
+        }
+    }
+
+    public VerifierSignatories: [] = [];
+    public VerificationLevel: number = 0;
+    GetSigningPanelConfiguration() {
+        this.VerifierSignatories = [];
+        var signingPanelConfigurationParameter = this.coreService.Parameters.find(param => param.ParameterGroupName === 'Inventory' && param.ParameterName == "SigningPanelConfiguration")
+        if (signingPanelConfigurationParameter) {
+            let signingPanelConfigurationParameterValue = JSON.parse(signingPanelConfigurationParameter.ParameterValue);
+            this.VerifierSignatories = signingPanelConfigurationParameterValue.VerifierSignatories;
+            this.VerificationLevel = signingPanelConfigurationParameterValue.VerificationLevel;
+        }
     }
 }
 export class Item {

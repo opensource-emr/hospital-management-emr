@@ -146,13 +146,13 @@
             {{note.Prescription.ICDRemarks}}
           </div>
 
-          <div class="row">
+          <div class="row" *ngIf="OrdersList && OrdersList.length">
             <div class="col-md-12 form-group">
               <h3>Lab and Orders</h3>
             </div>
             <div class="col-md-12">
               <div class="row form-group">
-                <div class="col-md-12" *ngIf="OrdersList && OrdersList.length">
+                <div class="col-md-12">
                   <div style="display: inline-block;padding: 7px 12px;" *ngFor="let odr of OrdersList; let j=index;">
                     {{odr.ItemName}}({{odr.Type}}) <span *ngIf="j+1 != OrdersList.length">,&nbsp;</span>
                   </div>

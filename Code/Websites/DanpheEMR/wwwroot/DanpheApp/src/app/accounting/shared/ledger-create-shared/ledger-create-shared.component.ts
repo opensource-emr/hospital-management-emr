@@ -4,6 +4,8 @@ import { MessageboxService } from "../../../shared/messagebox/messagebox.service
 import { LedgerModel } from "../../settings/shared/ledger.model";
 import { AccountingService } from "../../shared/accounting.service";
 import { AccountingBLService } from "../accounting.bl.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
+
 
 @Component({
   selector: "ledger-create-shared",
@@ -33,11 +35,13 @@ export class LedgerCreateSharedComponent {
   public sourceLedGroupList: Array<LedgerModel> = new Array<LedgerModel>();
   public currentSel: LedgerModel = new LedgerModel();
   //public unavailabeLedData: any;
-
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(public msgBoxServ: MessageboxService, public accountingBLService: AccountingBLService,
     public coreService: CoreService,
     public accountingService: AccountingService) {
+      this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
     this.GetLedgerGroup();
   }
   @Input("reference-id")

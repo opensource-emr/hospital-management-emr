@@ -1,18 +1,19 @@
 import { Component } from "@angular/core";
 import * as moment from 'moment/moment';
 
-import { InsuranceInfo } from "../../shared/insurance-info.model"
-import { Patient } from "../../shared/patient.model"
-import { PatientService } from '../../shared/patient.service';
 import { IRouteGuard } from '../../../shared/route-guard.interface';
+import { InsuranceInfo } from "../../shared/insurance-info.model";
+import { Patient } from "../../shared/patient.model";
+import { PatientService } from '../../shared/patient.service';
 
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { PatientsBLService } from "../../shared/patients.bl.service";
-import { InsuranceProviderModel } from '../../shared/insurance-provider.model';
 import { CoreService } from "../../../core/shared/core.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { InsuranceProviderModel } from '../../shared/insurance-provider.model';
+import { PatientsBLService } from "../../shared/patients.bl.service";
 
 @Component({
-  templateUrl: "./insurance-info.html"
+    templateUrl: "./insurance-info.html"
 })
 export class InsuranceInfoComponent implements IRouteGuard {
     public editbutton: boolean = false;
@@ -21,9 +22,10 @@ export class InsuranceInfoComponent implements IRouteGuard {
     public insurances: Array<InsuranceInfo> = new Array<InsuranceInfo>();
 
     public IdCardTypes: Array<{ IdCardTypeId: number, IdCardTypeName: string }> = new Array<{ IdCardTypeId: number, IdCardTypeName: string }>();
-  public insProviderList: Array<any> = [];
+    public insProviderList: Array<any> = [];
 
     public insProvider: InsuranceProviderModel = null;
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
     constructor(patientService: PatientService,
         public patientBlService: PatientsBLService,
@@ -35,6 +37,7 @@ export class InsuranceInfoComponent implements IRouteGuard {
         this.SeedIdCardTypes();
         this.GetInsuranceProviderList();
         this.GoToNextInput("InputId");
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
 
     SeedIdCardTypes() {
@@ -47,12 +50,12 @@ export class InsuranceInfoComponent implements IRouteGuard {
 
     GoToNextInput(id: string) {
         window.setTimeout(function () {
-          let itmNameBox = document.getElementById(id);
-          if (itmNameBox) {
-            itmNameBox.focus();
-          }
+            let itmNameBox = document.getElementById(id);
+            if (itmNameBox) {
+                itmNameBox.focus();
+            }
         }, 600);
-      }
+    }
     public GetInsuranceProviderList() {
         this.patientBlService.GetInsuranceProviderList()
             .subscribe(res => {
@@ -105,7 +108,7 @@ export class InsuranceInfoComponent implements IRouteGuard {
                     insurance.SubscriberIDCardNumber = this.currentInsurance.SubscriberIDCardNumber;
                     insurance.SubscriberLastName = this.currentInsurance.SubscriberLastName;
                     insurance.SubscriberIDCardType = this.currentInsurance.SubscriberIDCardType;
-                    insurance.IMISCode= this.currentInsurance.IMISCode;
+                    insurance.IMISCode = this.currentInsurance.IMISCode;
                     insurance.CurrentBalance = this.currentInsurance.InitialBalance;
                     insurance.InitialBalance = this.currentInsurance.InitialBalance;
                     this.currentInsurance = new InsuranceInfo();
@@ -130,7 +133,7 @@ export class InsuranceInfoComponent implements IRouteGuard {
         if (this.currentInsurance.IsValidCheck(undefined, undefined) == true && this.CheckIfInsuranceAlreadyExists()) {
             this.SetInsuranceProviderName();
             this.currentInsurance.CurrentBalance = this.currentInsurance.InitialBalance;
-            
+
             this.insurances.push(this.currentInsurance);
             this.currentInsurance = new InsuranceInfo();
         }

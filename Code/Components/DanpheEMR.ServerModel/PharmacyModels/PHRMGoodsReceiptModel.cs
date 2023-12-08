@@ -30,6 +30,8 @@ namespace DanpheEMR.ServerModel
         public DateTime? ModifiedOn { get; set; }
         public virtual List<PHRMGoodsReceiptItemsModel> GoodReceiptItem { get; set; }
         public decimal VATAmount { get; set; }
+        public decimal VATPercentage { get; set; }
+
         public bool IsCancel { get; set; }
         public string CancelRemarks { get; set; }
         public int? CancelBy { get; set; }

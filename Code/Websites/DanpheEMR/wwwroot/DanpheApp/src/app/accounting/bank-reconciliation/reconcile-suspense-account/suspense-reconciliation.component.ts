@@ -324,6 +324,20 @@ export class SuspenseAccountReconciliationComponent {
         if (this.transaction.TransactionItems.length > 2) {
             this.transaction.TransactionItems = this.transaction.TransactionItems.filter(a => a.LedgerId > 0);
         }
+
+        let defaultCostCenter = this.costCenterList.find(a => a.IsDefault === true);
+
+        if (!this.subLedgerAndCostCenterSetting.EnableCostCenter) {
+            this.transaction.TransactionItems.forEach(txnItem => {
+                if (defaultCostCenter) {
+                    txnItem.TransactionItemValidator.controls['CostCenter'].setValue(defaultCostCenter.CostCenterId);
+                    txnItem.CostCenterId = defaultCostCenter.CostCenterId;
+                } else {
+                    this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ['Default CostCenter not found.']);
+                }
+            });
+        }
+
         this.transaction.UpdateValidator("off", "PayeeName", "required");
         this.transaction.UpdateValidator("off", "ChequeNumber", "");
         if (!this.CheckCalculations()) {

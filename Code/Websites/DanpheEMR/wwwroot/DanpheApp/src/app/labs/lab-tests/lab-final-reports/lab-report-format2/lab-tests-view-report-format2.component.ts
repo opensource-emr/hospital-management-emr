@@ -42,6 +42,7 @@ import {
   DanpheCache,
   MasterType,
 } from "../../../../shared/danphe-cache-service-utility/cache-services";
+import { ENUM_MessageBox_Status } from "../../../../shared/shared-enums";
 import { LabTestComponent } from "../../../shared/lab-component.model";
 import { LabReportColumnsModel } from "../../../shared/lab-report-template.model";
 import {
@@ -170,6 +171,7 @@ export class LabTestsViewReportFormat2Component {
   public ProfilePicSRC: string = "";
   public isCovidTest: boolean = false;
   public CovidTestName: string = "";
+  public LabReportDisplayParameter = { "ShowChangeReferredBy": false, "ShowChangeLabNumber": false, "ShowCollectionSite": true, "ShowSpecimen": false, "ShowWard": false, "ShowVerificationDate": false, "ShowPassportNo": false, "ShowProfilePic": false, "ShowChangePrescriberName": true };
   constructor(
     public labBLService: LabsBLService, public labService: LabService,
     public npCalendarService: NepaliCalendarService,
@@ -180,6 +182,7 @@ export class LabTestsViewReportFormat2Component {
     public router: Router,
     public securityService: SecurityService
   ) {
+    this.GetParameters();
     this.CurrentDateTime = moment().format("YYYY-MM-DD HH:mm");
     this.GetDoctorsList();
     this.CreatedByUser = this.securityService.GetLoggedInUser().Employee;
@@ -373,9 +376,11 @@ export class LabTestsViewReportFormat2Component {
   }
 
   public ParseSignatories(_signatories) {
+    let signs = null;
     if (_signatories) {
       var type = typeof _signatories;
       if (type == "object") {
+        signs = _signatories;
         if (this.showReportDispatcherSignatory) {
           _signatories.forEach((item, index) => {
             if (item.EmployeeId == this.CreatedByUser.EmployeeId) {
@@ -396,7 +401,7 @@ export class LabTestsViewReportFormat2Component {
         _signatories = JSON.stringify(_signatories);
         this.signatories = _signatories;
       } else {
-        var signs = JSON.parse(_signatories);
+        signs = JSON.parse(_signatories);
         if (this.showReportDispatcherSignatory) {
           signs.forEach((item, index) => {
             if (item.EmployeeId == this.CreatedByUser.EmployeeId) {
@@ -793,7 +798,7 @@ export class LabTestsViewReportFormat2Component {
 
     popupWinindow.onload = function () {
       popupWinindow.print();
-      popupWinindow.close();
+      // popupWinindow.close();
     }
 
     // let tmr = setTimeout(function () {
@@ -1388,4 +1393,13 @@ export class LabTestsViewReportFormat2Component {
       this.loading = false;
     }, 500);
   }
+
+  GetParameters(): void {
+    let param = this.coreService.Parameters.find(a => a.ParameterGroupName === 'LAB' && a.ParameterName === 'LabReportDisplaySettings');
+    if (param)
+      this.LabReportDisplayParameter = JSON.parse(param.ParameterValue);
+    else
+      this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ["Please enter parameter values for LabReportDisplaySettings"]);
+  }
+
 }

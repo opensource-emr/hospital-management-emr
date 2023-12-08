@@ -1,14 +1,15 @@
-import { Component, ChangeDetectorRef, EventEmitter, Output, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { resolve } from 'url';
 import { CoreService } from '../../../core/shared/core.service';
 import { PatientService } from '../../../patients/shared/patient.service';
+import { PatientsBLService } from '../../../patients/shared/patients.bl.service';
 import { CountrySubdivision } from '../../../settings-new/shared/country-subdivision.model';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { PharmacyBLService } from '../../shared/pharmacy.bl.service';
 import { PHRMPatient } from '../../shared/phrm-patient.model';
-import { PatientsBLService } from '../../../patients/shared/patients.bl.service';
+
 
 @Component({
   selector: 'phrm-op-patient-add',
@@ -37,9 +38,14 @@ export class PhrmOutpatientAddComponent {
   public showExstingPatientListPage: boolean = false;
   public showMunicipality: boolean = false;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(public changeDetector: ChangeDetectorRef, public coreService: CoreService, public patientService: PatientService, public pharmacyBLService: PharmacyBLService, public msgBoxServ: MessageboxService, public patientBlService: PatientsBLService) {
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
     this.GetMasterData();
     this.showMunicipality = this.coreService.ShowMunicipality().ShowMunicipality;
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
 
   }
 

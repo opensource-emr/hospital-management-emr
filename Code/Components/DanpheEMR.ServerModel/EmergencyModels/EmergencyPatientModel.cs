@@ -1,4 +1,5 @@
 ﻿using DanpheEMR.ServerModel.EmergencyModels;
+using DanpheEMR.ServerModel.PatientModels;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -46,7 +47,7 @@ namespace DanpheEMR.ServerModel
         public bool IsActive { get; set; }
         public bool IsExistingPatient { get; set; }
         public string OldPatientId { get; set; }
-
+        public int? WardNo { get; set; }
         public string FinalizedStatus { get; set; }
         public string FinalizedRemarks { get; set; }
         public int? FinalizedBy { get; set; }
@@ -82,7 +83,12 @@ namespace DanpheEMR.ServerModel
         public string MunicipalityName { get; set; }
         [NotMapped]
         public string EthnicGroup { get; set; }
-
+        [NotMapped]
+        public int SchemeId { get; set; }
+        [NotMapped]
+        public int PriceCategoryId { get; set; }
+        [NotMapped]
+        public PatientSchemeMapModel PatientScheme { get; set; }
     }
 
 }

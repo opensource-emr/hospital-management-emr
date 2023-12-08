@@ -41,6 +41,7 @@
       <div class="flex select-flex" *ngIf="AllowProvisionalBilling">
         <label class="is-ref mt-checkbox mt-checkbox-outline" for="id_chk_allow_provisional">
           <input type="checkbox" id="id_chk_allow_provisional" [(ngModel)]="DisplayPrintProvisionalButton"
+                 (ngModelChange)="AllowProvisionalBillingChange($event)"
                  title="Enable Provisional Billing">
           <span></span>Allow Provisional</label>
       </div>
@@ -171,6 +172,7 @@
                              [list-formatter]="billingInvoiceBlService.ItemsListFormatter"
                              (valueChanged)="AssignSelectedInvoiceItem()"
                              (focusout)="OnEmptyItemNameField()"
+                             [attr.disabled]="(SelectedPackage.IsEditable === true? true : null)"
                              [source]="ServiceItems" [(ngModel)]="selectedInvoiceItem"
                              value-property-name=null max-num-list="30"
                              onClick="this.select();" [min-chars]="2" match-formatted="true"
@@ -203,8 +205,10 @@
                   <td>
                     <div class="form-group">
                       <input type="number" min="0" class="form-control" id="id_billing_serviceItemPrice" onClick="this.select();"
-                             formControlName="Price" placeholder="Price" [attr.disabled]="(EnablePrice === true ? null : true)"
+                             formControlName="Price" placeholder="Price"
+                             [attr.disabled]="(EnablePrice === true ? null : true)  && ((!IsPackageServiceItemEditMode && SelectedPackage.IsEditable) === true? true : null)"
                              (wheel)="coreService.PreventNumberChangeOnScroll($event)" (focusout)="CalculateAfterPriceChanged()"
+                             (keyup.enter)="GoToNextElement('id_billing_serviceItemDiscPercent')"
                              [ngClass]="{'border-red': (InvoiceItemFormControls.Price.invalid && (InvoiceItemFormControls.Price.dirty || InvoiceItemFormControls.Price.touched))}">
                       <div class="color-red font-sm"
                            *ngIf="InvoiceItemFormControls.Price.invalid && (InvoiceItemFormControls.Price.dirty || InvoiceItemFormControls.Price.touched)">
@@ -219,11 +223,11 @@
                       <input type="number" class="form-control" id="id_billing_serviceItemDiscPercent"
                              formControlName="DiscountPercent" placeholder="Disc%"
                              (focusout)="OnItemDiscountPercentChanged()"
-                             [disabled]="(DisableItemLevelDiscPercent === true ? true : null)"
+                             [attr.disabled]="(DisableItemLevelDiscPercent === true ? true : null) && ((!IsPackageServiceItemEditMode && SelectedPackage.IsEditable) === true? true : null)"
                              onClick="this.select();"
+                             (keyup.enter)="GoToNextElement('id_billing_performer')"
                              (wheel)="coreService.PreventNumberChangeOnScroll($event)"
                              [ngClass]="{'border-red': InvoiceItemFormControls.DiscountPercent.errors}">
-
                     </div>
 
                   </td>
@@ -232,7 +236,7 @@
                       <input type="number" class="form-control" id="id_billing_serviceItemDiscAmount"
                              formControlName="DiscountAmount" placeholder="DiscAmt"
                              (focusout)="OnItemDiscountAmountChanged()"
-                             [disabled]="(DisableItemLevelDiscAmount === true ? true : null)"
+                             [attr.disabled]="(DisableItemLevelDiscAmount === true ? true : null) && ((!IsPackageServiceItemEditMode && SelectedPackage.IsEditable) === true? true : null)"
                              onClick="this.select();"
                              (wheel)="coreService.PreventNumberChangeOnScroll($event)"
                              [ngClass]="{'border-red': InvoiceItemFormControls.DiscountAmount.errors }">
@@ -254,15 +258,25 @@
                              [list-formatter]="billingInvoiceBlService.PerformerListFormatter" value-property-name=null
                              match-formatted="true" max-num-list="10" [(ngModel)]="SelectedPerformer"
                              placeholder="Enter Name" onClick="this.select();" (focusout)="AssignSelectedPerformer()"
-                             (keyup.enter)="GoToNextElement('id_btn_add_serviceItem')" onClick="this.select();"
+                             (keyup.enter)="GoToNextElement((IsPackageServiceItemEditMode === true) ? 'id_update_package_billing_service_item_button' : 'id_btn_add_serviceItem')"
+                             onClick="this.select();"
                              [attr.disabled]="InvoiceItemFormControls.ServiceItemId.errors">
                     </div>
+                    <div class="color-red font-sm"
+                         *ngIf="InvoiceItemFormControls.PerformerId.errors">
+                      Performer is required
+                    </div>
                   </td>
-                  <td>
+                  <td *ngIf="!IsPackageServiceItemEditMode">
                     <button type="button" id="id_btn_add_serviceItem" class="btn green btn-success "
-                            (click)="AddInvoiceItems()">
+                            [disabled]="IsPackageServiceItemEditMode" (click)="AddInvoiceItems()">
                       +
                     </button>
+                  </td>
+                  <td *ngIf="IsPackageServiceItemEditMode">
+                    <button type="button" id="id_update_package_billing_service_item_button" class="btn green btn-success"
+                            (click)="UpdatePackageServiceItemInInvoice(SelectedServiceItemFromPackage.ServiceItemId)" style="cursor: pointer;"><i
+                         class="fa fa-edit"></i></button>
                   </td>
                 </tr>
               </tbody>
@@ -285,6 +299,7 @@
             <thead>
               <tr>
                 <th></th>
+                <th *ngIf="SelectedPackage.IsEditable"></th>
                 <th>#</th>
                 <th>ItemCode</th>
                 <th>ItemName</th>
@@ -300,6 +315,9 @@
                 <td>
                   <a class="btn btn-danger" (click)="RemoveInvoiceItem(i)" title="Click to remove this item">
                     <i class="fa fa-times"></i></a>
+                </td>
+                <td *ngIf="SelectedPackage.IsEditable" style="cursor: pointer; font-size: 15px;" (click)="EditPackageInvoiceServiceItem(item)">
+                  <span><i class="fa fa-pencil"></i></span>
                 </td>
                 <td>{{i + 1}}</td>
                 <td>{{item.ItemCode}}</td>

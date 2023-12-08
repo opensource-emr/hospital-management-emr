@@ -433,7 +433,7 @@ export class PHRMGoodsReceiptItemComponent {
             let totalAmt = subTotalWithCC - discAmount + vatAmount;
 
             this.goodReceiptItem.SalePrice = CommonFunctions.parsePhrmAmount(itmRate + (itmRate * margin / 100));
-            this.goodReceiptItem.FreeGoodsAmount = CommonFunctions.parsePhrmAmount(ccAmount);
+            this.goodReceiptItem.CCAmount = CommonFunctions.parsePhrmAmount(ccAmount);
             this.goodReceiptItem.DiscountAmount = CommonFunctions.parsePhrmAmount(discAmount);
             this.goodReceiptItem.VATAmount = CommonFunctions.parsePhrmAmount(vatAmount);
             this.goodReceiptItem.SubTotal = CommonFunctions.parsePhrmAmount(subTotal);
@@ -590,7 +590,7 @@ export function updateCalculationsForGrItem(grItem: PHRMGoodsReceiptItemsModel) 
 
     let CostPrice = totalAmt / totalItemQty;
 
-    grItem.FreeGoodsAmount = CommonFunctions.parsePhrmAmount(ccAmount);
+    grItem.CCAmount = CommonFunctions.parsePhrmAmount(ccAmount);
     grItem.DiscountAmount = CommonFunctions.parsePhrmAmount(discAmount);
     grItem.VATAmount = CommonFunctions.parsePhrmAmount(vatAmount);
     grItem.SubTotal = CommonFunctions.parsePhrmAmount(subTotalWithoutCC);

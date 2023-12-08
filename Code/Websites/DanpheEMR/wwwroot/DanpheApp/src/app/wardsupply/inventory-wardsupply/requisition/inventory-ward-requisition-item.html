@@ -232,7 +232,7 @@
                             [disabled]="CheckIfDeleteVerifierAllowed()"><i class="glyphicon glyphicon-minus"></i>
                     </button>
                     <label class="verifier" for="inputIconEx{{i}}">
-                      <i class="fa fa-user"></i>{{GetSignatotyName(i)}}
+                      <i class="fa fa-user"></i>{{GetSignatoryName(i)}}
                     </label>
                   </div>
                   <div class="col-md-6">
@@ -275,6 +275,10 @@
   </div>
 
 </div>
+
+<inventory-ward-requisition-details *ngIf="showInventoryRequisitionDetails" (call-back-inventory-requisition-details-popup-close)="CloseInventoryRequisitionDetailsPopup()">
+
+</inventory-ward-requisition-details>
 
 <!-- <item-add *ngIf="showAddItemPopUp" [showAddPage]="showAddItemPopUp"
           (callback-add)="OnNewItemAdded($event)"></item-add> -->

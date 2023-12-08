@@ -198,7 +198,7 @@
             </h3>
             <a class="btn btn-danger" (click)="CloseGoodReceiptItemAddEditPage()" title="Cancel"><i class="fa fa-times"></i></a>
           </div>
-          <phrm-goods-receipt></phrm-goods-receipt>
+          <phrm-goods-receipt (call-back-popup-close)="CloseGoodReceiptItemAddEditPage()"></phrm-goods-receipt>
         </div>
       </div>
     </div>

@@ -6,7 +6,7 @@ export class ReportingService {
     public reportGridCols: ReportGridColumnSettings;
 
     constructor(public coreService: CoreService) {
-        this.reportGridCols = new ReportGridColumnSettings(this.coreService.taxLabel)
+        this.reportGridCols = new ReportGridColumnSettings(this.coreService.taxLabel, coreService)
     }
     
 

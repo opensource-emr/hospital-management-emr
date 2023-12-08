@@ -104,7 +104,9 @@
                     <strong>Hospital No:</strong> {{ProvisionalSlipDetails.PatientCode}}
                   </p>
                 </td>
-
+                <td colspan="5" style="text-align: right; padding: 0 !important;">
+                  <p class="c_paragraphs" style="margin: 0px;"><strong>Date:</strong> {{CurrentDate| nepaliDate}}</p>
+                </td>
               </tr>
               <tr>
                 <td colspan="5" style="text-align: left; padding: 0 !important;">
@@ -190,8 +192,8 @@
         <tr *ngIf="provSlipFooterParam.ShowFooter">
           <td colspan="10" style="padding: 5px 5px; vertical-align: top; text-align: center;">
             <p class="c_paragraphs" style="margin: 0px;"><b>
-                {{provSlipFooterParam.EnglishText}} </b>
-
+                {{provSlipFooterParam.EnglishText}} </b> <br *ngIf="provSlipFooterParam.VerticalAlign" />
+              <b> {{provSlipFooterParam.NepaliText}} </b>
             </p>
           </td>
 

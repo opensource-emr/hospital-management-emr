@@ -39,5 +39,6 @@ export class InvoiceItem_DTO {
   public IsDoubleEntry_Past: boolean = false;
   public IsPackageBilling: boolean = false;
   public BillingPackageId: number = null;
-
+  public IsDoctorMandatory: boolean = false;
+  public DefaultDoctorList: string = null;
 }

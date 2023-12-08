@@ -1099,7 +1099,7 @@ namespace DanpheEMR.Controllers
                     else
                     {
                         var patient = admissionDb.Patients.FirstOrDefault(a => a.PatientId == admissionFromClient.PatientId);
-                        if (creditOrganization != null && creditOrganization.IsClaimManagementApplicable && creditOrganization.IsClaimCodeCompulsory && !creditOrganization.IsClaimCodeAutoGenerate && admissionFromClient.PatientSchemesMap.LatestClaimCode == null)
+                        if (creditOrganization != null && creditOrganization.IsClaimManagementApplicable && creditOrganization.IsClaimCodeCompulsory && creditOrganization.IsClaimCodeAutoGenerate && admissionFromClient.PatientSchemesMap.LatestClaimCode == null)
                         {
                             visit.ClaimCode = GenerateClaimCode(admissionDb, admissionFromClient.PatientId, patient);
                         }
@@ -1135,11 +1135,11 @@ namespace DanpheEMR.Controllers
 
                         if (scheme.IsGeneralCreditLimited)
                         {
-                            refPatMap.GeneralCreditLimit = refPatMap.GeneralCreditLimit - (decimal)admissionFromClient.BillingTransaction.TotalAmount;
+                            refPatMap.GeneralCreditLimit = admissionFromClient.PatientSchemesMap.GeneralCreditLimit - (decimal)admissionFromClient.BillingTransaction.TotalAmount;
                         }
                         if (scheme.IsIpCreditLimited)
                         {
-                            refPatMap.IpCreditLimit = refPatMap.IpCreditLimit - (decimal)admissionFromClient.BillingTransaction.TotalAmount;
+                            refPatMap.IpCreditLimit = admissionFromClient.PatientSchemesMap.IpCreditLimit - (decimal)admissionFromClient.BillingTransaction.TotalAmount;
                         }
                         refPatMap.OpCreditLimit = admissionFromClient.PatientSchemesMap.OpCreditLimit;
                         refPatMap.RegistrationCase = admissionFromClient.PatientSchemesMap.RegistrationCase;
@@ -1176,7 +1176,7 @@ namespace DanpheEMR.Controllers
                         }
                         if (scheme.IsIpCreditLimited)
                         {
-                            refPatMap.IpCreditLimit = admissionFromClient.PatientSchemesMap.IpCreditLimit - (decimal)admissionFromClient.BillingTransaction.TotalAmount;
+                            map.IpCreditLimit = admissionFromClient.PatientSchemesMap.IpCreditLimit - (decimal)admissionFromClient.BillingTransaction.TotalAmount;
                         }
                         //map.IpCreditLimit = admissionFromClient.PatientSchemesMap.IpCreditLimit;
                         map.LatestClaimCode = visit.ClaimCode;
@@ -2901,6 +2901,7 @@ namespace DanpheEMR.Controllers
                           (admission.Visit.Patient.FirstName + " " + (string.IsNullOrEmpty(admission.Visit.Patient.MiddleName) ? "" : admission.Visit.Patient.MiddleName + " ")
                           + admission.Visit.Patient.LastName + admission.Visit.Patient.PatientCode + admission.Visit.Patient.PhoneNumber).Contains(search)
                           let emp = _admissionDbContext.Employees.Where(e => e.EmployeeId == admission.AdmittingDoctorId).FirstOrDefault()
+                          let dept = _admissionDbContext.Department.Where(d => d.DepartmentId == admission.Visit.DepartmentId).FirstOrDefault()
                           select new
                           {
                               VisitCode = admission.Visit.VisitCode,
@@ -2913,6 +2914,7 @@ namespace DanpheEMR.Controllers
                               DateOfBirth = admission.Visit.Patient.DateOfBirth,
                               Age = admission.Visit.Patient.Age,
                               PhoneNumber = admission.Visit.Patient.PhoneNumber,
+                              DepartmentName = dept.DepartmentName,
                               Gender = admission.Visit.Patient.Gender,
                               MembershipTypeId = admission.Visit.SchemeId,
                               MembershipTypeName = (from membership in _admissionDbContext.Schemes
@@ -4570,7 +4572,7 @@ namespace DanpheEMR.Controllers
 
                     var existingBedBillItem = allBedItemsOfPatientByVisit.Where(b => b.ItemId == newBedInfo.BedFeatureId).FirstOrDefault();
 
-                    if (existingBedBillItem == null)
+                    if (existingBedBillItem == null && isAutoAddBedItems)
                     {
                         //start--Sud:25Aug'22: Needed DiscountSchemeId in NewBedItems 
                         //int? discSchemeIdOfCurrentAdmission = null;
@@ -4707,9 +4709,14 @@ namespace DanpheEMR.Controllers
                 admission.AdmittingDoctorId = admittingDoc.AdmittingDoctorId;
                 patVisit.PerformerId = admittingDoc.AdmittingDoctorId;
                 patVisit.PerformerName = admittingDoc.AdmittingDoctorName;
+                if (admittingDoc.DepartmentId != null)
+                {
+                    patVisit.DepartmentId = (int)admittingDoc.DepartmentId;
+                }
                 _admissionDbContext.Entry(admission).Property(a => a.AdmittingDoctorId).IsModified = true;
                 _admissionDbContext.Entry(patVisit).Property(a => a.PerformerId).IsModified = true;
                 _admissionDbContext.Entry(patVisit).Property(a => a.PerformerName).IsModified = true;
+                _admissionDbContext.Entry(patVisit).Property(a => a.DepartmentId).IsModified = true;
                 _admissionDbContext.SaveChanges();
                 return Ok();
             }

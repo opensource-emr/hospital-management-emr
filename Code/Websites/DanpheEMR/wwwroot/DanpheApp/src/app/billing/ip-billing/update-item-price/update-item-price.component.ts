@@ -1,11 +1,15 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CoreService } from '../../../core/shared/core.service';
 import { SecurityService } from '../../../security/shared/security.service';
+import { PriceCategory } from '../../../settings-new/shared/price.category.model';
+import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from '../../../shared/shared-enums';
 import { BillingMasterBlService } from '../../shared/billing-master.bl.service';
 import { BillingTransactionItem } from '../../shared/billing-transaction-item.model';
 import { BillingBLService } from '../../shared/billing.bl.service';
 import { BillingService } from '../../shared/billing.service';
+import { PriceCategoryServiceItems_DTO } from '../../shared/dto/bill-pricecategory-service-items.dto';
 import { ServiceItemDetails_DTO } from '../../shared/dto/service-item-details.dto';
 
 @Component({
@@ -38,6 +42,9 @@ export class UpdateItemPriceComponent implements OnInit {
 
   //@Input()
   public someItems: Array<BillingTransactionItem> = [];
+  public PriceCategories = new Array<PriceCategory>();
+  public PriceCategoryServiceItems = new Array<PriceCategoryServiceItems_DTO>();
+  public UpdatePriceConfigurations = { EnableInIpBilling: false, EnableInProvisionalClearance: false };
   constructor(public msgBoxServ: MessageboxService,
     public coreService: CoreService,
     public billingBLService: BillingBLService,
@@ -45,8 +52,19 @@ export class UpdateItemPriceComponent implements OnInit {
     public securityService: SecurityService,
     public billingMasterBlService: BillingMasterBlService) {
     this.GetProviderList();
+    const allPriceCategories = this.coreService.Masters.PriceCategories;
+    if (allPriceCategories && allPriceCategories.length > 0) {
+      this.PriceCategories = allPriceCategories.filter(p => p.IsActive);
+    }
+    this.GetParameters();
   }
 
+  GetParameters(): void {
+    const params = this.coreService.Parameters.find(p => p.ParameterGroupName === "Billing" && p.ParameterName === "EnablePriceUpdateWithPriceCategory");
+    if (params) {
+      this.UpdatePriceConfigurations = JSON.parse(params.ParameterValue);
+    }
+  }
   ngOnInit() {
     this.AllItemLists = this.billingMasterBlService.ServiceItemsForIp;//this.billingService.allBillItemsPriceList;
     if (this.filteredItems && this.filteredItems.length > 0 && this.AllItemLists && this.AllItemLists.length > 0) {
@@ -165,14 +183,14 @@ export class UpdateItemPriceComponent implements OnInit {
         if (this.filteredItems[i].IsZeroPriceAllowed) {
           currTxnItem.UpdateValidator('off', 'Price', null);
         }
-        for (var valCtrls in currTxnItem.BillingTransactionItemValidator.controls) {
+        for (let valCtrls in currTxnItem.BillingTransactionItemValidator.controls) {
           currTxnItem.BillingTransactionItemValidator.controls[valCtrls].markAsDirty();
           currTxnItem.BillingTransactionItemValidator.controls[valCtrls].updateValueAndValidity();
 
         }
 
       }
-      for (var i = 0; i < this.filteredItems.length; i++) {
+      for (let i = 0; i < this.filteredItems.length; i++) {
         let currTxnItm_1 = this.filteredItems[i];
         //break loop if even a single txn item is invalid.
         if (!currTxnItm_1.IsValidCheck(undefined, undefined)) {
@@ -199,8 +217,8 @@ export class UpdateItemPriceComponent implements OnInit {
             if (item.IsAutoBillingItem) {
               item.IsAutoCalculationStop = true;
             }
-            this.PutTransactionItems(modifiedItems);
           });
+          this.PutTransactionItems(modifiedItems);
         }
         else {
           this.msgBoxServ.showMessage("Warning!", ["Please  select Item to update."]);
@@ -306,4 +324,50 @@ export class UpdateItemPriceComponent implements OnInit {
       this.CloseGroupDiscountPopUp();
     }
   }
+
+  OnPriceCategoryChanged($event): void {
+    if ($event) {
+      const priceCategoryId = +$event.target.value;
+      const isAnyServiceItemSelected = this.filteredItems.some(itm => itm.IsSelected);
+      if (isAnyServiceItemSelected) {
+        this.GetServiceItemsByPriceCategoryId(priceCategoryId);
+      } else {
+        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, [`No Service Items are Selected!`]);
+      }
+    }
+  }
+
+  GetServiceItemsByPriceCategoryId(priceCategoryId: number): void {
+    this.billingMasterBlService.GetServiceItemsByPriceCategoryId(priceCategoryId).subscribe((res: DanpheHTTPResponse) => {
+      if (res.Status === ENUM_DanpheHTTPResponses.OK && res.Results) {
+        this.PriceCategoryServiceItems = res.Results;
+        this.UpdateServiceItemsPriceWithNewPrice(this.PriceCategoryServiceItems);
+      }
+    }, err => {
+      console.error(err);
+    });
+  }
+
+  UpdateServiceItemsPriceWithNewPrice(priceCategoryServiceItems: Array<PriceCategoryServiceItems_DTO>): void {
+    if (priceCategoryServiceItems && priceCategoryServiceItems.length > 0 && this.filteredItems && this.filteredItems.length > 0) {
+
+      // Create a map from ServiceItemId to Price in priceCategoryServiceItems for faster lookup
+      const mapProvisionalServiceItemsToUpdate = new Map<number, number>();
+      priceCategoryServiceItems.forEach(item => {
+        mapProvisionalServiceItemsToUpdate.set(item.ServiceItemId, item.Price);
+      });
+      // const mapProvisionalServiceItemsToUpdate = new Map<number, number>(priceCategoryServiceItems.map(item => [item.ServiceItemId, item.Price]));
+
+      // Update the Price in ProvisionalItemsToUpdate in place
+      this.filteredItems.forEach(item => {
+        if (item.IsSelected) {
+          const newPrice = mapProvisionalServiceItemsToUpdate.get(item.ServiceItemId);
+          if (newPrice !== undefined) {
+            item.Price = newPrice;
+          }
+        }
+      });
+    }
+  }
+
 }

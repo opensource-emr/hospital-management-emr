@@ -1,13 +1,13 @@
-﻿import { Component, Directive, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { SystemAdminBLService } from '../shared/system-admin.bl.service';
+﻿import { ChangeDetectorRef, Component } from '@angular/core';
 import * as moment from 'moment/moment';
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { CoreService } from "../../core/shared/core.service";
-import { InvoiceDetailsModel } from '../shared/invoice-details.model'
-import { CommonFunctions } from '../../shared/common.functions';
+import { GeneralFieldLabels } from '../../shared/DTOs/general-field-label.dto';
 import { NepaliCalendarService } from "../../shared/calendar/np/nepali-calendar.service";
-import { NepaliDate } from '../../shared/calendar/np/nepali-dates';
-import { PhrmInvoiceDetailsModel } from '../shared/phrm-invoice-details.model'
+import { CommonFunctions } from '../../shared/common.functions';
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import { InvoiceDetailsModel } from '../shared/invoice-details.model';
+import { PhrmInvoiceDetailsModel } from '../shared/phrm-invoice-details.model';
+import { SystemAdminBLService } from '../shared/system-admin.bl.service';
 
 @Component({
     templateUrl: "../../view/system-admin-view/SalesBookReport.html" // /SystemAdminView/SalesBookReport
@@ -32,7 +32,9 @@ export class SalesBookReportComponent {
     public curtSalesBookDetail: Array<InvoiceDetailsModel> = new Array<InvoiceDetailsModel>();
     public curtPhrmSalesBookDetail: Array<PhrmInvoiceDetailsModel> = new Array<PhrmInvoiceDetailsModel>();
     public finalData: Array<InvoiceDetailsModel> = new Array<InvoiceDetailsModel>();
-    public headerDetail: { CustomerName, Address, Email, CustomerRegLabel,CustomerRegNo,Tel};
+    public headerDetail: { CustomerName, Address, Email, CustomerRegLabel, CustomerRegNo, Tel };
+
+    public GeneralFieldLabel = new GeneralFieldLabels();
     constructor(_systemAdminBLService: SystemAdminBLService, public msgBoxServ: MessageboxService
         , public changeDetectorRef: ChangeDetectorRef
         , public coreservice: CoreService, public npCalService: NepaliCalendarService) {
@@ -41,6 +43,7 @@ export class SalesBookReportComponent {
         this.toDate = moment().format('YYYY-MM-DD');
         this.LoadCalendarTypes();
         this.GetBillingHeaderParameter();
+        this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
     }
     //loads CalendarTypes from Paramter Table (database) and assign the require CalendarTypes to local variable.
     LoadCalendarTypes() {
@@ -71,7 +74,7 @@ export class SalesBookReportComponent {
                     this.curtSalesBookDetail = salesDetails;
                     this.curtSalesBookDetail.forEach(itm => {
                         var amt = 0;
-                       // itm.Bill_No = this.extractBillNumbers(itm.Bill_No);
+                        // itm.Bill_No = this.extractBillNumbers(itm.Bill_No);
                         itm.DiscountAmount = CommonFunctions.parseAmount(itm.DiscountAmount);
                         itm.Taxable_Amount = CommonFunctions.parseAmount(itm.Taxable_Amount);
                         itm.Tax_Amount = CommonFunctions.parseAmount(itm.Tax_Amount);

@@ -1,5 +1,5 @@
 export class IssuedItemViewModel {
-    public ReferenceNo: number = null;
+    public DispatchNo: number = null;
     public SubStoreName: string = null;
     public ItemName: string = null;
     public Unit: string = null;

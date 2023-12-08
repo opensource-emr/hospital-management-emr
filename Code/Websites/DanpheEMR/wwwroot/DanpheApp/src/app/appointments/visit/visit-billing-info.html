@@ -80,13 +80,20 @@
 
 <div class="headin-left"
      style="width:100%; border: 1px solid #96969a;margin-top: 8px; margin-bottom:15px; border-radius: 2px !important;padding: 20px 0px 10px;">
-  <h3 class="visit-head">
+  <h3 class="col-md-6 visit-head" style="width: 50%; margin: 0px;">
     <i class="fa fa-file-o"></i>Billing Information
-    <label *ngIf="!showBillSummaryPanel">Billing Not Required.</label>
+    <label *ngIf="!ShowAdditionalBillItemPanel">Billing Not Required.</label>
   </h3>
+  <div class="col-md-6" style="text-align: right; padding-bottom: 5px; margin: 0px;">
+    <label for="chkEnableDiscountAmount" class="is-ref mt-checkbox mt-checkbox-outline">
+      <input type="checkbox"
+             id="chkEnableDiscountAmount" [(ngModel)]="EnableDiscountAmount" title="Enable Discount Amount"
+             (change)="OnDiscountAmountCheckBoxChange()" />
+      <span></span>Enable Discount Amount</label>
+  </div>
   <div class="form-horizontal">
     <div class="row">
-      <div class="col-md-12" *ngIf="showBillSummaryPanel">
+      <div class="col-md-12" *ngIf="ShowBillSummaryPanel">
         <div
              style="margin-bottom: 5px;">
           <!-- <div class="form-group" style="margin-bottom: 5px;" *ngIf="showAdditionalBillItemPanel">
@@ -105,7 +112,7 @@
               </div>
             </div> -->
           <div class="col-wrapper checkbox-wrapper">
-            <ng-container *ngFor="let item of filteredVisitAdditionalServiceItems;let i = index;">
+            <ng-container *ngFor="let item of FilteredVisitAdditionalServiceItems;let i = index;">
               <div class="col d-flex align-items-center">
                 <input type="checkbox" id="checkbox_visitAdditionalItem_{{i}}" [(ngModel)]="item.IsSelected"
                        (change)="HandleAdditionalServiceItemCheckUncheck(item)"
@@ -120,28 +127,39 @@
             <tr style="background: #eee; color: #333;font-weight: 500;">
               <td></td>
               <td class="print-par" style="width:60%; padding:4px 5px; color: #000;"><b>Particular(s)</b></td>
-              <td class="print-price" style="padding:4px 5px; width: 20%;    color: #000;"><b>Price</b>
-              </td>
-              <td class="print-rate" style="padding:4px 5px; width: 10%;    color: #000;"><b>Dis</b></td>
-              <td class="print-amt" style="padding:4px 5px; width: 10%;    color: #000;"><b>Amt</b></td>
+              <td class="print-price" style="padding:4px 5px; width: 10%; color: #000; text-align: right;"><b>Price</b></td>
+              <td class="print-rate" style="padding:4px 5px; width: 10%; color: #000; text-align: right;"><b>Dis %</b></td>
+              <td class="print-rate" style="padding:4px 5px; width: 10%; color: #000; text-align: right;"><b>Dis Amt</b></td>
+              <td class="print-amt" style="padding:4px 5px; width: 10%; color: #000; text-align: right;"><b>Amt</b></td>
               <td></td>
             </tr>
-            <tr *ngFor="let billItem of billingTransaction.BillingTransactionItems; let i=index">
+            <tr *ngFor="let billItem of BillingTransaction.BillingTransactionItems; let i=index">
               <ng-container
                             *ngIf="billItem && billItem.ServiceItemId && NotAdditionalBillItem.ServiceItemId==billItem.ServiceItemId && NotAdditionalBillItem.ItemName==billItem.ItemName">
                 <td></td>
                 <td style="padding:5px; font-size: 12px; font-weight: 600; width: 60%">{{billItem.ItemName}}</td>
-                <td *ngIf="billItem.ItemName!='Health Card'" class="print-rate"
-                    style="padding: 5px; font-weight: 600;width: 100%">
+                <td *ngIf="billItem.ItemName !== 'Health Card'" class="print-rate"
+                    style="padding: 5px  !important; font-weight: 600; width: 10%">
                   <input [(ngModel)]="billItem.Price" class="form-control" type="number" min="0"
                          (ngModelChange)="Calculation()" placeholder="Price"
                          [attr.disabled]="(billItem.IsPriceChangeAllowed === true ? null : true)"
-                         style="text-align: right; padding: 1px; height: 25px;width: 100% !important;" />
+                         style="text-align: right; padding: 0px !important; height: 25px; width: 100% !important;" />
                 </td>
-                <td class="print-rate" style="padding: 5px; font-weight: 600; width:10%">
-                  {{billItem.DiscountAmount}}</td>
-                <td class="print-amt" style="padding: 5px; font-weight: 600;width:10%">
-                  {{billItem.TotalAmount}}</td>
+                <td class="print-rate" style="padding: 5px !important; font-weight: 600; width:10%">
+                  <input [(ngModel)]="billItem.DiscountPercent" class="form-control" type="number" min="0"
+                         (focusout)="OnItemLevelDiscountChange(billItem)" placeholder="Dis %"
+                         (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                         [disabled]="(!billItem.DiscountApplicable || EnableDiscountAmount)"
+                         style="text-align: right; padding: 0px !important; height: 25px; width: 100% !important;" />
+                </td>
+                <td class="print-rate" style="padding: 5px !important; font-weight: 600; width:10%">
+                  <input [(ngModel)]="billItem.DiscountAmount" class="form-control" type="number" min="0"
+                         (focusout)="OnItemLevelDiscountChange(billItem)" placeholder="Dis Amt"
+                         (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                         [disabled]="(!billItem.DiscountApplicable || !EnableDiscountAmount)"
+                         style="text-align: right; padding: 0px !important; height: 25px; width: 100% !important;" />
+                </td>
+                <td class="print-amt" style="padding: 5px !important; font-weight: 600; width:10%; text-align: center;">{{billItem.TotalAmount}}</td>
                 <td></td>
               </ng-container>
             </tr>
@@ -151,12 +169,15 @@
                 <td style="padding:5px; font-size: 12px; font-weight: 600; width: 60%">
                   {{ row.LegalName }}
                 </td>
-                <td class="" style="padding: 5px; font-weight: 600;width: 100%;">
+                <td class="" style="padding-right: 20px !important; text-align: right; font-weight: 600;width: 10%;">
                   {{ row.Price }}
                 </td>
-                <td class=" print-rate" style="padding: 5px; font-weight: 600; width:10%">
-                  {{ row.DiscountAmount}}</td>
-                <td class=" print-amt" style="padding: 5px; font-weight: 600;width:10%">{{row.Price - row.DiscountAmount}}
+                <td class=" print-rate" style="padding-right: 20px !important; text-align: right; font-weight: 600; width:10%;">
+                  {{ row.DiscountPercent }}</td>
+                <td class=" print-rate" style="padding-right: 20px !important; text-align: right; font-weight: 600; width:10%">
+                  {{ row.DiscountAmount }}</td>
+                <td class=" print-amt" style="text-align: center; font-weight: 600;width:10%">{{row.Price -
+                  row.DiscountAmount}}
                 </td>
                 <td></td>
               </ng-container>
@@ -169,9 +190,22 @@
               <div class="row">
                 <label class="col-md-5" style="">Discount %</label>
                 <div class="col-md-7">
-                  <input [(ngModel)]="billingTransaction.DiscountPercent" class="form-control" type="number" min="0"
-                         onClick="this.select();" [disabled]="DisableDiscountPercent" max="100" (ngModelChange)="Calculation()"
+                  <input [(ngModel)]="BillingTransaction.DiscountPercent" class="form-control" type="number" min="0"
+                         onClick="this.select();" [disabled]="DisableDiscountPercent || EnableDiscountAmount" max="100"
+                         (focusout)="Calculation()"
+                         (wheel)="coreService.PreventNumberChangeOnScroll($event)"
                          placeholder="Discount %" />
+                </div>
+              </div>
+              <div class="row" style="margin-top: 5px;">
+                <label class="col-md-5">Discount Amount</label>
+                <div class="col-md-7">
+                  <input [(ngModel)]="TotalDiscountAmount"
+                         (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                         class="form-control" type="number" min="0"
+                         onClick="this.select();" [disabled]="!EnableDiscountAmount" max="100"
+                         (focusout)="OnInvoiceDiscountAmountChanged()"
+                         placeholder="Discount Amount" />
                 </div>
               </div>
             </div>
@@ -179,12 +213,12 @@
               <div class="row">
                 <label class="col-md-4" style="text-align: right;">
                   Remarks<b
-                     *ngIf="billingTransaction.DiscountPercent || billingTransaction.IsInsuranceBilling || this.billingTransaction.PaymentMode == 'credit'"
+                     *ngIf="BillingTransaction.DiscountPercent || BillingTransaction.IsInsuranceBilling || this.BillingTransaction.PaymentMode == 'credit'"
                      class="color-red">*</b>
                 </label>
                 <div class="col-md-8" style="">
-                  <input class="form-control" id="id_billing_remarks" maxlength="200" [(ngModel)]="billingTransaction.Remarks"
-                         value="{{billingTransaction.Remarks | CapitalFirstLetter}}" placeholder="Remarks"
+                  <input class="form-control" id="id_billing_remarks" maxlength="200" [(ngModel)]="BillingTransaction.Remarks"
+                         value="{{BillingTransaction.Remarks | CapitalFirstLetter}}" placeholder="Remarks"
                          style="height: 30px;"
                          (keyup.enter)="SetFocusById('btnPrintInvoice')" />
                 </div>
@@ -197,25 +231,24 @@
           <div class="row">
             <label class="col-md-5">SubTotal:</label>
             <div class="col-md-7">
-              <span><b style="font-size: 12px;">{{billingTransaction.SubTotal}}</b></span>
+              <span><b style="font-size: 12px;">{{BillingTransaction.SubTotal}}</b></span>
             </div>
           </div>
           <div class="row">
-            <label class="col-md-5" style="">Total
-              Amount:</label>
+            <label class="col-md-5">Total Amount:</label>
             <div class="col-md-7">
               <span style="font-weight: bold; font-size: 12px;">
-                {{billingTransaction.TotalAmount}}
+                {{BillingTransaction.TotalAmount}}
               </span>
             </div>
           </div>
-          <div *ngIf="registrationSchemeDto.IsCoPayment">
+          <div *ngIf="RegistrationSchemeDto.IsCoPayment">
             <div class="row">
               <div class="col-md-5">
                 <span style="font-size: 14px;"><strong>CASH:</strong> </span>
               </div>
               <div class="col-md-7">
-                <input [(ngModel)]="billingTransaction.ReceivedAmount"
+                <input [(ngModel)]="BillingTransaction.ReceivedAmount"
                        style="font-weight:bold;height: 40px;font-size:18px !important;background-color:#0773bc; color:#fff;"
                        class="form-control pd-managed" name="cash" type="number"
                        (wheel)="coreService.PreventNumberChangeOnScroll($event)" onclick="this.select();"
@@ -225,8 +258,8 @@
             <div class="row" style="font-size: 12px; margin-top: 10px;">
               <div class="col-md-5"><span> <strong>CoPay Info: </strong> </span></div>
               <div class="col-md-7">
-                <span style="display: block;">CoPayCash: <span><strong>{{ billingTransaction.ReceivedAmount }}</strong></span> </span>
-                <span style="display: block;">CoPayCredit: <span><strong>{{ billingTransaction.CoPaymentCreditAmount }}</strong></span></span>
+                <span style="display: block;">CoPayCash: <span><strong>{{ BillingTransaction.ReceivedAmount }}</strong></span> </span>
+                <span style="display: block;">CoPayCredit: <span><strong>{{ BillingTransaction.CoPaymentCreditAmount }}</strong></span></span>
               </div>
 
             </div>
@@ -235,25 +268,26 @@
           <div class="row">
             <label class="col-md-5" style="color:#000; font-size: 14px; font-weight: bold"><b>Tender:</b></label>
             <div class="col-md-7">
-              <input type="number" [(ngModel)]="billingTransaction.Tender" class="form-control pd-managed"
-                     (keyup.enter)="SetFocusToRemarksorButton('id_billing_remarks','btnPrintInvoice')" (ngModelChange)="ChangeTenderAmount()"
+              <input type="number" [(ngModel)]="BillingTransaction.Tender" class="form-control pd-managed"
+                     (keyup.enter)="SetFocusToRemarksOrButton('id_billing_remarks','btnPrintInvoice')" (ngModelChange)="ChangeTenderAmount()"
                      name="Tender"
                      placeholder="Rupees" id="tender"
-                     [disabled]="billingTransaction.PaymentMode === 'credit'"
+                     (wheel)="coreService.PreventNumberChangeOnScroll($event)"
+                     [disabled]="BillingTransaction.PaymentMode === 'credit'"
                      onClick="this.select();">
             </div>
           </div>
           <div class="row">
             <label class="col-md-5"
                    style="color:#000; font-size: 14px; font-weight: bold"><b>Change/Return:</b></label>
-            <div class="col-md-7"> <span><b>{{billingTransaction.Change}}</b></span> </div>
+            <div class="col-md-7"> <span><b>{{BillingTransaction.Change}}</b></span> </div>
           </div>
           <div class="row">
-            <div *ngIf="registrationSchemeDto.IsCoPayment">
+            <div *ngIf="RegistrationSchemeDto.IsCoPayment">
               <label class="col-md-5" style="color:#000; font-size: 14px; font-weight: bold">
                 <b>PaymentMode:</b>
               </label>
-              <div class="col-md-7"><span style="font-size: 14px;"> <strong>{{registrationSchemeDto.DefaultPaymentMode.toUpperCase()}}</strong>
+              <div class="col-md-7"><span style="font-size: 14px;"> <strong>{{RegistrationSchemeDto.DefaultPaymentMode.toUpperCase()}}</strong>
                 </span></div>
 
             </div>
@@ -264,13 +298,13 @@
 
       <div class="col-md-8 visit-billing-payment" style="padding-left: 0px;left:15px;">
         <payment-mode-info
-                           [default-payment-mode]="registrationSchemeDto.DefaultPaymentMode"
-                           [total-amount]="billingTransaction.ReceivedAmount"
+                           [default-payment-mode]="RegistrationSchemeDto.DefaultPaymentMode"
+                           [total-amount]="BillingTransaction.ReceivedAmount"
                            [page-name]="'Visit'"
-                           [is-coPayment]="registrationSchemeDto.IsCoPayment"
-                           [is-credit-only-scheme]="registrationSchemeDto.IsCreditOnlyScheme"
+                           [is-coPayment]="RegistrationSchemeDto.IsCoPayment"
+                           [is-credit-only-scheme]="RegistrationSchemeDto.IsCreditOnlyScheme"
                            [membershipTypeName]="MembershipTypeName"
-                           [default-credit-organization]="registrationSchemeDto.DefaultCreditOrganizationId"
+                           [default-credit-organization]="RegistrationSchemeDto.DefaultCreditOrganizationId"
                            [disable-paymentMode-dropdown]="DisablePaymentModeDropDown"
                            (on-paymentMode-change)="PaymentModeChanges($event)"
                            (on-creditOrganization-change)="CreditOrganizationChanges($event)"

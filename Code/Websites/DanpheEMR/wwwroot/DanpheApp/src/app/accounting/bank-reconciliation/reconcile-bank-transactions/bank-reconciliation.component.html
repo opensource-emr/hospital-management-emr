@@ -329,7 +329,7 @@
                   <div style="color: red;"
                    *ngIf="(ledgerResult[i].IsVerified == true) && (txnItm.CategoryId == 0) "> please select Category</div>
                 </td>
-  
+
                 <td>
                   <p *ngIf="txnItm.Balance > 0">
                     {{txnItm.Balance | Currency:'4'}}
@@ -339,13 +339,13 @@
                   <p *ngIf="txnItm.Balance == 0">
                     {{txnItm.Balance | Currency:'4'}}
                   </p>
-  
+
                 </td>
-  
+
                 <td>
-  
+
                   <input type="text"  (change)="calculateDifference(i)" class="form-control"
-                    [(ngModel)]="txnItm.BankBalance" style=" width: 50% !important;float: left;" 
+                    [(ngModel)]="txnItm.BankBalance" style=" width: 50% !important;float: left;"
                    [disabled]="!txnItm.IsVerified" />
                   <select [(ngModel)]="txnItm.DrCr" (change)="onbalanceTypeChange($event.target.value,i)" style=" width: 35% !important">
                     <option value="null">— Select —</option>
@@ -365,7 +365,7 @@
               <!-- <td>
                   <input type="checkbox" [(ngModel)]="txnItm.IsVerified" (change)="checkValue($event,i)"
                     [ngModelOptions]="{standalone: true}" />
-  
+
                 </td> -->
             </tr>
 
@@ -479,11 +479,11 @@
                             <td style="width: 35%;">
                               <b>Bank Date:</b>
                               <span> &nbsp;{{selectedTxn.BankTransactionDate | nepaliDate:'format':'YYYY-MM-DD hh:mm'}}
-                                <b> BS </b> <br />
+                                 <br />
                                 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
                                 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-                                &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {{selectedTxn.BankTransactionDate |
-                                DanpheDateTime:'format':'YYYY-MM-DD'}} <b> AD </b>
+                                &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {{selectedTxn.BankTransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} <b> AD
+                                </b>
                               </span>
                             </td>
                           </tr>

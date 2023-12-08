@@ -1,8 +1,10 @@
-import { Component, Directive, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import * as moment from 'moment/moment';
+import { CoreService } from '../../../../core/shared/core.service';
 import { PharmacyBLService } from '../../../../pharmacy/shared/pharmacy.bl.service';
 import PHRMGridColumns from '../../../../pharmacy/shared/phrm-grid-columns';
 import { PHRMStoreModel } from '../../../../pharmacy/shared/phrm-store.model';
+import { GeneralFieldLabels } from '../../../../shared/DTOs/general-field-label.dto';
 import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../../shared/danphe-grid/NepaliColGridSettingsModel';
 import { DLService } from '../../../../shared/dl.service';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
@@ -29,8 +31,8 @@ export class DISPNarcoticsDailySalesReportComponent {
     selectedDispensary: any;
     StoreId: number;
     public loading: boolean = false;
-
-    constructor(public pharmacyBLService: PharmacyBLService, public dlService: DLService, public _dispensaryService: DispensaryService,
+    public GeneralFieldLabel = new GeneralFieldLabels();
+    constructor(public coreservice: CoreService, public pharmacyBLService: PharmacyBLService, public dlService: DLService, public _dispensaryService: DispensaryService,
         public msgBoxServ: MessageboxService) {
         this.FromDate = moment().format("YYYY-MM-DD");
         this.ToDate = moment().format("YYYY-MM-DD");
@@ -41,6 +43,8 @@ export class DISPNarcoticsDailySalesReportComponent {
         this.currentDispensary = this._dispensaryService.activeDispensary;
         this.selectedDispensary = this.currentDispensary.Name;
         this.StoreId = this.currentDispensary.StoreId;
+        this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
+        this.NarcoticsDailySalesSummaryReportColumns[6].headerName = `${this.GeneralFieldLabel.NMCNo}`;
     }
     GetActiveDispensarylist() {
         this._dispensaryService.GetAllDispensaryList()

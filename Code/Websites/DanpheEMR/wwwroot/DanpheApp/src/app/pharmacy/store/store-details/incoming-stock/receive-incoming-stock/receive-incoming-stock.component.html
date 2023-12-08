@@ -37,6 +37,7 @@
                               <strong>Received On:</strong>
                               <div *ngIf="!!incomingStockDetail.ReceivedOn; else elseBlockTwo">
                                 {{incomingStockDetail.ReceivedOn | date : "yyyy-MM-dd"}}
+                                <i *ngIf="incomingStockDetail.ReceivedOn">{{incomingStockDetail.ReceivedOn | nepaliDate:'format':'YYYY-MM-DD'}} </i>
                               </div>
                               <ng-template #elseBlockTwo>Not Received</ng-template>
                             </span>
@@ -73,18 +74,14 @@
                               </div><br />
                               <div>
                                 <strong class="col-md-2">Receiving Remarks :</strong>
-                                <span class="media-body" style="text-align: left;"
-                                      *ngIf="!!incomingStockDetail.ReceivedBy; else elseBlockThree">{{incomingStockDetail.ReceivedRemarks}}</span>
+                                <span class="media-body" style="text-align: left;" *ngIf="!!incomingStockDetail.ReceivedBy; else elseBlockThree">{{incomingStockDetail.ReceivedRemarks}}</span>
                                 <ng-template #elseBlockThree>
-                                  <textarea class="col-md-7" id="remarks" [(ngModel)]="incomingStockDetail.ReceivedRemarks" name="ReceiveRemarks"
-                                            rows="3" (keyup.enter)="setFocusById('btn_Save')"></textarea>
+                                  <textarea class="col-md-7" id="remarks" [(ngModel)]="incomingStockDetail.ReceivedRemarks" name="ReceiveRemarks" rows="3" (keyup.enter)="setFocusById('btn_Save')"></textarea>
                                 </ng-template>
                               </div>
                             </div>
                             <div class="text-center">
-                              <button class="btn green btn-success" id="btn_Save" *ngIf="incomingStockDetail.ReceivedBy == null; else elseBlockFour"
-                                      [disabled]="loading"
-                                      (click)="ReceiveIncomingStock(incomingStockDetail.DispatchId,incomingStockDetail.ReceivedRemarks)">Receive</button>
+                              <button class="btn green btn-success" id="btn_Save" *ngIf="incomingStockDetail.ReceivedBy == null; else elseBlockFour" [disabled]="loading" (click)="ReceiveIncomingStock(incomingStockDetail.DispatchId,incomingStockDetail.ReceivedRemarks)">Receive</button>
                               <ng-template #elseBlockFour>
                                 <div class="receiveStamp"> Received </div>
                               </ng-template>

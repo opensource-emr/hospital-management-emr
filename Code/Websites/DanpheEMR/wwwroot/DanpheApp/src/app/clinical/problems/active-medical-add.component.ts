@@ -1,16 +1,14 @@
-﻿import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
 import { Router } from '@angular/router';
-import { ProblemsBLService } from '../shared/problems.bl.service';
+import * as moment from 'moment/moment';
+import { CoreService } from "../../core/shared/core.service";
 import { PatientService } from "../../patients/shared/patient.service";
 import { CallbackService } from '../../shared/callback.service';
+import { DanpheCache, MasterType } from "../../shared/danphe-cache-service-utility/cache-services";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { ActiveMedical } from "../shared/active-medical.model";
 import { ICD10 } from '../shared/icd10.model';
-import * as moment from 'moment/moment';
-import { PastMedical } from "../shared/past-medical.model";
-import { DanpheHTTPResponse } from "../../shared/common-models";
-import { DanpheCache, MasterType } from "../../shared/danphe-cache-service-utility/cache-services";
-import { CoreService } from "../../core/shared/core.service";
+import { ProblemsBLService } from '../shared/problems.bl.service';
 
 @Component({
     selector: "active-medical-add",
@@ -41,10 +39,11 @@ export class ActiveMedicalAddComponent {
         public changeDetector: ChangeDetectorRef,
         public msgBoxServ: MessageboxService,
         public coreService: CoreService) {
-        this.CurrentProblem.OffNoteValidator("Note");
+        // this.CurrentProblem.OffNoteValidator("Note");
         this.GetICDList();
         this.Initialize();
         this.icdVersionDisplayName = this.coreService.Parameters.find(p => p.ParameterGroupName == "Common" && p.ParameterName == "IcdVersionDisplayName").ParameterValue;
+        this.icd10Selected = null;
 
     }
 

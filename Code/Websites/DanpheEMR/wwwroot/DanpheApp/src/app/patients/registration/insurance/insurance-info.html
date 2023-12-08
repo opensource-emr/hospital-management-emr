@@ -6,82 +6,94 @@
           <form [formGroup]="currentInsurance.InsuranceValidator" class="form-horizontal hm-form">
             <div class="form-body">
               <div class="col-md-12">
-                <div class="row"> 
+                <div class="row">
                   <!-- @* INSURANCE   PROVIDER*@ -->
                   <div class="form-group">
                     <label class="control-label col-md-4">Insurance Provider<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
                       <select class="form-control" [(ngModel)]="currentInsurance.InsuranceProviderId" formControlName="InsuranceProviderId">
                         <option *ngFor="let insu of insProviderList"
-                                            value="{{insu.InsuranceProviderId}}"> {{insu.InsuranceProviderName}} </option>
+                                value="{{insu.InsuranceProviderId}}"> {{insu.InsuranceProviderName}} </option>
                       </select>
                       <span class="color-red" *ngIf="currentInsurance.IsDirty('InsuranceProviderId')"
-                                      [hidden]="currentInsurance.IsValidCheck('InsuranceProviderId','required')">Insurance Provider Name is required</span> </div>
+                            [hidden]="currentInsurance.IsValidCheck('InsuranceProviderId','required')">Insurance Provider Name is required</span>
+                    </div>
                   </div>
                   <div class="form-group">
                     <label class="control-label col-md-4">Insurance Name<b>:</b></label>
                     <div class="col-md-8">
                       <input class="form-control" type="text" [ngModelOptions]="{standalone:true}" [(ngModel)]="currentInsurance.InsuranceName"
-                                       required value="" placeholder="insurance name" />
+                             required value="" placeholder="insurance name" />
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-md-4">Card Number [NSTC No]<sup>*</sup><b>:</b></label>
+                    <label class="control-label col-md-4">Card Number [{{GeneralFieldLabel.NTSCNo}}]<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <input class="form-control" autofocus (keyup.enter)="GoToNextInput('InsuranceNumber')" type="text" formControlName="CardNumber" [(ngModel)]="currentInsurance.CardNumber"
-                                       placeholder="card number" autofocus/>
+                      <input class="form-control" autofocus (keyup.enter)="GoToNextInput('InsuranceNumber')" type="text" formControlName="CardNumber"
+                             [(ngModel)]="currentInsurance.CardNumber"
+                             placeholder="card number [{{GeneralFieldLabel.NTSCNo}}]" autofocus />
                       <span class="color-red" *ngIf="currentInsurance.IsDirty('CardNumber')"
-                                      [hidden]="currentInsurance.IsValidCheck('CardNumber','required')">Card Number is required</span> </div>
+                            [hidden]="currentInsurance.IsValidCheck('CardNumber','required')">Card Number is required</span>
+                    </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-md-4">Insurance Number [NSSI No.]<sup>*</sup><b>:</b></label>
+                    <label class="control-label col-md-4">Insurance Number [{{GeneralFieldLabel.NSSINo}}.]<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <input class="form-control" id="InsuranceNumber" (keyup.enter)="GoToNextInput('IMISNumber')" type="text" formControlName="InsuranceNumber" [(ngModel)]="currentInsurance.InsuranceNumber"
-                                       required value="" placeholder="insurance number [NSTC number]" />
+                      <input class="form-control" id="InsuranceNumber" (keyup.enter)="GoToNextInput('IMISNumber')" type="text"
+                             formControlName="InsuranceNumber" [(ngModel)]="currentInsurance.InsuranceNumber"
+                             required value="" placeholder="insurance number [{{GeneralFieldLabel.NSSINo}}]" />
                       <span class="color-red" *ngIf="currentInsurance.IsDirty('InsuranceNumber')"
-                                      [hidden]="currentInsurance.IsValidCheck('InsuranceNumber','required')">Insurance Number is required</span> </div>
+                            [hidden]="currentInsurance.IsValidCheck('InsuranceNumber','required')">Insurance Number is required</span>
+                    </div>
                   </div>
                   <div class="form-group">
-                    <label class="control-label col-md-4">IMIS Code<sup>*</sup><b>:</b></label>
+                    <label class="control-label col-md-4">{{GeneralFieldLabel.IMISCode}}<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <input class="form-control" id="IMISNumber" (keyup.enter)="GoToNextInput('InitialBalance')" type="text" formControlName="IMISCode" [(ngModel)]="currentInsurance.IMISCode"
-                                       required value="" placeholder="IMIS Code" />
+                      <input class="form-control" id="IMISNumber" (keyup.enter)="GoToNextInput('InitialBalance')" type="text"
+                             formControlName="IMISCode" [(ngModel)]="currentInsurance.IMISCode"
+                             required value="" placeholder="{{GeneralFieldLabel.IMISCode}}" />
                       <span class="color-red" *ngIf="currentInsurance.IsDirty('IMISCode')"
-                                      [hidden]="currentInsurance.IsValidCheck('IMISCode','required')">IMIS Code is required</span> </div>
+                            [hidden]="currentInsurance.IsValidCheck('IMISCode','required')">{{GeneralFieldLabel.IMISCode}} is required</span>
+                    </div>
                   </div>
                   <div class="form-group">
                     <label class="control-label col-md-4">Initial Balance<sup>*</sup><b>:</b></label>
                     <div class="col-md-8">
-                      <input class="form-control" id="InitialBalance" type="number" formControlName="InitialBalance" [(ngModel)]="currentInsurance.InitialBalance"
-                                       required value="" placeholder="Insurance Initial Balance" 
-                                       (wheel)="coreService.PreventNumberChangeOnScroll($event)"/>
+                      <input class="form-control" id="InitialBalance" type="number" formControlName="InitialBalance"
+                             [(ngModel)]="currentInsurance.InitialBalance"
+                             required value="" placeholder="Insurance Initial Balance"
+                             (wheel)="coreService.PreventNumberChangeOnScroll($event)" />
                       <span class="color-red" *ngIf="currentInsurance.IsDirty('InitialBalance')"
-                                      [hidden]="currentInsurance.IsValidCheck('InitialBalance','required')">Insurance Current Balance is required</span> </div>
+                            [hidden]="currentInsurance.IsValidCheck('InitialBalance','required')">Insurance Current Balance is required</span>
+                    </div>
                   </div>
-                  
+
                   <!-- @* Temporary invisible *@ -->
                   <div style="display:none">
                     <div class="form-group">
                       <label class="control-label col-md-4">Subscriber Firstname<b>:</b></label>
                       <div class="col-md-8">
-                        <input class="form-control" type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="currentInsurance.SubscriberFirstName"
-                                           placeholder="subscriber first name" />
+                        <input class="form-control" type="text" [ngModelOptions]="{standalone: true}"
+                               [(ngModel)]="currentInsurance.SubscriberFirstName"
+                               placeholder="subscriber first name" />
                       </div>
                     </div>
                     <div class="form-group">
                       <label class="control-label col-md-4">Subscriber Lastname<b>:</b></label>
                       <div class="col-md-8">
-                        <input class="form-control" type="text" [ngModelOptions]="{standalone: true}" [(ngModel)]="currentInsurance.SubscriberLastName"
-                                           placeholder="subscriber last name" />
+                        <input class="form-control" type="text" [ngModelOptions]="{standalone: true}"
+                               [(ngModel)]="currentInsurance.SubscriberLastName"
+                               placeholder="subscriber last name" />
                       </div>
                     </div>
                     <div class="form-group">
                       <label class="control-label col-md-4">Subscriber DOB<b>:</b></label>
                       <div class="col-md-8">
                         <input class="form-control" type="date" formControlName="SubscriberDOB"
-                                           [(ngModel)]="currentInsurance.SubscriberDOB" placeholder="DD-MM-YYYY" />
+                               [(ngModel)]="currentInsurance.SubscriberDOB" placeholder="DD-MM-YYYY" />
                         <span class="color-red" *ngIf="currentInsurance.IsDirty('SubscriberDOB')"
-                                          [hidden]="currentInsurance.IsValidCheck('SubscriberDOB','wrongDate')">Wrong date is selected</span> </div>
+                              [hidden]="currentInsurance.IsValidCheck('SubscriberDOB','wrongDate')">Wrong date is selected</span>
+                      </div>
                     </div>
                     <div class="form-group">
                       <label class="control-label col-md-4">Subscriber Gender<b>:</b></label>
@@ -92,10 +104,12 @@
                               <input type="radio" value="Male" [(ngModel)]="currentInsurance.SubscriberGender" [ngModelOptions]="{standalone: true}">
                               <span></span>Male </label>
                             <label class="mt-checkbox mt-checkbox-outline">
-                              <input type="radio" value="Female" [(ngModel)]="currentInsurance.SubscriberGender" [ngModelOptions]="{standalone: true}">
+                              <input type="radio" value="Female" [(ngModel)]="currentInsurance.SubscriberGender"
+                                     [ngModelOptions]="{standalone: true}">
                               <span></span>Female </label>
                             <label class="mt-checkbox mt-checkbox-outline">
-                              <input type="radio" value="Others" [(ngModel)]="currentInsurance.SubscriberGender" [ngModelOptions]="{standalone: true}">
+                              <input type="radio" value="Others" [(ngModel)]="currentInsurance.SubscriberGender"
+                                     [ngModelOptions]="{standalone: true}">
                               <span></span>Other </label>
                           </div>
                         </div>
@@ -112,7 +126,8 @@
                     <div class="form-group">
                       <label class="control-label col-md-4">Subscriber IDCard Number<b>:</b></label>
                       <div class="col-md-8">
-                        <input type="text" class="form-control" [ngModelOptions]="{standalone: true}" value="" [(ngModel)]="currentInsurance.SubscriberIDCardNumber" />
+                        <input type="text" class="form-control" [ngModelOptions]="{standalone: true}" value=""
+                               [(ngModel)]="currentInsurance.SubscriberIDCardNumber" />
                       </div>
                     </div>
                   </div>
@@ -128,8 +143,10 @@
           <div *ngFor="let insurance of currentPatient.Insurances">
             <div class="portlet blue-hoki box">
               <div class="portlet-title">
-                <div class="caption"> <i class="fa fa-cogs"></i><span style="text-transform:uppercase"> {{insurance.InsuranceProviderName}} ({{insurance.CardNumber}})</span> </div>
-                <div class="actions"> <a href="javascript:;" class="btn btn-default btn-sm edit-btn" data-toggle="modal" data-target="#myModal" (click)="Edit(insurance)"> <i class="fa fa-pencil"></i> Edit </a> </div>
+                <div class="caption"> <i class="fa fa-cogs"></i><span style="text-transform:uppercase"> {{insurance.InsuranceProviderName}}
+                    ({{insurance.CardNumber}})</span> </div>
+                <div class="actions"> <a href="javascript:;" class="btn btn-default btn-sm edit-btn" data-toggle="modal" data-target="#myModal"
+                     (click)="Edit(insurance)"> <i class="fa fa-pencil"></i> Edit </a> </div>
               </div>
               <div class="portlet-body">
                 <div class="row static-info">
@@ -160,7 +177,7 @@
                   <div class="col-md-5 name">Current Balance: </div>
                   <div class="col-md-7 value"> {{insurance.CurrentBalance}}</div>
                 </div>
-                
+
                 <!-- @* Temporary invisible *@ -->
                 <div style="display:none">
                   <div class="row static-info">

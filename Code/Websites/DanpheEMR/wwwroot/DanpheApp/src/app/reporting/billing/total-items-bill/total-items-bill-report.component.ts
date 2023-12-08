@@ -1,15 +1,14 @@
-import { Component, Directive, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
+import * as moment from 'moment/moment';
+import { BillingBLService } from '../../../billing/shared/billing.bl.service';
+import { CoreService } from "../../../core/shared/core.service";
 import { ReportingService } from "../../../reporting/shared/reporting-service";
-import { RPT_BIL_TotalItemsBillModel } from "./total-items-bill-report.model";
+import { CommonFunctions } from '../../../shared/common.functions';
+import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { DLService } from "../../../shared/dl.service";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { CommonFunctions } from '../../../shared/common.functions';
-import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
-import { CoreService } from "../../../core/shared/core.service";
-import * as moment from 'moment/moment';
-import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
-import { ENUM_BillingStatus } from '../../../shared/shared-enums';
-import { BillingBLService } from '../../../billing/shared/billing.bl.service';
+import { RPT_BIL_TotalItemsBillModel } from "./total-items-bill-report.model";
 
 @Component({
     templateUrl: "./total-items-bill-report.html"
@@ -27,6 +26,8 @@ export class RPT_BIL_TotalItemsBillComponent {
     public CurrentTotalItem: RPT_BIL_TotalItemsBillModel = new RPT_BIL_TotalItemsBillModel();
     public serDeptList: any;
     public BillItemList: any;
+
+    public EnableEnglishCalendarOnly: boolean = false;
 
     public selBillingTypeName: string = "all";
     public loading: boolean = false;//sud:22Sep'21--to handle multiple clicks on show report button.
@@ -57,6 +58,7 @@ export class RPT_BIL_TotalItemsBillComponent {
         public coreService: CoreService,
         public billingBlService: BillingBLService,
         public reportServ: ReportingService) {
+        this.GetCalendarParameter();
         this.dlService = _dlService;
         this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('TransactionDate', false));
         this.loadDepartments();
@@ -64,6 +66,13 @@ export class RPT_BIL_TotalItemsBillComponent {
         this.TotalItemsBillReportColumns = this.reportServ.reportGridCols.TotalItemsBillReport;
     }
 
+    GetCalendarParameter(): void {
+        const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+        if (param && param.ParameterValue) {
+            const paramValue = JSON.parse(param.ParameterValue);
+            this.EnableEnglishCalendarOnly = paramValue;
+        }
+    }
     ngOnInit() {
         this.ItemListFormatter = this.ItemListFormatter.bind(this);//to use global variable in list formatter auto-complete
 
@@ -78,11 +87,12 @@ export class RPT_BIL_TotalItemsBillComponent {
     };
 
     Load() {
-        this.loading=true;//disable button until response comes back from api.
+        this.loading = true;//disable button until response comes back from api.
         this.TotalItemsBillReporttData = [];//empty the grid data after button is clicked..
 
         //* formatting itemName (Here some itemName contains special characters like '+').
         let formattedItemName = this.FormatItemName(this.CurrentTotalItem.itemname);
+        
         this.dlService.Read("/BillingReports/TotalItemsBill?FromDate=" + this.fromDate + "&ToDate=" + this.toDate
             + "&billingType=" + this.selBillingTypeName + "&ServiceDepartmentName=" + this.CurrentTotalItem.servicedepartment +
             "&ItemName=" + formattedItemName)
@@ -93,7 +103,7 @@ export class RPT_BIL_TotalItemsBillComponent {
     }
     Success(res) {
         if (res.Status == "OK" && res.Results.length > 0) {
-            
+
             this.TotalItemsBillReporttData = res.Results;
             this.CalculateSummaryofDifferentColoumnForSum();
             this.footerContent = document.getElementById("dvSummary_TotalItemBills").innerHTML;
@@ -129,11 +139,11 @@ export class RPT_BIL_TotalItemsBillComponent {
         console.log(err.ErrorMessage);
     }
 
-    FormatItemName(itemName: string): string{
-        if(itemName){
+    FormatItemName(itemName: string): string {
+        if (itemName) {
             let formattedItemName = itemName.split('+').join('^');
             return formattedItemName;
-        }else{
+        } else {
             return "";
         }
     }
@@ -233,6 +243,7 @@ export class RPT_BIL_TotalItemsBillComponent {
     }
 
     public LoadAllBillingItems() {
+
         this.billingBlService.GetBillItemList()
             .subscribe((res) => {
                 if (res.Status == "OK") {

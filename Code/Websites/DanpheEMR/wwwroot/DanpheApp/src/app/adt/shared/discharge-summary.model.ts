@@ -1,7 +1,7 @@
 import {
+  FormBuilder,
   FormGroup,
   Validators,
-  FormBuilder,
 } from '@angular/forms';
 import { DischargeSummaryConsultant } from './discharge-summary-consultant.model';
 import { DischargeSummaryMedication } from "./discharge-summary-medication.model";
@@ -15,7 +15,7 @@ export class DischargeSummary {
   public OperativeFindings: string = null;
   public AnaesthetistsId: number = null;
   public Anaesthetists: string = null;
-  public Diagnosis: string = null;
+  public Diagnosis: string;
   public CaseSummary: string = null;
   public Condition: string = null;
   public Treatment: string = null;
@@ -60,16 +60,37 @@ export class DischargeSummary {
   public SelectedImagingItems: string = null;
   public DischargeType: string = null;
 
-  public ProvisionalDiagnosis: string = null;
+  public ProvisionalDiagnosis: string;
 
   public DiagnosisFreeText: string;
   // public ConsultantId: Array<DischargeSummaryConsultant> = [];
 
   public BabyWeight: string; // Krishna, 17th,May'22, Fishtail Specific Changes
-  public CheckedBy: number; // Krishna, 17th,May'22, Fishtail Specific Changes
+  // public CheckedBy: number; // Krishna, 17th,May'22, Fishtail Specific Changes
   public ClinicalFindings: string; //Rusha, 30th June'22, added for BIH specific changes
   public PastHistory: string = null; //Rohit, 18Nov'22, For Charak Memorial Hospital changes
   public PhysicalExamination: string = null; //Rohit, 18Nov'22, For Charak Memorial Hospital changes
+
+  public DischargeSummaryTemplateId: number; //Bikesh 24th-july-2023 for DynamicDischargesummary
+  public DischargeCondition: string;
+  public DeathType: string;
+  public BabyBirthCondition: string;
+  public DeliveryType: string;
+  public DoctorIncharge: string;
+  public Age: number;
+  public SelectedDiagnosis: string;
+  public Anesthetists: string;
+  public ResidenceDrName: string;
+  public CheckedBy: string;
+  public Consultants: string;
+  public Consultant: String;
+  public hospitalStayDate: number;
+  public DrInchargeNMC: string;
+  public ConsultantNMC: string;
+  public ConsultantsSign: string;
+
+
+
 
   constructor() {
 
@@ -79,29 +100,39 @@ export class DischargeSummary {
       // 'ConsultantId': ['', Validators.compose([Validators.required])],
       'DoctorInchargeId': ['', Validators.compose([Validators.required])],
       'DeathTypeId': ['', Validators.compose([Validators.required])],
+
+
+      'AnaesthetistsId': ['', Validators.compose([Validators.required])],
+      'ResidenceDrId': ['', Validators.compose([Validators.required])],
+      'BabyWeight': ['', Validators.compose([Validators.required])],
+      'icd10Description': ['', Validators.compose([Validators.required])],
+      'RestDays': ['', Validators.compose([Validators.required])],
+      'FollowUp': ['', Validators.compose([Validators.required])],
+
+
       'OperativeProcedure': ['', Validators.compose([Validators.maxLength(1000)])],
-      'OperativeFindings': ['', Validators.compose([Validators.maxLength(1000)])],
+      'OperativeFindings': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
       //'Diagnosis': ['', Validators.compose([Validators.required, Validators.maxLength(1000)])],
-      'CaseSummary': ['', Validators.compose([Validators.maxLength(8000)])],
-      'Condition': ['', Validators.compose([Validators.maxLength(5000)])],
+      'CaseSummary': ['', Validators.compose([Validators.maxLength(8000), Validators.required])],
+      'Condition': ['', Validators.compose([Validators.maxLength(5000), Validators.required])],
       //ramavtar: 12May18: Treatment is not mandatory
-      'Treatment': ['', Validators.compose([Validators.maxLength(1000)])],
-      'HistologyReport': ['', Validators.compose([Validators.maxLength(1000)])],
-      'SpeicialNotes': ['', Validators.compose([Validators.maxLength(1000)])],
+      'Treatment': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
+      'HistologyReport': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
+      'SpeicialNotes': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
       //'Medications': ['', Validators.compose([Validators.maxLength(1000)])],
-      'Allergies': ['', Validators.compose([Validators.maxLength(1000)])],
-      'Activities': ['', Validators.compose([Validators.maxLength(1000)])],
-      'Diet': ['', Validators.compose([Validators.maxLength(1000)])],
-      'Others': ['', Validators.compose([Validators.maxLength(1000)])],
-      'ChiefComplaint': ['', Validators.compose([Validators.maxLength(1000)])],
-      'PendingReports': ['', Validators.compose([Validators.maxLength(1000)])],
-      'HospitalCourse': ['', Validators.compose([Validators.maxLength(5000)])],
-      'PresentingIllness': ['', Validators.compose([Validators.maxLength(1000)])],
-      'ProcedureNts': ['', Validators.compose([Validators.maxLength(1000)])],
-      'ClinicalFindings': [''],
-      'PastHistory' :[''],
+      'Allergies': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
+      'Activities': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
+      'Diet': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
+      'Others': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
+      'ChiefComplaint': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
+      'PendingReports': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
+      'HospitalCourse': ['', Validators.compose([Validators.maxLength(5000), Validators.required])],
+      'PresentingIllness': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
+      'ProcedureNts': ['', Validators.compose([Validators.maxLength(1000), Validators.required])],
+      'ClinicalFindings': ['', Validators.compose([Validators.required])],
+      'PastHistory': ['', Validators.compose([Validators.required])],
       'DischargeConditionId': ['', Validators.compose([])],
-      'DiagnosisFreeText': ['', Validators.compose([Validators.maxLength(1000)])]
+      'DiagnosisFreeText': ['', Validators.compose([Validators.maxLength(1000), Validators.required])]
     });
   }
   public IsDirty(fieldName): boolean {

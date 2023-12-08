@@ -1,0 +1,60 @@
+<style>
+  .edit-icon {
+    font-weight: bold;
+    font-size: 18px;
+    color: green;
+    cursor: pointer;
+  }
+
+  .edit-icon:hover {
+    color: blue;
+    font-size: 15px;
+  }
+
+  .table-hover>tbody>tr:hover,
+  .table-hover>tbody>tr:hover>td {
+    background: #c8cdd8 !important;
+    cursor: pointer;
+  }
+
+  .table-prov-bill tr td {
+    font-size: 11px;
+  }
+
+  .table-wrapper table th {
+    position: sticky;
+    top: -1px;
+    background-color: #f1f1f1;
+    /*	z-index: 9;*/
+  }
+</style>
+<div class="wrapper" *ngIf="!ShowProvisionalItems">
+  <div class="row">
+    <div class="col-lg-12 col-sm-12">
+      <danphe-grid [grid-colDefaults]="creditBillGridColumns" [grid-data]="provisionalBillsSummary"
+                   (grid-actions)="OutPatientProvisionalGridActions($event)"
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+    </div>
+  </div>
+</div>
+
+<provisional-items *ngIf="ShowProvisionalItems" [selected-provisional-context]="SelectedProvisionalContext"
+                   (provisionalItemsCallBack)="OnProvisionalItemsCallBack($event)"></provisional-items>
+
+<!--Start: provisional slip Print Popup-->
+<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showInvoicePrintPage">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <a class="btn btn-danger del-btn" (click)="CloseInvoicePrint()">X</a>
+          <div>
+            <bil-print-provisional-slip [PatientId]="patientDetails.PatientId" [visitType]="'outpatient'" [schemeId]="SchemeId">
+            </bil-print-provisional-slip>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--End: provisional slip Print Popup-->

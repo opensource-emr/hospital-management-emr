@@ -15,6 +15,7 @@ import { PharmacyService } from '../../shared/pharmacy.service';
 import { PHRMStoreDispatchItems } from "../../shared/phrm-store-dispatch-items.model";
 import { PHRMStoreRequisitionItems } from "../../shared/phrm-store-requisition-items.model";
 import { PHRMStoreRequisition } from "../../shared/phrm-store-requisition.model";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 
 @Component({
       templateUrl: "./phrm-store-requisition-list.component.html",
@@ -61,12 +62,15 @@ export class PHRMStoreRequisitionListComponent implements OnInit {
       public NepaliDateInDispatchListGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
       public showNepaliReceipt: boolean;
       currentDate: string = "";
+
+      public GeneralFieldLabel = new GeneralFieldLabels();
       constructor(public coreService: CoreService, public dispensaryRequisitionService: DispensaryRequisitionService,
             public PharmacyBLService: PharmacyBLService,
             public PharmacyService: PharmacyService,
             public router: Router,
             public routeFrom: RouteFromService,
             public messageBoxService: MessageboxService) {
+             this.GeneralFieldLabel = coreService.GetFieldLabelParameter();      
             this.dateRange = 'last1Week';
             this.GetPharmacyBillingHeaderParameter()
             this.currentDate = moment().format('YYYY-MM-DD');

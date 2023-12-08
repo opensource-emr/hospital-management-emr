@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angu
 import { CoreService } from "../../../core/shared/core.service";
 import { DispensaryService } from "../../../dispensary/shared/dispensary.service";
 import { PrinterSettingsModel } from "../../../settings-new/printers/printer-settings.model";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { ENUM_MessageBox_Status } from "../../../shared/shared-enums";
 import { PharmacyBLService } from "../../shared/pharmacy.bl.service";
@@ -32,6 +33,7 @@ export class PharmacyProvisionalInvoicePrintComponent {
     public selectedPrinter: PrinterSettingsModel = new PrinterSettingsModel();
     public openBrowserPrintWindow: boolean = false;
     public browserPrintContentObj: any = { innerHTML: '' };
+    public GeneralFieldLabel = new GeneralFieldLabels();
     @Output("call-back-print") callBackPrint: EventEmitter<object> = new EventEmitter();
 
 
@@ -41,6 +43,7 @@ export class PharmacyProvisionalInvoicePrintComponent {
         public _dispensaryService: DispensaryService,
         private changeDetector: ChangeDetectorRef
     ) {
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
 
     ngOnInit() {

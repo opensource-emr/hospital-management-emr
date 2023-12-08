@@ -101,64 +101,68 @@ export class BillCancellationRequestComponent {
 
   public provisionalReturnItemId: number = null;
   cancelRequest(billTransactionItem, index: number) {
-    billTransactionItem.CancelRemarks = this.cancelRemarks.trim();
-    if (billTransactionItem.CancelRemarks && billTransactionItem.CancelRemarks.length) {
-      var cancelItemOfCurrentPatient = window.confirm("Are you sure you want to cancel this item for this Patient?");
+    if (this.cancelRemarks && this.cancelRemarks.trim()) {
+      billTransactionItem.CancelRemarks = this.cancelRemarks.trim();
+      if (billTransactionItem.CancelRemarks && billTransactionItem.CancelRemarks.length) {
+        let cancelItemOfCurrentPatient = window.confirm("Are you sure you want to cancel this item for this Patient?");
 
-      if (cancelItemOfCurrentPatient) {
-        billTransactionItem.CounterId = this.currCounterId;
-        billTransactionItem.ItemIntegrationName = billTransactionItem.IntegrationName;
-        if (billTransactionItem.ItemIntegrationName && billTransactionItem.ItemIntegrationName.toLowerCase() == "radiology") {
-          this.BillingBLService.CancelBillRequest(billTransactionItem).subscribe((res) => {
-            if (res.Status === ENUM_DanpheHTTPResponses.OK && res.Results) {
-              this.provisionalItemList.splice(index, 1);
-              this.provisionalItemList.slice();
-              this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["The selected item has been canceled."]);
-              this.showConfirmationBox = false;
-              this.provisionalReturnItemId = res.Results;
-              this.showprovisionalcancelreceipt = true;
-              this.LoadProvisionalBills(this.fromDate, this.toDate);
+        if (cancelItemOfCurrentPatient) {
+          billTransactionItem.CounterId = this.currCounterId;
+          billTransactionItem.ItemIntegrationName = billTransactionItem.IntegrationName;
+          if (billTransactionItem.ItemIntegrationName && billTransactionItem.ItemIntegrationName.toLowerCase() == "radiology") {
+            this.BillingBLService.CancelBillRequest(billTransactionItem).subscribe((res) => {
+              if (res.Status === ENUM_DanpheHTTPResponses.OK && res.Results) {
+                this.provisionalItemList.splice(index, 1);
+                this.provisionalItemList.slice();
+                this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["The selected item has been canceled."]);
+                this.showConfirmationBox = false;
+                this.provisionalReturnItemId = res.Results;
+                this.showprovisionalcancelreceipt = true;
+                this.LoadProvisionalBills(this.fromDate, this.toDate);
 
-            } else {
-              this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
-            }
+              } else {
+                this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
+              }
 
-          });
-        } else if (billTransactionItem.ItemIntegrationName && billTransactionItem.ItemIntegrationName.toLowerCase() == "lab") {
-          this.BillingBLService.CancelBillRequest(billTransactionItem).subscribe((res) => {
-            if (res.Status === ENUM_DanpheHTTPResponses.OK) {
-              this.provisionalItemList.splice(index, 1);
-              this.provisionalItemList.slice();
-              this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["The selected item has been canceled."]);
-              this.showConfirmationBox = false;
-              this.provisionalReturnItemId = res.Results;
-              this.showprovisionalcancelreceipt = true;
-              this.LoadProvisionalBills(this.fromDate, this.toDate);
-            } else {
-              this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
-            }
+            });
+          } else if (billTransactionItem.ItemIntegrationName && billTransactionItem.ItemIntegrationName.toLowerCase() == "lab") {
+            this.BillingBLService.CancelBillRequest(billTransactionItem).subscribe((res) => {
+              if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+                this.provisionalItemList.splice(index, 1);
+                this.provisionalItemList.slice();
+                this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["The selected item has been canceled."]);
+                this.showConfirmationBox = false;
+                this.provisionalReturnItemId = res.Results;
+                this.showprovisionalcancelreceipt = true;
+                this.LoadProvisionalBills(this.fromDate, this.toDate);
+              } else {
+                this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
+              }
 
-          });
-        } else {
-          this.BillingBLService.CancelBillRequest(billTransactionItem).subscribe((res) => {
-            if (res.Status === ENUM_DanpheHTTPResponses.OK) {
-              this.ReturnedData = res.Results;
-              this.provisionalItemList.splice(index, 1);
-              this.provisionalItemList.slice();
-              this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["The selected item has been canceled."]);
-              this.showConfirmationBox = false;
-              this.provisionalReturnItemId = res.Results;
-              this.showprovisionalcancelreceipt = true;
-              this.LoadProvisionalBills(this.fromDate, this.toDate);
-            } else {
-              this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Please try again later"]);
-            }
-          });
+            });
+          } else {
+            this.BillingBLService.CancelBillRequest(billTransactionItem).subscribe((res) => {
+              if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+                this.ReturnedData = res.Results;
+                this.provisionalItemList.splice(index, 1);
+                this.provisionalItemList.slice();
+                this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["The selected item has been canceled."]);
+                this.showConfirmationBox = false;
+                this.provisionalReturnItemId = res.Results;
+                this.showprovisionalcancelreceipt = true;
+                this.LoadProvisionalBills(this.fromDate, this.toDate);
+              } else {
+                this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Please try again later"]);
+              }
+            });
+          }
+          this.cancelRemarks = "";
         }
-        this.cancelRemarks = "";
+      } else {
+        this.mesageBoxService.showMessage("failed", ["Please Write Cancellation Remarks"]);
       }
     } else {
-      this.mesageBoxService.showMessage("failed", ["Please Write Cancellation Remarks"]);
+      this.mesageBoxService.showMessage(ENUM_MessageBox_Status.Warning, ["Please Write Cancellation Remarks"]);
     }
   }
 

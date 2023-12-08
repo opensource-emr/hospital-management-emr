@@ -98,8 +98,8 @@
                 </div>
                 <div class="col-md-6">
                   <span style="font-size: 12px;">
-                    {{selectedRowData.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD '}} ({{selectedRowData.CreatedOn |
-                    nepaliDate:'format':'YYYY-MM-DD '}}BS)
+                    {{selectedRowData.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD '}} {{selectedRowData.CreatedOn |
+                    nepaliDate:'format':'YYYY-MM-DD '}}
                   </span>
                 </div>
               </div>
@@ -286,7 +286,7 @@
                       <td style="text-align: center;">{{aed.ReferringOrganizationName}}/{{aed.AreaCode}}</td>
                       <td style="text-align: center;">{{aed.VehicleNumber}}</td>
                       <td style="text-align: center;">{{aed.Percentage}}</td>
-                      <td style="text-align: center;">{{aed.InvoiceTotalAmount}}</td>
+                      <td style="text-align: center;">{{aed.ReferralAmount}}</td>
                       <td style="text-align: center;">{{aed.Remarks}}</td>
                     </tr>
                   </tbody>

@@ -1,0 +1,35 @@
+<div>
+    <div class="form-body">
+        <div id="inputoutputSection" class="row">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-8 col-xs-12">
+                        <div class="portlet cstm-portlet portlet-with-collapse">
+                            <div class="portlet-title cstm-pt-title">
+                                <div class="cstm-portlet-caption">
+                                    Blood Sugar Monitoring
+                                </div>
+                                <div class="cstm-action">
+                                    <a class="cstm-add" (click)="AddNewBloodSugar()">
+                                        <i class="fa fa-plus-circle"></i> Add New
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="cstm-portlet-body">
+                                <div class="table-responsive">
+                                    <danphe-grid [grid-colDefaults]="bloodSugarMonitoringGridColumns"
+                                                 [grid-data]="BloodSugarMonitoringList" *ngIf="showBloodSugarMonitoringList">
+                                    </danphe-grid>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <add-blood-sugar *ngIf="showBloodSugarAddBox" [showBloodSugarAddBox]="showBloodSugarAddBox"
+                                         (callback-blood-sugar-update)="CallBackBloodSugarUpdate($event)"></add-blood-sugar>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

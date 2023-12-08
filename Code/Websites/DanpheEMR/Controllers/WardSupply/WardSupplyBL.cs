@@ -3,6 +3,7 @@ using DanpheEMR.Enums;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel;
 using DanpheEMR.ServerModel.InventoryModels;
+using DanpheEMR.ServerModel.LabModels;
 using DanpheEMR.Services.Verification;
 using DanpheEMR.ViewModel.Substore;
 using System;
@@ -475,15 +476,16 @@ namespace DanpheEMR.Controllers
                                             .FirstOrDefault();
 
             var DispatchDetails = await db.Dispatch.Include(d => d.DispatchItems).Where(itm => itm.DispatchId == DispatchId).FirstOrDefaultAsync();
+
             if (DispatchDetails == null)
             {
                 throw new Exception("Dispatch Detail Not Found");
             }
-
             if (DispatchDetails.DispatchItems == null || DispatchDetails.DispatchItems.Count == 0)
             {
                 throw new Exception("Items Not Found.");
             };
+            var RequisitionDetails = db.Requisitions.FirstOrDefault(a => a.RequisitionId == DispatchDetails.RequisitionId);
 
             var dispatchTxnTypes = new List<string>() { ENUM_INV_StockTransactionType.DispatchedItem, ENUM_INV_StockTransactionType.DispatchedItemReceivingSide };
 
@@ -516,7 +518,6 @@ namespace DanpheEMR.Controllers
 
                 if (isReceiveFeatureEnabled)
                 {
-                    var RequisitionDetails = db.Requisitions.FirstOrDefault(a => a.RequisitionId == DispatchDetails.RequisitionId);
                     RequisitionDetails.EnableReceiveFeature = false;
                     db.Entry(RequisitionDetails).Property(a => a.EnableReceiveFeature).IsModified = true;
                 }
@@ -530,8 +531,31 @@ namespace DanpheEMR.Controllers
             db.Entry(DispatchDetails).Property(a => a.ReceivedRemarks).IsModified = true;
 
             await db.SaveChangesAsync();
+            UpdateReceivedQuantityInRequisitionItems(DispatchId, db);
             return DispatchId;
         }
+
+        private static void UpdateReceivedQuantityInRequisitionItems(int DispatchId, InventoryDbContext db)
+        {
+            var modifiedRequisitionItems = new List<RequisitionItemsModel>(); // to Collect modified items
+            var dispatchItems = db.DispatchItems.Where(d => d.DispatchId == DispatchId).ToList();
+            if (dispatchItems != null)
+            {
+                dispatchItems.ForEach(d =>
+                {
+                    var requisitionItem = db.RequisitionItems.Where(r => r.RequisitionId == d.RequisitionId && r.RequisitionItemId == d.RequisitionItemId).FirstOrDefault();
+                    requisitionItem.ReceivedQuantity = (requisitionItem.ReceivedQuantity + d.DispatchedQuantity) ?? 0;
+                    modifiedRequisitionItems.Add(requisitionItem); // Collect modified item
+                });
+            }
+            // Perform a bulk update for all modified requisitionItem entities
+            foreach (var requisitionItem in modifiedRequisitionItems)
+            {
+                db.Entry(requisitionItem).State = EntityState.Modified;
+            }
+            db.SaveChanges();
+        }
+
 
         public static string UpdateReconciledStockFromExcel(List<SubstoreStockViewModel> stockList, RbacUser currentUser, WardSupplyDbContext wardDbContext)
         {
@@ -603,7 +627,7 @@ namespace DanpheEMR.Controllers
             requisition = RequisitionFromClient;
             requisition.FiscalYearId = GetFiscalYear(wardSupplyDbContext);
             requisition.RequisitionNo = GetCurrentFiscalYearRequisitionNo(wardSupplyDbContext, requisition.FiscalYearId);
-            if(requisition.VerifierIds != "[]")
+            if (requisition.VerifierIds != "[]")
             {
                 requisition.RequisitionStatus = ENUM_PharmacyRequisitionStatus.Pending;
             }
@@ -612,7 +636,7 @@ namespace DanpheEMR.Controllers
                 requisition.RequisitionStatus = ENUM_PharmacyRequisitionStatus.Active;
                 requisition.VerifierIds = null;
             }
-        
+
             wardSupplyDbContext.PHRMSubStoreRequisitions.Add(requisition);
             wardSupplyDbContext.SaveChanges();
 

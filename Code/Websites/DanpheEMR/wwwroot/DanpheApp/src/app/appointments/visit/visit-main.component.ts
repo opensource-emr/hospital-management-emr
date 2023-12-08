@@ -27,8 +27,10 @@ import { DanpheHTTPResponse } from '../../shared/common-models';
 import { CommonFunctions } from "../../shared/common.functions";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { RouteFromService } from '../../shared/routefrom.service';
-import { ENUM_BillPaymentMode, ENUM_BillingType, ENUM_DanpheHTTPResponseText, ENUM_DanpheHTTPResponses, ENUM_InvoiceType, ENUM_MessageBox_Status, ENUM_OrderStatus, ENUM_Scheme_ApiIntegrationNames, ENUM_ServiceBillingContext, ENUM_VisitType } from '../../shared/shared-enums';
+import { ENUM_AppointmentType, ENUM_BillPaymentMode, ENUM_BillingType, ENUM_DanpheHTTPResponseText, ENUM_DanpheHTTPResponses, ENUM_InvoiceType, ENUM_MessageBox_Status, ENUM_OrderStatus, ENUM_Scheme_ApiIntegrationNames, ENUM_ServiceBillingContext, ENUM_VisitType } from '../../shared/shared-enums';
 import { AppointmentService } from '../shared/appointment.service';
+import { CurrentVisitContextVM } from '../shared/current-visit-context.model';
+import { PatientLatestVisitContext_DTO } from '../shared/dto/patient-lastvisit-context.dto';
 import { QuickVisitVM } from '../shared/quick-visit-view.model';
 import { VisitBLService } from '../shared/visit.bl.service';
 import { Visit } from '../shared/visit.model';
@@ -62,6 +64,7 @@ export class VisitMainComponent {
   public discountPercent: number = 0;
   public patientCountryId: number = 0;
   public DepartmentLevelAppointment: boolean;
+  public SchemePriCeCategoryFromVisit: SchemePriceCategoryCustomType = { SchemeId: 0, PriceCategoryId: 0 };
 
   public RegistrationEventSubscriptions: Subscription = new Subscription();
 
@@ -93,8 +96,14 @@ export class VisitMainComponent {
   public RegistrationSchemeDetail = new RegistrationScheme_DTO();
   public CreditLimit: number = 0;
   public serviceBillingContext: string = ENUM_ServiceBillingContext.OpBilling;
+  public SchemePriCeCategoryFromVisitTemp: SchemePriceCategoryCustomType = { SchemeId: 0, PriceCategoryId: 0 };
   public confirmationTitle: string = "Confirm !";
   public confirmationMessage: string = "Are you sure you want to Print Invoice ?";
+  public patLastVisitContext: PatientLatestVisitContext_DTO = new PatientLatestVisitContext_DTO();
+  public currPatVisitContext: CurrentVisitContextVM = new CurrentVisitContextVM();
+  public IsReferred: boolean = false;
+  public IsPatientEligibleForService: boolean = true;
+  public tenderValue: any;
   constructor(public patientService: PatientService,
     public securityService: SecurityService,
     public callBackService: CallbackService,
@@ -174,7 +183,12 @@ export class VisitMainComponent {
       this.patientService.getGlobal().PatientId;
 
     this.quickVisit.Visit.AppointmentType = this.visitService.appointmentType;
-
+    if (this.quickVisit.Visit.AppointmentType.toLowerCase() === ENUM_AppointmentType.referral.toLowerCase()) {
+      this.IsReferred = true;
+      //!fetch priceCategory and scheme from the global service.
+      this.SchemePriCeCategoryFromVisit.PriceCategoryId = this.patientService.getGlobal().PriceCategoryId;
+      this.SchemePriCeCategoryFromVisit.SchemeId = this.patientService.getGlobal().SchemeId;
+    }
     this.quickVisit.Visit.VisitType = ENUM_VisitType.outpatient;// "outpatient";
     this.quickVisit.BillingTransaction.IsInsuranceBilling = this.billingService.isInsuranceBilling;
 
@@ -213,6 +227,7 @@ export class VisitMainComponent {
     globalPat.PANNumber = ipData.PANNumber;
     globalPat.Admissions = ipData.Admissions;
     globalPat.CareTaker = ipData.CareTaker;
+    globalPat.PolicyNo = ipData.PolicyNo;
 
   }
 
@@ -316,7 +331,7 @@ export class VisitMainComponent {
   CheckValidations(): { isValid: boolean, message: Array<string> } {
     console.log(this.quickVisit.Patient)
     if (this.quickVisit.Patient.AgeUnit == null) {
-      this.msgBoxServ.showMessage("error", ["Please select, Patient Age Unit"]);
+      this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ["Please select, Patient Age Unit"]);
       return;
     }
     if (!this.quickVisit.BillingTransaction.IsInsuranceBilling) {
@@ -339,6 +354,15 @@ export class VisitMainComponent {
     if (!this.quickVisit.Patient.EthnicGroup) {
       validationSummary.isValid = false;
       validationSummary.message.push("Ethnic group is mandatory");
+    }
+    if (!this.IsPatientEligibleForService) {
+      validationSummary.isValid = false;
+      validationSummary.message.push(`Patient is not eligible for ${this.RegistrationSchemeDetail.SchemeName} Scheme`);
+    }
+
+    if (this.RegistrationSchemeDetail.IsMemberNumberCompulsory && !this.quickVisit.Patient.PatientScheme.PolicyNo) {
+      validationSummary.isValid = false;
+      validationSummary.message.push(`MemberNo is required to Register ${this.RegistrationSchemeDetail.SchemeName} Scheme's Patient!`);
     }
 
     if ((!this.quickVisit.Patient.PatientId && !this.quickVisit.Patient.IsValidCheck(undefined, undefined))
@@ -386,7 +410,7 @@ export class VisitMainComponent {
     }
 
     for (let j = 0; j < this.quickVisit.BillingTransaction.BillingTransactionItems.length; j++) {
-      var itm = this.allBillItms.find(b => this.quickVisit.BillingTransaction.BillingTransactionItems[j].ItemId == b.ItemId && this.quickVisit.BillingTransaction.BillingTransactionItems[j].ServiceDepartmentId == b.ServiceDepartmentId);
+      let itm = this.allBillItms.find(b => this.quickVisit.BillingTransaction.BillingTransactionItems[j].IntegrationItemId == b.IntegrationItemId && this.quickVisit.BillingTransaction.BillingTransactionItems[j].ServiceDepartmentId == b.ServiceDepartmentId);
       if (itm) {
         this.quickVisit.BillingTransaction.BillingTransactionItems[j].IsZeroPriceAllowed = itm.IsZeroPriceAllowed;
         if (itm.IsZeroPriceAllowed) {
@@ -685,8 +709,10 @@ export class VisitMainComponent {
         this.updatePaymentStatus(this.appointmentService.GlobalTelemedPatientVisitID);
       }
       this.selectedVisit = res.Results.Visit;
-      this.showSticker = true;
-      this.showOpdSticker = true;
+      if (!this.quickVisit.Visit.IsFreeVisit) {
+        this.showSticker = true;
+        this.showOpdSticker = true;
+      }
       this.showPrintingPopup = true;
     }
     else {
@@ -834,6 +860,7 @@ export class VisitMainComponent {
     console.log("RegistrationSchemeChange called from Visit-Main.component");
     console.log(scheme);
     this.RegistrationSchemeDetail = scheme;
+    this.IsPatientEligibleForService = this.RegistrationSchemeDetail.IsPatientEligibleForService;
     const newSchemeObj = _.cloneDeep(scheme);
     if (newSchemeObj && newSchemeObj.SchemeId) {
       this.isValidSchemeSelected = true;
@@ -897,6 +924,7 @@ export class VisitMainComponent {
     patientScheme.OtherInfo = patientSchemeObj.OtherInfo;
     patientScheme.PolicyHolderEmployerID = patientSchemeObj.PolicyHolderEmployerID;
     patientScheme.SubSchemeId = patientSchemeObj.SubSchemeId;
+    patientScheme.RegistrationCase = patientSchemeObj.RegistrationCase;
 
     return patientScheme;
   }
@@ -937,5 +965,4 @@ export class VisitMainComponent {
   handleCancel() {
     this.loading = false;
   }
-  public tenderValue: any;
 }

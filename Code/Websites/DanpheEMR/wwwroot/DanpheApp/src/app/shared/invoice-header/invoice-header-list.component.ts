@@ -2,6 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Lightbox } from "angular2-lightbox";
+import { CoreService } from '../../core/shared/core.service';
+import { GeneralFieldLabels } from '../DTOs/general-field-label.dto';
 import GridColumnSettings from '../danphe-grid/grid-column-settings.constant';
 import { GridEmitModel } from '../danphe-grid/grid-emit.model';
 import { InvoiceHeaderModel } from '../invoice-header.model';
@@ -12,6 +14,7 @@ import { MessageboxService } from '../messagebox/messagebox.service';
 })
 
 export class InvoiceHeaderListComponent {
+  [x: string]: any;
 
   public InvoiceHeaderGridColumns: Array<any> = [];
   public index: number;
@@ -22,13 +25,16 @@ export class InvoiceHeaderListComponent {
   public module: string = "";
   //showInvoiceLogo: boolean;
   //logoSource: string;
-
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(public changeDetector: ChangeDetectorRef,
     public messageBoxService: MessageboxService,
     private _route: ActivatedRoute,
+    public coreservice: CoreService,
     private _http: HttpClient,
     public lightBox: Lightbox) {
     this.InvoiceHeaderGridColumns = GridColumnSettings.InvoiceHeaderList;
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
+    this.InvoiceHeaderGridColumns[4].headerName = `${this.GeneralFieldLabel.PANNo} `;
   }
   ngOnInit() {
     this._route.params.subscribe(params => {

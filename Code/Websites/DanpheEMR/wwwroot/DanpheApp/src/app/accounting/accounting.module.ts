@@ -19,6 +19,7 @@ import { BankReconciliationComponent } from './bank-reconciliation/reconcile-ban
 import { SuspenseAccountReconciliationComponent } from './bank-reconciliation/reconcile-suspense-account/suspense-reconciliation.component';
 import { CashFlowReportComponent } from './reports/Cash-Flow/cash-flow-report.component';
 import { DayBookReportComponent } from './reports/Day-Book-Report/day-book-report.component';
+import { AccountHeadDetailReportComponent } from './reports/account-head-detail-report/account-head-detail-report.component';
 import { AccountingReportsComponent } from './reports/accounting-reports.component';
 import { BalanceSheetReportComponent } from './reports/balance-sheet/balance-sheet-report.component';
 import { CashBankBookReportComponent } from './reports/cash-bank-book-report/cash-bank-book-report.component';
@@ -42,6 +43,7 @@ import { AccountingSyncBaseComponent } from './sync/accounting-sync-base.compone
 import { AccountClosureComponent } from './transactions/account-closure.component';
 import { ManualVoucherEditComponent } from './transactions/manual-voucher-edit.component';
 import { PaymentComponent } from './transactions/payment/account-payment.component';
+import { SubLedgerAddComponent } from './transactions/shared/create-subledger/subledger-add.component';
 import { TransactionsMainComponent } from './transactions/transactions-main.component';
 import { TransferToAccountingComponent } from "./transactions/transfer-to-accounting.component";
 import { VoucherEntryComponent } from './transactions/voucher-entry.component';
@@ -96,6 +98,8 @@ import { VoucherVerificationComponent } from './voucher-verification/voucher-ver
     VoucherVerificationComponent,
     BankReconciliationMainComponent,
     SuspenseAccountReconciliationComponent,
+    SubLedgerAddComponent,
+    AccountHeadDetailReportComponent
   ],
   bootstrap: []
 })

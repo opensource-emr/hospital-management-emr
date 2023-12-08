@@ -80,6 +80,7 @@ export default class MRGridColumnSettings {
     { headerName: "Doctor Name", field: "PerformerName", width: 100 },
     { headerName: "Appointment Date", field: "VisitDate", width: 125, cellRenderer: MRGridColumnSettings.MRDateRenderer },
     { headerName: "Department", field: "DepartmentName", width: 100 },
+    { headerName: "ICD Code", field: "FinalDiagnosis", width: 100, cellRenderer: MRGridColumnSettings.ICDCodeRenderer },
     { headerName: "Final Diagnosis", field: "FinalDiagnosis", width: 100, cellRenderer: MRGridColumnSettings.FinalDiagnosisRenderer },
     // FinalDiagnosisCount
     {
@@ -97,6 +98,7 @@ export default class MRGridColumnSettings {
     { headerName: "Doctor Name", field: "PerformerName", width: 100 },
     { headerName: "Appointment Date", field: "VisitDate", width: 125, cellRenderer: MRGridColumnSettings.MRDateRenderer },
     { headerName: "Department", field: "DepartmentName", width: 100 },
+    { headerName: "ICD Code", field: "FinalDiagnosis", width: 100, cellRenderer: MRGridColumnSettings.EmergencyPatientICDCodeRenderer },
     { headerName: "Final Diagnosis", field: "FinalDiagnosis", width: 100, cellRenderer: MRGridColumnSettings.EmergencyFinalDiagnosisRenderer },
     {
       headerName: "Action",
@@ -125,7 +127,24 @@ export default class MRGridColumnSettings {
     }
 
   }
-
+  static ICDCodeRenderer(params) {
+    if (params.data && params.data.FinalDiagnosis && params.data.FinalDiagnosis.length > 0) {
+      let temp: Array<any> = Array<any>();
+      temp = params.data.FinalDiagnosis;
+      let str: string = "";
+      str = temp.map(a => a.ICD10Code).join(', ');
+      return str;
+    }
+  }
+  static EmergencyPatientICDCodeRenderer(params) {
+    if (params.data && params.data.FinalDiagnosis && params.data.FinalDiagnosis.length > 0) {
+      let temp: Array<any> = Array<any>();
+      temp = params.data.FinalDiagnosis;
+      let str: string = "";
+      str = temp.map(a => a.ICDCode).join(', ');
+      return str;
+    }
+  }
   static EmergencyFinalDiagnosisRenderer(params) {
     if (params.data && params.data.FinalDiagnosis && params.data.FinalDiagnosis.length > 0) {
       let temp: Array<any> = Array<any>();
@@ -138,7 +157,6 @@ export default class MRGridColumnSettings {
     }
 
   }
-
   static EmergencyListActionRenderer(params) {
     if (params.data && params.data.FinalDiagnosisCount && params.data.FinalDiagnosisCount > 0)
       return `<a danphe-grid-action="add-diagnosis" class="grid-action" style="background-color: #247e58!important;">
@@ -160,8 +178,9 @@ export default class MRGridColumnSettings {
     { headerName: "Patient Name", field: "Name", width: 150 },
     { headerName: "Age/Gender", field: "DateOfBirth", width: 80, cellRenderer: MRGridColumnSettings.MRAgeSexRendererPatient },
     // { headerName: "Gender", field: "Gender", width: 100 },
-    { headerName: "Ward", field: "BedInformation.Ward", width: 100 },
+    { headerName: "Ward", field: "Ward", width: 100 },
     { headerName: "Department", field: "Department", width: 120 },
+    { headerName: "ICD Code", field: "ICDCode", width: 150 },
     { headerName: "Doctor", field: "AdmittingDoctorName", width: 100 },
     { headerName: "MR ?", field: "", width: 80, cellRenderer: MRGridColumnSettings.MRIpStatusRenderer },
     // FinalDiagnosisCount

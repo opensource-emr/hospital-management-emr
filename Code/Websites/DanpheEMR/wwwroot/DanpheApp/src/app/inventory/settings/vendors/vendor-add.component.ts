@@ -10,6 +10,7 @@ import { animate, style, transition, trigger } from "@angular/animations";
 import * as moment from 'moment/moment';
 import { isNumeric } from "rxjs/internal-compatibility";
 import { CoreService } from "../../../core/shared/core.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { DanpheCache, MasterType } from "../../../shared/danphe-cache-service-utility/cache-services";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { InventoryService } from "../../shared/inventory.service";
@@ -54,9 +55,13 @@ export class VendorsAddComponent {
   public isEditItem: boolean = false;
   public loading: boolean = false;
   public vendorDisplayParameter: any = null;
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(public invSettingBL: InventorySettingBLService, public inventoryService: InventoryService,
     public securityService: SecurityService, public coreService: CoreService,
     public changeDetector: ChangeDetectorRef, public msgBoxServ: MessageboxService) {
+
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
     //this.GetVendors();
     this.GetCurrencyCode();
     this.GetItemList();

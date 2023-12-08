@@ -1,4 +1,4 @@
-import { Component, Directive, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { ReportingService } from "../../../reporting/shared/reporting-service";
 import { CommonFunctions } from '../../../shared/common.functions';
 import { RPT_BIL_UserCollectionReportModel } from "./user-collection-report.model";
@@ -7,15 +7,15 @@ import { DLService } from "../../../shared/dl.service";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 
 import * as moment from 'moment/moment';
+import { CoreBLService } from "../../../core/shared/core.bl.service";
 import { CoreService } from "../../../core/shared/core.service";
-import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
-import { CoreBLService } from "../../../core/shared/core.bl.service"
-import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
-import { SettingsBLService } from '../../../settings-new/shared/settings.bl.service';
-import { User } from '../../../security/shared/user.model';
-import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
-import { NepaliCalendarService } from '../../../shared/calendar/np/nepali-calendar.service';
 import { SecurityService } from '../../../security/shared/security.service';
+import { User } from '../../../security/shared/user.model';
+import { SettingsBLService } from '../../../settings-new/shared/settings.bl.service';
+import { NepaliCalendarService } from '../../../shared/calendar/np/nepali-calendar.service';
+import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
+import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 @Component({
   templateUrl: "./user-collection-report.html"
 })
@@ -34,7 +34,7 @@ export class RPT_BIL_UserCollectionReportComponent {
   public NepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   DailySalesReportData: Array<any> = new Array<RPT_BIL_UserCollectionReportModel>();
   dailySalesReportSummaryData: Array<any> = new Array<RPT_BIL_UserCollectionReportModel>();
-  public CollectionSegregation : Array<any> = new Array<any>();
+  public CollectionSegregation: Array<any> = new Array<any>();
   dynamicColumns: Array<string> = new Array<string>();
   public currentdailysales: RPT_BIL_UserCollectionReportModel = new RPT_BIL_UserCollectionReportModel();
   public counterlist: any;
@@ -65,7 +65,7 @@ export class RPT_BIL_UserCollectionReportComponent {
     CollectionFromReceivables: 0,
     Sett_CashDiscount: 0,
     OtherPaymentsGiven: 0,
-    CoPaymentCashAmount:0,
+    CoPaymentCashAmount: 0,
     NetCollection: 0,
   }
 
@@ -76,9 +76,9 @@ export class RPT_BIL_UserCollectionReportComponent {
   public loading: boolean = false;//sud:22Sep'21--to handle multiple clicks on show report button.
 
   public isReportDataLoaded: boolean = false; //we need to show/hide some sections only after report is loaded. need this field to show/hide all the sections 
-  public otherPaymentsLabelSettingsValue : any;
-  public showOtherPayment : boolean = true;
-  public selectedUser : any = "";
+  public otherPaymentsLabelSettingsValue: any;
+  public showOtherPayment: boolean = true;
+  public selectedUser: any = "";
   constructor(
     _dlService: DLService,
     public settingsBLService: SettingsBLService,
@@ -506,9 +506,9 @@ export class RPT_BIL_UserCollectionReportComponent {
       }
     }
     var param = this.coreService.Parameters.find(a => a.ParameterGroupName == "BillingReport" && a.ParameterName == "UserCollectionOtherPaymentsLabelSettings");
-    if(param !=null){
+    if (param != null) {
       var data = param.ParameterValue;
-      if(data){
+      if (data) {
         this.otherPaymentsLabelSettingsValue = JSON.parse(data);
         this.showOtherPayment = JSON.parse(this.otherPaymentsLabelSettingsValue.Show);
       }
@@ -532,7 +532,7 @@ export class RPT_BIL_UserCollectionReportComponent {
 
       });
   }
-  userChanged(){
+  userChanged() {
     this.currentdailysales.EmployeeId = this.selectedUser.EmployeeId ? this.selectedUser.EmployeeId : null;
   }
   UserListFormatter(data: any): string {

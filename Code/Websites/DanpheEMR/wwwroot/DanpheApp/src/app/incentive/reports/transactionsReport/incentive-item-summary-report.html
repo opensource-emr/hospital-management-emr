@@ -84,6 +84,7 @@
                         <td style="text-align:center"><b>Patient</b></td>
                         <td style="text-align:center"><b>Hospital No</b></td>
                         <td style="text-align:center"><b>Item Name</b></td>
+                        <td style="text-align:center"><b>PriceCategory</b></td>
                         <td style="text-align:center"><b>SubTotal</b></td>
                         <td style="text-align:center"><b>Discount Amount</b></td>
                         <td style="text-align:center"><b>Total Bill Amt.</b></td>
@@ -98,12 +99,14 @@
                       <tr *ngFor="let row of InTyrow.reportData;let i=index">
                         <td style="text-align:center">{{i+1}}</td>
                         <td style="width: 6%;" *ngIf="!isDateFormatBS">{{row.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
+                        <td style="width: 6%;" *ngIf="isDateFormatBS">{{row.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}</td>
                         <td style="width: 6%;" *ngIf="!row.IsReturnTxn">Sales</td>
                         <td style="width: 6%;" *ngIf="row.IsReturnTxn">Sales Return</td>
                         <td style="text-align:center">{{row.InvoiceNoFormatted}}</td>
                         <td style="text-align:center">{{row.PatientName}}</td>
                         <td style="text-align:center">{{row.HospitalNum}}</td>
                         <td style="text-align:center">{{row.ItemName}}</td>
+                        <td style="text-align:center">{{row.PriceCategoryName}}</td>
                         <td style="text-align:center">{{row.SubTotal | number : "1.2-2"}}</td>
                         <td style="text-align:center">{{row.DiscountAmount | number : "1.2-2"}}</td>
                         <td style="text-align:center">{{row.TotalAmount | number : "1.2-2"}}</td>

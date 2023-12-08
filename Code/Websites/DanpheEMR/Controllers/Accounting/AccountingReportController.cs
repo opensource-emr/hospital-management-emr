@@ -488,7 +488,7 @@ namespace DanpheEMR.Controllers
             //else if (reqType == "daily-txn-report")
             int currentHospitalId = HttpContext.Session.Get<int>("AccSelectedHospitalId");
             Func<object> func = () => (from txn in _accountingDbContext.Transactions
-                                       where txn.HospitalId == currentHospitalId
+                                       where txn.HospitalId == currentHospitalId 
                                        && (DbFunctions.TruncateTime(txn.TransactionDate) >= FromDate && DbFunctions.TruncateTime(txn.TransactionDate) <= ToDate)
                                        && txn.IsVerified == true
                                        group new { txn } by new { txn.TransactionDate, txn.VoucherNumber, txn.SectionId } into x
@@ -506,10 +506,10 @@ namespace DanpheEMR.Controllers
                                                        where l.HospitalId == currentHospitalId
                                                        group new { itm, l } by new { l.LedgerId } into y
                                                        select new
-                                                       {
+                                                       { 
                                                            LedgerName = y.Select(a => a.l.LedgerName).FirstOrDefault(),
-                                                           DrAmount = y.Where(a => a.itm.DrCr == true).Sum(a => a.itm.Amount),
-                                                           CrAmount = y.Where(a => a.itm.DrCr == false).Sum(a => a.itm.Amount),
+                                                           DrAmount = y.Where(a => a.itm.DrCr == true).Sum(a => (decimal?)a.itm.Amount),
+                                                           CrAmount = y.Where(a => a.itm.DrCr == false).Sum(a => (decimal?)a.itm.Amount),
                                                            Code = y.Select(a => a.l.Code).FirstOrDefault()
                                                        }).ToList()
                                        }).OrderBy(a => a.TransactionDate).ToList();
@@ -616,6 +616,77 @@ namespace DanpheEMR.Controllers
             Func<object> func = () => GetVoucherForVerification(currentHospitalId, FromDate, ToDate, sectionId);
             return InvokeHttpGetFunction<object>(func);
         }
+
+
+
+        [HttpGet]
+        [Route("AccountHeadDetailReport")]
+        public object AccountHeadDetailReport()
+        {
+            AccountingDbContext accountingDBContext = new AccountingDbContext(connString);
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+            DataTable accountHeadDetailReport = DALFunctions.GetDataTableFromStoredProc("SP_ACC_AccountHeadDetailReport", accountingDBContext);
+
+            responseData.Status = ENUM_Danphe_HTTP_ResponseStatus.OK;
+
+            var result = (from row in accountHeadDetailReport.AsEnumerable()
+                          group row by new { PrimaryGroupName = row.Field<string>("PrimaryGroupName") } into group1
+                          select new
+                          {
+                              PrimaryGroupName = group1.Key.PrimaryGroupName,
+                              COAList = (from row in group1
+                                         group row by new { ChartOfAccountName = row.Field<string>("ChartOfAccountName"), COACode = row.Field<string>("COACode")} into group2
+                                         select new
+                                         {
+                                             ChartOfAccountName = group2.Key.ChartOfAccountName,
+                                             COACode = group2.Key.COACode,
+                                             LedgerGroupList = (from row in group2
+                                                                group row by new { LedgerGroupName = row.Field<string>("LedgerGroupName"), LedgerGroupCode = row.Field<string>("LedgerGroupCode") } into group3
+                                                                select new
+                                                                {
+                                                                    LedgerGroupName = group3.Key.LedgerGroupName,
+                                                                    LedgerGroupCode = group3.Key.LedgerGroupCode,
+                                                                    LedgerList = (from row in group3
+                                                                                  group row by new { LedgerName = row.Field<string>("LedgerName"), LedgerCode = row.Field<string>("LedgerCode") } into group4
+                                                                                  select new
+                                                                                  {
+                                                                                     LedgerName = group4.Key.LedgerName,
+                                                                                     LedgerCode = group4.Key.LedgerCode,
+                                                                                     SubLedgerList = (from row in group4
+                                                                                                      select new
+                                                                                                      {
+                                                                                                          PrimaryGroupId = row.Field<int>("PrimaryGroupId"),
+                                                                                                          PrimaryGroupName = row.Field<string>("PrimaryGroupName"),
+                                                                                                          ChartOfAccountId = row.Field<int>("ChartOfAccountId"),
+                                                                                                          ChartOfAccountName = row.Field<string>("ChartOfAccountName"),
+                                                                                                          COACode = row.Field<string>("COACode"),
+                                                                                                          LedgerGroupId = row.Field<int>("LedgerGroupId"),
+                                                                                                          LedgerGroupName = row.Field<string>("LedgerGroupName"),
+                                                                                                          LedgerGroupCode = row.Field<string>("LedgerGroupCode"),
+                                                                                                          LedgerId = row.Field<int>("LedgerId"),
+                                                                                                          LedgerName = row.Field<string>("LedgerName"),
+                                                                                                          LedgerCode = row.Field<string>("LedgerCode"),
+                                                                                                          SubLedgerId = row.Field<int>("SubLedgerId"),
+                                                                                                          SubLedgerName = row.Field<string>("SubLedgerName"),
+                                                                                                          SubLedgerCode = row.Field<string>("SubLedgerCode"),
+
+                                                                                                      }).ToList()
+
+
+                                                                                  }).ToList()
+                                                                }).ToList()
+                                         }).ToList()
+                          }).ToList();
+
+            responseData.Results = result;
+            return responseData;
+        }
+
+
+
+
+
+
 
         #region comment section migrate to api
         // GET: api/values

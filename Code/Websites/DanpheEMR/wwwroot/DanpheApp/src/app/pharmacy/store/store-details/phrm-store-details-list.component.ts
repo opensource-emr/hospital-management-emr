@@ -62,6 +62,7 @@ export class PHRMStoreDetailsListComponent {
   ngOnInit() {
     var phrmGridColumns = new PHRMGridColumns(this.securityService);
     this.stockDetailsGridColumns = phrmGridColumns.StoreStockDetailList;
+   
     //this.NepaliDateInGridSettings.NepaliDateColumnList.push(...[new NepaliDateInGridColumnDetail('ExpiryDate', false)]); 
   }
   gridExportOptions = {

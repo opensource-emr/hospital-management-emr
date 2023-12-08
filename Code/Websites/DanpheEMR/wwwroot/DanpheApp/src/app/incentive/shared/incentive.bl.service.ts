@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
 
-import { IncentiveDLService } from './incentive.dl.service';
-import { BillingTransactionItem } from '../../billing/shared/billing-transaction-item.model';
 import { TransactionModel } from '../../accounting/transactions/shared/transaction.model';
+import { BillingTransactionItem } from '../../billing/shared/billing-transaction-item.model';
 import { INCTV_TXN_PaymentInfoModel } from '../items/incentive-paymentInfo.model';
-import { INCTV_TXN_PaymentInfoVM } from '../reports/transactionsReport/incentive-item-summary-report.component';
+import { IncentiveDLService } from './incentive.dl.service';
 
 @Injectable()
 export class IncentiveBLService {
@@ -62,8 +61,8 @@ export class IncentiveBLService {
     return this.incentiveDL.GetEmployeeBillItemsList(employeeId).map(res => res);
   }
 
-  GetItemsForIncentive() {
-    return this.incentiveDL.GetItemsForIncentive().map(res => res);
+  GetItemsForIncentive(priceCategoryId: number = null) {
+    return this.incentiveDL.GetItemsForIncentive(priceCategoryId).map(res => res);
   }
 
   GetIncentiveSettingByEmpId(empId: number) {

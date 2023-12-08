@@ -1,4 +1,3 @@
-
 <div class="wrapper">
 
   <!-- <div class="row" *ngIf="showGrid" style="margin-bottom: 15px;">
@@ -24,14 +23,14 @@
           </div>
           <div class="col-md-3">
             <button [disabled]="loading" class="btn green btn-success pull-right"
-              (click)="GetPendingLabResults(this.fromDate, this.toDate, this.catIdList);this.loading=true;">Load
+                    (click)="GetPendingLabResults(this.fromDate, this.toDate, this.catIdList);this.loading=true;">Load
               <i class="fa fa-refresh"></i></button>
           </div>
         </div>
-        
+
       </div>
       <div class="col-md-2">
-        <a  (click)="ShowWorkList()" style="font-weight: bold;float:right;text-decoration: underline;">Work List</a>
+        <a (click)="ShowWorkList()" style="font-weight: bold;float:right;text-decoration: underline;">Work List</a>
       </div>
 
     </div>
@@ -39,7 +38,7 @@
   <div class="row" *ngIf="showGrid">
     <div class="col-lg-12 col-sm-12">
       <danphe-grid [grid-colDefaults]="pendingLabResultsGridColumns" [grid-data]="pendingResults"
-        [rangeType]="dateRange" (grid-actions)="PendingResultGridActions($event)">
+                   [rangeType]="dateRange" (grid-actions)="PendingResultGridActions($event)">
       </danphe-grid>
     </div>
   </div>
@@ -48,8 +47,9 @@
     <button class="btn primary-btn margin-7-rt pull-left" style="z-index: 1;position: relative;" (click)="BackToGrid()">
       <i class="fa fa-arrow-left"></i> Back To Grid </button>
     <danphe-lab-results [showReport]="showReport" [showAddEditResult]="showAddEditResult"
-      [requisitionIdList]="requisitionIdList" [verificationRequired]="verificationRequired"
-      (callback-cancel)="CancelAction($event)"></danphe-lab-results>
+                        [barcodeNumber]="selectedBarCodeNumber"
+                        [requisitionIdList]="requisitionIdList" [verificationRequired]="verificationRequired"
+                        (callback-cancel)="CancelAction($event)"></danphe-lab-results>
   </div>
   <div *ngIf="showlabsticker" class="popup-static portlet box portlet-fullscreen">
     <div class="portlet-body form">
@@ -60,7 +60,7 @@
           </div>
           <div class="modelbox-body">
             <lab-sticker (callback-Add)="ExitOutCall($event)" [showlabsticker]="showlabsticker"
-              [PatientLabInfo]="PatientLabInfo" [requisitionIdList]="requisitionIdList"> </lab-sticker>
+                         [PatientLabInfo]="PatientLabInfo" [requisitionIdList]="requisitionIdList"> </lab-sticker>
           </div>
           <div class="modelbox-footer">
             <div class="all-buttons text-right">
@@ -84,7 +84,7 @@
           </div>
           <div class="modelbox-body">
             <undo-samplecode (callback-Add)="ExitOutUndoCall($event)" [showUndoOption]="showUndoOption"
-              [PatientLabInfo]="PatientLabInfo" [requisitionIdList]="requisitionIdList"> </undo-samplecode>
+                             [PatientLabInfo]="PatientLabInfo" [requisitionIdList]="requisitionIdList"> </undo-samplecode>
           </div>
           <div class="close-modelbox lb-close-btn">
             <button class="btn btn-danger" (click)="CloseUndoBox()">X</button>
@@ -102,7 +102,7 @@
           </div>
           <div class="modelbox-body">
             <empty-add-report *ngIf="showEmptySheet" (closeEmptyReport)="CloseEmptyReportSheetPopUp($event)"
-              [allReqIdListForPrint]="requisitionIdList"></empty-add-report>
+                              [allReqIdListForPrint]="requisitionIdList"></empty-add-report>
           </div>
           <div class="close-modelbox">
             <button class="btn btn-danger" (click)="CloseEmptySheet()">X</button>

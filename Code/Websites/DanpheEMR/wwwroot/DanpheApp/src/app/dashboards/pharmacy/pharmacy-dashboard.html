@@ -15,15 +15,15 @@
                             <div class="card-title">
                                 <h4>Sales</h4>
                                 <div class="card-count">
-                                    Total : <strong>{{coreService.currencyUnit}}{{SalesData[0].TotalAmount | number : "1.0-2"}}</strong>
+                                    Total : <strong>Rs. {{SalesData[0].TotalAmount | number : "1.0-2"}}</strong>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer d-flex justify-content-between"> 
+                    <div class="card-footer d-flex justify-content-between">
                         <div class="card-left">
                             <div class="card-count">
-                                Previous Day : <strong>{{coreService.currencyUnit}}{{SalesData[3].TotalAmount | number : "1.0-2"}}</strong>
+                                Previous Day : <strong>Rs.{{SalesData[3].TotalAmount | number : "1.0-2"}}</strong>
                             </div>
                             <p>
                                 <span *ngIf="SalesDifferenceRate==='-'" class="success">{{SalesDifferenceRate}}</span>
@@ -32,10 +32,10 @@
                         </div>
                         <div class="card-right">
                             <div class="card-count">
-                                Cash : <strong>{{coreService.currencyUnit}}{{SalesData[1].TotalAmount | number : "1.0-2"}}</strong>
+                                Cash : <strong>Rs.{{SalesData[1].TotalAmount | number : "1.0-2"}}</strong>
                             </div>
                             <div class="card-count">
-                                Credit : <strong>{{coreService.currencyUnit}}{{SalesData[2].TotalAmount | number : "1.0-2"}}</strong>
+                                Credit : <strong>Rs.{{SalesData[2].TotalAmount | number : "1.0-2"}}</strong>
                             </div>
                         </div>
                     </div>
@@ -51,7 +51,7 @@
                             <div class="card-title">
                                 <h4>Goods Receipt</h4>
                                 <div class="card-count">
-                                    Total : <strong>{{coreService.currencyUnit}}{{GoodReceiptData[0].TotalAmount | number : "1.0-2"}}</strong>
+                                    Total : <strong>Rs.{{GoodReceiptData[0].TotalAmount | number : "1.0-2"}}</strong>
                                 </div>
                             </div>
                         </div>
@@ -69,10 +69,10 @@
                         </div>
                         <div class="card-right">
                             <div class="card-count">
-                                Cash : <strong>{{coreService.currencyUnit}}{{GoodReceiptData[1].TotalAmount | number : "1.0-2"}}</strong>
+                                Cash : <strong>Rs.{{GoodReceiptData[1].TotalAmount | number : "1.0-2"}}</strong>
                             </div>
                             <div class="card-count">
-                                Credit : <strong>{{coreService.currencyUnit}}{{GoodReceiptData[2].TotalAmount | number : "1.0-2"}}</strong>
+                                Credit : <strong>Rs.{{GoodReceiptData[2].TotalAmount | number : "1.0-2"}}</strong>
                             </div>
                         </div>
                     </div>
@@ -128,7 +128,7 @@
                             <div class="card-title">
                                 <h4>Stock</h4>
                                 <div class="card-count">
-                                    Total : <strong>{{coreService.currencyUnit}}{{StockData[0].TotalAmount | number : "1.0-2"}}</strong> <span class="badge badge-success">{{StockData[0].TotalUnit}}
+                                    Total : <strong>Rs.{{StockData[0].TotalAmount | number : "1.0-2"}}</strong> <span class="badge badge-success">{{StockData[0].TotalUnit}}
                                         Units</span>
                                 </div>
                             </div>

@@ -1,16 +1,15 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import { CoreService } from '../../core/shared/core.service';
-import { EmergencyPatientModel } from '../shared/emergency-patient.model';
-import EmergencyGridColumnSettings from '../shared/emergency-gridcol-settings';
-import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
-import { EmergencyBLService } from '../shared/emergency.bl.service';
-import { Patient } from '../../patients/shared/patient.model';
-import { SelectedPatForDischargeModel } from '../shared/selectedDischarge.model';
-import { PatientService } from '../../patients/shared/patient.service';
-import { VisitService } from '../../appointments/shared/visit.service';
-import * as moment from 'moment';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
+import * as moment from 'moment';
+import { VisitService } from '../../appointments/shared/visit.service';
+import { CoreService } from '../../core/shared/core.service';
+import { PatientService } from '../../patients/shared/patient.service';
+import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import EmergencyGridColumnSettings from '../shared/emergency-gridcol-settings';
+import { EmergencyPatientModel } from '../shared/emergency-patient.model';
+import { EmergencyBLService } from '../shared/emergency.bl.service';
+import { SelectedPatForDischargeModel } from '../shared/selectedDischarge.model';
 
 
 @Component({

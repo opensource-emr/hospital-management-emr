@@ -1,7 +1,7 @@
 import { Component, Input } from "@angular/core"
 import { CoreService } from "../../core/shared/core.service";
 import { MessageboxService } from "../messagebox/messagebox.service";
-
+import { GeneralFieldLabels } from "../DTOs/general-field-label.dto";
 @Component({
     selector: "print-header",
     templateUrl: "./print-header.html",
@@ -24,9 +24,12 @@ export class PrintHeaderComponent {
   public isMRReport : boolean = false;
   public isADTReport : boolean = false;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
 
   constructor(public coreService: CoreService,
     public msgBoxServ: MessageboxService) {
+      this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     // this.GetHeaderParameter();
   }
   ngOnInit(){

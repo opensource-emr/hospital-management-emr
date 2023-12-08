@@ -34,6 +34,7 @@ export class RequisitionItems {
   public RequisitionItemValidator: FormGroup = null;
   public RequisitionNo: number = 0;
   public IssueNo: number = null;
+  public DispatchNo: number = null;
   public MSSNO: string = null;
   public FirstWeekQty: string = null;
   public SecondWeekQty: string = null;

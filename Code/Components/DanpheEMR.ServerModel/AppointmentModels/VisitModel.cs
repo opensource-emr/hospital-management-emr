@@ -77,6 +77,7 @@ namespace DanpheEMR.ServerModel
 
         public decimal TicketCharge { get; set; }//sud:26Mar'23--For New BillingStructure.
         public int? SubSchemeId { get; set; }
+        public bool IsFreeVisit { get; set; }
 
     }
 }

@@ -1,6 +1,8 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output, Renderer2 } from "@angular/core";
 import * as moment from "moment";
+import { CoreService } from "../../../core/shared/core.service";
 import { SecurityService } from '../../../security/shared/security.service';
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
@@ -32,12 +34,20 @@ export class PHRMSupplierManageComponent {
     this.showSupplierAddPage = val;
   }
   loading: boolean = false;
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(public pharmacyBLService: PharmacyBLService,
+
+    public coreservice: CoreService,
     public changeDetector: ChangeDetectorRef,
     public securityService: SecurityService,
     public msgBoxServ: MessageboxService, public renderer2: Renderer2) {
-    this.supplierGridColumns = PHRMGridColumns.PHRMSupplierList;
+    // this.supplierGridColumns = PHRMGridColumns.PHRMSupplierList;
     this.getSupplierList();
+    this.supplierGridColumns = PHRMGridColumns.PHRMSupplierList;
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
+    this.supplierGridColumns[4].headerName = `${this.GeneralFieldLabel.PANNo}`;
+
   }
 
   ngOnInit() {

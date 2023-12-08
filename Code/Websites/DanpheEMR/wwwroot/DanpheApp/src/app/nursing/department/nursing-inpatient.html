@@ -20,7 +20,7 @@
 </style>
 <div class="danphe-tab-wrapper top-tab-header">
   <div class="row clearfix">
-    <div class="col-md-4 col-xs-2">
+    <div class="col-md-6 col-xs-4">
       <ul class="nav nav-tabs">
         <li role="presentation" class="" id="fav">
           <a class="btn btn-default" role="button" (click)="showFavorites()"><i class="fa fa-star"></i>My Patients</a>
@@ -29,7 +29,9 @@
             Patients</a></li>
         <li role="presentation" class="" id="consumption-list"><a class="btn btn-default" (click)="ShowPatientConsumptionList()">
             Consumptions</a></li>
-
+        <li role="presentation" class="" id="diet">
+          <a class="btn btn-default" (click)="ShowDietSheet()">Diet Sheet</a>
+        </li>
       </ul>
     </div>
 
@@ -105,7 +107,11 @@
     </danphe-grid>
   </div>
 </div>
-
+<div class="row">
+  <div class="col-md-12">
+    <diet-sheet *ngIf="showDietSheet"></diet-sheet>
+  </div>
+</div>
 <div class="row">
   <div *ngIf="showDocumentsDetails">
     <patient-upload-files [isShowUploadMode]="isShowUploadMode" [isShowListMode]="isShowListMode" [patientId]="patientId">

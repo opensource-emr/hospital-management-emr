@@ -1,11 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from "@angular/router";
+import { PageNotFound } from '../404-error/404-not-found.component';
+import { AuthGuardService } from '../security/shared/auth-guard.service';
 import { SettingsMainComponent } from './settings-main.component';
 import { TaxManageComponent } from "./tax/tax-manage.component";
-import { DynamicTemplateEditComponent } from '../core/dyn-templates/settings/dyn-template-edit.component';
-import { AuthGuardService } from '../security/shared/auth-guard.service';
-import { PageNotFound } from '../404-error/404-not-found.component';
-import { ListPrinterSettingsComponent } from './printers/list/list-printer-settings.component';
 
 
 @NgModule({
@@ -26,13 +24,14 @@ import { ListPrinterSettingsComponent } from './printers/list/list-printer-setti
           { path: 'GeolocationManage', loadChildren: "./geolocation/geolocation-settings.module#GeolocationSettingsModule", canActivate: [AuthGuardService] },
           { path: 'ClinicalManage', loadChildren: "./clinical/clinical-settings.module#ClinicalSettingsModule", canActivate: [AuthGuardService] },
           { path: 'TaxManage', component: TaxManageComponent, canActivate: [AuthGuardService] },
-          { path: 'DynamicTemplates', component: DynamicTemplateEditComponent },
+          // { path: 'DynamicTemplates', component: DynamicTemplateEditComponent }, replaced with new module 
+          { path: 'DynamicTemplates', loadChildren: "./dynamic-templates/dynamic-template.module#DynamicTemplateModule", canActivate: [AuthGuardService] },
           { path: 'EditCoreCFG', loadChildren: "./core/core-settings.module#CoreSettingsModule" },
           { path: 'ExtReferral', loadChildren: "./ext-referral/external-referral.module#ExternalReferralModule", canActivate: [AuthGuardService] },
           { path: 'Banks', loadChildren: "./banks/banks.module#BanksModule", canActivate: [AuthGuardService] },
           { path: 'Printers', loadChildren: "./printers/printer-settings.module#PrinterSettingModule", canActivate: [AuthGuardService] },
           { path: 'PrintExportConfiguration', loadChildren: "./print-export-configuration/print-export-configuration.module#PrintExportConfigurationModule", canActivate: [AuthGuardService] },
-          { path: 'PaymentModeSettings', loadChildren: "./payment-mode-settings/payment-mode.module#PaymentModeSettingsModule", canActivate: [AuthGuardService]},
+          { path: 'PaymentModeSettings', loadChildren: "./payment-mode-settings/payment-mode.module#PaymentModeSettingsModule", canActivate: [AuthGuardService] },
           { path: 'PriceCategory', loadChildren: "./price-cateogory/pricecategory.module#PriceCategoryModule", canActivate: [AuthGuardService] },
         ]
       },

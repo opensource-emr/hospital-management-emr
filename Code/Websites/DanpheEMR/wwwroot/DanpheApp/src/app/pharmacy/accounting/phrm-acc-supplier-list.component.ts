@@ -12,6 +12,7 @@ import { CommonFunctions } from "../../shared/common.functions"
 import * as moment from 'moment/moment';
 import { CoreService } from "../../core/shared/core.service";
 import { IGridFilterParameter } from "../../shared/danphe-grid/grid-filter-parameter.interface";
+import { GeneralFieldLabels } from "../../shared/DTOs/general-field-label.dto";
 
 @Component({
   templateUrl: "./phrm-acc-supplier-list.html"
@@ -53,6 +54,8 @@ export class PHRMSuppliersListComponent {
   goodsReceiptReturnItemList: Array<any> = null;
   showGRReturnItemsbyGRId: boolean = false;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(public coreService: CoreService,
     public pharmacyBLService: PharmacyBLService,
     public changeDetector: ChangeDetectorRef,
@@ -64,6 +67,7 @@ export class PHRMSuppliersListComponent {
     // this.GetAccountDetails();
     this.GetPharmacyBillingHeaderParameter()
     this.GetSupplierData();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
   //this function load all suppliers details
   GetSupplierData() {

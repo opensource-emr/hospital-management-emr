@@ -1,11 +1,13 @@
-import { Component, ChangeDetectorRef, Input, OnInit, Output, EventEmitter } from '@angular/core'
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { PHRMGoodsReceiptModel } from '../../shared/phrm-goods-receipt.model';
-import { Router } from '@angular/router'
-import { PharmacyService } from '../../shared/pharmacy.service'
-import { CoreService } from '../../../core/shared/core.service'
-import { PharmacyBLService } from '../../shared/pharmacy.bl.service'
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { CoreService } from '../../../core/shared/core.service';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { PharmacyBLService } from '../../shared/pharmacy.bl.service';
+import { PharmacyService } from '../../shared/pharmacy.service';
+import { PHRMGoodsReceiptModel } from '../../shared/phrm-goods-receipt.model';
+
 @Component({
       selector: "goods-receipt-view",
       templateUrl: "./phrm-goods-receipt-view.html",
@@ -32,6 +34,8 @@ export class PHRMGoodReceiptViewComponent implements OnInit {
       cancelForm = new FormGroup({ CancelRemarks: new FormControl('', Validators.required) });
       showConfirmationPopUp: boolean = false;
 
+      public GeneralFieldLabel = new GeneralFieldLabels();
+
       constructor(public coreService: CoreService,
             public pharmacyBLService: PharmacyBLService,
             public pharmacyService: PharmacyService,
@@ -42,6 +46,7 @@ export class PHRMGoodReceiptViewComponent implements OnInit {
             this.showItemLevelDiscount();
             this.showpacking();
             this.checkGRCustomization();
+            this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
       }
       ngOnInit(): void {
             this.GetGoodsReceiptDetail();

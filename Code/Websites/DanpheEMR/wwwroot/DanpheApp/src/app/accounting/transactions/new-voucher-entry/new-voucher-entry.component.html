@@ -52,7 +52,7 @@
 
                 <div class="col-md-3">
                     <div class="ac-check-wrapper">
-                        <div><b>Voucher Date:</b>
+                        <div><b>Voucher Date:</b> {{TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}} <br />
                             {{TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} (AD)</div>
                     </div>
                 </div>
@@ -171,7 +171,7 @@
                     <th style="width:20%"> Ledger (Main)</th>
                     <th style="width:10%" *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger>Code</th>
                     <th style="width:25%" *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger> Sub Ledger</th>
-                    <th style="width:10%"> Cost Center </th>
+                    <th style="width:10%" *ngIf=subLedgerAndCostCenterSetting.EnableCostCenter> Cost Center </th>
                     <th style="width:10%" *ngIf="paymentMode == paymentModeList.Bank"> Cheque Number </th>
                     <th style="width:10%" *ngIf="paymentMode == paymentModeList.Bank"> Cheque Date </th>
                     <th style="width:15%">Description</th>
@@ -195,7 +195,7 @@
                                placeholder="Select Ledger" display-property-name="LedgerName" [disabled]="voucherVerificationRequired"
                                value-property-name=null
                                match-formatted="true" min-char="1" [grid-sort]="'Code'"
-                               [list-formatter]="LedgerListFormatter" max-num-list="15" (focusout)="AssignExtraLedger()"
+                               [list-formatter]="LedgerListFormatter" max-num-list="15" (valueChanged)="AssignExtraLedger()"
                                id="extra_Ledger_for_PMTV_and_Receipt"
                                onclick="this.select()" />
                     </td>
@@ -214,11 +214,11 @@
                                [(ngModel)]="additionalPartyDetailForPaymentOrReceiptVoucher.selectedSubLedger"
                                placeholder="Select Sub-Ledger" display-property-name="SubLedgerName" [disabled]="voucherVerificationRequired"
                                [list-formatter]="SubLedgerListFormatter" max-num-list="15" id="extra_SubLedger_for_PMTV_and_Receipt"
-                               (keydown.enter)="ChangeFocus('id_extraTransactionItemForPaymentOrReceiptVoucher_costCenterId_voucherEntry');"
+                               (keydown.enter)="ChangeFocus( subLedgerAndCostCenterSetting.EnableCostCenter? 'id_extraTransactionItemForPaymentOrReceiptVoucher_costCenterId_voucherEntry':(paymentMode == paymentModeList.Bank? 'input_voucherEntry_chequeNumber' : 'extra_Narration_for_PMTV_and_Receipt'));"
                                (valueChanged)="AssignExtraSubLedger(false)"
                                onclick="this.select()" />
                     </td>
-                    <td>
+                    <td *ngIf=subLedgerAndCostCenterSetting.EnableCostCenter>
                         <select [(ngModel)]="extraTransactionItemForPaymentOrReceiptVoucher.CostCenterId"
                                 (keydown.enter)="ChangeFocus(paymentMode == paymentModeList.Bank ?'input_voucherEntry_chequeNumber' : 'extra_Narration_for_PMTV_and_Receipt')"
                                 id="id_extraTransactionItemForPaymentOrReceiptVoucher_costCenterId_voucherEntry">
@@ -258,7 +258,7 @@
             <th style="width:25%" *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger> Sub Ledger</th>
             <th style="width:5%"> Dr Amount </th>
             <th style="width:5%"> Cr Amount </th>
-            <th style="width:10%"> Cost Center </th>
+            <th style="width:10%" *ngIf=subLedgerAndCostCenterSetting.EnableCostCenter> Cost Center </th>
             <th style="width:15%">Description</th>
             <th style="width:1%"></th>
             <th style="width:1%"></th>
@@ -332,7 +332,8 @@
             <td>
                 <form [formGroup]="itm.TransactionItemValidator" *ngIf=itm.DrCr>
                     <input type="number" formControlName="Amount" id="Amount_{{i+1}}"
-                           (keydown.enter)="ChangeFocus('CostCenter_'+(i+1))" min="0" [(ngModel)]="itm.Amount"
+                           (keydown.enter)="ChangeFocus(subLedgerAndCostCenterSetting.EnableCostCenter?'CostCenter_'+(i+1):'Description_'+(i+1) )"
+                           min="0" [(ngModel)]="itm.Amount"
                            (focusout)="CalculateLedger()" name="amount" onfocus="this.select()" onwheel="this.blur();" />
                     <div class="color-red font-sm" *ngIf="itm.IsDirty('Amount')"
                          [hidden]="itm.IsValidCheck('Amount','invalidNumber')">Enter valid amount.</div>
@@ -341,13 +342,14 @@
             <td>
                 <form [formGroup]="itm.TransactionItemValidator" *ngIf=!itm.DrCr>
                     <input type="number" formControlName="Amount" id="Amount_{{i+1}}"
-                           (keydown.enter)="ChangeFocus('CostCenter_'+(i+1))" min="0" [(ngModel)]="itm.Amount"
+                           (keydown.enter)="ChangeFocus(subLedgerAndCostCenterSetting.EnableCostCenter? 'CostCenter_'+(i+1):'Description_'+(i+1) )"
+                           min="0" [(ngModel)]="itm.Amount"
                            (focusout)="CalculateLedger()" name="amount" onfocus="this.select()" onwheel="this.blur();" />
                     <div class="color-red font-sm" *ngIf="itm.IsDirty('Amount')"
                          [hidden]="itm.IsValidCheck('Amount','invalidNumber')">Enter valid amount.</div>
                 </form>
             </td>
-            <td>
+            <td *ngIf=subLedgerAndCostCenterSetting.EnableCostCenter>
                 <form [formGroup]="itm.TransactionItemValidator">
                     <select [(ngModel)]="itm.CostCenterId" id="CostCenter_{{ i+1 }}" (keydown.enter)="ChangeFocus('Description_'+(i+1))"
                             formControlName="CostCenter">

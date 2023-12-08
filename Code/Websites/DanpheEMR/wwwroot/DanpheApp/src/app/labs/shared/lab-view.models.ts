@@ -26,6 +26,7 @@ export class PatientLabSample {
   public SampleCreatedOn: string = null;
   public SampleCreatedBy: number = null;
   public LastSpecimenUsed: string = null;
+  public ExternalLabSampleStatus: string = "";
 
   public RunNumberType: string = "normal";
   public PrescriberName: string = null; // Dev : 16June'22 --Changed from ProviderName To PrescriberName
@@ -46,7 +47,7 @@ export class PatientLabSample {
   //public SampleCreatedOn: string = null;
 
   public IsOutsourceTest: boolean = false;//sud:22Aug'23--To display Outsource or not..
-
+  public DefaultOutsourceVendorId: number = 0;
 }
 export class LabTestSpecimen {
   public SpecimenId: number;
@@ -151,6 +152,7 @@ export class LabResult_TestVM {
   public BillingStatus: string = "";
   public VerifiedBy: number = null;
   public MaxResultGroup: number = 1;
+  public IsLISApplicable: boolean = false;
 }
 
 export class LabResult_TemplatesVM {

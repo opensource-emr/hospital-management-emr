@@ -55,20 +55,20 @@
                   abc@gmail.com</span>
               </div>
               <div class="form-group">
-                <label for="referrerName" class="control-label col-md-5">PAN Number<b>:</b></label>
+                <label for="referrerName" class="control-label col-md-5">{{GeneralFieldLabel.PANNo}}<b>:</b></label>
                 <div class="col-md-7">
                   <input class="form-control" type="text"
-                         onClick="this.select();" placeholder="PAN Number"
+                         onClick="this.select();" placeholder="{{GeneralFieldLabel.PANNo}}"
                          [(ngModel)]="externalRef.PANNumber"
                          [ngModelOptions]="{standalone: true}"
                          id="panNum" (keyup.enter)="SetFocusById('NMCNum')">
                 </div>
               </div>
               <div class="form-group">
-                <label for="NMCNumber" class="control-label col-md-5">NMC Number<b>:</b></label>
+                <label for="NMCNumber" class="control-label col-md-5">{{GeneralFieldLabel.NMCNo}}<b>:</b></label>
                 <div class="col-md-7">
                   <input class="form-control" type="text"
-                         onClick="this.select();" placeholder="NMC Number"
+                         onClick="this.select();" placeholder="{{GeneralFieldLabel.NMCNo}}"
                          [(ngModel)]="externalRef.NMCNumber"
                          [ngModelOptions]="{standalone: true}"
                          id="NMCNum" (keyup.enter)="SetFocusById('add')">

@@ -13,7 +13,8 @@ namespace DanpheEMR.Services.Inventory.DTO.RequisitionDispatch
         public string SourceStoreName { get; set; }
         public string RequisitionDate { get; set; }
         public string RequestedByName { get; set; }
-        public string IssueNo { get; set; }
+        public int? IssueNo { get; set; }
+        public int? DispatchNo { get; set; }
         public string DispatchedByName { get; set; }
         public string DispatchedDate { get; set; }
         public string ReceivedBy { get; set; }

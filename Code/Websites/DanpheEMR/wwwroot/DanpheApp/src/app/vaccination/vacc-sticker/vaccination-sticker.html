@@ -28,7 +28,8 @@
                 <span>{{stickerDetail.DepartmentName}}</span>
               </div>
               <span> Date: {{stickerDetail.VisitDateTime |
-                DanpheDateTime:'format':'YYYY-MM-DD'}}&nbsp;&nbsp; </span>
+                DanpheDateTime:'format':'YYYY-MM-DD'}}&nbsp;&nbsp;{{stickerDetail.VisitDateTime |
+                nepaliDate:'format':'YYYY-MM-DD'}}  </span>
 
               <div style="display: flex; justify-content:space-between;">
                 <span style="display:inline-block;">

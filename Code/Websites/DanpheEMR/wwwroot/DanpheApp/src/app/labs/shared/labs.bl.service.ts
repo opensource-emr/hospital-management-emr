@@ -1,26 +1,25 @@
-import { Injectable, Directive } from "@angular/core";
+import { Injectable } from "@angular/core";
 
-import { BillingDLService } from "../../billing/shared/billing.dl.service";
-import { LabsDLService } from "./labs.dl.service";
-import { CoreDLService } from "../../core/shared/core.dl.service";
-import { LabTestRequisition } from "./lab-requisition.model";
+import * as _ from "lodash";
+import * as moment from "moment/moment";
 import { BillItemRequisition } from "../../billing/shared/bill-item-requisition.model";
+import { BillingDLService } from "../../billing/shared/billing.dl.service";
+import { CoreDLService } from "../../core/shared/core.dl.service";
+import { SecurityService } from "../../security/shared/security.service";
 import {
-  PatientLabSample,
   LabTestSpecimenModel,
+  PatientLabSample,
 } from "../shared/lab-view.models";
 import { LabTestComponent } from "./lab-component.model";
-import { SecurityService } from "../../security/shared/security.service";
-import * as moment from "moment/moment";
-import * as _ from "lodash";
+import { LabTestRequisition } from "./lab-requisition.model";
+import { LabsDLService } from "./labs.dl.service";
 
-import { CommonFunctions } from "../../shared/common.functions";
-import { LabReport } from "./lab-report";
-import { LabReportVM } from "../reports/lab-report-vm";
-import { PatientsDLService } from "../../patients/shared/patients.dl.service";
 import { VisitDLService } from "../../appointments/shared/visit.dl.service";
+import { PatientsDLService } from "../../patients/shared/patients.dl.service";
+import { ExternalLabStatus_DTO } from "./DTOs/external-lab-sample-satatus.dto";
 import { InPatientLabTest } from "./InpatientLabTest";
 import { LabEmailModel } from "./lab-email.model";
+import { LabReport } from "./lab-report";
 //Note: mapping is done here by blservice, component will only do the .subscribe().
 @Injectable()
 export class LabsBLService {
@@ -338,8 +337,9 @@ export class LabsBLService {
     });
   }
 
-  public GetAllTestsForExternalLabs() {
-    return this.labDLService.GetAllTestsForExternalLabs().map((res) => {
+  public GetAllTestsForExternalLabs(labTestCSV: Array<number> = [], fromDate: string, toDate: string, patientName: string, hospitalNo: string, vendorId: number, externalLabStatus: string) {
+    const IdCSV = labTestCSV.join(',');
+    return this.labDLService.GetAllTestsForExternalLabs(IdCSV, fromDate, toDate, patientName, hospitalNo, vendorId, externalLabStatus).map((res) => {
       return res;
     });
   }
@@ -834,6 +834,28 @@ export class LabsBLService {
     return this.labDLService.GetLabNormalAbnormalDetails(testId).map((res) => {
       return res;
     })
+  }
+
+  GetOutsourceApplicableTests() {
+    return this.labDLService.GetOutsourceApplicableTests().map((res) => { return res });
+  }
+
+  AddMachineOrder(reqIds: Array<number>) {
+    return this.labDLService.AddMachineOrder(reqIds);
+  }
+
+  GetAllMachineResultByBarcodeNumber(barcodeNumber: number) {
+    return this.labDLService.GetAllMachineResultByBarcodeNumber(barcodeNumber).
+      map(res => { return res });
+  }
+
+  UpdateMachineDataSyncStatus(resultIds: Array<number>) {
+    return this.labDLService.UpdateMachineDataSyncStatus(resultIds).
+      map(res => { return res });
+  }
+  UpdateExternalLabStatus(externalLabDataStatus: ExternalLabStatus_DTO) {
+    return this.labDLService.UpdateExternalLabStatus(externalLabDataStatus).
+      map(res => { return res });
   }
 
 }

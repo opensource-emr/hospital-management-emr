@@ -17,6 +17,7 @@ import { EditBillItemDocPriceComponent } from './update-doc-price/update-item-do
 import { SettingsSharedModule } from '../settings-new/settings-shared.module';
 import { DanpheAutoCompleteModule } from '../shared/danphe-autocomplete';
 import { SharedModule } from '../shared/shared.module';
+import { BillEditProvisionalItemsComponent } from './bill-provisional/edit-items/bill-edit-provisional-items.component';
 import { BillPastTestListComponent } from './bill-transaction/billing-transaction-past-item.component';
 import { EditBillItemComponent } from './ip-billing/edit-item/edit-bill-item.component';
 import { PartialPaymentComponent } from './ip-billing/partial-payment/partial-payment.component';
@@ -70,7 +71,8 @@ import { WardBillItemRequestComponent } from './shared/ward-bill-item-request/wa
     SchemePriceCategorySelectComponent,
     BillAdditionalItemSelectComponent,
     BIL_Print_ProvisionalCancellationReceiptComponent,
-    OtherCurrencyCalculationComponent
+    OtherCurrencyCalculationComponent,
+    BillEditProvisionalItemsComponent
   ],
 
   exports: [
@@ -91,7 +93,8 @@ import { WardBillItemRequestComponent } from './shared/ward-bill-item-request/wa
     SchemePriceCategorySelectComponent,
     BillAdditionalItemSelectComponent,
     BIL_Print_ProvisionalCancellationReceiptComponent,
-    OtherCurrencyCalculationComponent
+    OtherCurrencyCalculationComponent,
+    BillEditProvisionalItemsComponent
   ]
 })
 export class BillingSharedModule {

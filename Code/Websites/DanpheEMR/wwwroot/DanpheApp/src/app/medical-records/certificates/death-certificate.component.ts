@@ -1,18 +1,16 @@
-import { Component, ChangeDetectorRef, Input, EventEmitter, Output } from '@angular/core'
-import { RouterOutlet, RouterModule, Router } from '@angular/router';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
+import { Router } from '@angular/router';
 //Security Service for Loading Child Route from Security Service
-import { SecurityService } from "../../security/shared/security.service";
+import { HttpClient } from '@angular/common/http';
 import * as moment from 'moment/moment';
-import * as _ from 'lodash';
+import { DeathDetails } from '../../adt/shared/death.detail.model';
+import { CoreService } from '../../core/shared/core.service';
+import { Employee } from '../../employee/shared/employee.model';
+import { SecurityService } from "../../security/shared/security.service";
+import { GeneralFieldLabels } from '../../shared/DTOs/general-field-label.dto';
+import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { MR_BLService } from '../shared/mr.bl.service';
-import { CoreService } from '../../core/shared/core.service';
-import { HttpClient } from '@angular/common/http';
-import { BabyBirthDetails } from '../../adt/shared/baby-birth-details.model';
-import MRGridColumnSettings from '../shared/Mr-gridcol.settings';
-import { Employee } from '../../employee/shared/employee.model';
-import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
-import { DeathDetails } from '../../adt/shared/death.detail.model';
 
 @Component({
   selector: 'death-certificate',
@@ -41,6 +39,7 @@ export class DeathCertificateComponent {
   public providerList: Array<Employee> = new Array<Employee>();
   public isFinalCertificate: boolean = false;
   public CertifiedSignatory: any = '';
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(
     public router: Router, public http: HttpClient,
@@ -48,7 +47,7 @@ export class DeathCertificateComponent {
     public securityService: SecurityService,
     public msgBoxServ: MessageboxService, public changeDetector: ChangeDetectorRef,
     public coreService: CoreService) {
-
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
   ngOnInit() {
     this.GetHospital();

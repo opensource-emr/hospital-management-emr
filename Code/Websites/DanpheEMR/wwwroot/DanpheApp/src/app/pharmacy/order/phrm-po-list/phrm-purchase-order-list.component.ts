@@ -15,6 +15,7 @@ import { PHRMPurchaseOrderItems } from "../../shared/phrm-purchase-order-items.m
 import { PHRMPurchaseOrder } from "../../shared/phrm-purchase-order.model";
 import { PHRMSupplierModel } from "../../shared/phrm-supplier.model";
 import { PharmacyPOService } from "../pharmacy-po.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 @Component({
     templateUrl: "./phrm-purchase-order-list.html",
     host: { '(window:keydown)': 'hotkeys($event)' }
@@ -55,6 +56,8 @@ export class PHRMPurchaseOrderListComponent {
     FinanceHeadVerificationDetails: PharmacyPurchaseOrderVerifierSignatoty_DTO;
     HospitalDirectorVerificationDetails: PharmacyPurchaseOrderVerifierSignatoty_DTO;
     CeoDeanVerificationDetails: PharmacyPurchaseOrderVerifierSignatoty_DTO;
+
+    public GeneralFieldLabel = new GeneralFieldLabels();
     constructor(public pharmacyBLService: PharmacyBLService,
         public pharmacyService: PharmacyService,
         public pharmacyPOService: PharmacyPOService,
@@ -68,6 +71,7 @@ export class PHRMPurchaseOrderListComponent {
         this.ShowReceiptInNepali();
         this.GetPharmacyHeaderParameter();
         this.GetSigningPanelConfiguration();
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
     ShowReceiptInNepali() {
         let receipt = this.coreService.Parameters.find(lang => lang.ParameterName == 'NepaliReceipt' && lang.ParameterGroupName == 'Common').ParameterValue;

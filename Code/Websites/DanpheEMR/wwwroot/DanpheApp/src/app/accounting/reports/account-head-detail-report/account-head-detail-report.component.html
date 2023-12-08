@@ -1,0 +1,95 @@
+<div>
+    <div class="caption custom-caption top-report-section  col-md-4">
+        <h3><i class="fa fa-book"></i>
+            <span class="caption-subject">Account Head Detail Report</span>
+        </h3>
+    </div>
+    <div class="col-md-8">
+        <div class="row">
+            <div class="checkbox-label" *ngIf="subLedgerAndCostCenterSetting.EnableSubLedger">
+                <input id="checkbox" type="checkbox" class="checkbox" [(ngModel)]="ShowSubLedger">
+                <label for="checkbox" style="margin: 0;">Show SubLedger</label>
+            </div>
+            <button class="btn green btn-success load-button" type="button" [disabled]="Loading" (click)="LoadData()">
+                <i class="fa fa-refresh"></i>
+                Load
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div class="row" *ngIf="ShowButton">
+    <div id="printpage">
+        <div style="width: 50%; margin: auto;">
+            <customer-header id="headerForPrint" [header-title]="'Account Head Detail Report'">
+            </customer-header>
+        </div>
+        <div class="table-responsive table-wrapper" id="print_accheaddetail">
+            <table class="table table-bordered table-hover table-condensed custom_table padLess_table" border="1" id="exportTable_trialbal">
+                <tbody>
+                    <ng-container *ngFor="let primaryGroup of Data">
+                        <tr>
+                            <td>
+                                <div class="indent-0" style=" text-align: right;">
+                                    {{ primaryGroup.ChartOfAccountName }}
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <div class="indent-5">
+                                    {{ primaryGroup.PrimaryGroupName }}
+                                </div>
+                            </td>
+                        </tr>
+                        <ng-container *ngFor="let coa of primaryGroup.COAList">
+                            <tr>
+                                <td>
+                                    <div class="indent-1" style="color: blue; font-weight: bold; padding-left: 0px;">
+                                        {{ coa.ChartOfAccountName }} ({{ coa.COACode }})
+                                    </div>
+                                </td>
+                            </tr>
+                            <ng-container *ngFor="let ledgerGroup of coa.LedgerGroupList">
+                                <tr>
+                                    <td>
+                                        <div class="indent-2" style="color: blue; padding-left: 80px;">{{ ledgerGroup.LedgerGroupName }}
+                                            ({{ledgerGroup.LedgerGroupCode}})
+                                        </div>
+                                    </td>
+                                </tr>
+                                <ng-container *ngFor="let ledger of ledgerGroup.LedgerList">
+                                    <tr>
+                                        <td>
+                                            <div class="indent-3" style="color: green;font-weight: bold; padding-left: 120px;">{{ ledger.LedgerName }}
+                                                ({{ledger.LedgerCode}}) </div>
+                                        </td>
+                                    </tr>
+                                    <ng-container *ngFor="let subLedger of ledger.SubLedgerList">
+                                        <tr *ngIf="ShowSubLedger">
+                                            <td>
+                                                <div *ngIf="ShowSubLedger" class="indent-4"
+                                                     style="color: green;  padding-left: 160px;">{{
+                                                    subLedger.SubLedgerName }}
+                                                    ({{subLedger.SubLedgerCode}})</div>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                </ng-container>
+                            </ng-container>
+                        </ng-container>
+                    </ng-container>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-12" style="padding-bottom: 18px;">
+    <div class="form-actions" *ngIf="ShowButton" style="margin-top: 15px;">
+        <button class="btn green btn-success hidden-print" (click)="Print('print_accheaddetail')" value="Print" title="print page">Print<i
+               class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+        <button class="btn green btn-success hidden-print" (click)="ExportToExcel('print_accheaddetail')"
+                value="" title="export to excel">Export<i class="fa fa-file-excel-o"
+               style="margin-left:10px;"></i></button>
+    </div>
+</div>

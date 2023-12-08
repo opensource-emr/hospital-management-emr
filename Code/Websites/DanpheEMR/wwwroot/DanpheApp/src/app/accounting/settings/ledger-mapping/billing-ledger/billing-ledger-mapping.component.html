@@ -57,9 +57,14 @@
             </div>
 
             <div class="col-md-5 page-bar" *ngIf="showMapForm">
-                <div class="row">
-                    <h4> <span><b>Ledger Mapping of Billing Service Item</b></span></h4>
-                    <div class="button-container"> <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                <div class="row" style="margin:10px;">
+                    <div class="col-md-11">
+                        <h4> <span><b>Ledger Mapping of Billing Service Item</b></span></h4>
+                    </div>
+                    <div class="col-md-1">
+                        <div class="button-container">
+                            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -136,7 +141,7 @@
                                 <i></i>&nbsp; Ledger Code: <b>{{newLedgerMapping.LedgerCode}}</b>
                             </span>
                         </div>
-                        <div class="row" style="margin-top: 15px;">
+                        <div class="row" style="margin-top: 15px;" *ngIf="subLedgerAndCostCenterSetting.EnableSubLedger">
                             <label class="control-label col-md-5">Select Sub Ledger<sup>*</sup><b>:</b> </label>
                             <div class="col-md-7">
                                 <div class="div-relative">
@@ -151,7 +156,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row" *ngIf="subLedgerAndCostCenterSetting.EnableSubLedger">
                             <span style="font-size: 12px;">
                                 <i></i>&nbsp; Sub-Ledger Code: <b>{{subLedgerCode}}</b>
                             </span>

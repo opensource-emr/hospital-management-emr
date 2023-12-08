@@ -7,7 +7,7 @@ import { PatientsDLService } from '../../patients/shared/patients.dl.service';
 import { AccBillingLedgerMapping_DTO } from '../settings/shared/dto/acc-billing-ledger-mapping.dto';
 import { ReverseTransactionModel } from "../settings/shared/reverse-transaction.model";
 import { AccountingInvoiceDataModel } from '../shared/accounting-invoice-data.model';
-import { Payment } from '../transactions/payment/account-payment.model';
+import { MakePayment_DTO } from '../transactions/shared/DTOs/make-payment-dto';
 import { VoucherVerify_DTO } from '../transactions/shared/DTOs/voucher-verify.DTO';
 import { LedgerModel } from "./../settings/shared/ledger.model";
 import { SuspenseAccountTransaction_DTO } from './DTOs/suspense-account-transaction.dto';
@@ -488,10 +488,10 @@ export class AccountingBLService {
     //END: PUT
 
     //post payment to accounting Payment table
-    public PostPayment(payment: Payment, transaction: TransactionModel) {
+    public PostPayment(makePayment: MakePayment_DTO) {
         //var temp: any = _.omit(fiscalYear, ['FiscalYearValidator']);
-        var temp = _.omit(payment, ['PaymentValidator']);
-        var newTxn: any = _.omit(transaction, ['TransactionValidator']);
+        var temp = _.omit(makePayment.Payment, ['PaymentValidator']);
+        var newTxn: any = _.omit(makePayment.Transaction, ['TransactionValidator']);
         var newTxnItems: any = newTxn.TransactionItems.map(item => {
             return _.omit(item, ['TransactionItemValidator', 'LedgerList', 'SelectedInvItems', 'SelectedCstCntItems']);
         });
@@ -510,9 +510,12 @@ export class AccountingBLService {
             }
         });
         newTxn.TransactionItems = newTxnItems;
-        var txnData = JSON.stringify(newTxn);
-        let data = JSON.stringify(temp);
-        return this.accountDlService.PostPayment(data, txnData).map(res => {
+        // let txnData = JSON.stringify(newTxn);
+        // let data = JSON.stringify(temp);
+        makePayment.Payment = temp;
+        makePayment.Transaction = newTxn;
+
+        return this.accountDlService.PostPayment(makePayment).map(res => {
             return res;
         });
     }

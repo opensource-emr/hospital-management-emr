@@ -67,7 +67,8 @@
 
               <div class="form-group">
                 <label class="control-label col-md-4" style="padding-left: 0px;
-                       padding-right: 20px;">Select Specimen(s)<b style="float: right">:</b></label>
+                       padding-right: 20px;">Select Specimen(s)<sup
+                       class="color-red">*</sup><b style="float: right">:</b></label>
                 <div class="col-md-8" style="padding-right:0px;">
                   <danphe-multiselect *ngIf="specimens.length > 0" [ddl-data]="specimens" [pre-selected]="preSelectedSpecimens"
                                       [placeholder-text]="'--Select Specimens --'" [value-property-name]="'SpecimenId'"
@@ -89,6 +90,14 @@
                           <input id="SmsApplicable" [(ngModel)]="labTest.SmsApplicable" name="SmsApplicable" type="checkbox"
                                  (change)="callChange()" [ngModelOptions]="{standalone: true}" />
                           <span></span>Is SMS Applicable?
+                        </label>
+                      </div>
+
+                      <div class="col-md-4">
+                        <label class="mt-checkbox mt-checkbox-outline">
+                          <input id="id_checkbox_isLisApplicable" [(ngModel)]="labTest.IsLISApplicable" name="IsLISApplicable" type="checkbox"
+                                 [ngModelOptions]="{standalone: true}" />
+                          <span></span>Is LIS Applicable?
                         </label>
                       </div>
 
@@ -137,6 +146,19 @@
                       </div>
                     </div>
                   </div>
+                  <div class="col-md-12" *ngIf="labTest.IsOutsourceTest">
+                    <div class="form-group">
+                      <div class="row">
+                        <label for="negResultTxt" class="control-label col-md-4">Default Outsource Vendor <sup
+                               class="color-red">*</sup><b>:</b></label>
+                        <div class="col-md-8">
+                          <select [(ngModel)]="labTest.DefaultOutsourceVendorId" class="form-control" [ngModelOptions]="{standalone: true}">
+                            <option *ngFor="let vendor of ExternalVendorList" [ngValue]=vendor.LabVendorId> {{ vendor.VendorName }}</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -158,7 +180,7 @@
                          class="color-red">*</sup><b>:</b></label>
                   <div class="col-md-8">
                     <input id="reportTemplateId" class="form-control" danphe-auto-complete
-                           [ngModelOptions]="{standalone: true}" [ngClass]="checkProvider==true ? 'bg-on' : 'bg-off'"
+                           [ngModelOptions]="{standalone: true}"
                            [(ngModel)]="selectedReportTemplate" [list-formatter]="reportListFormatter"
                            [source]="labReportList" placeholder="Select Report Template Short Name"
                            display-property-name="ReportTemplateName" (focusout)="AssignSelectedTemplate()"
@@ -173,7 +195,7 @@
                          class="color-red">*</sup><b>:</b></label>
                   <div class="col-md-8">
                     <input class="form-control" danphe-auto-complete [ngModelOptions]="{standalone: true}"
-                           [ngClass]="checkProvider==true ? 'bg-on' : 'bg-off'" [(ngModel)]="selectedDepartment"
+                           [(ngModel)]="selectedDepartment"
                            [list-formatter]="myListFormatter" [source]="serviceDepartmentList"
                            placeholder="Select Service Department Name" display-property-name="ServiceDepartmentName"
                            value-property-name="null" id="serviceDept" max-num-list="10" onClick="this.select();" />

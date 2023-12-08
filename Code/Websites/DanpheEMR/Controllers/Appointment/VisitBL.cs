@@ -23,6 +23,9 @@ using DanpheEMR.Utilities;
 using Newtonsoft.Json.Linq;
 using DanpheEMR.ServerModel.BillingModels;
 using DanpheEMR.Services.Visits.DTO;
+using DanpheEMR.Controllers.Billing;
+using DanpheEMR.Services.SSF.DTO;
+using DanpheEMR.Security;
 
 namespace DanpheEMR.Controllers
 {
@@ -536,7 +539,7 @@ namespace DanpheEMR.Controllers
             return patientVisitId;
         }
 
-        public static void SavePatientScheme(VisitDbContext visitDbContext, QuickVisitVM quickVisitVM, int currentUserId)
+        public static void SavePatientScheme(VisitDbContext visitDbContext, QuickVisitVM quickVisitVM, RbacUser currentUser, bool realTimeSSFClaimBooking, SSFDbContext _ssfDbContext)
         {
             var systemDefaultScheme = visitDbContext.BillingSchemes.FirstOrDefault(a => a.IsSystemDefault == true);
 
@@ -556,15 +559,15 @@ namespace DanpheEMR.Controllers
                     patientScheme.PolicyHolderEmployerName = patientSchemeFromClient.PolicyHolderEmployerName;
                     if (scheme.IsOpCreditLimited)
                     {
-                        patientScheme.OpCreditLimit = patientScheme.OpCreditLimit - (decimal)quickVisitVM.BillingTransaction.TotalAmount;
+                        patientScheme.OpCreditLimit = patientSchemeFromClient.OpCreditLimit - (decimal)quickVisitVM.BillingTransaction.TotalAmount;
                     }
                     if (scheme.IsGeneralCreditLimited)
                     {
-                        patientScheme.GeneralCreditLimit = patientScheme.GeneralCreditLimit - (decimal)quickVisitVM.BillingTransaction.TotalAmount;
+                        patientScheme.GeneralCreditLimit = patientSchemeFromClient.GeneralCreditLimit - (decimal)quickVisitVM.BillingTransaction.TotalAmount;
                     }
                     patientScheme.LatestPatientVisitId = quickVisitVM.Visit.PatientVisitId;
                     patientScheme.ModifiedOn = DateTime.Now;
-                    patientScheme.ModifiedBy = currentUserId;
+                    patientScheme.ModifiedBy = currentUser.EmployeeId;
 
                     visitDbContext.Entry(patientScheme).State = EntityState.Modified;
 
@@ -596,13 +599,34 @@ namespace DanpheEMR.Controllers
                     patientScheme.LatestPatientVisitId = quickVisitVM.Visit.PatientVisitId;
                     patientScheme.SchemeId = quickVisitVM.Visit.SchemeId;
                     patientScheme.CreatedOn = DateTime.Now;
-                    patientScheme.CreatedBy = currentUserId;
+                    patientScheme.CreatedBy = currentUser.EmployeeId;
                     patientScheme.IsActive = true;
                     patientScheme.LatestClaimCode = quickVisitVM.Visit.ClaimCode;
                     patientScheme.SubSchemeId = patientSchemeFromClient.SubSchemeId;
 
                     visitDbContext.PatientSchemeMaps.Add(patientScheme);
                     visitDbContext.SaveChanges();
+                }
+
+                //Send to SSF Server for Real time ClaimBooking.
+                var patientSchemes = visitDbContext.PatientSchemeMaps.Where(a => a.SchemeId == quickVisitVM.Visit.SchemeId && a.PatientId == quickVisitVM.Visit.PatientId).FirstOrDefault();
+                if (patientSchemes != null)
+                {
+                    var ssfPriceCategory = visitDbContext.PriceCategories.Where(a => a.PriceCategoryId == quickVisitVM.Visit.PriceCategoryId).FirstOrDefault();
+                    if (ssfPriceCategory != null && ssfPriceCategory.PriceCategoryName.ToLower() == "ssf" && realTimeSSFClaimBooking)
+                    {
+                        //making parallel thread call (asynchronous) to post to SSF Server. so that it won't stop the normal BillingFlow.
+                        var billObj = new SSF_ClaimBookingBillDetail_DTO()
+                        {
+                            InvoiceNoFormatted = $"BL{quickVisitVM.BillingTransaction.InvoiceNo}",
+                            TotalAmount = (decimal)quickVisitVM.BillingTransaction.TotalAmount,
+                            ClaimCode = (long)quickVisitVM.BillingTransaction.ClaimCode
+                        };
+
+                        SSF_ClaimBookingService_DTO claimBooking = SSF_ClaimBookingService_DTO.GetMappedToBookClaim(billObj, patientSchemes);
+
+                        Task.Run(() => BillingBL.SyncToSSFServer(claimBooking, "billing", _ssfDbContext, patientSchemes, currentUser));
+                    }
                 }
             }
         }

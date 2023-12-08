@@ -32,7 +32,8 @@ namespace DanpheEMR.DalLayer
         public DbSet<ItemGroupDistribution> ItemGroupDistribution { get; set; }
         public DbSet<EmployeeIncentiveInfo> EmployeeIncentiveInfo { get; set; }
 
-        public DbSet<BillServiceItemModel> BillItemPrice { get; set; }
+        public DbSet<BillServiceItemModel> ServiceItems { get; set; }
+        public DbSet<ServiceDepartmentModel> ServiceDepartments { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -52,6 +53,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<EmployeeIncentiveInfo>().ToTable("INCTV_EmployeeIncentiveInfo");
 
             modelBuilder.Entity<BillServiceItemModel>().ToTable("BIL_MST_ServiceItem");
+            modelBuilder.Entity<ServiceDepartmentModel>().ToTable("BIL_MST_ServiceDepartment");
         }
     }
 }

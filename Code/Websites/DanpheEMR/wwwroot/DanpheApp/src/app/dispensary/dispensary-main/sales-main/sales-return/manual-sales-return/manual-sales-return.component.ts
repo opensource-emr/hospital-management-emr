@@ -2,6 +2,7 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import * as moment from 'moment';
 import { Observable } from 'rxjs';
+import { CoreService } from '../../../../../core/shared/core.service';
 import { PharmacyCounter } from '../../../../../pharmacy/shared/pharmacy-counter.model';
 import { PharmacyReceiptModel } from '../../../../../pharmacy/shared/pharmacy-receipt.model';
 import { PharmacyBLService } from '../../../../../pharmacy/shared/pharmacy.bl.service';
@@ -9,6 +10,7 @@ import { PHRMInvoiceReturnItemsModel } from '../../../../../pharmacy/shared/phrm
 import { PHRMInvoiceReturnModel } from '../../../../../pharmacy/shared/phrm-invoice-return.model ';
 import { PHRMStoreModel } from '../../../../../pharmacy/shared/phrm-store.model';
 import { SecurityService } from '../../../../../security/shared/security.service';
+import { GeneralFieldLabels } from '../../../../../shared/DTOs/general-field-label.dto';
 import { MessageboxService } from '../../../../../shared/messagebox/messagebox.service';
 import { ENUM_BillPaymentMode, ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from '../../../../../shared/shared-enums';
 import { DispensaryService } from '../../../../shared/dispensary.service';
@@ -32,7 +34,13 @@ export class ManualSalesReturnComponent implements OnInit {
   @Output('call-back-close') callBackClose: EventEmitter<any> = new EventEmitter();
   isCurrentDispensaryInsurance: boolean;
   InvoiceReturnId: number = null;
-  constructor(private _dispensaryService: DispensaryService, public pharmacyBLService: PharmacyBLService, private _securityService: SecurityService, private _msgBox: MessageboxService) {
+
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
+  constructor(public coreService: CoreService, private _dispensaryService: DispensaryService, public pharmacyBLService: PharmacyBLService, private _securityService: SecurityService, private _msgBox: MessageboxService) {
+
+
     this.getItemList();
     this.currentCounter = this._securityService.getPHRMLoggedInCounter();
     this.currentActiveDispensary = this._dispensaryService.activeDispensary;
@@ -44,8 +52,9 @@ export class ManualSalesReturnComponent implements OnInit {
     this.salesReturn.PaymentMode = this.isCurrentDispensaryInsurance ? 'credit' : 'cash';
     this.salesReturn.InvoiceReturnValidator.addControl('Patient', new FormControl('', [Validators.required, this.registeredPatientValdiator]));
     this.salesReturn.InvoiceReturnValidator.addControl('ReferenceInvoiceNo', new FormControl('', Validators.required));
-    this.salesReturn.InvoiceReturnValidator.get('Remark').setValidators([Validators.required, Validators.minLength(5), this.noTextRemarksValidator])
+    this.salesReturn.InvoiceReturnValidator.get('Remark').setValidators([Validators.required, Validators.minLength(5), this.noTextRemarksValidator]);
     this.addRow();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
 
   ngOnInit() {
@@ -68,7 +77,7 @@ export class ManualSalesReturnComponent implements OnInit {
 
     return this.pharmacyBLService.GetPatients(keyword, this.isCurrentDispensaryInsurance);
 
-  }
+  };
   // Form Action Functions
   deleteRow(index: number) {
     this.salesReturn.InvoiceReturnItems.splice(index, 1);
@@ -101,7 +110,7 @@ export class ManualSalesReturnComponent implements OnInit {
         nextEl.focus();
         clearTimeout(Timer);
       }
-    }, focusDelayInMs)
+    }, focusDelayInMs);
   }
 
   // Event Listeners
@@ -138,7 +147,7 @@ export class ManualSalesReturnComponent implements OnInit {
           this._msgBox.showMessage("Notice-Message", ["No Batches Available for this item."]);
           this.allowAddNewBatch(index);
         }
-      })
+      });
     }
     else {
       selectedItemRow.availableBatches = [];
@@ -181,7 +190,7 @@ export class ManualSalesReturnComponent implements OnInit {
     selectedItemRow.Quantity = selectedItemRow.ReturnedQty;
     selectedItemRow.SubTotal = selectedItemRow.ReturnedQty * selectedItemRow.SalePrice;
     selectedItemRow.TotalAmount = selectedItemRow.SubTotal;
-    this.calculation()
+    this.calculation();
   }
   onPressedEnterKeyInDrugName(index: number) {
     let selectedItemRow = this.salesReturn.InvoiceReturnItems[index];
@@ -226,7 +235,7 @@ export class ManualSalesReturnComponent implements OnInit {
     this.salesReturn.InvoiceReturnItems.forEach(item => {
       item.InvoiceItemsReturnValidator.updateValueAndValidity();
       item.CreatedOn = moment().format('YYYY-MM-DD');
-    })
+    });
     let formValidity = this.salesReturn.InvoiceReturnValidator.valid && (this.salesReturn.InvoiceReturnItems.every(a => a.InvoiceItemsReturnValidator.valid));
     if (formValidity) {
       this.isRequestLoading = true;
@@ -329,20 +338,20 @@ export class ManualSalesReturnComponent implements OnInit {
   }
 
   // Custom Validators
-  registeredPatientValdiator(control: FormControl): { [key: string]: boolean } {
+  registeredPatientValdiator(control: FormControl): { [key: string]: boolean; } {
     if (typeof (control.value) == "object" && (control.value.PatientId > 0 || control.value.PatientId == -1))
       return;
     else {
       return { 'notRegisteredPatient': true };
     }
   }
-  registeredDrugValidator(control: FormControl): { [key: string]: boolean } {
+  registeredDrugValidator(control: FormControl): { [key: string]: boolean; } {
     if (typeof (control.value) == "object" && control.value.ItemId > 0)
       return;
     else
       return { 'notRegisteredDrug': true };
   }
-  noTextRemarksValidator(control: FormControl): { [key: string]: boolean } {
+  noTextRemarksValidator(control: FormControl): { [key: string]: boolean; } {
     if (control.value.trim() != "")
       return;
     else

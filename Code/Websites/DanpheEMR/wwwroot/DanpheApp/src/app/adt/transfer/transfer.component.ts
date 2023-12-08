@@ -3,6 +3,7 @@ import { FormControl, Validators } from "@angular/forms";
 import * as moment from "moment/moment";
 import { VisitBLService } from "../../appointments/shared/visit.bl.service";
 import { VisitService } from "../../appointments/shared/visit.service";
+import { BillingCounter } from "../../billing/shared/billing-counter.model";
 import { BillingTransactionItem } from "../../billing/shared/billing-transaction-item.model";
 import { CoreService } from "../../core/shared/core.service";
 import { SecurityService } from "../../security/shared/security.service";
@@ -11,6 +12,7 @@ import { NepaliCalendarService } from "../../shared/calendar/np/nepali-calendar.
 import { NepaliDate } from "../../shared/calendar/np/nepali-dates";
 import { DanpheHTTPResponse } from "../../shared/common-models";
 import { CommonFunctions } from "../../shared/common.functions";
+import { DanpheCache, MasterType } from "../../shared/danphe-cache-service-utility/cache-services";
 import { MessageboxService } from "../../shared/messagebox/messagebox.service";
 import {
   ENUM_BillingStatus,
@@ -124,6 +126,8 @@ export class TransferComponent {
   public AdtAutoBillingItems = new Array<AdtAutoBillingItem_DTO>();
   public AdtBedFeatureSchemePriceCategoryMap = new Array<AdtBedFeatureSchemePriceCategoryMap_DTO>();
   public OriginalBedFeatureList = new Array<BedFeature>();
+  counter: BillingCounter = new BillingCounter();
+
 
   constructor(
     public admissionBLService: ADT_BLService,
@@ -174,7 +178,6 @@ export class TransferComponent {
 
     this.GetRequestingDepartmentByVisitId();
   }
-
   public SchemeName: string = "";
   public PriceCategoryName: string = "";
   GetAdmissionSchemePriceCategoryInfo(patientVisitId: number) {
@@ -695,7 +698,7 @@ export class TransferComponent {
       bilItm.NonTaxableAmount = CommonFunctions.parseAmount(bilItm.SubTotal);
       bilItm.TotalAmount = CommonFunctions.parseAmount(bilItm.SubTotal);
       bilItm.BillStatus = ENUM_BillingStatus.provisional; // "provisional";
-      bilItm.CounterId = this.securityService.getLoggedInCounter().CounterId;
+      bilItm.CounterId = this.securityService.getLoggedInCounter().CounterId > 0 ? this.securityService.getLoggedInCounter().CounterId : this.LoadCounter();
       bilItm.CounterDay = moment().format("YYYY-MM-DD");
       bilItm.BillingType = ENUM_BillingType.inpatient; // "inpatient";
       bilItm.ProcedureCode = bedData.ProcedureCode;
@@ -707,7 +710,6 @@ export class TransferComponent {
       bilItm.ItemId = bilItm.IntegrationItemId = bedData.IntegrationItemId;
       bilItm.IntegrationItemId = bilItm.IntegrationItemId = bedData.IntegrationItemId;
       bilItm.PriceCategoryId = this.SchemePriceCategoryFromVisit.PriceCategoryId;
-      bilItm.CounterId = this.securityService.getLoggedInCounter().CounterId;
       this.bedChargeItemInfo = bilItm;
     }
   }
@@ -815,5 +817,12 @@ export class TransferComponent {
       }
       clearTimeout(timer);
     }, waitingTimeinMS);
+  }
+  public LoadCounter(): number {
+    let allCounters: Array<BillingCounter>;
+    allCounters = DanpheCache.GetData(MasterType.BillingCounter, null);
+    this.counter = allCounters.find(c => c.CounterType == "NURSING");
+    if (this.counter && this.counter.CounterId)
+      return this.counter.CounterId;
   }
 }

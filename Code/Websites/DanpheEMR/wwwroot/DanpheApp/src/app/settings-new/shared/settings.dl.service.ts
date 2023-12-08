@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AdtBedFeatureSchemePriceCategoryMap_DTO } from '../../adt/shared/DTOs/adt-bedfeature-scheme-pricecategory-map.dto';
 import { BillingPackages_DTO } from '../../billing/shared/dto/billing-packages.dto';
+import { IntakeOutputParameterListModel } from '../../clinical/shared/intake-output-parameterlist.model';
 import { DanpheHTTPResponse } from "../../shared/common-models";
 import { SchemeVsPriceCategoryModel } from '../billing/map-scheme-and-pricecategory/shared/MapSchemeVsPriceCategory.model';
 import { MinimumDepositAmount_DTO } from './DTOs/minimum-deposit-amount.dto';
@@ -784,7 +785,7 @@ export class SettingsDLService {
     return this.http.get<DanpheHTTPResponse>(`/api/BillSettings/BillingSubSchemesBySchemeId?SchemeId=${SchemeId}`);
   }
   public GetDepositHead() {
-    return this.http.get<DanpheHTTPResponse>("/api/BillingDeposit/GetDepositHead", this.options);
+    return this.http.get<DanpheHTTPResponse>("/api/BillingDeposit/AllDepositHeads", this.options);
   }
   public SaveMinimumDepositAmount(MinimumDepositAmount) {
     return this.http.post<DanpheHTTPResponse>("/api/ADTSettings/MinimumDepositSetting", MinimumDepositAmount, this.jsonOptions);
@@ -797,5 +798,60 @@ export class SettingsDLService {
   }
   ActivateDeactivateSettingDepositAmount(AdtDepositSettingId: number) {
     return this.http.put<DanpheHTTPResponse>(`/api/ADTSettings/ActivateDeactivateMinimumDepositSetting?AdtDepositSettingId=${AdtDepositSettingId}`, this.jsonOptions);
+  }
+  public GetTemplateTypeList() {
+    return this.http.get<DanpheHTTPResponse>("/api/DynamicTemplate/TemplateTypes");
+  }
+  public GetTemplateList() {
+    return this.http.get<DanpheHTTPResponse>("/api/DynamicTemplate/Templates");
+  }
+  public PutTemplateSettings(templateId) {
+    return this.http.put<DanpheHTTPResponse>(`/api/DynamicTemplate/ActivateDeactivate?templateId=${templateId}`, this.options);
+  }
+  public GetFieldMasterList(templateTypeId: number = null) {
+    return this.http.get<DanpheHTTPResponse>(`/api/DynamicTemplate/FieldMaster?templateTypeId=${templateTypeId}`);
+  }
+  public GetTemplateType() {
+    return this.http.get<DanpheHTTPResponse>("/api/DynamicTemplate/TemplateTypes");
+  }
+  AddNewTemplate(TemplateData) {
+    let data = JSON.stringify(TemplateData);
+    return this.http.post<DanpheHTTPResponse>("/api/DynamicTemplate/AddNewTemplate", data, this.jsonOptions);
+  }
+  public PutDynTemplate(dynTemplate) {
+    try {
+      let data = JSON.stringify(dynTemplate);
+      return this.http.put<DanpheHTTPResponse>("/api/DynamicTemplate/UpdateDynamicTemplate", data, this.options);
+    } catch (exception) {
+      throw exception;
+    }
+  }
+  public GetDynTemplateDataById(templateId: number) {
+    return this.http.get<DanpheHTTPResponse>(`/api/DynamicTemplate/GetSelectedTemplateData?templateId=${templateId}`);
+  }
+  public GetFieldMasterByTemplateId(templateId: number) {
+    return this.http.get<DanpheHTTPResponse>(`/api/DynamicTemplate/GetFieldMasterByTemplateId?templateId=${templateId}`);
+  }
+  AddUpdateFieldMapping(selectedFields) {
+    let data = JSON.stringify(selectedFields);
+    return this.http.post<DanpheHTTPResponse>("/api/DynamicTemplate/AddUpdateFieldMapping", data, this.jsonOptions);
+  }
+  public GetIntakeOutputTypeList() {
+    return this.http.get<any>("/api/Settings/IntakeOutputType", this.options);
+  }
+  public PostIntakeOutputVariable(data: IntakeOutputParameterListModel) {
+    let value = JSON.stringify(data);
+    return this.http.post<any>("/api/Settings/PostIntakeOutputVariable", value, this.jsonOptions)
+  }
+  public GetIntakeOutputTypeListForGrid() {
+    return this.http.get<any>("/api/Settings/IntakeOutputTypeForGrid", this.options);
+  }
+  public PutActivateDeactivateVariableStatus(selectedIntakeOutputData) {
+    let intakeOutputVariable = JSON.stringify(selectedIntakeOutputData);
+    return this.http.put<any>("/api/Settings/activate-deactivate-intakeoutput-variables", intakeOutputVariable, this.jsonOptions);
+  }
+  public PutIntakeOutputVariable(data: IntakeOutputParameterListModel) {
+    let value = JSON.stringify(data);
+    return this.http.put<any>("/api/Settings/UpdateIntakeOutputVariable", value, this.jsonOptions)
   }
 }

@@ -40,4 +40,6 @@ export class RegistrationScheme_DTO {
   public HasSubScheme: boolean = false;
   public SubSchemes = new Array<BillingSubScheme_DTO>();
   public SubSchemeId: number = null;
+  public IsMemberNumberCompulsory: boolean = false;
+  public IsPatientEligibleForService: boolean = true;
 }

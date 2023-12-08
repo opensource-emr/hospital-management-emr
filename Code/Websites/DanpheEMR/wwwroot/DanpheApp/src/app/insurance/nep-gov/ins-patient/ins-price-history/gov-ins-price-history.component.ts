@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, Renderer2 } from "@angular/core
 import { CoreService } from "../../../../core/shared/core.service";
 import { Patient } from "../../../../patients/shared/patient.model";
 import { PatientService } from "../../../../patients/shared/patient.service";
+import { GeneralFieldLabels } from "../../../../shared/DTOs/general-field-label.dto";
 import { MessageboxService } from "../../../../shared/messagebox/messagebox.service";
 import { GovInsuranceBalanceAmountHistory } from "../../shared/ins-insurance-balance-amount-history.model";
 import { GovInsuranceService } from "../../shared/ins-service";
@@ -24,6 +25,8 @@ export class GovInsUpdateBalanceHistoryComponent {
   // public patInfo: any;
   public showBalanceHistoryPage: boolean = false;
   public Balhistory: GovInsuranceBalanceAmountHistory = new GovInsuranceBalanceAmountHistory();
+  // public nhifNumber: string = "";
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(
     public patientService: PatientService,
@@ -31,6 +34,14 @@ export class GovInsUpdateBalanceHistoryComponent {
     public insuranceBlService: GovInsuranceBlService,
     public insuranceService: GovInsuranceService,
     public renderer: Renderer2, public coreService: CoreService) {
+
+    /*var nhifNumber = JSON.parse
+      (coreService.Parameters.find(p => p.ParameterGroupName == "NSHINumber" && p.ParameterName == "NSHILable").ParameterValue);
+    if (nhifNumber) {
+      this.nhifNumber = nhifNumber.NSHINo;
+    }
+*/
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
 
     this.GetInsBalanceHistory();
   }
@@ -51,7 +62,7 @@ export class GovInsUpdateBalanceHistoryComponent {
   CallBackBalanceHistory(res): void {
     if (res.Status == "OK" && res.Results != null) {
       this.showBalanceHistoryPage = true;
-      this.Balhistory = res.Results
+      this.Balhistory = res.Results;
     } else {
       this.msgBoxServ.showMessage("error", ['There is no balance history found, Please try again']);
     }

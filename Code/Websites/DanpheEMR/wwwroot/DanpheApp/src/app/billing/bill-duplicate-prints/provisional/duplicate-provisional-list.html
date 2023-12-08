@@ -17,7 +17,9 @@
         <div class="modelbox-div clearfix" style="padding: 20px;">
           <a class="btn btn-danger del-btn" (click)="CloseProvisionalSlip()">X</a>
           <div>
-            <bil-print-provisional-slip *ngIf="showReceipt" [PatientId]="currentData.PatientId" [schemeId]="currentData.SchemeId">
+            <bil-print-provisional-slip *ngIf="showReceipt" [PatientId]="currentData.PatientId" [ProvFiscalYrId]="this.ProvisionalFiscalYearId"
+                                        [ProvReceiptNo]="ProvisionalReceiptNumber"
+                                        [schemeId]="currentData.SchemeId">
             </bil-print-provisional-slip>
           </div>
         </div>

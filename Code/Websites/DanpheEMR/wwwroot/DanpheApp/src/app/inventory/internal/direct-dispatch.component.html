@@ -48,7 +48,8 @@
         </div>
         <ng-template #DefaultDate>
           <div style="font-size: 12px; padding-top:6px;">
-            {{dispatchDate}}
+            {{dispatchDate}} A.D.
+            {{dispatchDate | nepaliDate:'format':'YYYY-MM-DD'}} 
           </div>
         </ng-template>
       </div>
@@ -196,3 +197,6 @@
   <input type="button" class="btn btn-danger" [disabled]="loading" (click)="discardChanges()" value="Discard Changes">
   <span></span>
 </div>
+<dispatch-receipt-details *ngIf="showDispatchDetailsPopup" (call-back-dispatch-detail-popup-close)="CallBackDispatchDetailsPopUpClose()">
+
+</dispatch-receipt-details>

@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { LabVendorsModel } from '../vendors-settings/lab-vendors.model';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { ENUM_DanpheHTTPResponseText, ENUM_MessageBox_Status } from '../../../shared/shared-enums';
 import { LabsBLService } from '../../shared/labs.bl.service';
+import { LabVendorsModel } from '../vendors-settings/lab-vendors.model';
 
 
 @Component({
@@ -26,55 +27,45 @@ export class VendorSelectComponent {
     constructor(private labsBlService: LabsBLService,
         private msgBoxService: MessageboxService) {
         this.LoadAllVendors();
-
     }
 
-  ngOnInit() {
+    ngOnInit() {
 
     }
 
     LoadAllVendors() {
         this.labsBlService.GetLabVendors()
             .subscribe((res: DanpheHTTPResponse) => {
-                if (res.Status == "OK") {
-                    this.vendorList = res.Results;
-
-                    let defaultVendor = new LabVendorsModel();
-                    defaultVendor.VendorName = "--Select--";
-                    defaultVendor.LabVendorId = 0;
-                    this.vendorList.unshift(defaultVendor);
-
-
+                if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
+                    if (res.Results && res.Results.length > 0) {
+                        let vendors = res.Results;
+                        this.vendorList = vendors.filter(vendor => vendor.IsExternal === true);
+                        this.selectedVendorId = this.vendorList[0].LabVendorId;
+                    }
                 }
                 else {
-                    this.msgBoxService.showMessage("error", ["Couldn't Load External Vendors."]);
+                    this.msgBoxService.showMessage(ENUM_MessageBox_Status.Error, ["Couldn't Load External Vendors."]);
                 }
-
             });
-
     }
 
     UpdateVendorForRequisitions() {
         //write code to save ResultingVendorId of selected Requisitions.
         let requisitionIdList = this.reqIdList;
-        if(this.selectedVendorId){
-            this.labsBlService.UpdateVendorToLabTest(requisitionIdList,this.selectedVendorId)
-            .subscribe(res => {
-                if(res.Status == "OK"){
-                    this.msgBoxService.showMessage("success", ["Vendor successfully updtaed."]);
-                    this.onSave.emit({ action: "save", "RequisitionList": requisitionIdList });
-                } else {
-                    this.msgBoxService.showMessage("error", ["Sorry, Couldn't Update the Vendor."]);
-                }
-            });            
+        if (this.selectedVendorId) {
+            this.labsBlService.UpdateVendorToLabTest(requisitionIdList, this.selectedVendorId)
+                .subscribe(res => {
+                    if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
+                        this.msgBoxService.showMessage(ENUM_MessageBox_Status.Success, ["Vendor successfully updtaed."]);
+                        this.onSave.emit({ action: "save", "RequisitionList": requisitionIdList });
+                    } else {
+                        this.msgBoxService.showMessage(ENUM_MessageBox_Status.Error, ["Sorry, Couldn't Update the Vendor."]);
+                    }
+                });
         }
-        
-
     }
 
     OnClose() {
-        this.onPopupClose.emit({action: "close"});
+        this.onPopupClose.emit({ action: "close" });
     }
-
-
 }

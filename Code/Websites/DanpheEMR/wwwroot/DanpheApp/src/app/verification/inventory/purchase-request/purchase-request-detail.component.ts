@@ -10,7 +10,7 @@ import { SecurityService } from "../../../security/shared/security.service";
 import { PurchaseRequestItemModel } from '../../../inventory/shared/purchase-request-item.model';
 import { VerificationActor } from '../requisition-details/inventory-requisition-details.component';
 import { PurchaseRequestModel } from '../../../inventory/shared/purchase-request.model';
-
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 @Component({
   templateUrl: './purchase-request-detail.html'
 })
@@ -22,9 +22,12 @@ export class VER_INV_PurchaseRequestDetailComponent implements OnInit, OnDestroy
   public loading: boolean = false;
   public headerDetail: { header1, header2, header3, header4, hospitalName; address; email; PANno; tel; DDA };
   public nextVerifiersPermission: string = "";
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
   public CopyOfRequisitionItemsQuantity: Array<{ RequisitionItemId; Quantity; }> = [];
   constructor(public verificationService: VerificationService, public verificationBLService: VerificationBLService, public coreService: CoreService, public securityService: SecurityService, public messageBoxService: MessageboxService, public router: Router, public routeFromService: RouteFromService, public changeDetector: ChangeDetectorRef) {
     this.GetInventoryBillingHeaderParameter();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
   ngOnDestroy(): void {
     this.verificationService.PurchaseRequest = new PurchaseRequestModel();

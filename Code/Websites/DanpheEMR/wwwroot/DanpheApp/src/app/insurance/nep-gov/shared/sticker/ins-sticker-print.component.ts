@@ -6,6 +6,7 @@ import { Subscription } from "rxjs";
 import { Observable } from 'rxjs/Observable';
 import { CoreService } from "../../../../core/shared/core.service";
 import { ENUM_PrintingType, PrinterSettingsModel } from "../../../../settings-new/printers/printer-settings.model";
+import { GeneralFieldLabels } from '../../../../shared/DTOs/general-field-label.dto';
 import { NepaliCalendarService } from '../../../../shared/calendar/np/nepali-calendar.service';
 import { CommonFunctions } from "../../../../shared/common.functions";
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
@@ -62,6 +63,8 @@ export class GovInsStickerComponent {
   public openBrowserPrintWindow: boolean = false;
   public browserPrintContentObj: any;
   public defaultFocus: string = null;
+  //public nhifNumber: string = "";
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(
     public http: HttpClient,
@@ -73,6 +76,13 @@ export class GovInsStickerComponent {
     public changeDetector: ChangeDetectorRef,
     public renderer: Renderer2,
   ) {
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
+    /*var nhifNumber = JSON.parse
+      (coreService.Parameters.find(p => p.ParameterGroupName == "NSHINumber" && p.ParameterName == "NSHILable").ParameterValue);
+    if (nhifNumber) {
+      this.nhifNumber = nhifNumber.NSHINo;
+    }*/
 
     this.hospitalCode = this.coreService.GetHospitalCode();
     this.hospitalCode = (this.hospitalCode && this.hospitalCode.trim().length > 0) ? this.hospitalCode : "allhosp";

@@ -57,7 +57,8 @@ export class LabTest {
     public SmsApplicable: boolean = false;
 
     public IsOutsourceTest: boolean = false;
-
+    public DefaultOutsourceVendorId: number = 0;
+    public IsLISApplicable: boolean = false;
     constructor() {
         this.CreatedOn = moment().format(ENUM_DateTimeFormat.Year_Month_Day_Hour_Minute);
         var _formBuilder = new FormBuilder();

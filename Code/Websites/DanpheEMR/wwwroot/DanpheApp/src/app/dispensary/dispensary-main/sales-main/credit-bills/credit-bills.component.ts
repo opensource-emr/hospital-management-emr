@@ -28,6 +28,7 @@ import { ENUM_BillPaymentMode, ENUM_BillingStatus, ENUM_DanpheHTTPResponses, ENU
 import { DispensaryService } from '../../../shared/dispensary.service';
 import { PharmacySchemePriceCategory_DTO } from '../../../../pharmacy/shared/dtos/pharmacy-scheme-pricecategory.dto';
 import * as _ from "lodash";
+import { GeneralFieldLabels } from '../../../../shared/DTOs/general-field-label.dto';
 
 @Component({
   selector: 'app-credit-bills',
@@ -102,6 +103,7 @@ export class CreditBillsComponent implements OnInit {
   public confirmationTitle: string = "Confirm !";
   public confirmationMessage: string = "Are you sure you want to Print Invoice ?";
   public confirmationMessageForProvisionalInvoiceUpdate: string = "Are you sure you want to update provisional invoice ?";
+ public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(private _dispensaryService: DispensaryService,
     public routeFromService: RouteFromService,
     public router: Router,
@@ -133,6 +135,7 @@ export class CreditBillsComponent implements OnInit {
       //this.LoadPatientInvoiceSummary(this.patientService.getGlobal().PatientId);
       this.checkProvisionalBillsCustomization();
     }
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
 
   }
 

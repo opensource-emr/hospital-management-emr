@@ -1,9 +1,11 @@
 import { Injectable } from "@angular/core";
-import { CanDeactivate, CanActivate } from "@angular/router";
-import { NavigationService } from "./navigation-service";
+import { CanActivate, CanDeactivate } from "@angular/router";
 import { VisitService } from "../appointments/shared/visit.service";
 import { PatientService } from "../patients/shared/patient.service";
 import { SecurityService } from "../security/shared/security.service";
+import { MessageboxService } from "./messagebox/messagebox.service";
+import { NavigationService } from "./navigation-service";
+import { ENUM_MessageBox_Status } from "./shared-enums";
 
 @Injectable()
 export class ResetNursingContextGuard<T>
@@ -12,8 +14,10 @@ export class ResetNursingContextGuard<T>
     public visitService: VisitService,
     public patientService: PatientService,
     public navService: NavigationService,
-    public securityService: SecurityService
-  ) {}
+    public securityService: SecurityService,
+    public msgBoxServ: MessageboxService,
+
+  ) { }
   canDeactivate() {
     this.patientService.CreateNewGlobal();
     this.visitService.CreateNewGlobal();
@@ -33,7 +37,8 @@ export class ResetNursingContextGuard<T>
       this.navService.showTopNav = false;
       return true;
     } else {
-      alert("Error ! Please select a patient-visit first.");
+      this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ["Error ! Please select a patient-visit first.",]);
+      // alert("Error ! Please select a patient-visit first.");
       return false;
     }
   }

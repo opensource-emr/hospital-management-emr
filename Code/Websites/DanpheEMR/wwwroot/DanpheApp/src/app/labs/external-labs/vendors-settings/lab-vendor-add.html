@@ -17,7 +17,7 @@
                     <label for="vendorName" class="col-md-5 control-label">Vendor Name <sup class="color-red">*</sup><b>:</b></label>
                     <div class="col-md-7">
                       <input name="vendorName" id="vendorName" class="form-control" type="text" placeholder="Vendor Name"
-                             [(ngModel)]="newVendor.VendorName">
+                             [(ngModel)]="newVendor.VendorName" (keyup.enter)="coreService.FocusInputById('vendor_Code')">
                     </div>
                   </div>
                 </div>
@@ -35,7 +35,8 @@
                   <div class="row">
                     <label for="email" class="col-md-5 control-label">Email <b>:</b></label>
                     <div class="col-md-7">
-                      <input name="vendorEmail" id="email" class="form-control" type="text" placeholder="Email" [(ngModel)]="newVendor.Email">
+                      <input name="vendorEmail" id="email" class="form-control" type="text" (keyup.enter)="coreService.FocusInputById('vendor_Code')"
+                             placeholder="Email" [(ngModel)]="newVendor.Email">
                     </div>
                   </div>
                 </div>
@@ -45,8 +46,8 @@
                   <div class="row">
                     <label for="vendorCode" class="col-md-5 control-label">Vendor Code <sup class="color-red">*</sup><b>:</b></label>
                     <div class="col-md-7">
-                      <input name="vendorCode" id="vendorCode" class="form-control" type="text" placeholder="Vendor Code"
-                             [(ngModel)]="newVendor.VendorCode">
+                      <input name="vendorCode" id="vendor_Code" class="form-control" type="text" placeholder="Vendor Code"
+                             [(ngModel)]="newVendor.VendorCode" (keyup.enter)="coreService.FocusInputById('add_vendor')">
                     </div>
                   </div>
                 </div>
@@ -55,7 +56,7 @@
                     <label for="contactNum" class="col-md-5 control-label">Contact Number <b>:</b></label>
                     <div class="col-md-7">
                       <input name="vendorContactNum" id="contactNum" class="form-control" type="text" placeholder="Contact Number"
-                             [(ngModel)]="newVendor.ContactNo">
+                             [(ngModel)]="newVendor.ContactNo" (keyup.enter)="coreService.FocusInputById('add_vendor')">
                     </div>
                   </div>
                 </div>
@@ -104,17 +105,17 @@
           </div>
           <div class="modelbox-footer">
             <div class="all-buttons text-right">
-              <button type="button" class="btn primary-btn btn-sm margin-7-hr" (click)="ValidateAndAddUpdateVendor()">
+              <button type="button" class="btn primary-btn btn-sm margin-7-hr" id="add_vendor" (click)="ValidateAndAddUpdateVendor()">
                 <ng-container *ngIf="actionName == 'add'">Add</ng-container>
                 <ng-container *ngIf="actionName == 'edit'">Update</ng-container>
               </button>
               <!-- <button type="button" class="btn btn-cancel btn-outline btn-sm margin-7-hr" (click)="OnClose()">Close</button> -->
             </div>
           </div>
-          <div class="close-modelbox lb-close-btn">
-            <button class="btn btn-danger" (click)="OnClose()"><i class="fa fa-times"></i></button>
-          </div>
         </form>
+        <div class="close-modelbox lb-close-btn">
+          <button class="btn btn-danger" (click)="OnClose()"><i class="fa fa-times"></i></button>
+        </div>
       </div>
     </div>
   </div>

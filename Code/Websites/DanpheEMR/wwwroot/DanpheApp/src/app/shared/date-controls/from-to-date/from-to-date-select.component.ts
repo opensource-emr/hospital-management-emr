@@ -1,11 +1,11 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef, forwardRef, HostBinding, AfterViewInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, Input, Output, forwardRef } from '@angular/core';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import * as moment from 'moment/moment';
-import { NepaliCalendarService } from '../../calendar/np/nepali-calendar.service';
-import { NepaliDate } from '../../../shared/calendar/np/nepali-dates';
 import { CoreService } from '../../../core/shared/core.service';
+import { NepaliDate } from '../../../shared/calendar/np/nepali-dates';
+import { NepaliCalendarService } from '../../calendar/np/nepali-calendar.service';
+import { ENUM_CalendarTypes, ENUM_DateRangeName, ENUM_DateTimeFormat } from '../../shared-enums';
 import { FromToDateSettings } from './from-to-settings';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { ENUM_DateFormat, ENUM_DateRangeName, ENUM_DateTimeFormat } from '../../shared-enums';
 
 
 @Component({
@@ -100,27 +100,38 @@ export class FromToDateSelectComponent implements AfterViewInit {
   public showDatePicker: boolean = false;
   public isValidToLoad: boolean = true;
   public showAdBsButton: boolean = true;
+  public EnableEnglishCalendarOnly: boolean = false;
 
   constructor(public npCalendarService: NepaliCalendarService, private coreService: CoreService, public changeDetector: ChangeDetectorRef) {
     this.showAdBsButton = this.coreService.showCalendarADBSButton;
+    this.GetCalendarParameter();
   }
-
+  GetCalendarParameter(): void {
+    const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+    if (param && param.ParameterValue) {
+      const paramValue = JSON.parse(param.ParameterValue);
+      this.EnableEnglishCalendarOnly = paramValue;
+    }
+  }
   ngOnInit() {
+    if (this.EnableEnglishCalendarOnly) {
+      this.showAdBsButton = false;
+    }
     this.assignADorBS();
     this.ConfigureDateSettings();
     this.DateRange_InitialAssign();
   }
- 
-  ngAfterViewInit(){
+
+  ngAfterViewInit() {
     let showToogleTimeBtnString = this.coreService.Parameters.find(a => a.ParameterName == 'ShowTimeOptionInFromToDatePicker' && a.ParameterGroupName == 'Common');
     if (showToogleTimeBtnString != null) {
       let showTimeOptionParameter = JSON.parse(showToogleTimeBtnString.ParameterValue);
       this.showTimeOptionBtn = (showTimeOptionParameter.ShowTimeOptionInFromToDatePicker == true);
     }
-    if ((this.showTimeOptionBtn && this.showToogleTimeBtn) == true){
+    if ((this.showTimeOptionBtn && this.showToogleTimeBtn) == true) {
       this.showTimeBtn = true;
     }
-    else{
+    else {
       this.showTimeBtn = false;
     }
   }
@@ -130,7 +141,7 @@ export class FromToDateSelectComponent implements AfterViewInit {
       let dateRangeParsed = JSON.parse(savedDateRange);
       if (dateRangeParsed && dateRangeParsed.useFavourite == true) {
         this.calendarType = dateRangeParsed.calendarType;
-        this.showEnCalendar = this.calendarType == "en" ? true : false;//assign calendarType from here. 
+        this.showEnCalendar = this.calendarType == "en" ? true : false;//assign calendarType from here.
         this.showNpCalendar = !this.showEnCalendar;
         return;
       }
@@ -143,9 +154,19 @@ export class FromToDateSelectComponent implements AfterViewInit {
       }
     }
 
-    this.calendarType = "np";//default is nepali calendar.. 
-    this.showNpCalendar = true;
-    this.showEnCalendar = !this.showNpCalendar;
+    //! make english calendar as default if EnableEnglishCalendarOnly is set to true.
+    if (this.EnableEnglishCalendarOnly) {
+      this.calendarType = ENUM_CalendarTypes.English;
+      this.showEnCalendar = true;
+      this.showNpCalendar = false;
+    } else {
+      this.calendarType = ENUM_CalendarTypes.Nepali
+      this.showNpCalendar = true;
+      this.showEnCalendar = false;
+    }
+
+
+
   }
 
   public ConfigureDateSettings() {
@@ -168,7 +189,7 @@ export class FromToDateSelectComponent implements AfterViewInit {
 
   DateRange_InitialAssign() {
     //check for the user preference in calendartype.
-    //these are global values from User-Preference and will be overwritten by local preference has saved his favourite in this component. 
+    //these are global values from User-Preference and will be overwritten by local preference has saved his favourite in this component.
 
 
     //FirstPrio: From/ToDate.
@@ -207,7 +228,7 @@ export class FromToDateSelectComponent implements AfterViewInit {
       else if (this.defaultRangeName && this.enableFavourite) {
         this.ChangeCustomDateRange(this.defaultRangeName);
         this.showDatePicker = true;
-        return;//customdaterange automatically assigns and emits the required values.. so we can return from here.. 
+        return;//customdaterange automatically assigns and emits the required values.. so we can return from here..
       }
       else {
         this.enDate_from = moment().format(ENUM_DateTimeFormat.Year_Month_Day);
@@ -253,7 +274,7 @@ export class FromToDateSelectComponent implements AfterViewInit {
     if (!this.isDateRangeChangeCalled) {
       this.ClearDateRange();
       if (this.alwaysEmit_OkBtnNotRequired) {
-        this.IsValidCheck();//check for validation before emitting the data.    
+        this.IsValidCheck();//check for validation before emitting the data.
         if (this.validationObject.isValid) {
           this.SaveDateRangeToLocalStorage();
           this.onDateChange.emit({ fromDate: this.enDate_from, toDate: this.enDate_to });
@@ -346,7 +367,7 @@ export class FromToDateSelectComponent implements AfterViewInit {
   //eventtype could be 'date' or 'range'  (default=date)
   //Parent component can decide whether or not to reload the data based on these types.
   EmitDatesAfterChange(changeEventType: string = "date") {
-    this.IsValidCheck();//check for validation before emitting the data.    
+    this.IsValidCheck();//check for validation before emitting the data.
     if (this.validationObject.isValid) {
       this.SaveDateRangeToLocalStorage();
       this.onDateChange.emit({ fromDate: this.enDate_from, toDate: this.enDate_to, eventType: changeEventType });
@@ -356,7 +377,7 @@ export class FromToDateSelectComponent implements AfterViewInit {
   ClearDateRange() {
     this.defaultRangeName = null;
     this.rangeShortName = "-";//this is for icon
-    this.rangeFullName = "Not-Set";//this is for tooltip    
+    this.rangeFullName = "Not-Set";//this is for tooltip
   }
 
 

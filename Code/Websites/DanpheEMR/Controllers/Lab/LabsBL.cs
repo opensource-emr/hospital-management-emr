@@ -150,7 +150,9 @@ namespace DanpheEMR.Labs
                                      PrintedByName = "",
                                      CovidFileUrl = string.IsNullOrEmpty(CovidFileUrlCommon) ? "" : CovidFileUrlCommon.Replace("GGLFILEUPLOADID", req.GoogleFileIdForCovid),
                                      IsFileUploadedToTeleMedicine = req.IsFileUploadedToTeleMedicine,
-                                     PassPortNumber = pat.PassportNumber
+                                     PassPortNumber = pat.PassportNumber,
+                                     WardName = req.WardName,
+                                     IsLISApplicable = test.IsLISApplicable,
                                  }).ToList();
 
 
@@ -226,7 +228,8 @@ namespace DanpheEMR.Labs
                                         MunicipalityName = r.MunicipalityName,
                                         CountrySubDivisionName = r.CountrySubDivisionName,
                                         ProfilePictureName = getProfilePicture(labDbContext,r.PatientId),
-                                        PassPortNumber = r.PassPortNumber
+                                        PassPortNumber = r.PassPortNumber,
+                                        WardName = r.WardName,
                                     }
                             ).FirstOrDefault();
             return lookups;
@@ -320,7 +323,8 @@ namespace DanpheEMR.Labs
                                                  SampleCollectedOn = r.SampleCreatedOn,
                                                  HasInsurance = r.HasInsurance,
                                                  VerifiedBy = r.VerifiedBy,
-                                                 VerifiedOn = r.VerifiedOn
+                                                 VerifiedOn = r.VerifiedOn,
+                                                 IsLISApplicable = r.IsLISApplicable,
                                              }).GroupBy(tmp => tmp.RequisitionId).Select(group => group.First()).OrderBy(test => test.DisplaySequence).ToList();
             //Removed this to get same test for Multiple times for same patient
             //.GroupBy(tmp => tmp.LabTestId).Select(group => group.First()).OrderBy(test => test.DisplaySequence).ToList();

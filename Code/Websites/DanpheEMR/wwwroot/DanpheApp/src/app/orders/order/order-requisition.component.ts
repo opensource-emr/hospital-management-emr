@@ -1,30 +1,36 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core'
-import { RouterOutlet, RouterModule, Router } from '@angular/router';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import * as _ from 'lodash';
+import * as moment from 'moment/moment';
+import { VisitService } from '../../appointments/shared/visit.service';
+import { MedicationBLService } from '../../clinical/shared/medication.bl.service';
+import { LabTestRequisition } from '../../labs/shared/lab-requisition.model';
+import { LabsBLService } from '../../labs/shared/labs.bl.service';
 import { OrderService } from '../../orders/shared/order.service';
 import { PatientService } from '../../patients/shared/patient.service';
-import { VisitService } from '../../appointments/shared/visit.service';
-import { LabsBLService } from '../../labs/shared/labs.bl.service';
-import { ImagingBLService } from '../../radiology/shared/imaging.bl.service';
-import { MedicationBLService } from '../../clinical/shared/medication.bl.service';
 import { ImagingItemRequisition } from '../../radiology/shared/imaging-item-requisition.model';
-import { LabTestRequisition } from '../../labs/shared/lab-requisition.model';
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import { ImagingBLService } from '../../radiology/shared/imaging.bl.service';
 import { SecurityService } from "../../security/shared/security.service";
-import * as moment from 'moment/moment';
-import * as _ from 'lodash';
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 
 //http is used for temporary purpose only: remove it ASAP : sud-6feb2018
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { OrderResponse, OrderItemsVM } from '../shared/orders-vms';
-import { MedicationPrescription } from '../../clinical/shared/medication-prescription.model';
-import { PHRMPrescriptionItem } from '../../pharmacy/shared/phrm-prescription-item.model';
-import { Patient } from '../../patients/shared/patient.model';
+import { CurrentVisitContextVM } from '../../appointments/shared/current-visit-context.model';
 import { Visit } from '../../appointments/shared/visit.model';
+import { BillItemRequisition } from '../../billing/shared/bill-item-requisition.model';
+import { BillingCounter } from '../../billing/shared/billing-counter.model';
+import { BillingTransactionItem } from '../../billing/shared/billing-transaction-item.model';
+import { BillingTransaction } from '../../billing/shared/billing-transaction.model';
+import { BillingBLService } from '../../billing/shared/billing.bl.service';
+import { Patient } from '../../patients/shared/patient.model';
 import { PHRMGenericModel } from '../../pharmacy/shared/phrm-generic.model';
 import { PHRMItemMasterModel } from '../../pharmacy/shared/phrm-item-master.model';
-import { CurrentVisitContextVM } from '../../appointments/shared/current-visit-context.model';
-import { BillItemRequisition } from '../../billing/shared/bill-item-requisition.model';
-import { BillItemPrice } from '../../billing/shared/billitem-price.model';
+import { PHRMPrescriptionItem } from '../../pharmacy/shared/phrm-prescription-item.model';
+import { PHRMPrescription } from '../../pharmacy/shared/phrm-prescription.model';
+import { DanpheHTTPResponse } from '../../shared/common-models';
+import { DanpheCache, MasterType } from '../../shared/danphe-cache-service-utility/cache-services';
+import { ENUM_BillingStatus, ENUM_BillingType, ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status, ENUM_OrderStatus, ENUM_VisitType } from '../../shared/shared-enums';
+import { OrderItemsVM, OrderResponse } from '../shared/orders-vms';
 import { OrdersBLService } from '../shared/orders.bl.service';
 
 
@@ -42,11 +48,12 @@ export class OrderRequisitionsComponent {
   public labRequisitionsToPost: Array<LabTestRequisition> = [];
   public ImagingRequisitionsToPost: Array<ImagingItemRequisition> = [];
   public medicationsToPost: Array<PHRMPrescriptionItem> = [];
+  public medication: PHRMPrescription = new PHRMPrescription();
   public options = {
     headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
   };
   public medRouteList: Array<any> = [];
-  //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion 
+  //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion
   public OrderResponse: OrderResponse = new OrderResponse();
   public loading: boolean = true;
 
@@ -55,6 +62,10 @@ export class OrderRequisitionsComponent {
   public currUser: any = null;
   public currTime: string = null;
   public currPatVisitContext: CurrentVisitContextVM = null;
+  public billingTransaction = new BillingTransaction();
+  public billingTransactionItems = new Array<BillingTransactionItem>();
+  public CounterList: BillingCounter[];
+  public SelectedCounterId: number = null;
 
   constructor(public ordServ: OrderService, public patientService: PatientService,
     public visitService: VisitService, public router: Router,
@@ -62,7 +73,10 @@ export class OrderRequisitionsComponent {
     public medicationBLService: MedicationBLService, public orderBLService: OrdersBLService,
     public msgBoxServ: MessageboxService,
     public securityService: SecurityService,
-    public http: HttpClient) {
+    public http: HttpClient,
+
+    public billingBLService: BillingBLService) {
+    this.LoadCounters();
 
     this.currPatient = this.patientService.globalPatient;
     this.currVisit = this.visitService.globalVisit;
@@ -116,89 +130,177 @@ export class OrderRequisitionsComponent {
     }
   }
 
+
+  LoadCounters() {
+    let allCounters: Array<BillingCounter>;
+    allCounters = DanpheCache.GetData(MasterType.BillingCounter, null);
+    if (allCounters && allCounters.length) {
+      this.CounterList = allCounters.filter(cnt => cnt.CounterType == null || cnt.CounterType == "BILLING");
+      this.SelectedCounterId = this.CounterList[0].CounterId;
+    }
+  }
   //posting data to requisition table
   AddToRequisition() {
 
     this.loading = true;
+    //! below assignments are not needed if they are not used further, in Below if condition we can avoid using these.
     this.labRequisitionsToPost = this.labRequisitions;
     this.medicationsToPost = this.medications;
     this.ImagingRequisitionsToPost = this.ImagingRequisitions;
+
     //only for temporary purpose, call it using pharmacydl service--sud:6feb
 
     if (this.loading) {
+      //! Post Provisional Bill.
+      if ((this.labRequisitionsToPost && this.labRequisitionsToPost.length > 0) || (this.ImagingRequisitionsToPost && this.ImagingRequisitionsToPost.length > 0) || (this.otherRequisitions && this.otherRequisitions.length > 0)) {
+        this.SetBillingTxnAndTxnItemsDetails();
+        this.PostProvisionalDepartmentRequisition();
+      }
+
+      //! Below code needs to be removed, after verifying.
       //to add to db in  lab testrequisition table
-      if (this.labRequisitionsToPost.length != 0) {
+      // if (this.labRequisitionsToPost.length != 0) {
 
-        this.labBLService.PostToRequisition(this.labRequisitionsToPost)
-          .subscribe(
-            res => this.CallBackPostLabRequests(res),
-            err => {
-              this.msgBoxServ.showMessage("error", ['failed add to lab requisition.. please check log for details.'], err.ErrorMessage);
-              this.loading = false;
-            });
-      }
+      //   this.labBLService.PostToRequisition(this.labRequisitionsToPost)
+      //     .subscribe(
+      //       res => this.CallBackPostLabRequests(res),
+      //       err => {
+      //         this.msgBoxServ.showMessage("error", ['failed add to lab requisition.. please check log for details.'], err.ErrorMessage);
+      //         this.loading = false;
+      //       });
+      // }
       //to add to db in  imaging requisition table
-      if (this.ImagingRequisitionsToPost.length != 0) {
+      // if (this.ImagingRequisitionsToPost.length != 0) {
 
-        this.imgBLService.PostRequestItems(this.ImagingRequisitionsToPost)
-          .subscribe(
-            res => this.CallBackPostImagingRequest(res),
-            err => {
-              this.msgBoxServ.showMessage("error", ['failed add to lab requisition.. please check log for details.'], err.ErrorMessage);
-              this.loading = false;
-            });
-      }
+      //   this.imgBLService.PostRequestItems(this.ImagingRequisitionsToPost)
+      //     .subscribe(
+      //       res => this.CallBackPostImagingRequest(res),
+      //       err => {
+      //         this.msgBoxServ.showMessage("error", ['failed add to lab requisition.. please check log for details.'], err.ErrorMessage);
+      //         this.loading = false;
+      //       });
+      // }
+      //this is used to add other items
+      // if (this.otherRequisitions && this.otherRequisitions.length && this.otherRequisitions.length > 0) {
+      //   this.orderBLService.PostItemsToBilling(this.otherRequisitions)
+      //     .subscribe(
+      //       res => {
+      //         if (res.Status == 'OK') {
+      //           this.OrderResponse.others.isReqCompleted = true;
+      //           this.OrderResponse.others.status = res.Status;
+      //           this.router.navigate(['/Doctors/PatientOverviewMain/Orders']);
+      //         } else {
+      //           this.OrderResponse.others.isReqCompleted = true;
+      //           this.OrderResponse.others.status = res.ErrorMessage;
+      //           this.DisplayRequStatus(this.OrderResponse);
+      //           this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
+      //           this.router.navigate(['/Doctors/PatientOverviewMain/Orders']);
+      //           this.loading = false;
+      //         }
+      //       }
+      //     )
+      // }
 
       //this is used to add data of medication in db
       if (this.medicationsToPost.length != 0) {
 
-        let medsJson = this.GetPrescriptionItemsMapped(this.medicationsToPost);
-        this.http.post<any>("/api/PharmacyPrescription/NewPrescription", medsJson, this.options).map(res => res)
-          .subscribe(res => {
-            if (res.Status == 'OK') {
-              //this is temporary solution...to avoid to alert after posting and showing the status of  order  requistion
+        let prescription: PHRMPrescription = this.SetPrescriptionDetails();
+        this.orderBLService.PostPharmacyPrescription(prescription)
+          .subscribe((res: DanpheHTTPResponse) => {
+            if (res.Status === ENUM_DanpheHTTPResponses.OK) {
               this.OrderResponse.medication.isReqCompleted = true;
               this.OrderResponse.medication.status = res.Status;
-              //this.ordServ.medSelected = [];
-              //this.ordServ.medicationPreference = [];
-              //this.ordServ.medicationList = [];
               this.DisplayRequStatus(this.OrderResponse);
             }
             else {
-              //this is temporary solution...to avoid to alert after posting and showing the status of  order  requistion 
               this.OrderResponse.medication.isReqCompleted = true;
               this.OrderResponse.medication.status = res.ErrorMessage;
               this.DisplayRequStatus(this.OrderResponse);
-              this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-
+              this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
             }
-          },
-            err => { this.msgBoxServ.showMessage("error", [err.ErrorMessage]); });
-      }
-
-      //this is used to add other items 
-      if (this.otherRequisitions && this.otherRequisitions.length && this.otherRequisitions.length > 0) {
-        this.orderBLService.PostItemsToBilling(this.otherRequisitions)
-          .subscribe(
-            res => {
-              if (res.Status == 'OK') {
-                this.OrderResponse.others.isReqCompleted = true;
-                this.OrderResponse.others.status = res.Status;
-                this.router.navigate(['/Doctors/PatientOverviewMain/Orders']);
-              } else {
-                this.OrderResponse.others.isReqCompleted = true;
-                this.OrderResponse.others.status = res.ErrorMessage;
-                this.DisplayRequStatus(this.OrderResponse);
-                this.msgBoxServ.showMessage("failed", [res.ErrorMessage]);
-                this.router.navigate(['/Doctors/PatientOverviewMain/Orders']);
-                this.loading = false;
-              }
-            }
-          )
+          }, err => {
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, [err]);
+          });
       }
     }
 
   }
+
+  private SetPrescriptionDetails() {
+    this.medicationsToPost.forEach(medItm => {
+      medItm.PatientId = this.currPatVisitContext.PatientId;
+      medItm.PrescriberId = this.currVisit.PerformerId;
+      medItm.PerformerFullName = this.currVisit.PerformerName;
+    });
+    let prescription: PHRMPrescription = new PHRMPrescription();
+    prescription.PHRMPrescriptionItems = this.medicationsToPost;
+    prescription.PatientId = prescription.PHRMPrescriptionItems[0].PatientId;
+    prescription.PrescriberId = prescription.PHRMPrescriptionItems[0].PrescriberId;
+    prescription.PrescriberName = this.currVisit.PerformerName;
+    return prescription;
+  }
+
+  SetBillingTxnAndTxnItemsDetails() {
+    this.billingTransaction.SchemeId = this.currPatVisitContext.SchemeId;
+    this.billingTransaction.PatientId = this.currPatVisitContext.PatientId;
+    this.billingTransaction.PatientVisitId = this.currPatVisitContext.PatientVisitId;
+    this.billingTransaction.SubTotal = 0;
+    this.billingTransaction.TotalAmount = 0;
+    this.billingTransaction.DiscountPercent = 0;
+    this.billingTransaction.DiscountAmount = 0;
+    this.billingTransaction.PaidAmount = 0;
+    this.billingTransaction.CounterId = this.SelectedCounterId;
+
+
+    if (this.billingTransaction.BillingTransactionItems && this.billingTransaction.BillingTransactionItems.length > 0) {
+      this.billingTransaction.BillingTransactionItems.forEach(txnItem => {
+        txnItem.PatientVisitId = this.currPatVisitContext.PatientVisitId;
+        txnItem.PatientId = this.currPatVisitContext.PatientId;
+        if (txnItem.SrvDeptIntegrationName && (txnItem.SrvDeptIntegrationName.toLowerCase() != "lab")) {
+          txnItem.LabTypeName = null;
+        }
+        txnItem.DiscountSchemeId = this.currPatVisitContext.SchemeId;
+        txnItem.PriceCategoryId = this.currPatVisitContext.PriceCategoryId;
+
+        txnItem.BillingType = this.currPatVisitContext.VisitType !== ENUM_VisitType.inpatient ? ENUM_BillingType.outpatient : ENUM_BillingType.inpatient;
+        txnItem.VisitType = this.currPatVisitContext.VisitType.toLowerCase();
+        txnItem.BillStatus = ENUM_BillingStatus.provisional;// "provisional";
+
+        txnItem.CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");
+        txnItem.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
+
+        txnItem.CounterId = this.SelectedCounterId;
+        txnItem.CounterDay = moment().format("YYYY-MM-DD");
+        txnItem.DiscountSchemeId = this.billingTransaction.SchemeId;
+        txnItem.CoPaymentCashAmount = 0;
+        txnItem.CoPaymentCreditAmount = 0;
+        txnItem.OrderStatus = ENUM_OrderStatus.Active;//'active'
+      });
+    }
+  }
+
+  PostProvisionalDepartmentRequisition() {
+    const billingTransaction = _.cloneDeep(this.billingTransaction);
+    const billingTransactionItems = _.cloneDeep(this.billingTransaction.BillingTransactionItems);
+    this.billingBLService.ProceedToBillingTransaction(billingTransaction, billingTransactionItems, "active", "provisional", false, this.currPatVisitContext).subscribe(res => {
+      if (res.Status === ENUM_DanpheHTTPResponses.OK && res.Results) {
+        this.OrderResponse.Lab.isReqCompleted = true;
+        this.OrderResponse.Lab.status = res.Status;
+        this.OrderResponse.Imaging.isReqCompleted = true;
+        this.OrderResponse.Imaging.status = res.Status;
+        this.OrderResponse.others.isReqCompleted = true;
+        this.OrderResponse.others.status = res.Status;
+        this.DisplayRequStatus(this.OrderResponse);
+        // this.router.navigate(['/Doctors/PatientOverviewMain/Orders']);
+      }
+      else {
+        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ["Unable to complete transaction."]);
+        console.log(res.ErrorMessage)
+        this.loading = false;
+      }
+    });
+  }
+
   //this is posting the labrequisition to billing ..but this is need to reviwed by saudarshan and dharam<20/04/2017>
   CallBackPostLabRequests(res): void {
     if (res.Status == 'OK') {
@@ -207,13 +309,13 @@ export class OrderRequisitionsComponent {
           if (res1.Status == 'OK') {
             //alert("lab order added successfully");
             //this.router.navigate(['/Dashboard/PatientOverviewMain']);
-            //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion 
+            //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion
             this.OrderResponse.Lab.isReqCompleted = true;
             this.OrderResponse.Lab.status = res1.Status;
             this.DisplayRequStatus(this.OrderResponse);
             //this.ordServ.labTests = [];
           } else {
-            //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion 
+            //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion
             this.OrderResponse.Lab.isReqCompleted = true;
             this.OrderResponse.Lab.status = res1.ErrorMessage;
             this.DisplayRequStatus(this.OrderResponse);
@@ -226,7 +328,7 @@ export class OrderRequisitionsComponent {
           });
     }
     else {
-      //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion 
+      //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion
       this.OrderResponse.Lab.isReqCompleted = true;
       this.OrderResponse.Lab.status = res.ErrorMessage;
       this.DisplayRequStatus(this.OrderResponse);
@@ -240,14 +342,14 @@ export class OrderRequisitionsComponent {
       this.imgBLService.PostToBilling(res.Results)
         .subscribe(res1 => {
           if (res1.Status == 'OK') {
-            //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion 
+            //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion
             this.OrderResponse.Imaging.isReqCompleted = true;
             this.OrderResponse.Imaging.status = res1.Status;
             this.DisplayRequStatus(this.OrderResponse);
             //this.ordServ.imagingItems = [];
 
           } else {
-            //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion 
+            //this is temporary solution...to avoid to alert after posting and showing the status of  lab and imaging  requistion
             this.OrderResponse.Imaging.isReqCompleted = true;
             this.OrderResponse.Imaging.status = res1.ErrorMessage;
             this.DisplayRequStatus(this.OrderResponse);
@@ -269,7 +371,7 @@ export class OrderRequisitionsComponent {
     }
   }
 
-  //this is temporary solution(we have to look for something more better)...to avoid to alert after posting and showing the status of  lab and imaging  requistion 
+  //this is temporary solution(we have to look for something more better)...to avoid to alert after posting and showing the status of  lab and imaging  requistion
   //to display status after posting the requisition
   DisplayRequStatus(OrderResponse) {
     //if both process(adding lab and imaging to requisition table) is over then only check for status..and show proper message
@@ -390,7 +492,7 @@ export class OrderRequisitionsComponent {
       }
 
     }
-    //-----------------------------------------------------------------------------------------------------------------------  
+    //-----------------------------------------------------------------------------------------------------------------------
     //this condition is used only if lab order is added..
     else if (OrderResponse.Lab.isReqCompleted == true && this.ImagingRequisitionsToPost.length == 0 && this.medicationsToPost.length == 0) {
       if (OrderResponse.Lab.status == 'OK') {
@@ -403,7 +505,7 @@ export class OrderRequisitionsComponent {
       }
 
     }
-    //-----------------------------------------------------------------------------------------------------------------------  
+    //-----------------------------------------------------------------------------------------------------------------------
     //this condition is used only if Imaging order is added..
     else if (OrderResponse.Imaging.isReqCompleted == true && this.labRequisitionsToPost.length == 0 && this.medicationsToPost.length == 0) {
       if (OrderResponse.Imaging.status == 'OK') {
@@ -416,7 +518,7 @@ export class OrderRequisitionsComponent {
       }
 
     }
-    //-----------------------------------------------------------------------------------------------------------------------  
+    //-----------------------------------------------------------------------------------------------------------------------
     //this condition is used only if medications order is added..
     else if (OrderResponse.medication.isReqCompleted == true && this.labRequisitionsToPost.length == 0 && this.ImagingRequisitionsToPost.length == 0) {
       if (OrderResponse.medication.status == 'OK') {
@@ -453,7 +555,26 @@ export class OrderRequisitionsComponent {
     if (selItems && selItems.length > 0) {
       selItems.forEach(itm => {
 
-        let labTest = allLabTests.find(tst => tst.LabTestId == itm.ItemId);
+        let billingTransactionItems = new BillingTransactionItem();
+        billingTransactionItems.ServiceItemId = itm.ServiceItemId;
+        billingTransactionItems.ServiceDepartmentId = itm.ServiceDepartmentId;
+        billingTransactionItems.ServiceDepartmentName = itm.ServiceDepartmentName;
+        billingTransactionItems.ItemCode = itm.ItemCode;
+        billingTransactionItems.ItemName = itm.ItemName;
+        billingTransactionItems.Price = itm.Price;
+        billingTransactionItems.Quantity = 1;//hardcoded 1 quantity
+        billingTransactionItems.SubTotal = (billingTransactionItems.Price * billingTransactionItems.Quantity);
+        billingTransactionItems.DiscountPercent = 0;
+        billingTransactionItems.DiscountAmount = 0;
+        billingTransactionItems.TotalAmount = billingTransactionItems.SubTotal;
+        billingTransactionItems.IntegrationItemId = itm.IntegrationItemId;
+        billingTransactionItems.PrescriberId = this.currVisit.PerformerId;
+        billingTransactionItems.PrescriberName = this.currVisit.PerformerName;
+
+        this.billingTransaction.BillingTransactionItems.push(billingTransactionItems);
+
+        //below code might not be needed.
+        let labTest = allLabTests.find(tst => tst.LabTestId == itm.IntegrationItemId);
 
         let currReq = new LabTestRequisition();
         currReq.LabTestId = labTest.LabTestId;
@@ -461,7 +582,7 @@ export class OrderRequisitionsComponent {
         currReq.LabTestSpecimen = labTest.LabTestSpecimen;
         currReq.LabTestSpecimenSource = labTest.LabTestSpecimenSource;
         currReq.ProcedureCode = labTest.ProcedureCode;
-        //Lonic Code should come from database.....but for now  it is hard coded value 
+        //Lonic Code should come from database.....but for now  it is hard coded value
         currReq.LOINC = "LONIC Code";
         currReq.OrderStatus = "active";
         currReq.BillingStatus = "unpaid";
@@ -475,6 +596,7 @@ export class OrderRequisitionsComponent {
         currReq.DiagnosisId = null;
         currReq.VisitType = this.currPatVisitContext.VisitType;
         currReq.WardName = this.currPatVisitContext.Current_WardBed;
+        currReq.OrderDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
         retLabReqList.push(currReq);
       });
     }
@@ -487,7 +609,27 @@ export class OrderRequisitionsComponent {
     let allImgItems = this.ordServ.allImagingItems;
     if (selItems && selItems.length > 0) {
       selItems.forEach(itm => {
-        let imgItem = allImgItems.find(img => img.ImagingItemId == itm.ItemId);
+
+        let billingTransactionItems = new BillingTransactionItem();
+        billingTransactionItems.ServiceItemId = itm.ServiceItemId;
+        billingTransactionItems.ServiceDepartmentId = itm.ServiceDepartmentId;
+        billingTransactionItems.ServiceDepartmentName = itm.ServiceDepartmentName;
+        billingTransactionItems.ItemCode = itm.ItemCode;
+        billingTransactionItems.ItemName = itm.ItemName;
+        billingTransactionItems.Price = itm.Price;
+        billingTransactionItems.Quantity = 1;//hardcoded 1 quantity
+        billingTransactionItems.SubTotal = (billingTransactionItems.Price * billingTransactionItems.Quantity);
+        billingTransactionItems.DiscountPercent = 0;
+        billingTransactionItems.DiscountAmount = 0;
+        billingTransactionItems.TotalAmount = billingTransactionItems.SubTotal;
+        billingTransactionItems.IntegrationItemId = itm.IntegrationItemId;
+        billingTransactionItems.PrescriberId = this.currVisit.PerformerId;
+        billingTransactionItems.PrescriberName = this.currVisit.PerformerName;
+
+        this.billingTransaction.BillingTransactionItems.push(billingTransactionItems);
+
+
+        let imgItem = allImgItems.find(img => img.ImagingItemId == itm.IntegrationItemId);
         let currReq = new ImagingItemRequisition();
         currReq.ImagingItemId = imgItem.ImagingItemId;
         currReq.ImagingItemName = imgItem.ImagingItemName;
@@ -546,7 +688,7 @@ export class OrderRequisitionsComponent {
         // newReq.ProviderId = this.currVisit.ProviderId;
         newReq.GenericId = currGeneric.GenericId;
         newReq.GenericName = currGeneric.GenericName;
-        newReq.PerformerId = this.currVisit.PerformerId;
+        newReq.PrescriberId = this.currVisit.PerformerId;
         newReq.DiagnosisId = null;
         //get all ItemsList for current generic to display in dropdown.
         newReq.ItemListByGeneric = allMedItms.filter(med => med.GenericId == currGeneric.GenericId);
@@ -562,7 +704,27 @@ export class OrderRequisitionsComponent {
     let allOtherItems = this.ordServ.allOtherItems;
 
     selItems.forEach(itm => {
-      let singleItem = allOtherItems.find(item => item.ItemId == itm.ItemId);
+
+      let billingTransactionItems = new BillingTransactionItem();
+      billingTransactionItems.ServiceItemId = itm.ServiceItemId;
+      billingTransactionItems.ServiceDepartmentId = itm.ServiceDepartmentId;
+      billingTransactionItems.ServiceDepartmentName = itm.ServiceDepartmentName;
+      billingTransactionItems.ItemCode = itm.ItemCode;
+      billingTransactionItems.ItemName = itm.ItemName;
+      billingTransactionItems.Price = itm.Price;
+      billingTransactionItems.Quantity = 1;//hardcoded 1 quantity
+      billingTransactionItems.SubTotal = (billingTransactionItems.Price * billingTransactionItems.Quantity);
+      billingTransactionItems.DiscountPercent = 0;
+      billingTransactionItems.DiscountAmount = 0;
+      billingTransactionItems.TotalAmount = billingTransactionItems.SubTotal;
+      billingTransactionItems.IntegrationItemId = itm.IntegrationItemId;
+      billingTransactionItems.PrescriberId = this.currVisit.PerformerId;
+      billingTransactionItems.PrescriberName = this.currVisit.PerformerName;
+
+      this.billingTransaction.BillingTransactionItems.push(billingTransactionItems);
+
+
+      let singleItem = itm;//allOtherItems.find(item => item.ItemId == itm.IntegrationItemId);
       let currReq = new BillItemRequisition();
 
       currReq.ItemId = singleItem.ItemId;
@@ -571,7 +733,7 @@ export class OrderRequisitionsComponent {
       currReq.PatientVisitId = this.currVisit.PatientVisitId;
       currReq.Quantity = 1;
       currReq.ServiceDepartmentId = singleItem.ServiceDepartmentId;
-      currReq.ProcedureCode = singleItem.ProcedureCode;
+      // currReq.ProcedureCode = singleItem.ProcedureCode;
       currReq.PerformerId = this.currVisit.PerformerId;
       currReq.Price = singleItem.Price;
       currReq.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;

@@ -275,7 +275,7 @@
                     </p>
 
                     <p class="no-margin" style="text-align:left;font-size:11px;" *ngIf="isInsurance">
-                      NSHI: {{SelectedInvoice.PatientInfo[0].Ins_NshiNumber}}
+                      {{GeneralFieldLabel.NSHINo}}: {{SelectedInvoice.PatientInfo[0].Ins_NshiNumber}}
                     </p>
                     <p class="no-margin" style="text-align:left;font-size:12px;text-transform: uppercase;"
                        *ngIf="labCount > 1 && InvoiceInfo.LabTypeName && showLabType">
@@ -302,7 +302,7 @@
                       DanpheDateTime:'format':'YYYY-MM-DD'
                       }}
                     </p>
-                    <p class="no-margin" style="text-align:right;"> ({{localDateTime}})</p>
+                    <p class="no-margin" style="text-align:right;"> {{localDateTime}}</p>
                     <p class="no-margin" style="text-align:right; font-size:11px;">
                       Age/Sex : {{finalAge }}
                     </p>
@@ -310,7 +310,7 @@
                       Claim Code:{{InvoiceInfo.ClaimCode}}
                     </p>
                     <p class="no-margin" style="text-align:right;font-size:11px;" *ngIf="invoice.PatientInfo[0].PANNumber">
-                      Purchaser's PAN: {{invoice.PatientInfo[0].PANNumber}}
+                      Purchaser's {{GeneralFieldLabel.PANNo}}: {{invoice.PatientInfo[0].PANNumber}}
                     </p>
                     <p class="no-margin" style="text-align:right;font-size:11px;">
                       <b>Method of payment:</b> <span style="text-transform:uppercase;">

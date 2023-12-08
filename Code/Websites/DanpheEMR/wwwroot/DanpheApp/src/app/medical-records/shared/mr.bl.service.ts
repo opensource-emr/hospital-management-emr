@@ -1,13 +1,13 @@
-import { Injectable, Directive } from '@angular/core';
-import { CoreService } from "../../core/shared/core.service";
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import { ADT_DLService } from '../../adt/shared/adt.dl.service';
-import { MR_DLService } from './mr.dl.service';
-import { MedicalRecordsSummary } from './medical-records.model';
+import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
 import * as cloneDeep from 'lodash/cloneDeep';
+import { ADT_DLService } from '../../adt/shared/adt.dl.service';
 import { BabyBirthDetails } from '../../adt/shared/baby-birth-details.model';
 import { DeathDetails } from '../../adt/shared/death.detail.model';
+import { CoreService } from "../../core/shared/core.service";
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import { MedicalRecordsSummary } from './medical-records.model';
+import { MR_DLService } from './mr.dl.service';
 
 @Injectable()
 export class MR_BLService {
@@ -280,6 +280,10 @@ export class MR_BLService {
   public PostFinalDiagnosisForEmergencyPatient(data: any) {
     let strData = JSON.stringify(data);
     return this.medicalRecordsDLService.PostFinalDiagnosisForEmergencyPatient(strData).map(res => { return res });
+  }
+  public GetEthnicGroupStatisticsData(fromDate: string, toDate: string) {
+    return this.medicalRecordsDLService.GetEthnicGroupStatisticsData(fromDate, toDate)
+      .map(res => { return res });
   }
 
 }

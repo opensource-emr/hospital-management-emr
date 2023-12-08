@@ -9,7 +9,7 @@ import { SecurityService } from "../../../security/shared/security.service";
 import { VerificationActor } from '../requisition-details/inventory-requisition-details.component';
 import { PurchaseOrder } from '../../../inventory/shared/purchase-order.model';
 import { PurchaseOrderItems } from '../../../inventory/shared/purchase-order-items.model';
-
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 @Component({
   templateUrl: './purchase-order-verify.html'
 })
@@ -28,6 +28,8 @@ export class PurchaseOrderVerifyComponent implements OnInit, OnDestroy {
   showQuotationRatesPopUp: boolean;
   PoUplodadedViewFiles: boolean;
   // PurchaseOrderId: number;
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(
     public verificationService: VerificationService,
     public verificationBLService: VerificationBLService,
@@ -37,7 +39,8 @@ export class PurchaseOrderVerifyComponent implements OnInit, OnDestroy {
     public router: Router,
     public routeFromService: RouteFromService,
     public changeDetector: ChangeDetectorRef
-  ) { this.GetInventoryBillingHeaderParameter(); }
+  ) { this.GetInventoryBillingHeaderParameter(); 
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();}
 
   ngOnDestroy(): void {
     this.verificationService.PurchaseOrder = new PurchaseOrder();

@@ -12,7 +12,7 @@ import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../../s
 import { ActivatedRoute } from "@angular/router";
 import { PharmacyService } from "../../shared/pharmacy.service";
 import { SecurityService } from "../../../security/shared/security.service";
-
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 @Component({
     templateUrl: "./phrm-return-item-to-supplier-list.html",
     host: { '(window:keydown)': 'hotkeys($event)' }
@@ -52,6 +52,8 @@ export class PHRMReturnItemToSupplierListComponent {
     printDetaiils: any;
     showFreeQty: boolean;
     showCCCharge: boolean;
+
+    public GeneralFieldLabel = new GeneralFieldLabels();
     constructor(public coreService: CoreService,
         public pharmacyBLService: PharmacyBLService,
         public changeDetector: ChangeDetectorRef,
@@ -59,7 +61,7 @@ export class PHRMReturnItemToSupplierListComponent {
         /////Grid Coloumn Variable
         this.returnToSupplierListGridColumns = PHRMGridColumns.PHRMReturnItemToSupplierList;
         this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('ReturnDate', false));
-
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
 
 
     }

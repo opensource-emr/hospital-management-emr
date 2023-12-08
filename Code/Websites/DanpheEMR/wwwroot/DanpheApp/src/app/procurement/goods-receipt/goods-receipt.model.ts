@@ -87,6 +87,7 @@ export class GoodsReceipt {
   public IsDonation: boolean;
   GRGroupId: number;
   public CcAmount: number = 0;
+  VerificationId: number = null;
 
   constructor() {
 

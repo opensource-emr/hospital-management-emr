@@ -52,12 +52,13 @@
               <span>
                 Date:
                 {{selTxnItem.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                <i>{{selTxnItem.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}} </i>
               </span>
             </td>
           </tr>
           <tr>
             <td style="width: 60%;">
-              <span>Item Name: {{selTxnItem.ItemName}}</span>
+              <span>Item Name: {{selTxnItem.ItemName}}</span> <span style="margin-left: 50px;">PriceCategory: {{selTxnItem.PriceCategoryName}}</span>
             </td>
             <td>
               <span>Bill Item Amount:{{selTxnItem.TotalAmount}}</span>

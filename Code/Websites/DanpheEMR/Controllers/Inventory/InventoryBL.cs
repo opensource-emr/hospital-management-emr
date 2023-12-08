@@ -8,6 +8,7 @@ using DanpheEMR.Services;
 using DanpheEMR.Utilities;
 using DanpheEMR.ViewModel.Inventory;
 using DanpheEMR.ViewModel.Procurement;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -38,7 +39,13 @@ namespace DanpheEMR.Controllers
 
             // pre-load requisition items in bulk to reduce db connections
             var requisitionItemIds = dispatch.DispatchItems.Select(d => d.RequisitionItemId).ToList();
-            List<RequisitionItemsModel> requisitionItems = inventoryDb.RequisitionItems.Where(r => requisitionItemIds.Contains(r.RequisitionItemId)).ToList();
+            List<RequisitionItemsModel> requisitionItems = inventoryDb.RequisitionItems.Where(r => requisitionItemIds.Contains(r.RequisitionItemId) && r.RequisitionItemStatus != ENUM_InventoryRequisitionStatus.Complete).ToList();
+
+            if (requisitionItems.Count == 0)
+            {
+                throw new Exception("Requisition is already dispatch OR Requisition items not found.");
+            }
+
 
             var fixedAssetStockIds = dispatch.DispatchItems.Where(a => a.IsFixedAsset == true)
                                                     .SelectMany
@@ -64,29 +71,25 @@ namespace DanpheEMR.Controllers
                         dispatchingAsset.Asset.Dispatch(dispatchItem.TargetStoreId, currentUser.EmployeeId, currentDate);
                     });
                 }
-                var requisitionItemDetail = inventoryDb.RequisitionItems
-                     .Where(r => r.RequisitionItemId == dispatchItem.RequisitionItemId && r.IsActive == true)
-                     .FirstOrDefault();
+                var requisitionItemDetail = requisitionItems.Where(r => r.RequisitionItemId == dispatchItem.RequisitionItemId && r.IsActive == true && r.RequisitionItemStatus != ENUM_InventoryRequisitionStatus.Complete).FirstOrDefault();
 
                 if (requisitionItemDetail != null)
                 {
+                    dispatchItem.DispatchedQuantity = (double)(dispatchItem.DispatchedQuantity <= requisitionItemDetail.PendingQuantity ? dispatchItem.DispatchedQuantity : requisitionItemDetail.PendingQuantity);
                     dispatchItem.CostPrice = requisitionItemDetail.CostPrice;
+                    dispatchItem.CreatedOn = currentDate;
+                    dispatchItem.FiscalYearId = GetFiscalYear(inventoryDb).FiscalYearId;
+                    dispatchItem.DispatchNo = dispatch.DispatchNo;
+                    inventoryDb.Dispatch.Add(dispatch);
                 }
-                dispatchItem.CreatedOn = currentDate;
-                dispatchItem.FiscalYearId = GetFiscalYear(inventoryDb).FiscalYearId;
-                dispatchItem.DispatchNo = dispatch.DispatchNo;
-                inventoryDb.Dispatch.Add(dispatch);
-
-                // update requisition tables
 
                 // find the requisition items and update the quantity and status.
                 var requisitionItem = requisitionItems.FirstOrDefault(r => r.RequisitionItemId == dispatchItem.RequisitionItemId);
-                requisitionItem.ReceivedQuantity = dispatchItem.DispatchedQuantity;
-                requisitionItem.PendingQuantity = requisitionItem.PendingQuantity - requisitionItem.ReceivedQuantity;// Rohit partial dispatch
+                requisitionItem.ReceivedQuantity = isReceiveFeatureEnabled ? requisitionItem.ReceivedQuantity : requisitionItem.ReceivedQuantity + dispatchItem.DispatchedQuantity;
+                requisitionItem.PendingQuantity = (requisitionItem.PendingQuantity - dispatchItem.DispatchedQuantity) < 0 ? 0 : (requisitionItem.PendingQuantity - dispatchItem.DispatchedQuantity);
                 requisitionItem.RequisitionItemStatus = (requisitionItem.PendingQuantity > 0) ? "partial" : "complete";
                 requisitionItem.ModifiedBy = currentUser.EmployeeId;
                 requisitionItem.ModifiedOn = currentDate;
-
             }
             //Save Dispatch Items
             inventoryDb.SaveChanges();
@@ -1188,6 +1191,7 @@ namespace DanpheEMR.Controllers
         {
             var currentDate = DateTime.Now;
             // Create a requisition from dispatchItem
+
             var requisition = new RequisitionModel()
             {
                 RequisitionDate = dispatchItems[0].DispatchedDate,
@@ -1217,7 +1221,7 @@ namespace DanpheEMR.Controllers
                 {
                     ItemId = dItem.ItemId,
                     Quantity = dItem.DispatchedQuantity,
-                    ReceivedQuantity = dItem.DispatchedQuantity,
+                    ReceivedQuantity = EnableReceiveFeature == true ? 0 : dItem.DispatchedQuantity,
                     PendingQuantity = 0,
                     RequisitionId = requisition.RequisitionId,
                     RequisitionNo = requisition.RequisitionNo,
@@ -1684,7 +1688,7 @@ namespace DanpheEMR.Controllers
                     var podraft = (from p in db.PurchaseOrderDrafts
                                    where p.DraftPurchaseOrderId == PODraftId
                                    select p).FirstOrDefault();
-                    podraft.DiscardedBy =(int?) currentUser.EmployeeId;
+                    podraft.DiscardedBy = (int?)currentUser.EmployeeId;
                     podraft.DiscardedOn = DateTime.Now;
                     podraft.Status = Status;
                     podraft.IsActive = false;

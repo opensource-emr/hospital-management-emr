@@ -1,13 +1,12 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 
-import { ProfileModel } from '../shared/profile.model';
-import { IncentiveBLService } from '../shared/incentive.bl.service';
-import { SecurityService } from '../../security/shared/security.service';
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import GridColumnSettings from '../../shared/danphe-grid/grid-column-settings.constant';
-import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
 import { CoreService } from '../../core/shared/core.service';
+import { SecurityService } from '../../security/shared/security.service';
+import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import { IncentiveBLService } from '../shared/incentive.bl.service';
 import { INCTVGridColumnSettings } from '../shared/inctv-grid-column-settings';
+import { ProfileModel } from '../shared/profile.model';
 
 @Component({
   templateUrl: './profile-manage.component.html'
@@ -42,7 +41,7 @@ export class ProfileManageComponent {
     public coreService: CoreService) {
     this.profileGridColumns = INCTVGridColumnSettings.ProfileMasterList;
     this.GetProfileList();
-    this.GetItemsForIncentive();
+    // this.GetItemsForIncentive();
     this.GetCategoryList();
   }
 

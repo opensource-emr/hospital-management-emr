@@ -7,6 +7,11 @@ using DanpheEMR.ServerModel;
 using System.Data.Entity;
 using DanpheEMR.ServerModel.ClinicalModels;
 using DanpheEMR.ServerModel.BillingModels;
+using DanpheEMR.ServerModel.PharmacyModels;
+using DanpheEMR.ServerModel.ClinicalModels.Diet;
+using DanpheEMR.ServerModel.PatientModels;
+using DanpheEMR.ServerModel.ClinicalModels.BloodSugarMonitoring;
+using DanpheEMR.ServerModel.ClinicalModels.ConsulationRequests;
 
 namespace DanpheEMR.DalLayer
 {
@@ -17,7 +22,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<HomeMedicationModel> HomeMedications { get; set; }
         public DbSet<InputOutputModel> InputOutput { get; set; }
         public DbSet<MedicationPrescriptionModel> MedicationPrescriptions { get; set; }
-        
+
         public DbSet<ActiveMedicalProblem> ActiveMedical { get; set; }
 
         public DbSet<PastMedicalProblem> PastMedicals { get; set; }
@@ -67,16 +72,16 @@ namespace DanpheEMR.DalLayer
         public DbSet<TBUTModel> TBUT { get; set; }
         public DbSet<VaUnaidedModel> Vaunaided { get; set; }
         public DbSet<FinalClassModel> FinalClass { get; set; }
-         
+
         public DbSet<AdviceDiagnosisModel> AdviceDiagnosis { get; set; }
         public DbSet<EyeScanModel> EyeScan { get; set; }
         public DbSet<PatientModel> Patients { get; set; }
 
-        public DbSet<ReferralSource> ReferralSource { get; set;}
-        public DbSet<PHRMItemMasterModel> PHRMItemMaster { get; set;}
+        public DbSet<ReferralSource> ReferralSource { get; set; }
+        public DbSet<PHRMItemMasterModel> PHRMItemMaster { get; set; }
         public DbSet<CfgParameterModel> CFGParameters { get; set; }
 
-         //public DbSet<FreeNotesModel> FreeNotes { get; set; }
+        //public DbSet<FreeNotesModel> FreeNotes { get; set; }
         public DbSet<FreeTextNoteModel> FreeText { get; set; }
         public DbSet<EmergencyNoteModel> EmergencyNote { get; set; }
         public DbSet<ProcedureNoteModel> ProcedureNote { get; set; }
@@ -92,11 +97,19 @@ namespace DanpheEMR.DalLayer
         public DbSet<PrescriptionNotesModel> ClinicalPrescriptionNote { get; set; }
         public DbSet<BillMapPriceCategoryServiceItemModel> BillPriceCategoryServiceItems { get; set; }
         public DbSet<FinalDiagnosisModel> FinalDiagnosis { get; set; }
-
         public DbSet<AppointmentModel> Appointment { get; set; }
+        public DbSet<DietTypeModel> DietType { get; set; }
+        public DbSet<PatientDietModel> PatientDiet { get; set; }
+        public DbSet<WardModel> Wards { get; set; }
+        public DbSet<AdmissionModel> Admission { get; set; }
+        public DbSet<PatientBedInfo> PatientBedInfos { get; set; }
+        public DbSet<BedModel> Beds { get; set; }
+        public DbSet<PatientSchemeMapModel> PatientMapScheme { get; set; }
+        public DbSet<BillingSchemeModel> Scheme { get; set; }
+        public DbSet<BloodSugarModel> BloodSugar { get; set; }
+        public DbSet<ConsultationRequestModel> ConsultationRequest { get; set; }
 
-
-
+        public DbSet<ClinicalIntakeOutputParameterModel> ClinicalIntakeOutputParameters { get; set; }
         public ClinicalDbContext(string conn) : base(conn)
         {
             this.Configuration.LazyLoadingEnabled = true;
@@ -138,17 +151,17 @@ namespace DanpheEMR.DalLayer
 
             //Clinical Eye Model
             modelBuilder.Entity<EyeModel>().ToTable("CLN_MST_EYE");
-            modelBuilder.Entity <RefractionModel>().ToTable("CLN_EYE_Refraction");
-            modelBuilder.Entity <AblationProfileModel>().ToTable("CLN_EYE_Ablation_Profile");
-            modelBuilder.Entity <LaserDataEntryModel>().ToTable("CLN_EYE_Laser_DataEntry");
-            modelBuilder.Entity <PreOPPachymetryModel>().ToTable("CLN_EYE_PreOP_Pachymetry");
-            modelBuilder.Entity <LASIKRSTModel>().ToTable("CLN_EYE_LasikRST");
-            modelBuilder.Entity <SMILESSettingsModel>().ToTable("CLN_EYE_Smile_Setting");
-            modelBuilder.Entity <PachymetryModel>().ToTable("CLN_EYE_Pachymetry");
-            modelBuilder.Entity <WavefrontModel>().ToTable("CLN_EYE_Wavefront");
-            modelBuilder.Entity <ORAModel>().ToTable("CLN_EYE_ORA");
-            modelBuilder.Entity <SmileIncisionsModel>().ToTable("CLN_EYE_Smile_Incisions");
-            modelBuilder.Entity <EyeVisuMaxsModel>().ToTable("CLN_EYE_VisuMax");
+            modelBuilder.Entity<RefractionModel>().ToTable("CLN_EYE_Refraction");
+            modelBuilder.Entity<AblationProfileModel>().ToTable("CLN_EYE_Ablation_Profile");
+            modelBuilder.Entity<LaserDataEntryModel>().ToTable("CLN_EYE_Laser_DataEntry");
+            modelBuilder.Entity<PreOPPachymetryModel>().ToTable("CLN_EYE_PreOP_Pachymetry");
+            modelBuilder.Entity<LASIKRSTModel>().ToTable("CLN_EYE_LasikRST");
+            modelBuilder.Entity<SMILESSettingsModel>().ToTable("CLN_EYE_Smile_Setting");
+            modelBuilder.Entity<PachymetryModel>().ToTable("CLN_EYE_Pachymetry");
+            modelBuilder.Entity<WavefrontModel>().ToTable("CLN_EYE_Wavefront");
+            modelBuilder.Entity<ORAModel>().ToTable("CLN_EYE_ORA");
+            modelBuilder.Entity<SmileIncisionsModel>().ToTable("CLN_EYE_Smile_Incisions");
+            modelBuilder.Entity<EyeVisuMaxsModel>().ToTable("CLN_EYE_VisuMax");
             modelBuilder.Entity<OperationNotesModel>().ToTable("CLN_EYE_OperationNotes");
 
             //PrecsriptionSlip Model
@@ -184,9 +197,23 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<FinalDiagnosisModel>().ToTable("MR_TXN_Outpatient_FinalDiagnosis");
 
             modelBuilder.Entity<AppointmentModel>().ToTable("PAT_Appointment");
+            modelBuilder.Entity<ConsultationRequestModel>().ToTable("CLN_ConsultationRequest");
 
-
+            modelBuilder.Entity<PatientBedInfo>().ToTable("ADT_TXN_PatientBedInfo");
+            modelBuilder.Entity<BedModel>().ToTable("ADT_Bed");
             modelBuilder.Entity<CfgParameterModel>().ToTable("CORE_CFG_Parameters");
+            modelBuilder.Entity<WardModel>().ToTable("ADT_MST_Ward");
+            modelBuilder.Entity<DietTypeModel>().ToTable("CLN_MST_DietType");
+            modelBuilder.Entity<PatientDietModel>().ToTable("CLN_TXN_PatientDiet");
+            modelBuilder.Entity<WardModel>().ToTable("ADT_MST_Ward");
+            modelBuilder.Entity<AdmissionModel>().ToTable("ADT_PatientAdmission");
+            modelBuilder.Entity<PatientBedInfo>().ToTable("ADT_TXN_PatientBedInfo");
+            modelBuilder.Entity<BedModel>().ToTable("ADT_Bed");
+            modelBuilder.Entity<PatientSchemeMapModel>().ToTable("PAT_MAP_PatientSchemes");
+            modelBuilder.Entity<BillingSchemeModel>().ToTable("BIL_CFG_Scheme");
+            modelBuilder.Entity<AdmissionModel>().ToTable("ADT_PatientAdmission");
+            modelBuilder.Entity<BloodSugarModel>().ToTable("CLN_BloodSugarMonitoring");
+            modelBuilder.Entity<ClinicalIntakeOutputParameterModel>().ToTable("CLN_MST_IntakeOutTakeParameter");
             //Vitals and visit mappings
             modelBuilder.Entity<VitalsModel>()
                         .HasRequired<VisitModel>(a => a.Visit)

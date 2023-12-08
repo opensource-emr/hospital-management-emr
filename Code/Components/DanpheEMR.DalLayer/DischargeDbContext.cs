@@ -65,6 +65,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<PHRMInvoiceReturnModel> PHRMInvoiceReturnModels { get; set; }
         public DbSet<DepositHeadModel> DepositHeadModels { get; set; }
         public DbSet<BillingSchemeModel> BillingSchemes { get; set; }
+        public DbSet<PriceCategoryModel> PriceCategories { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -110,6 +111,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<PHRMInvoiceReturnModel>().ToTable("PHRM_TXN_InvoiceReturn");
             modelBuilder.Entity<DepositHeadModel>().ToTable("BIL_MST_DepositHead");
             modelBuilder.Entity<BillingSchemeModel>().ToTable("BIL_CFG_Scheme");
+            modelBuilder.Entity<PriceCategoryModel>().ToTable("BIL_CFG_PriceCategory");
 
             modelBuilder.Entity<PHRMStoreStockModel>()
                 .ToTable("PHRM_TXN_StoreStock")

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ViewChild, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectorRef, Component, EventEmitter, Output, ViewChild, ViewEncapsulation } from "@angular/core";
 import { Router } from "@angular/router";
 import * as _ from 'lodash';
 import * as moment from "moment/moment";
@@ -107,6 +107,7 @@ export class PHRMGoodsReceiptComponent {
   isMainDiscountApplicable: boolean;
   checkCreditPeriod: boolean = false;
   genericList: PHRMGenericModel[] = [];
+  @Output('call-back-popup-close') callBackPopupClose: EventEmitter<Object> = new EventEmitter<Object>();
   constructor(public dispensaryService: DispensaryService,
     public pharmacyService: PharmacyService,
     public coreService: CoreService,
@@ -279,7 +280,7 @@ export class PHRMGoodsReceiptComponent {
       this.phrmGoodReceiptItemComponent.goodReceiptItem.FreeQuantity = this.grItemList[i].FreeQuantity;
       this.phrmGoodReceiptItemComponent.goodReceiptItem.Packing = this.grItemList[i].Packing;
       this.phrmGoodReceiptItemComponent.goodReceiptItem.CCCharge = this.grItemList[i].CCCharge;
-      this.phrmGoodReceiptItemComponent.goodReceiptItem.FreeGoodsAmount = this.grItemList[i].FreeGoodsAmount;
+      this.phrmGoodReceiptItemComponent.goodReceiptItem.CCAmount = this.grItemList[i].CCAmount;
       this.phrmGoodReceiptItemComponent.goodReceiptItem.SalePrice = this.grItemList[i].SalePrice;
       this.phrmGoodReceiptItemComponent.goodReceiptItem.PendingQuantity = this.grItemList[i].PendingQuantity;
 
@@ -296,6 +297,7 @@ export class PHRMGoodsReceiptComponent {
       this.phrmGoodReceiptItemComponent.goodReceiptItem.GoodReceiptItemValidator.get("ItemQTy").setValue(this.grItemList[i].ItemQTy);
       this.phrmGoodReceiptItemComponent.goodReceiptItem.GoodReceiptItemValidator.get("AdjustedMargin").setValue(this.grItemList[i].AdjustedMargin);
       this.phrmGoodReceiptItemComponent.goodReceiptItem.GoodReceiptItemValidator.get("FreeQuantity").setValue(this.grItemList[i].FreeQuantity);
+      this.phrmGoodReceiptItemComponent.goodReceiptItem.GoodReceiptItemValidator.get("CCCharge").setValue(this.grItemList[i].CCCharge);
       this.phrmGoodReceiptItemComponent.goodReceiptItem.GoodReceiptItemValidator.get("CCCharge").setValue(this.grItemList[i].CCCharge);
       this.phrmGoodReceiptItemComponent.goodReceiptItem.GoodReceiptItemValidator.get("DiscountPercentage").setValue(this.grItemList[i].DiscountPercentage);
       this.phrmGoodReceiptItemComponent.goodReceiptItem.GoodReceiptItemValidator.get("VATPercentage").setValue(this.grItemList[i].VATPercentage);
@@ -388,6 +390,7 @@ export class PHRMGoodsReceiptComponent {
             this.goodsReceiptVM.goodReceipt.DiscountAmount = CommonFunctions.parseAmount(this.grItemList.reduce((a, b) => a + b.DiscountAmount, 0), 4);
             this.goodsReceiptVM.goodReceipt.DiscountPercentage = CommonFunctions.parseAmount((this.goodsReceiptVM.goodReceipt.DiscountAmount / this.goodsReceiptVM.goodReceipt.SubTotal) * 100, 4);
             this.goodsReceiptVM.goodReceipt.VATAmount = CommonFunctions.parseAmount(this.grItemList.reduce((a, b) => a + b.VATAmount, 0), 4);
+            this.goodsReceiptVM.goodReceipt.VATPercentage = CommonFunctions.parseAmount(this.goodsReceiptVM.goodReceipt.VATAmount / (this.goodsReceiptVM.goodReceipt.SubTotal - this.goodsReceiptVM.goodReceipt.DiscountAmount), 4);
             this.goodsReceiptVM.goodReceipt.CCAmount = CommonFunctions.parseAmount(this.grItemList.reduce((a, b) => a + b.CCAmount, 0), 4);
             this.goodsReceiptVM.goodReceipt.TotalAmount = CommonFunctions.parseAmount(this.goodsReceiptVM.goodReceipt.SubTotal - this.goodsReceiptVM.goodReceipt.DiscountAmount + this.goodsReceiptVM.goodReceipt.VATAmount + this.goodsReceiptVM.goodReceipt.CCAmount, 4);
 
@@ -445,11 +448,15 @@ export class PHRMGoodsReceiptComponent {
             this.goodsReceiptVM.goodReceipt.DiscountPercentage = res.Results.DiscountPercentage;
             this.goodsReceiptVM.goodReceipt.DiscountAmount = res.Results.DiscountAmount;
             this.goodsReceiptVM.goodReceipt.TotalAmount = res.Results.TotalAmount;
+            this.goodsReceiptVM.goodReceipt.TaxableSubTotal = this.goodsReceiptVM.goodReceipt.SubTotal - this.goodsReceiptVM.goodReceipt.DiscountAmount;
+            this.goodsReceiptVM.goodReceipt.NonTaxableSubTotal = this.goodsReceiptVM.goodReceipt.DiscountAmount;
             this.goodsReceiptVM.goodReceipt.Remarks = res.Results.Remarks;
             //this.goodsReceiptVM.goodReceipt.Adjustment = res.Results.Adjustment;
             this.goodsReceiptVM.goodReceipt.CreatedBy = res.Results.CreatedBy;
             this.goodsReceiptVM.goodReceipt.CreatedOn = res.Results.CreatedOn;
             this.goodsReceiptVM.goodReceipt.VATAmount = res.Results.VATAmount;
+            this.goodsReceiptVM.goodReceipt.VATPercentage = res.Results.VATPercentage;
+            this.goodsReceiptVM.goodReceipt.CCAmount = res.Results.CCAmount;
             this.goodsReceiptVM.goodReceipt.IsCancel = res.Results.IsCancel;
             this.goodsReceiptVM.goodReceipt.IsTransferredToACC = res.Results.IsTransferredToACC;
             this.goodsReceiptVM.goodReceipt.TransactionType = res.Results.TransactionType;
@@ -513,15 +520,17 @@ export class PHRMGoodsReceiptComponent {
               }
               else {
                 currGRItem.CCCharge = goodsReceiptItems[i].CCCharge;
+                currGRItem.CCAmount = goodsReceiptItems[i].CCAmount;
+
               }
               currGRItem.DiscountPercentage = goodsReceiptItems[i].DiscountPercentage;
               currGRItem.DiscountAmount = goodsReceiptItems[i].GrPerItemDisAmt;
               currGRItem.VATAmount = goodsReceiptItems[i].GrPerItemVATAmt;
               if (currGRItem.VATAmount) {
-                this.goodsReceiptVM.goodReceipt.TaxableSubTotal += goodsReceiptItems[i].SubTotal;
+                this.goodsReceiptVM.goodReceipt.TaxableSubTotal += goodsReceiptItems[i].SubTotal - goodsReceiptItems[i].DiscountAmount;
               }
               else {
-                this.goodsReceiptVM.goodReceipt.NonTaxableSubTotal += goodsReceiptItems[i].SubTotal;
+                this.goodsReceiptVM.goodReceipt.NonTaxableSubTotal += goodsReceiptItems[i].DiscountAmount;
               }
               currGRItem.TotalAmount = goodsReceiptItems[i].TotalAmount;
               currGRItem.CreatedBy = goodsReceiptItems[i].CreatedBy;
@@ -765,7 +774,7 @@ export class PHRMGoodsReceiptComponent {
     if (this.grItemList != null) {
       var isValid = this.CheckGoodReceiptValidity();
 
-      var goSigal: boolean;
+      var goSigal: boolean = false;
       if (this.CheckIsValid && isValid && this.grItemList.length > 0)
         goSigal = this.CheckGRItemHistory();
 
@@ -810,14 +819,16 @@ export class PHRMGoodsReceiptComponent {
               this.msgserv.showMessage('Notice', ['Credit Period should be positive and whole number']);
               return;
             }
+
             if (!this.IsPOorder) {
-              this.MakePoWithPOItemsForPost(this.goodsReceiptVM);
+              // this.MakePoWithPOItemsForPost(goodReceiptVM);
             } else {
               this.ChangePOAndPOItemsStatus();
             }
 
             this.pharmacyBLService.PostGoodReceipt(this.goodsReceiptVM, this.IsPOorder).subscribe(
               (res) => {
+                this.goodsReceiptVM = new PHRMGoodsReceiptViewModel();
                 this.CallBackAddGoodsReceipt(res);
                 this.loading = false;
               },
@@ -834,11 +845,15 @@ export class PHRMGoodsReceiptComponent {
         }
       }
       else {
-        this.msgserv.showMessage(ENUM_MessageBox_Status.Notice, ["Missing or Invalid value in GoodReceipt Item",]);
+        this.msgserv.showMessage(ENUM_MessageBox_Status.Notice, ["Please, Insert Valid Data",]);
       }
     }
   }
 
+  invalidDiscountPercentage: boolean = false;
+  invalidDiscountAmount: boolean = false;
+  invalidVATPercentage: boolean = false;
+  invalidVATAmount: boolean = false;
   public CheckGoodReceiptValidity(): boolean {
     var CheckIsValid = true;
     if (!this.currentSupplier || this.currentSupplier.SupplierId == undefined || this.currentSupplier.SupplierId <= 0) {
@@ -858,6 +873,27 @@ export class PHRMGoodsReceiptComponent {
       alert("Please select store");
       CheckIsValid = false;
     }
+
+    if ((this.goodsReceiptVM.goodReceipt.DiscountPercentage < 0 || this.goodsReceiptVM.goodReceipt.DiscountPercentage > 100) || this.goodsReceiptVM.goodReceipt.DiscountAmount < 0) {
+      this.invalidDiscountPercentage = true;
+      this.invalidDiscountAmount = true;
+      CheckIsValid = false;
+    }
+    else {
+      this.invalidDiscountPercentage = false;
+      this.invalidDiscountAmount = false;
+    }
+
+    if ((this.goodsReceiptVM.goodReceipt.VATPercentage < 0 || this.goodsReceiptVM.goodReceipt.VATPercentage > 100) || this.goodsReceiptVM.goodReceipt.VATAmount < 0) {
+      this.invalidVATPercentage = true;
+      this.invalidVATAmount = true;
+      CheckIsValid = false;
+    }
+    else {
+      this.invalidVATPercentage = false;
+      this.invalidVATAmount = false;
+    }
+
 
     // for loop is used to show GoodsReceiptValidator message ..if required  field is not filled
     for (var a in this.goodsReceiptVM.goodReceipt.GoodReceiptValidator.controls) {
@@ -1013,47 +1049,167 @@ export class PHRMGoodsReceiptComponent {
   }
 
   public throwError: boolean = false;
-  CalculationForPHRMGoodsReceipt(changeType: string = null) {
+  // CalculationForPHRMGoodsReceipt(changeType: string = null) {
 
-    if (changeType == "disc-amount") {
-      let discAmt = this.goodsReceiptVM.goodReceipt.DiscountAmount;
-      if (!discAmt) {
-        discAmt = 0;
+  //   if (changeType == "disc-amount") {
+  //     let discAmt = this.goodsReceiptVM.goodReceipt.DiscountAmount;
+  //     if (!discAmt) {
+  //       discAmt = 0;
+  //     }
+  //     let totalCCAmt = this.grItemList.reduce((a, b) => {
+  //       let ccAmount = b.FreeQuantity * b.GRItemPrice * b.CCCharge / 100;
+  //       return a + ccAmount;
+  //     }, 0)
+  //     let subTotalwithoutCC = this.goodsReceiptVM.goodReceipt.SubTotal - totalCCAmt;
+
+  //     let discPercent = discAmt * 100 / subTotalwithoutCC;
+
+  //     this.goodsReceiptVM.goodReceipt.DiscountAmount = discAmt;
+  //     this.goodsReceiptVM.goodReceipt.DiscountPercentage = (discPercent);
+  //   }
+
+  //   else if (changeType == "disc-percent") {
+  //     let discPercent = this.goodsReceiptVM.goodReceipt.DiscountPercentage;
+  //     if (!discPercent) {
+  //       discPercent = 0;
+  //     }
+  //     let totalCCAmt = this.grItemList.reduce((a, b) => {
+  //       let ccAmount = b.FreeQuantity * b.GRItemPrice * b.CCCharge / 100;
+  //       return a + ccAmount;
+  //     }, 0);
+  //     let subTotalwithoutCC = this.goodsReceiptVM.goodReceipt.SubTotal - totalCCAmt;
+
+  //     let discAmt = subTotalwithoutCC * discPercent / 100;
+  //     this.goodsReceiptVM.goodReceipt.DiscountAmount = discAmt;
+
+  //   }
+  //   if (["disc-amount", "disc-percent"].includes(changeType)) {
+  //     this.grItemList.forEach(a => {
+  //       a.DiscountPercentage = this.goodsReceiptVM.goodReceipt.DiscountPercentage;
+  //       updateCalculationsForGrItem(a);
+  //     });
+  //   }
+  //   //To validate the discount percentage: Rohit
+  //   if (this.goodsReceiptVM.goodReceipt.DiscountAmount > this.goodsReceiptVM.goodReceipt.SubTotal) {
+  //     this.throwError = true;
+  //     this.loading = true;
+  //   }
+  //   else {
+  //     this.loading = false;
+  //     this.throwError = false;
+  //   }
+  //   let aggregateResult = this.grItemList.reduce((aggregatedObject, currentItem) => {
+  //     if (currentItem.VATAmount) {
+  //       aggregatedObject.taxableSubTotal += currentItem.SubTotal;
+  //     }
+  //     else {
+  //       aggregatedObject.nontaxableSubtotal += currentItem.SubTotal;
+  //     }
+  //     aggregatedObject.discountTotal += currentItem.DiscountAmount;
+  //     aggregatedObject.vatTotal += currentItem.VATAmount;
+  //     aggregatedObject.totalAmount += currentItem.TotalAmount;
+  //     aggregatedObject.ccTotal += currentItem.FreeQuantity * currentItem.GRItemPrice * currentItem.CCCharge / 100
+  //     return aggregatedObject;
+  //   }, { taxableSubTotal: 0, nontaxableSubtotal: 0, discountTotal: 0, vatTotal: 0, ccTotal: 0, totalAmount: 0 });
+
+
+
+  //   this.goodsReceiptVM.goodReceipt.TaxableSubTotal = CommonFunctions.parsePhrmAmount(aggregateResult.taxableSubTotal);
+  //   this.goodsReceiptVM.goodReceipt.NonTaxableSubTotal = CommonFunctions.parsePhrmAmount(aggregateResult.nontaxableSubtotal);
+  //   this.goodsReceiptVM.goodReceipt.SubTotal = CommonFunctions.parsePhrmAmount(this.goodsReceiptVM.goodReceipt.TaxableSubTotal + this.goodsReceiptVM.goodReceipt.NonTaxableSubTotal);
+  //   this.goodsReceiptVM.goodReceipt.TotalAmount = aggregateResult.totalAmount;
+  //   this.goodsReceiptVM.goodReceipt.DiscountAmount = CommonFunctions.parsePhrmAmount(aggregateResult.discountTotal);
+  //   if (this.goodsReceiptVM.goodReceipt.SubTotal - aggregateResult.ccTotal > 0)
+  //     this.goodsReceiptVM.goodReceipt.DiscountPercentage = CommonFunctions.parsePhrmAmount(this.goodsReceiptVM.goodReceipt.DiscountAmount * 100 / (this.goodsReceiptVM.goodReceipt.SubTotal - aggregateResult.ccTotal));
+  //   this.goodsReceiptVM.goodReceipt.VATAmount = aggregateResult.vatTotal;
+  //   this.goodsReceiptVM.goodReceipt.CCAmount = aggregateResult.ccTotal;
+  //   // if (this.goodsReceiptVM.goodReceipt.DiscountAmount == 0) {
+  //   //   this.goodsReceiptVM.goodReceipt.VATAmount = CommonFunctions.parsePhrmAmount(this.goodsReceiptVM.goodReceipt.TotalAmount - this.goodsReceiptVM.goodReceipt.SubTotal);
+  //   // }
+  //   // this.goodsReceiptVM.goodReceipt.Adjustment = CommonFunctions.parseFinalAmount(this.goodsReceiptVM.goodReceipt.TotalAmount) - this.goodsReceiptVM.goodReceipt.TotalAmount;
+  //   // this.goodsReceiptVM.goodReceipt.Adjustment = CommonFunctions.parsePhrmAmount(this.goodsReceiptVM.goodReceipt.Adjustment);
+  //   this.goodsReceiptVM.goodReceipt.TotalAmount = CommonFunctions.parsePhrmAmount(this.goodsReceiptVM.goodReceipt.TotalAmount);
+
+  // }
+
+  CalculationForPHRMGoodsReceipt(discPer?: number, discAmt?: number) {
+    let SubTotal = 0;
+    let DiscountAmount = 0;
+    let DiscountPercentage = 0;
+    let VATAmount = 0;
+    let VATPercentage = 0;
+    let TotalAmount = 0;
+    let CCAmount = 0;
+
+    if ((discPer < 0 || discPer > 100) || discAmt < 0) {
+      this.invalidDiscountPercentage = true;
+      this.invalidDiscountAmount = true;
+      this.msgserv.showMessage(ENUM_MessageBox_Status.Warning, ['Enter a valid discount']);
+      return;
+    }
+    else {
+      this.invalidDiscountPercentage = false;
+      this.invalidDiscountAmount = false;
+    }
+
+    this.grItemList.forEach(itm => {
+      if (discPer > 0 && discAmt === 0) {
+        itm.DiscountPercentage = discPer;
+        itm.DiscountAmount = (itm.SubTotal * itm.DiscountPercentage) / 100;
       }
-      let totalCCAmt = this.grItemList.reduce((a, b) => {
-        let ccAmount = b.FreeQuantity * b.GRItemPrice * b.CCCharge / 100;
-        return a + ccAmount;
-      }, 0)
-      let subTotalwithoutCC = this.goodsReceiptVM.goodReceipt.SubTotal - totalCCAmt;
-
-      let discPercent = discAmt * 100 / subTotalwithoutCC;
-
-      this.goodsReceiptVM.goodReceipt.DiscountAmount = discAmt;
-      this.goodsReceiptVM.goodReceipt.DiscountPercentage = (discPercent);
-    }
-
-    else if (changeType == "disc-percent") {
-      let discPercent = this.goodsReceiptVM.goodReceipt.DiscountPercentage;
-      if (!discPercent) {
-        discPercent = 0;
+      if (discPer == 0 && discAmt > 0) {
+        let DiscountPercentage = 0;
+        let subTotal = this.grItemList.reduce((a, b) => a + b.SubTotal, 0);
+        DiscountPercentage = (discAmt / subTotal) * 100;
+        itm.DiscountPercentage = DiscountPercentage;
+        itm.DiscountAmount = (itm.SubTotal * itm.DiscountPercentage) / 100;
       }
-      let totalCCAmt = this.grItemList.reduce((a, b) => {
-        let ccAmount = b.FreeQuantity * b.GRItemPrice * b.CCCharge / 100;
-        return a + ccAmount;
-      }, 0);
-      let subTotalwithoutCC = this.goodsReceiptVM.goodReceipt.SubTotal - totalCCAmt;
+      if (discPer === 0 && discAmt === 0) {
+        itm.DiscountPercentage = 0;
+        itm.GrTotalDisAmt = 0;
+        itm.DiscountAmount = 0;
+      }
+      itm.VATAmount = (itm.SubTotal - itm.DiscountAmount) * itm.VATPercentage / 100;
+      itm.TotalAmount = itm.SubTotal - itm.DiscountAmount + itm.VATAmount + itm.CCAmount;
+    });
 
-      let discAmt = subTotalwithoutCC * discPercent / 100;
-      this.goodsReceiptVM.goodReceipt.DiscountAmount = discAmt;
+    SubTotal = this.grItemList.reduce((a, b) => a + b.SubTotal, 0);
+    DiscountAmount = this.grItemList.reduce((a, b) => a + b.DiscountAmount, 0);
+    DiscountPercentage = (DiscountAmount / SubTotal) * 100;
+    VATAmount = this.grItemList.reduce((a, b) => a + b.VATAmount, 0);
+    CCAmount = this.grItemList.reduce((a, b) => a + b.CCAmount, 0);
+    VATPercentage = ((VATAmount / (SubTotal - DiscountAmount)) * 100);
 
+    if (this.isMainDiscountApplicable) {
+      discAmt = discAmt ? discAmt : 0;
+      discPer = discPer ? discPer : 0;
+
+      if (discPer == 0 && discAmt > 0) {
+        DiscountAmount = discAmt;
+        discPer = (discAmt / SubTotal) * 100;
+        DiscountPercentage = discPer;
+      }
+      if (discPer > 0 && discAmt == 0) {
+        discAmt = (SubTotal * discPer) / 100;
+        DiscountAmount = discAmt;
+        DiscountPercentage = discPer;
+      }
     }
-    if (["disc-amount", "disc-percent"].includes(changeType)) {
-      this.grItemList.forEach(a => {
-        a.DiscountPercentage = this.goodsReceiptVM.goodReceipt.DiscountPercentage;
-        updateCalculationsForGrItem(a);
-      });
-    }
-    //To validate the discount percentage: Rohit
+
+
+    TotalAmount = SubTotal - DiscountAmount + VATAmount + CCAmount;
+
+    this.goodsReceiptVM.goodReceipt.TaxableSubTotal = CommonFunctions.parseAmount(SubTotal - DiscountAmount, 4);
+    this.goodsReceiptVM.goodReceipt.NonTaxableSubTotal = CommonFunctions.parseAmount(DiscountAmount, 4);
+    this.goodsReceiptVM.goodReceipt.SubTotal = CommonFunctions.parseAmount(SubTotal, 4);
+    this.goodsReceiptVM.goodReceipt.DiscountAmount = CommonFunctions.parseAmount(DiscountAmount, 4);
+    this.goodsReceiptVM.goodReceipt.DiscountPercentage = CommonFunctions.parseAmount(DiscountPercentage, 4);
+    this.goodsReceiptVM.goodReceipt.VATAmount = CommonFunctions.parseAmount(VATAmount, 4);
+    this.goodsReceiptVM.goodReceipt.VATPercentage = CommonFunctions.parseAmount(VATPercentage, 4);
+    this.goodsReceiptVM.goodReceipt.CCAmount = CommonFunctions.parseAmount(CCAmount, 4);
+    this.goodsReceiptVM.goodReceipt.TotalAmount = CommonFunctions.parseAmount(TotalAmount, 4);
+
+
     if (this.goodsReceiptVM.goodReceipt.DiscountAmount > this.goodsReceiptVM.goodReceipt.SubTotal) {
       this.throwError = true;
       this.loading = true;
@@ -1062,38 +1218,61 @@ export class PHRMGoodsReceiptComponent {
       this.loading = false;
       this.throwError = false;
     }
-    let aggregateResult = this.grItemList.reduce((aggregatedObject, currentItem) => {
-      if (currentItem.VATAmount) {
-        aggregatedObject.taxableSubTotal += currentItem.SubTotal;
+
+    if ((this.goodsReceiptVM.goodReceipt.DiscountPercentage < 0 || this.goodsReceiptVM.goodReceipt.DiscountPercentage > 100) || this.goodsReceiptVM.goodReceipt.DiscountAmount < 0) {
+      this.invalidDiscountPercentage = true;
+      this.invalidDiscountAmount = true;
+      this.throwError = true;
+    }
+    else {
+      this.invalidDiscountPercentage = false;
+      this.invalidDiscountAmount = false;
+      this.throwError = false;
+    }
+
+    if ((this.goodsReceiptVM.goodReceipt.VATPercentage < 0 || this.goodsReceiptVM.goodReceipt.VATPercentage > 100) || this.goodsReceiptVM.goodReceipt.VATAmount < 0) {
+      this.invalidVATPercentage = true;
+      this.invalidVATAmount = true;
+      this.throwError = true;
+    }
+    else {
+      this.invalidVATPercentage = false;
+      this.invalidVATAmount = false;
+      this.throwError = false;
+    }
+  }
+
+  OnVATChange(vatPer?: number, vatAmt?: number) {
+
+    if ((vatPer < 0 || vatPer > 100) || vatAmt < 0) {
+      this.invalidVATPercentage = true;
+      this.invalidVATAmount = true;
+      this.msgserv.showMessage(ENUM_MessageBox_Status.Warning, ['Enter a valid VAT']);
+      return;
+    }
+    else {
+      this.invalidVATPercentage = false;
+      this.invalidVATAmount = false;
+    }
+
+    this.grItemList.forEach(itm => {
+      if (vatPer > 0 && vatAmt === 0) {
+        itm.VATPercentage = vatPer;
+        itm.VATAmount = (itm.SubTotal - itm.DiscountAmount) * itm.VATPercentage / 100;
       }
-      else {
-        aggregatedObject.nontaxableSubtotal += currentItem.SubTotal;
+
+      if (vatPer === 0 && vatAmt > 0) {
+        let VATPercentage = 0;
+        VATPercentage = (vatAmt / (itm.SubTotal - itm.DiscountAmount) * 100);
+        itm.VATPercentage = VATPercentage;
+        itm.VATAmount = (itm.SubTotal - itm.DiscountAmount) * itm.VATPercentage / 100;
       }
-      aggregatedObject.discountTotal += currentItem.DiscountAmount;
-      aggregatedObject.vatTotal += currentItem.VATAmount;
-      aggregatedObject.totalAmount += currentItem.TotalAmount;
-      aggregatedObject.ccTotal += currentItem.FreeQuantity * currentItem.GRItemPrice * currentItem.CCCharge / 100
-      return aggregatedObject;
-    }, { taxableSubTotal: 0, nontaxableSubtotal: 0, discountTotal: 0, vatTotal: 0, ccTotal: 0, totalAmount: 0 });
-
-
-
-    this.goodsReceiptVM.goodReceipt.TaxableSubTotal = CommonFunctions.parsePhrmAmount(aggregateResult.taxableSubTotal);
-    this.goodsReceiptVM.goodReceipt.NonTaxableSubTotal = CommonFunctions.parsePhrmAmount(aggregateResult.nontaxableSubtotal);
-    this.goodsReceiptVM.goodReceipt.SubTotal = CommonFunctions.parsePhrmAmount(this.goodsReceiptVM.goodReceipt.TaxableSubTotal + this.goodsReceiptVM.goodReceipt.NonTaxableSubTotal);
-    this.goodsReceiptVM.goodReceipt.TotalAmount = aggregateResult.totalAmount;
-    this.goodsReceiptVM.goodReceipt.DiscountAmount = CommonFunctions.parsePhrmAmount(aggregateResult.discountTotal);
-    if (this.goodsReceiptVM.goodReceipt.SubTotal - aggregateResult.ccTotal > 0)
-      this.goodsReceiptVM.goodReceipt.DiscountPercentage = CommonFunctions.parsePhrmAmount(this.goodsReceiptVM.goodReceipt.DiscountAmount * 100 / (this.goodsReceiptVM.goodReceipt.SubTotal - aggregateResult.ccTotal));
-    this.goodsReceiptVM.goodReceipt.VATAmount = aggregateResult.vatTotal;
-    this.goodsReceiptVM.goodReceipt.CCAmount = aggregateResult.ccTotal;
-    // if (this.goodsReceiptVM.goodReceipt.DiscountAmount == 0) {
-    //   this.goodsReceiptVM.goodReceipt.VATAmount = CommonFunctions.parsePhrmAmount(this.goodsReceiptVM.goodReceipt.TotalAmount - this.goodsReceiptVM.goodReceipt.SubTotal);
-    // }
-    // this.goodsReceiptVM.goodReceipt.Adjustment = CommonFunctions.parseFinalAmount(this.goodsReceiptVM.goodReceipt.TotalAmount) - this.goodsReceiptVM.goodReceipt.TotalAmount;
-    // this.goodsReceiptVM.goodReceipt.Adjustment = CommonFunctions.parsePhrmAmount(this.goodsReceiptVM.goodReceipt.Adjustment);
-    this.goodsReceiptVM.goodReceipt.TotalAmount = CommonFunctions.parsePhrmAmount(this.goodsReceiptVM.goodReceipt.TotalAmount);
-
+      if (vatPer === 0 && vatAmt === 0) {
+        itm.VATPercentage = 0;
+        itm.VATAmount = 0;
+      }
+    });
+    this.CalculationForPHRMGoodsReceipt();
   }
 
 

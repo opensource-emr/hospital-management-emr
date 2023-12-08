@@ -1,11 +1,26 @@
 import * as moment from "moment/moment";
+import { CoreService } from "../../../../src/app/core/shared/core.service";
 import { CommonFunctions } from "../common.functions";
 import GridColumnSettings from "./grid-column-settings.constant";
 export class ReportGridColumnSettings {
-  constructor(public taxLabel) { }
+
+  public EnableEnglishCalendarOnly: boolean = false;
+  constructor(public taxLabel: any,
+    public coreService: CoreService,
+  ) {
+    this.GetCalendarParameter();
+  }
 
   //All Billing Grid Reports Constant Setting Start
   //grid-action-label
+
+  GetCalendarParameter(): void {
+    const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+    if (param && param.ParameterValue) {
+      const paramValue = JSON.parse(param.ParameterValue);
+      this.EnableEnglishCalendarOnly = paramValue;
+    }
+  }
   public DoctorRevenue = [
     {
       headerName: "Date",
@@ -178,7 +193,12 @@ export class ReportGridColumnSettings {
       width: 90,
       cellRenderer: this.DateConverter_UserCollection,
     },
-    
+    {
+      headerName: "MonthBS",
+      field: "NepMonthName",
+      width: 100,
+      hide: this.ShowOrHideMonthBsColumn()
+    },
     { headerName: "MonthAD", field: "EngMonthName", width: 100 },
 
     { headerName: "Type", field: "BillingType", width: 90 },
@@ -200,6 +220,14 @@ export class ReportGridColumnSettings {
     { headerName: "Remarks", field: "Remarks", width: 100 },
     { headerName: "Counter", field: "CounterName", width: 100 },
   ];
+
+  private ShowOrHideMonthBsColumn() {
+    const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+    if (param && param.ParameterValue) {
+      const paramValue = JSON.parse(param.ParameterValue);
+      return paramValue;
+    }
+  }
 
   //Admission Setting End
   public DateConverter_UserCollection(params) {
@@ -242,9 +270,15 @@ export class ReportGridColumnSettings {
     { headerName: "Scheme Name", field: "SchemeName", width: 100 },
     { headerName: "Hospital No.", field: "HospitalNumber", width: 90 },
     { headerName: "PatientName", field: "PatientName", width: 200 },
+    { headerName: "Age", field: "Age", width: 90 },
+    { headerName: "Gender", field: "Gender", width: 150 },
+    { headerName: "VisitType", field: "VisitType", width: 200 },
+    { headerName: "Contact", field: "Contact", width: 100 },
+    { headerName: "Address", field: "Address", width: 200 },
     { headerName: "Sub Total", field: "SubTotal", width: 80 },
     { headerName: "Discount", field: "DiscountAmount", width: 80 },
     { headerName: "TotalAmount", field: "TotalAmount", width: 90 },
+    { headerName: "DischargeDate", field: "DischargeDate", width: 90 },
     { headerName: "User", field: "User", width: 100 },
     { headerName: "Remarks", field: "Remarks", width: 120 },
     { headerName: "Counter", field: "CounterName", width: 120 },
@@ -465,7 +499,12 @@ export class ReportGridColumnSettings {
   }
   public TotalItemsBillReport = [
     { headerName: "Date", field: "TransactionDate", width: 130 },
-    
+    {
+      headerName: "MonthBS",
+      field: "NepMonthName",
+      width: 100,
+      hide: this.ShowOrHideMonthBsColumn()
+    },
     { headerName: "MonthAD", field: "EngMonthName", width: 100 },
     { headerName: "Receipt No.", field: "ReceiptNo", width: 130 },
     { headerName: "BillingType", field: "BillingType", width: 130 },
@@ -830,7 +869,7 @@ export class ReportGridColumnSettings {
       width: 140,
       cellRenderer: this.RegDateConverterRenderer,
     },
-    { headerName: "Patient Name", field: "Patient_Name", width: 160 },
+    { headerName: "Patient Name", field: "PatientName", width: 160 },
     {
       headerName: "Date of Birth",
       field: "DateOfBirth",
@@ -842,7 +881,7 @@ export class ReportGridColumnSettings {
     { headerName: "PhoneNumber", field: "PhoneNumber", width: 100 },
     { headerName: "Country", field: "CountryName", width: 100 },
     { headerName: "Address", field: "Address", width: 100 },
-    { headerName: "MembershipType", field: "MembershipTypeName", width: 100 },
+    { headerName: "SchemeName", field: "SchemeName", width: 100 },
     { headerName: "Blood Group", field: "BloodGroup", width: 80 },
     { headerName: "Email", field: "Email", width: 100 },
     { headerName: "Insurance No ", field: "InsuranceNumber", width: 133 },
@@ -2330,6 +2369,18 @@ export class ReportGridColumnSettings {
     { headerName: "FollowUp Female Child", field: "FollowupFemaleChild", width: 90 },
     { headerName: "Total", field: "Total", width: 70 }
   ];
+  public RPT_APPT_DoctorWiseStatisticsCounts = [
+    { headerName: "DoctorName", field: "FullName", width: 140 },
+    { headerName: "New Male Adult", field: "NewMaleAdult", width: 70 },
+    { headerName: "New Female Adult", field: "NewFemaleAdult", width: 80 },
+    { headerName: "New Male Child", field: "NewMaleChild", width: 70 },
+    { headerName: "New Female Child", field: "NewFemaleChild", width: 80 },
+    { headerName: "Old Male Adult", field: "OldMaleAdult", width: 80 },
+    { headerName: "Old Female Adult", field: "OldFemaleAdult", width: 90 },
+    { headerName: "Old Male Child", field: "OldMaleChild", width: 80 },
+    { headerName: "Old Female Child", field: "OldFemaleChild", width: 90 },
+    { headerName: "Total", field: "Total", width: 70 }
+  ];
 
   public RPT_APPT_DistrictWiseAppointmentCounts = [
     { headerName: "District Name", field: "DistrictName", width: 200 },
@@ -2403,7 +2454,7 @@ export class ReportGridColumnSettings {
     { headerName: "Edited Date", field: "Edited Date", width: 100 }
   ];
   public IssuedItemListReportColumns = [
-    { headerName: "ReferenceNo.", field: "ReferenceNo", width: 110 },
+    { headerName: "Ref. No. (Dispatch No)", field: "DispatchNo", width: 130 },
     { headerName: "Issued Date", field: "IssuedDate", width: 200 },
     { headerName: "SubCategory", field: "SubCategoryName", width: 200 },
     { headerName: "Item Name", field: "ItemName", width: 200 },
@@ -2490,4 +2541,34 @@ export class ReportGridColumnSettings {
     { headerName: "AdmissionDate", field: "AdmissionDate", width: 140, cellRenderer: this.AdmissionDateRenderer },
     { headerName: "DischargedDate", field: "DischargedDate", width: 140, cellRenderer: this.DischargedDateFormatter }
   ];
+  public InPatientOutstandingReportCols = [
+    { headerName: "Scheme", field: "SchemeName", width: 150 },
+    { headerName: "Price Category", field: "PriceCategoryName", width: 150 },
+    { headerName: "HospitalNo", field: "HospitalNo", width: 100 },
+    { headerName: "IP NO", field: "IPNo", width: 100 },
+    { headerName: "Policy/Member", field: "PolicyNo", width: 100 },
+    { headerName: "Patient Name", field: "PatientName", width: 100 },
+    { headerName: "Age/Sex", field: "AgeSex", width: 150 },
+    { headerName: "Contact No.", field: "ContactNo", width: 150 },
+    { headerName: "Address", field: "Address", width: 100 },
+    { headerName: "Ward/Bed", field: "WardBed", width: 100 },
+    { headerName: "AdmmittedOn", field: "AdmittedOn", width: 100, cellRenderer: this.AdmittedDateRenderer },
+    { headerName: "Days Of Stay", field: "TotalDays", width: 80 },
+    { headerName: "Credit Pharmacy", field: "PharmacyCreditAmount", width: 150 },
+    { headerName: "Provisional Pharmacy", field: "PharmacyProvisionalAmount", width: 150 },
+    { headerName: "Credit Service", field: "CreditServiceAmount", width: 150 },
+    { headerName: "Provisional Service", field: "ProvisionalServiceAmount", width: 150 },
+    { headerName: "Total Amount", field: "TotalAmount", width: 150 },
+    { headerName: "Total Deposit", field: "DepositBalance", width: 150 },
+    { headerName: "Due Amount", field: "TotalDueAmount", width: 150 },
+    { headerName: "Care Person Name", field: "CarePersonName", width: 150 },
+    { headerName: "Care Person Contact", field: "CarePersonContact", width: 150 }
+  ]
+  AdmittedDateRenderer(params) {
+    let date: string = params.data.AdmittedOn;
+    return moment(date).format("YYYY-MM-DD");
+  }
+
+
+
 }

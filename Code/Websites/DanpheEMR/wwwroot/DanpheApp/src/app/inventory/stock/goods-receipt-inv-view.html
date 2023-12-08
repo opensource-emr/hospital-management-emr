@@ -129,14 +129,12 @@
             <div style="text-align:center;">
                 <div class="col-md-12">
                     <div class="" style="margin-bottom: 10px; display: flex; align-items: center;">
-                        <div class="logo" style="width: 25%;justify-content: center;flex-direction: column;display: flex;"> <img
-                                 class="img-responsive" style="max-height:70px; position: static;"
-                                 src="../../../themes/theme-default/images/hospital-logo.png" /> </div>
+                        <div class="logo" style="width: 25%;justify-content: center;flex-direction: column;display: flex;"> <img class="img-responsive" style="max-height:70px; position: static;" src="../../../themes/theme-default/images/hospital-logo.png" /> </div>
                         <div style="width: 50%;float: left;padding-bottom:  0px;">
                             <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
                                 <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                                 <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                                <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                                <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                                 <span style="font-size:15px;"><strong> Inventory Unit </strong></span><br />
                             </div>
                         </div>
@@ -159,9 +157,9 @@
                     </div>
                     <div class="right" style="text-align:right;">
                         <p>Entry Date:<b> {{goodsreceiptDetails.CreatedOn}}
-                            </b></p>
+                                {{goodsreceiptDetails.CreatedOn | nepaliDate }}</b></p>
                         <p>Bill Date:<b> {{goodsreceiptDetails.GoodsReceiptDate}}
-                            </b></p>
+                                {{goodsreceiptDetails.GoodsReceiptDate | nepaliDate }}</b></p>
                         <p>Bill No:<b> {{goodsreceiptDetails.BillNo}}</b></p>
                         <p>Credit Period<b> {{goodsreceiptDetails.CreditPeriod}} Days</b></p>
                     </div>
@@ -280,8 +278,7 @@
                         </table>
                     </div> -->
                         <div class="right" style="text-align:right;">
-                            <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px"
-                                   *ngIf="goodsreceiptDetails.GRCharges.length !=0">
+                            <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px" *ngIf="goodsreceiptDetails.GRCharges.length !=0">
                                 <tr>
                                     <th colspan="2" class="text-center">
                                         <strong>Other Charges</strong>
@@ -300,12 +297,10 @@
                     <div class="col-md-12 text-left" *ngIf="goodsreceiptDetails.GRStatus == 'verified'" style="display: flex;flex-direction: column;">
                         <div style="margin-bottom:1rem;">
                             <label class="col-md-3" for="ReceivedRemarks">Receiving Remarks<sup style="color: red;">*</sup>&nbsp;:&nbsp;</label>
-                            <textarea id="ReceivedRemarks" class="col-md-5" type="text" name="ReceivedRemarks" id="ReceivedRemarks"
-                                      [(ngModel)]="receivedRemarks" rows="3" cols="20" (keyup.enter)="setFocusById('ReceiveButton')"> </textarea>
+                            <textarea id="ReceivedRemarks" class="col-md-5" type="text" name="ReceivedRemarks" id="ReceivedRemarks" [(ngModel)]="receivedRemarks" rows="3" cols="20" (keyup.enter)="setFocusById('ReceiveButton')"> </textarea>
                         </div>
                         <div style="text-align: center;">
-                            <button class="animated-btn blinking-btn-warning" id="ReceiveButton" (click)="receive()" [disabled]="loading"><i
-                                   class="fa fa-check-square-o" aria-hidden="true"></i>Receive</button>
+                            <button class="animated-btn blinking-btn-warning" id="ReceiveButton" (click)="receive()" [disabled]="loading"><i class="fa fa-check-square-o" aria-hidden="true"></i>Receive</button>
                         </div>
                     </div>
                     <!-- Receive Button Feature Ends here -->
@@ -319,19 +314,15 @@
                     <div style="text-align:left !important" class="col-md-12  print-border-bottom">
                         <div *ngIf="!!goodsreceiptDetails.Remarks" class="col-md-2"> <b>Remarks:</b> {{goodsreceiptDetails.Remarks}}
                         </div>
-                        <div *ngIf="goodsreceiptDetails.IsCancel == true" class="col-md-10"> <b>Cancellation Remarks:</b>
-                            {{goodsreceiptDetails.CancelRemarks}} </div>
+                        <div *ngIf="goodsreceiptDetails.IsCancel == true" class="col-md-10"> <b>Cancellation Remarks:</b> {{goodsreceiptDetails.CancelRemarks}} </div>
                     </div>
                     <br />
                     <div class="clearfix" style="margin: 0 0 15px 0;">
                         <div class="col-md-12 clear">
-                            <div class="left" style="width:33.33%;text-align:left"> <strong>Prepared By</strong><br /> Name:
-                                <b>{{creator.Name}}</b><br /> Designation: {{creator.Role}}
-                            </div>
+                            <div class="left" style="width:33.33%;text-align:left"> <strong>Prepared By</strong><br /> Name: <b>{{creator.Name}}</b><br /> Designation: {{creator.Role}} </div>
                             <div class="left" style="width:33.33%;text-align:left"> <strong>Verified By</strong><br />
                                 <div *ngFor="let verifier of verifierDetails; let i = index">
-                                    Name:&nbsp;<b>{{ verifier.VerifiedBy.FullName }}</b><br /> Designation:&nbsp;{{
-                                    verifier.VerifiedBy.EmployeeRole.EmployeeRoleName }}
+                                    Name:&nbsp;<b>{{ verifier.VerifiedBy.FullName }}</b><br /> Designation:&nbsp;{{ verifier.VerifiedBy.EmployeeRole.EmployeeRoleName }}
                                 </div>
                             </div>
                             <!-- <div class="left" style="width:33.33%;text-align:left"> <strong>Authorized By</strong><br /> Name: <b>{{creator.Name}}</b><br /> Designation: {{creator.Role}} </div> -->
@@ -362,16 +353,14 @@
                             <div class="row">
                                 <label class="control-label col-md-3">Cancellation Remarks <sup>*</sup><b>:</b></label>
                                 <div class="col-md-9">
-                                    <textarea style="width:100%;" type="text" name="cancelRemarks" [(ngModel)]="goodsreceiptDetails.CancelRemarks"
-                                              rows="5"></textarea>
+                                    <textarea style="width:100%;" type="text" name="cancelRemarks" [(ngModel)]="goodsreceiptDetails.CancelRemarks" rows="5"></textarea>
                                 </div>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal" [disabled]="goodsreceiptDetails.CancelRemarks == ''"
-                            (click)="cancelGR()">Yes</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" [disabled]="goodsreceiptDetails.CancelRemarks == ''" (click)="cancelGR()">Yes</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
                 </div>
             </div>
@@ -386,14 +375,13 @@
                         <a class="btn btn-danger del-btn" (click)="Close()" title="Cancel">X</a>
                         <div class="" style="margin-bottom: 10px; display: flex; align-items: center;">
                             <div class="logo" style="width: 25%;justify-content: center;flex-direction: column;display: flex;">
-                                <img class="img-responsive" style="max-height:70px; position: static;"
-                                     src="../../../themes/theme-default/images/hospital-logo.png" />
+                                <img class="img-responsive" style="max-height:70px; position: static;" src="../../../themes/theme-default/images/hospital-logo.png" />
                             </div>
                             <div style="width: 50%;float: left;padding-bottom:  0px;">
                                 <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
                                     <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                                     <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                                    <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                                     <span style="font-size:15px;"><strong> Inventory Unit </strong></span><br />
                                 </div>
                             </div>
@@ -414,12 +402,13 @@
                             <p>Purchase Order No:<b> {{goodsreceiptDetails.PurchaseOrderId}}</b></p>
                             <p>Supplier Contact:<b> {{goodsreceiptDetails.VendorNo}}</b></p>
                         </div>
-                        <div class="left"
-                             style="width: 33.33%;justify-content: center;flex-direction: row; display: flex; align-items: center; min-height: 100px;">
+                        <div class="left" style="width: 33.33%;justify-content: center;flex-direction: row; display: flex; align-items: center; min-height: 100px;">
                         </div>
                         <div class="right" style="text-align:right;">
-                            <p>Entry Date:<b> {{goodsreceiptDetails.CreatedOn}}</b></p>
-                            <p>Bill Date:<b> {{goodsreceiptDetails.GoodsReceiptDate}}</b></p>
+                            <p>Entry Date:<b> {{goodsreceiptDetails.CreatedOn}}
+                                    {{goodsreceiptDetails.CreatedOn | nepaliDate }}</b></p>
+                            <p>Bill Date:<b> {{goodsreceiptDetails.GoodsReceiptDate}}
+                                    {{goodsreceiptDetails.GoodsReceiptDate | nepaliDate }}</b></p>
                             <p>Bill No:<b> {{goodsreceiptDetails.BillNo}}</b></p>
                             <p>Credit Period<b> {{goodsreceiptDetails.CreditPeriod}} Days</b></p>
                         </div>
@@ -445,11 +434,9 @@
                                     <tr>
                                         <td><b> {{goodsreceiptDetails.VendorName}}</b></td>
                                         <td>{{goodsreceiptDetails.BillNo}}/{{goodsreceiptDetails.GoodsArrivalDate}}</td>
-                                        <td>{{goodsreceiptDetails.GoodsArrivalFiscalYearFormatted}}-{{goodsreceiptDetails.GoodsArrivalNo}}-{{goodsreceiptDetails.GoodsArrivalDate
-                                            | date : 'yyyy-MM-dd'}}</td>
+                                        <td>{{goodsreceiptDetails.GoodsArrivalFiscalYearFormatted}}-{{goodsreceiptDetails.GoodsArrivalNo}}-{{goodsreceiptDetails.GoodsArrivalDate | date : 'yyyy-MM-dd'}}</td>
                                         <td>{{goodsreceiptDetails.IMIRNo}} - {{goodsreceiptDetails.IMIRDate | date : 'yyyy-MM-dd'}} </td>
-                                        <td>{{goodsreceiptDetails.CurrentFiscalYear}}-{{goodsreceiptDetails.GoodsReceiptNo}}/{{goodsreceiptDetails.GoodsReceiptDate
-                                            | date : 'yyyy-MM-dd'}}</td>
+                                        <td>{{goodsreceiptDetails.CurrentFiscalYear}}-{{goodsreceiptDetails.GoodsReceiptNo}}/{{goodsreceiptDetails.GoodsReceiptDate | date : 'yyyy-MM-dd'}}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -556,8 +543,7 @@
                                     <td><textarea class="form-control" id="exampleFormControlTextarea1" rows="5"></textarea></td>
                                     <td>
                                         <div class="form-check d-block">
-                                            <input class="form-check-input" type="radio" name="exampleRadios1" id="exampleRadios3" value="option1"
-                                                   checked>
+                                            <input class="form-check-input" type="radio" name="exampleRadios1" id="exampleRadios3" value="option1" checked>
                                             <label class="form-check-label" for="exampleRadios3">
                                                 1
                                             </label>
@@ -690,14 +676,11 @@
                         <div class="clearfix"></div>
                         <div style="text-align:left !important" class="col-md-12  print-border-bottom">
                             <div *ngIf="!!goodsreceiptDetails.Remarks" class="col-md-2"> <b>Remarks:</b> {{goodsreceiptDetails.Remarks}} </div>
-                            <div *ngIf="goodsreceiptDetails.IsCancel == true" class="col-md-10"> <b>Cancellation Remarks:</b>
-                                {{goodsreceiptDetails.CancelRemarks}} </div>
+                            <div *ngIf="goodsreceiptDetails.IsCancel == true" class="col-md-10"> <b>Cancellation Remarks:</b> {{goodsreceiptDetails.CancelRemarks}} </div>
                         </div>
                         <br />
                         <div class="col-md-12 clear">
-                            <div class="left" style="width:33.33%;text-align:left"> <strong>Prepared By</strong><br /> Name:
-                                <b>{{creator.Name}}</b><br /> Designation: {{creator.Role}}
-                            </div>
+                            <div class="left" style="width:33.33%;text-align:left"> <strong>Prepared By</strong><br /> Name: <b>{{creator.Name}}</b><br /> Designation: {{creator.Role}} </div>
                             <div class="left" style="width:33.33%;text-align:left"> <strong>Verified By</strong><br /> Name:
                                 <br /> Designation:
                             </div>

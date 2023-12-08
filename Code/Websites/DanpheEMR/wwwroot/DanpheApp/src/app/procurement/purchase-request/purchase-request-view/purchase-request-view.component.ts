@@ -7,7 +7,7 @@ import { MessageboxService } from '../../../shared/messagebox/messagebox.service
 import { RouteFromService } from '../../../shared/routefrom.service';
 import { InventoryPurchaseRequestVM } from '../../../verification/inventory/purchase-request/purchase-request-detail.component';
 import { ProcurementBLService } from '../../shared/procurement.bl.service';
-
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 @Component({
     selector: 'app-purchase-request-views',
     templateUrl: './purchase-request-view.component.html',
@@ -20,11 +20,14 @@ export class PurchaseRequestViewComponent implements OnInit {
     printDetaiils: HTMLElement;
     showPrint: boolean;
 
+    public GeneralFieldLabel = new GeneralFieldLabels();
+
     constructor(public inventoryService: InventoryService,
         public procBLService: ProcurementBLService, public coreService: CoreService,
         public router: Router, public routeFromService: RouteFromService,
         public messageBoxService: MessageboxService) {
         this.GetInventoryBillingHeaderParameter();
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
     GetInventoryBillingHeaderParameter() {
         var paramValue = this.coreService.Parameters.find(

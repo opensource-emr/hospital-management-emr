@@ -1,9 +1,11 @@
 ﻿using DanpheEMR.DalLayer;
 using DanpheEMR.Enums;
+using DanpheEMR.Security;
 using DanpheEMR.ServerModel.PatientModels;
 using DanpheEMR.ServerModel.SSFModels;
 using DanpheEMR.ServerModel.SSFModels.ClaimResponse;
 using DanpheEMR.ServerModel.SSFModels.SSFResponse;
+using DanpheEMR.Services.SSF.DTO;
 using DanpheEMR.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -162,12 +164,13 @@ namespace DanpheEMR.Services.SSF
 
             //Krishna, 27thFeb'23 Below logic is used to find the index of Medical/Accidental Schemes coming from SSF Server
             var indexForAccident = insurance.FindIndex(ins =>
-                ins.extension.Any(e => e.valueString.ToString().Like(accidentalSchemeName))
+                ins.extension.Any(e => String.IsNullOrEmpty(e.valueString) ? "".Like(accidentalSchemeName) : e.valueString.Like(accidentalSchemeName))
             );
 
             var indexForMedical = insurance.FindIndex(ins =>
-                ins.extension.Any(e => e.valueString.ToString().Like(medicalSchemeName))
+                ins.extension.Any(e => String.IsNullOrEmpty(e.valueString) ? "".Like(medicalSchemeName) : e.valueString.Like(medicalSchemeName))
             );
+
 
             //Krishna, 27thFeb'23 throw exception in case of issue like index not found.
             if (indexForMedical <= -1 || indexForAccident <= -1)
@@ -307,14 +310,26 @@ namespace DanpheEMR.Services.SSF
                     if (response.Content.Headers.ContentType?.MediaType != "text/html")
                     {
                         var errorString = await response.Content.ReadAsStringAsync();
-                        errorResult = JsonConvert.DeserializeObject<ErrorRoot>(errorString);
-                        if (errorResult != null && errorResult.issue.Count > 0)
-                        {
-                            errorResult.issue.ForEach(a =>
+                        dynamic errorJson = JsonConvert.DeserializeObject(errorString);
+                        if (errorJson != null && errorJson.issue.Count > 0) {
+                            if (errorJson.issue[0].details.text is string)
                             {
-                                var tempErrorMsg = a.details.text;
+                                var tempErrorMsg = errorJson.issue[0].details.text;
                                 errorMessage += tempErrorMsg + ",";
-                            });
+                                
+                            }
+                            else
+                            {
+                                errorResult = JsonConvert.DeserializeObject<ErrorRoot>(errorString);
+                                if (errorResult != null && errorResult.issue.Count > 0)
+                                {
+                                    errorResult.issue.ForEach(a =>
+                                    {
+                                        var tempErrorMsg = $"({a.details.text.errorCode}) {a.details.text.message}";
+                                        errorMessage += tempErrorMsg + ",";
+                                    });
+                                }
+                            }
                         }
                         errorMessage = errorMessage.Substring(0, errorMessage.Length - 1);
                     }
@@ -371,6 +386,21 @@ namespace DanpheEMR.Services.SSF
                     ssfDbContext.SSFClaimResponseDetail.AddRange(claimResponseList);
                     await ssfDbContext.SaveChangesAsync();
                 }
+
+                //Krishna, this will update the IsClaimed Status of Booking List for this specific Claim
+                if (response.IsSuccessStatusCode)
+                {
+                    var claimBookings = ssfDbContext.SSFClaimBookings.Where(a => a.LatestClaimCode.ToString() == claimRoot.clientClaimId).ToList();
+                    if (claimBookings != null && claimBookings.Count > 0)
+                    {
+                        claimBookings.ForEach(book =>
+                        {
+                            book.IsClaimed = true;
+                        });
+                        await ssfDbContext.SaveChangesAsync();
+                    }
+                }
+
 
                 SSFClaimSubmissionOutput outputResult = new SSFClaimSubmissionOutput
                 {
@@ -476,6 +506,231 @@ namespace DanpheEMR.Services.SSF
             {
                 throw;
             }
+        }
+
+        public async Task<ClaimBookingResponse> BookClaim(SSFDbContext ssfDbContext, ClaimBookingRoot_DTO claimBooking_DTO, RbacUser currentUser)
+        {
+            try
+            {
+                var client = new HttpClient();
+                var SSFCred = GetSSFCredentials(ssfDbContext);
+                var ISO_8859_1 = Encoding.GetEncoding("ISO-8859-1");
+                var svcCredentials = Convert.ToBase64String(ISO_8859_1.GetBytes(SSFCred.SSFUsername + ":" + SSFCred.SSFPassword));
+                client.DefaultRequestHeaders.Add("Authorization", "Basic " + svcCredentials);
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Add(SSFCred.SSFRemotekey, SSFCred.SSFRemoteValue);
+                client.BaseAddress = new Uri(SSFCred.SSFurl);
+                var claimBookingObj = PrepareClaimBooking(claimBooking_DTO);
+                var jsonContent = JsonConvert.SerializeObject(claimBookingObj);
+                StringContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                //var response = await client.PostAsync($"BookingService/", content);
+                var response = await client.PostAsync(ENUM_SSF_ApiEndPoints.BookingService, content);
+                var result = "";
+                var errorResult = new ErrorRoot();
+                var errorMessage = "";
+                ClaimBookingResponseRoot serializeData = new ClaimBookingResponseRoot();
+                string responseStatus = ENUM_Danphe_HTTP_ResponseStatus.Failed;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    result = await response.Content.ReadAsStringAsync();
+                    serializeData = JsonConvert.DeserializeObject<ClaimBookingResponseRoot>(result);
+                    responseStatus = ENUM_Danphe_HTTP_ResponseStatus.OK;
+                }
+                else
+                {
+                    responseStatus = ENUM_Danphe_HTTP_ResponseStatus.Failed;
+                    if (response.Content.Headers.ContentType?.MediaType != "text/html")
+                    {
+                        var errorString = await response.Content.ReadAsStringAsync();
+                        dynamic errorJson = JsonConvert.DeserializeObject(errorString);
+                        if (errorJson != null && errorJson.issue.Count > 0)
+                        {
+                            if (errorJson.issue[0].details.text is string)
+                            {
+                                var tempErrorMsg = errorJson.issue[0].details.text;
+                                errorMessage += tempErrorMsg + ",";
+
+                            }
+                            else
+                            {
+                                errorResult = JsonConvert.DeserializeObject<ErrorRoot>(errorString);
+                                if (errorResult != null && errorResult.issue.Count > 0)
+                                {
+                                    errorResult.issue.ForEach(a =>
+                                    {
+                                        var tempErrorMsg = $"({a.details.text.errorCode}) {a.details.text.message}";
+                                        errorMessage += tempErrorMsg + ",";
+                                    });
+                                }
+                            }
+                        }
+                        errorMessage = errorMessage.Substring(0, errorMessage.Length - 1);
+                    }
+                    else
+                    {
+                        var errorString = await response.Content.ReadAsStringAsync();
+                        errorMessage = errorString;
+                    }
+                }
+
+                SaveClaimBookingResponse(ssfDbContext, result, responseStatus, claimBooking_DTO, currentUser);
+
+                ClaimBookingResponse outputResult = new ClaimBookingResponse
+                {
+                    ResponseStatus = responseStatus,
+                    ErrorMessage = errorMessage
+                };
+                return outputResult;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private ClaimBooking PrepareClaimBooking(ClaimBookingRoot_DTO claimBookingRoot)
+        {
+            ClaimBooking claimBooking = new ClaimBooking();
+            if (claimBookingRoot.IsAccidentCase)
+            {
+                claimBooking.bookedAmount = (float)claimBookingRoot.bookedAmount; //(int)claimBookingRoot.bookedAmount;
+                claimBooking.Patient = claimBookingRoot.Patient;
+                claimBooking.scheme = ENUM_SSF_SchemeTypes.Accident;
+                claimBooking.subProduct = claimBookingRoot.subProduct;
+                claimBooking.client_claim_id = claimBookingRoot.LatestClaimCode.ToString();
+                claimBooking.client_invoice_no = String.IsNullOrEmpty(claimBookingRoot.BillingInvoiceNo) ? claimBookingRoot.PharmacyInvoiceNo : claimBookingRoot.BillingInvoiceNo;
+            }
+            else
+            {
+                claimBooking.bookedAmount = (float)claimBookingRoot.bookedAmount; //(int)(claimBookingRoot.bookedAmount);
+                claimBooking.Patient = claimBookingRoot.Patient;
+                claimBooking.scheme = ENUM_SSF_SchemeTypes.Medical;
+                claimBooking.subProduct = claimBookingRoot.subProduct;
+                claimBooking.client_claim_id = claimBookingRoot.LatestClaimCode.ToString();
+                claimBooking.client_invoice_no = String.IsNullOrEmpty(claimBookingRoot.BillingInvoiceNo) ? claimBookingRoot.PharmacyInvoiceNo : claimBookingRoot.BillingInvoiceNo;
+            }
+            return claimBooking;
+        }
+
+        private void SaveClaimBookingResponse(SSFDbContext ssfDbContext, string result, string responseStatus, ClaimBookingRoot_DTO claimBooking_DTO, RbacUser currentUser)
+        {
+            if (responseStatus == ENUM_Danphe_HTTP_ResponseStatus.OK)
+            {
+                SaveSuccesfulClaimBooking(ssfDbContext, result, claimBooking_DTO, currentUser);
+            }
+            else
+            {
+                SaveUnsuccessfulClaimBooking(ssfDbContext, currentUser, claimBooking_DTO);
+            }
+        }
+
+
+        private void SaveSuccesfulClaimBooking(SSFDbContext ssfDbContext, string result, ClaimBookingRoot_DTO claimBooking_DTO, RbacUser currentUser)
+        {
+
+            SSFClaimBookingModel claimBooking = new SSFClaimBookingModel();
+            if (String.IsNullOrEmpty(claimBooking_DTO.BillingInvoiceNo))
+            {
+                claimBooking = ssfDbContext.SSFClaimBookings.Where(a => a.PharmacyInvoiceNo == claimBooking_DTO.PharmacyInvoiceNo).FirstOrDefault();
+            }
+            else
+            {
+                claimBooking = ssfDbContext.SSFClaimBookings.Where(a => a.BillingInvoiceNo == claimBooking_DTO.BillingInvoiceNo).FirstOrDefault();
+            }
+
+            if (claimBooking != null)
+            {
+                claimBooking.ReBookedBy = currentUser.EmployeeId;
+                claimBooking.ReBookingDate = DateTime.Now;
+                claimBooking.ResponseData = result;
+                claimBooking.BookingResponseDate = DateTime.Now;
+                claimBooking.BookingStatus = true;
+
+                ssfDbContext.Entry(claimBooking).State = EntityState.Modified;
+                ssfDbContext.SaveChanges();
+            }
+            else
+            {
+                SSFClaimBookingModel claimBookingService = new SSFClaimBookingModel();
+                claimBookingService.PatientId = claimBooking_DTO.PatientId;
+                claimBookingService.HospitalNo = claimBooking_DTO.HospitalNo;
+                claimBookingService.PolicyNo = claimBooking_DTO.PolicyNo;
+                claimBookingService.LatestClaimCode = claimBooking_DTO.LatestClaimCode;
+                claimBookingService.ResponseData = result;
+                claimBookingService.BillingInvoiceNo = claimBooking_DTO.BillingInvoiceNo;
+                claimBookingService.PharmacyInvoiceNo = claimBooking_DTO.PharmacyInvoiceNo;
+                claimBookingService.BookingRequestDate = DateTime.Now;
+                claimBookingService.BookingResponseDate = DateTime.Now;
+                claimBookingService.BookedBy = currentUser.EmployeeId;
+                claimBookingService.BookingStatus = true;
+                claimBookingService.IsClaimed = false;
+                claimBookingService.IsActive = true;
+
+                ssfDbContext.SSFClaimBookings.Add(claimBookingService);
+                ssfDbContext.SaveChanges();
+            }
+        }
+
+        private void SaveUnsuccessfulClaimBooking(SSFDbContext ssfDbContext, RbacUser currentUser, ClaimBookingRoot_DTO claimBooking_DTO)
+        {
+            SSFClaimBookingModel claimBooking = new SSFClaimBookingModel();
+            if (String.IsNullOrEmpty(claimBooking_DTO.BillingInvoiceNo))
+            {
+                claimBooking = ssfDbContext.SSFClaimBookings.Where(a => a.PharmacyInvoiceNo == claimBooking_DTO.PharmacyInvoiceNo).FirstOrDefault();
+            }
+            else
+            {
+                claimBooking = ssfDbContext.SSFClaimBookings.Where(a => a.BillingInvoiceNo == claimBooking_DTO.BillingInvoiceNo).FirstOrDefault();
+            }
+
+            if (claimBooking != null)
+            {
+                claimBooking.ReBookedBy = currentUser.EmployeeId;
+                claimBooking.ReBookingDate = DateTime.Now;
+                claimBooking.ResponseData = "";
+                claimBooking.BookingStatus = false;
+
+                ssfDbContext.Entry(claimBooking).State = EntityState.Modified;
+                ssfDbContext.SaveChanges();
+            }
+            else
+            {
+                SSFClaimBookingModel booking = new SSFClaimBookingModel();
+                booking.PatientId = claimBooking_DTO.PatientId;
+                booking.HospitalNo = claimBooking_DTO.HospitalNo;
+                booking.PolicyNo = claimBooking_DTO.PolicyNo;
+                booking.LatestClaimCode = claimBooking_DTO.LatestClaimCode;
+                booking.ResponseData = "";
+                booking.BillingInvoiceNo = claimBooking_DTO.BillingInvoiceNo;
+                booking.PharmacyInvoiceNo = claimBooking_DTO.PharmacyInvoiceNo;
+                booking.BookingRequestDate = DateTime.Now;
+                booking.BookedBy = currentUser.EmployeeId;
+                booking.BookingStatus = false;
+                booking.IsClaimed = false;
+                booking.IsActive = true;
+
+                ssfDbContext.SSFClaimBookings.Add(booking);
+                ssfDbContext.SaveChanges();
+            }
+        }
+
+        public async Task<object> GetClaimBookingDetail(SSFDbContext sSFDbContext, Int64 claimCode)
+        {
+            var claimBooking = await sSFDbContext.SSFClaimBookings
+                                            .Where(a => a.LatestClaimCode == claimCode && a.IsActive == true && a.IsClaimed == false)
+                                            .Select(s => new
+                                            {
+                                                PatientId = s.PatientId,
+                                                HospitalNo = s.HospitalNo,
+                                                PolicyNo = s.PolicyNo,
+                                                LatestClaimCode = s.LatestClaimCode,
+                                                BillingInvoiceNo = s.BillingInvoiceNo,//$"BL{ s.BillingInvoiceNo}",
+                                                PharmacyInvoiceNo = s.PharmacyInvoiceNo, //$"PH{s.PharmacyInvoiceNo}",
+                                                BookingStatus = s.BookingStatus,
+                                            }).ToListAsync();
+            return claimBooking;
         }
     }
 }

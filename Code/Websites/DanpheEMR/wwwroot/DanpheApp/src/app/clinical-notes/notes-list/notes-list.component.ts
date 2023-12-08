@@ -18,6 +18,7 @@ import { PatientService } from "../../patients/shared/patient.service";
 import { Allergy } from "../../clinical/shared/allergy.model";
 import { ADT_BLService } from "../../adt/shared/adt.bl.service";
 import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from "../../shared/danphe-grid/NepaliColGridSettingsModel";
+import { GeneralFieldLabels } from "../../../app/shared/DTOs/general-field-label.dto";
 
 @Component({
   templateUrl: "./notes-list.html",
@@ -55,6 +56,8 @@ export class NotesListComponent {
   public showClinicalPrescriptionNoteView: boolean = false;
   showConsultantView: boolean = false;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(
     public http: HttpClient,
     public patientServ: PatientService,
@@ -67,6 +70,7 @@ export class NotesListComponent {
     public notetemplateBLService: NoteTemplateBLService,
     public adtBlService: ADT_BLService
   ) {
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     this.patVisit = this.visitService.getGlobal();
     this.GetPatientClinicalNotes();
     this.GetPatientVitalsList();

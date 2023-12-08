@@ -16,6 +16,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<SSFClaimResponseDetails> SSFClaimResponseDetail { get; set; }
         public DbSet<PatientSchemeMapModel> PatientSchemeMaps { get; set; }
         public DbSet<VisitModel> Visits { get; set; }
+        public DbSet<SSFClaimBookingModel> SSFClaimBookings { get; set; }
         public SSFDbContext(string conn) : base(conn)
         {
             this.Configuration.LazyLoadingEnabled = true;
@@ -28,6 +29,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<SSFClaimResponseDetails>().ToTable("PAT_SSFClaimResponseDetails");
             modelBuilder.Entity<PatientSchemeMapModel>().ToTable("PAT_MAP_PatientSchemes");
             modelBuilder.Entity<VisitModel>().ToTable("PAT_PatientVisits");
+            modelBuilder.Entity<SSFClaimBookingModel>().ToTable("PAT_SSF_ClaimBooking");
         }
     }
 }

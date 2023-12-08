@@ -15,6 +15,9 @@ export class DetailedDischargePrintComponent {
 
   @Input("IsDischarged")
   public IsDischarged: boolean = false;
+
+  @Input("is-provisional-discharge")
+  public IsProvisionalDischarge: boolean = false;
   public headerDetail: { CustomerName, Address, Email, CustomerRegLabel, CustomerRegNo, Tel };
   public PatientDetail: any;
   public AdmissionInfo: any;

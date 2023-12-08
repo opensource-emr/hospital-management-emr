@@ -1,18 +1,17 @@
 
-import { Component, Injectable, ChangeDetectorRef, OnInit } from '@angular/core';
-import { RouterOutlet, RouterModule, Router } from '@angular/router';
-import * as moment from 'moment/moment';
-import { PharmacyBLService } from "../shared/pharmacy.bl.service"
+import { ChangeDetectorRef, Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { PharmacyBLService } from "../shared/pharmacy.bl.service";
 
-import PHRMGridColumns from '../shared/phrm-grid-columns';
-import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
-import { PHRMPrescription } from "../shared/phrm-prescription.model";
-import { PHRMPrescriptionItem } from "../shared/phrm-prescription-item.model";
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import { PharmacyService } from "../shared/pharmacy.service";
 import { Patient } from "../../patients/shared/patient.model";
 import { PatientService } from "../../patients/shared/patient.service";
+import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { RouteFromService } from "../../shared/routefrom.service";
+import { PharmacyService } from "../shared/pharmacy.service";
+import PHRMGridColumns from '../shared/phrm-grid-columns';
+import { PHRMPrescriptionItem } from "../shared/phrm-prescription-item.model";
+import { PHRMPrescription } from "../shared/phrm-prescription.model";
 
 @Component({
   templateUrl: "./phrm-prescription-list.html"
@@ -90,7 +89,7 @@ export class PHRMPrescriptionListComponent {
         //}
         case "view": {
           this.currentPrescription = $event.Data;
-          this.pharmacyBLService.GetPrescriptionItems(this.currentPrescription.PatientId, this.currentPrescription.PrescriberId)
+          this.pharmacyBLService.GetPrescriptionItems(this.currentPrescription.PatientId, this.currentPrescription.PrescriberId, this.currentPrescription.PrescriptionId)
             .subscribe(res => {
               if (res.Status == 'OK' && res.Results.length > 0) {
                 this.currentPrescription.PHRMPrescriptionItems = res.Results;

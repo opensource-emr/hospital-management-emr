@@ -6,7 +6,7 @@ import { CoreService } from "../../../core/shared/core.service";
 import { Router } from "@angular/router";
 import { RouteFromService } from "../../../shared/routefrom.service";
 import { PurchaseRequestVM } from "../../../procurement/purchase-request/purchase-request-view/purchase-request-view.component";
-
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 
 @Component({
   selector: 'app-internalmain-purchase-request-detail',
@@ -23,11 +23,14 @@ export class InternalmainPurchaseRequestDetailComponent implements OnInit, OnDes
   public showPrint: boolean;
   CancelRemarksVar: any;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(public inventoryService: InventoryService,
     public inventoryBLService: InventoryBLService, public coreService: CoreService,
     public router: Router, public routeFromService: RouteFromService,
     public messageBoxService: MessageboxService) {
     this.GetInventoryBillingHeaderParameter();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
   ngOnDestroy(): void {
     this.routeFromService.RouteFrom = "";

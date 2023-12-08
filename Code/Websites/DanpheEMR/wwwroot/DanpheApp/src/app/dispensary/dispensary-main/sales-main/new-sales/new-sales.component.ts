@@ -7,6 +7,7 @@ import { CoreBLService } from '../../../../core/shared/core.bl.service';
 import { CoreService } from '../../../../core/shared/core.service';
 import { Patient } from '../../../../patients/shared/patient.model';
 import { PatientService } from '../../../../patients/shared/patient.service';
+import { PharmacyProvisionalReceipt_DTO } from '../../../../pharmacy/receipt/pharmacy-provisional-invoice-print/pharmacy-provisional-receipt.dto';
 import { PharmacySchemePriceCategory_DTO } from '../../../../pharmacy/shared/dtos/pharmacy-scheme-pricecategory.dto';
 import { PHRMEmployeeCashTransaction } from '../../../../pharmacy/shared/pharmacy-employee-cash-transaction';
 import { PharmacyBLService } from '../../../../pharmacy/shared/pharmacy.bl.service';
@@ -21,6 +22,7 @@ import { SecurityService } from '../../../../security/shared/security.service';
 import { SelectReferrerComponent } from '../../../../settings-new/ext-referral/select-referrer/select-referrer.component';
 import { CreditOrganization } from '../../../../settings-new/shared/creditOrganization.model';
 import { PriceCategory } from '../../../../settings-new/shared/price.category.model';
+import { GeneralFieldLabels } from "../../../../shared/DTOs/general-field-label.dto";
 import { CallbackService } from '../../../../shared/callback.service';
 import { DanpheHTTPResponse } from '../../../../shared/common-models';
 import { CommonFunctions } from '../../../../shared/common.functions';
@@ -29,7 +31,7 @@ import { RouteFromService } from '../../../../shared/routefrom.service';
 import { ENUM_BillPaymentMode, ENUM_BillingStatus, ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status, ENUM_ModuleName, ENUM_PriceCategory, ENUM_ServiceBillingContext } from '../../../../shared/shared-enums';
 import { DispensaryAvailableStockDetail_DTO } from '../../../shared/DTOs/dispensary-available-stock-detail.dto';
 import { DispensaryService } from '../../../shared/dispensary.service';
-import { PharmacyProvisionalReceipt_DTO } from '../../../../pharmacy/receipt/pharmacy-provisional-invoice-print/pharmacy-provisional-receipt.dto';
+
 
 @Component({
   selector: 'app-new-sales',
@@ -88,6 +90,7 @@ export class NewSalesComponent implements OnInit, OnDestroy {
   public MstPaymentModes: any = [];
   public phrmEmpCashTxn: PHRMEmployeeCashTransaction = new PHRMEmployeeCashTransaction();
   ShowDepositAdd: boolean = false;
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
 
   discountOnPhrmSaleEnable: boolean = false;
@@ -98,6 +101,8 @@ export class NewSalesComponent implements OnInit, OnDestroy {
   public refererListReload: boolean = false;
   public allowAnonymousPatient: boolean = false;
   public PriceCategoryId: number = null;
+
+
   public FilteredGenericList: Array<any>;
   public allPriceCategories: Array<PriceCategory> = new Array<PriceCategory>();
   public defaultlPriceCategoryObject: PriceCategory = new PriceCategory();
@@ -144,6 +149,8 @@ export class NewSalesComponent implements OnInit, OnDestroy {
     public renderer2: Renderer2,
     public coreBlService: CoreBLService
   ) {
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
     this.MstPaymentModes = this.coreService.masterPaymentModes;
     try {
       this.visitType = "outpatient";
@@ -408,6 +415,9 @@ export class NewSalesComponent implements OnInit, OnDestroy {
         this.currSaleItems.push(this.invoiceItem);
         this.MainLevelCalculation();
         this.invoiceItem = new PHRMInvoiceItemsModel();
+        if (this.currSale.SchemeDiscountPercentage) {
+          this.invoiceItem.DiscountPercentage = this.currSale.SchemeDiscountPercentage;
+        }
         this.FilterGenericAndItemByPriceCategory(this.currentPatient.PriceCategoryId);
       }
     }
@@ -424,25 +434,42 @@ export class NewSalesComponent implements OnInit, OnDestroy {
       let VATPercentage = 0;
       let TotalAmount = 0;
 
-      // if (this.currSale.SchemeDiscountPercentage) {
       this.currSaleItems.forEach(item => {
-        //item.DiscountPercentage = this.currSale.SchemeDiscountPercentage;
-        item.TotalDisAmt = (item.SubTotal * item.DiscountPercentage) / 100;
+        if (this.currSale.SchemeDiscountPercentage) {
+          item.DiscountPercentage = this.currSale.SchemeDiscountPercentage;
+          item.TotalDisAmt = (item.SubTotal * item.DiscountPercentage) / 100;
+        }
+        else {
+          if (discountPercentage > 0 && discountAmount === 0) {
+            item.DiscountPercentage = discountPercentage;
+            item.TotalDisAmt = (item.SubTotal * item.DiscountPercentage) / 100;
+          }
+          if (discountPercentage === 0 && discountAmount > 0) {
+            let DiscountPercentage = 0;
+            let subTotal = this.currSaleItems.reduce((a, b) => a + b.SubTotal, 0);
+            DiscountPercentage = (discountAmount / subTotal) * 100;
+            item.DiscountPercentage = DiscountPercentage;
+            item.TotalDisAmt = (item.SubTotal * item.DiscountPercentage) / 100;
+          }
+          if (discountPercentage === 0 && discountAmount === 0) {
+            item.DiscountPercentage = 0;
+            item.TotalDisAmt = 0;
+          }
+        }
+
         item.VATAmount = (item.SubTotal - item.TotalDisAmt) * item.VATPercentage;
         item.TotalAmount = (item.SubTotal - item.TotalDisAmt + item.VATAmount);
       });
-      //}
 
       SubTotal = this.currSaleItems.reduce((a, b) => a + b.SubTotal, 0);
       DiscountAmount = this.currSaleItems.reduce((a, b) => a + b.TotalDisAmt, 0);
       DiscountPercentage = (DiscountAmount / SubTotal) * 100;
       VATAmount = this.currSaleItems.reduce((a, b) => a + b.VATAmount, 0);
       VATPercentage = ((VATAmount / (SubTotal - DiscountAmount)) * 100);
-      TotalAmount = this.currSaleItems.reduce((a, b) => a + b.TotalAmount, 0);
 
       if (this.isMainDiscountAvailable && !this.currSale.SchemeDiscountPercentage) {
-        discountAmount = discountAmount ? 0 : discountAmount;
-        discountPercentage = discountPercentage ? 0 : discountPercentage;
+        discountAmount = discountAmount ? discountAmount : 0;
+        discountPercentage = discountPercentage ? discountPercentage : 0;
 
         if (discountPercentage == 0 && discountAmount > 0) {
           DiscountAmount = discountAmount;
@@ -455,10 +482,9 @@ export class NewSalesComponent implements OnInit, OnDestroy {
           DiscountPercentage = discountPercentage;
         }
       }
+      TotalAmount = SubTotal - DiscountAmount + VATAmount;
 
-      if (this.currSale.SchemeDiscountPercentage) {
 
-      }
       this.currSale.SubTotal = CommonFunctions.parseAmount(SubTotal, 4);
       this.currSale.DiscountPer = CommonFunctions.parseAmount(DiscountPercentage, 4);
       this.currSale.DiscountAmount = CommonFunctions.parseAmount(DiscountAmount, 4);
@@ -809,6 +835,7 @@ export class NewSalesComponent implements OnInit, OnDestroy {
         this.selectedRefId = -1; //-1 is value for Anonymous Doctor.
         this.visitType = "outpatient";
         this.currSale.InvoiceValidator.get("VisitType").setValue("outpatient");
+        this.currentPatient.VisitType = this.visitType;
         this.changeDetectorRef.detectChanges();
         this.isReferrerLoaded = true;
         this.LoadDefaultScheme();
@@ -1455,7 +1482,7 @@ export class NewSalesComponent implements OnInit, OnDestroy {
   }
   SaveNMCNo() {
     if (this.MedicalCertificateNo == null) {
-      this.messageboxService.showMessage(ENUM_MessageBox_Status.Notice, ['Please provide NMC No.']);
+      this.messageboxService.showMessage(ENUM_MessageBox_Status.Notice, ['Please provide {{labelForNMCNo}}.']);
       return;
     }
     this.pharmacyBLService.UpdateNMCNo(this.currSale.PrescriberId, this.MedicalCertificateNo).subscribe((res: DanpheHTTPResponse) => {

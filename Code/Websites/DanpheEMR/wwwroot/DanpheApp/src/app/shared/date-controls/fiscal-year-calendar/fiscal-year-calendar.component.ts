@@ -5,7 +5,7 @@ import { AccHospitalInfoVM } from '../../../accounting/shared/acc-view-models';
 import { CoreService } from '../../../core/shared/core.service';
 import { SecurityService } from '../../../security/shared/security.service';
 import { NepaliCalendarService } from '../../calendar/np/nepali-calendar.service';
-import { ENUM_DateFormats } from '../../shared-enums';
+import { ENUM_CalanderType, ENUM_DateFormats, ENUM_DateTimeFormat, ENUM_StoreSubCategory } from '../../shared-enums';
 
 @Component({
   selector: "fiscal-year-calendar",
@@ -27,11 +27,12 @@ export class FiscalYearCalendarComponent implements OnInit {
   public showDatePicker: boolean = false;
   public allowFutureDate: boolean = false;
   public invalid: boolean = false;
-  public calType: string = 'np';
+  public calType: string = ENUM_CalanderType.NP;
   public currentNPMonth: string = null;
   public currentENMonth: string = null;
   public invalidMessage: string = "Enter date of selected fiscal year";
   public isInitialLoad: boolean = true;
+  public isFavorite: boolean = false;
 
   public currentFiscalYear: FiscalYearModel;
 
@@ -56,7 +57,7 @@ export class FiscalYearCalendarComponent implements OnInit {
 
   @Output() fiscalYearDate: EventEmitter<any> = new EventEmitter<any>();
 
-  // START:Vikas: 06th Aug 20: Added for month calendar chnages. 
+  // START:Vikas: 06th Aug 20: Added for month calendar chnages.
   public fiscalYearId: number = 0;
   public monthNumber: number = null;
   public year: number = null;
@@ -66,9 +67,9 @@ export class FiscalYearCalendarComponent implements OnInit {
     if (this.fiscalYearForMonthCalendar.length > 0) {
       this.selectedMonth = null;
       this.changeDetector.detectChanges();
-      this.selectedFiscalYear = this.fiscalYearForMonthCalendar.find(f => f.FiscalYearId == this.HospitalInfoMaster.CurrFiscalYear.FiscalYearId);
+      this.selectedFiscalYear = this.fiscalYearForMonthCalendar.find(f => f.FiscalYearId === this.HospitalInfoMaster.CurrFiscalYear.FiscalYearId);
       if (this.selectedFiscalYear) {
-        this.selectedMonth = (this.calType == "np") ? this.selectedFiscalYear.NepaliMonthList.find(x => x.MonthName == this.currentNPMonth) : this.selectedFiscalYear.EnglishMonthList.find(e => e.MonthName == this.currentENMonth);
+        this.selectedMonth = (this.calType === ENUM_CalanderType.NP) ? this.selectedFiscalYear.NepaliMonthList.find(x => x.MonthName === this.currentNPMonth) : this.selectedFiscalYear.EnglishMonthList.find(e => e.MonthName === this.currentENMonth);
         this.onMonthValueChange();
       }
     }
@@ -83,15 +84,16 @@ export class FiscalYearCalendarComponent implements OnInit {
   public set setFiscalYear(_fiscalyearid) {
     if (_fiscalyearid) {
       this.SingleFiscalYearId = _fiscalyearid;
-      this.FiscalYearList = (this.SingleFiscalYearId > 0) ? this.HospitalInfoMaster.FiscalYearList.filter(f => f.FiscalYearId == this.SingleFiscalYearId) : this.HospitalInfoMaster.FiscalYearList;
+      this.FiscalYearList = (this.SingleFiscalYearId > 0) ? this.HospitalInfoMaster.FiscalYearList.filter(f => f.FiscalYearId === this.SingleFiscalYearId) : this.HospitalInfoMaster.FiscalYearList;
     }
   }
-  // END:Vikas: 06th Aug 20: Added for month calendar chnages. 
+  // END:Vikas: 06th Aug 20: Added for month calendar chnages.
   public showAdBsButton: boolean = true;
+  public EnableEnglishCalendarOnly: boolean = false;
 
   constructor(private securityService: SecurityService, private changeDetector: ChangeDetectorRef,
     private coreService: CoreService, private nepaliCalendarService: NepaliCalendarService) {
-    this.HospitalInfoMaster = (this.securityService.ModuleNameForFiscalYear == "inventory") ? this.securityService.INVHospitalInfo : this.securityService.AccHospitalInfo;
+    this.HospitalInfoMaster = (this.securityService.ModuleNameForFiscalYear === ENUM_StoreSubCategory.Inventory) ? this.securityService.INVHospitalInfo : this.securityService.AccHospitalInfo;
 
     if (this.HospitalInfoMaster) {
       this.currentFiscalYear = this.HospitalInfoMaster.CurrFiscalYear;
@@ -110,14 +112,27 @@ export class FiscalYearCalendarComponent implements OnInit {
 
       this.currentENMonth = moment(this.HospitalInfoMaster.TodaysDate).format("YYYY-MMM");
       let todaysDateNepali = this.nepaliCalendarService.ConvertEngToNepDate(this.HospitalInfoMaster.TodaysDate);
-      let currFYear = this.fiscalYearForMonthCalendar.find(f => f.FiscalYearId == this.HospitalInfoMaster.CurrFiscalYear.FiscalYearId);
-      this.currentNPMonth = currFYear.NepaliMonthList.find(m => m.MonthNumber == todaysDateNepali.Month).MonthName;
+      let currFYear = this.fiscalYearForMonthCalendar.find(f => f.FiscalYearId === this.HospitalInfoMaster.CurrFiscalYear.FiscalYearId);
+      this.currentNPMonth = currFYear.NepaliMonthList.find(m => m.MonthNumber === todaysDateNepali.Month).MonthName;
 
     }
     this.showAdBsButton = this.coreService.showCalendarADBSButton;
+    this.GetCalendarParameter();
   }
 
+  GetCalendarParameter(): void {
+    const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+    if (param && param.ParameterValue) {
+      const paramValue = JSON.parse(param.ParameterValue);
+      this.EnableEnglishCalendarOnly = paramValue;
+    }
+  }
+
+
   ngOnInit() {
+    if (this.EnableEnglishCalendarOnly) {
+      this.showAdBsButton = false;
+    }
     //if showAllFiscalYear is true, then show all the fiscal years
     if (this.showAllFiscalYear) {
       this.FilteredFiscalYearList = this.FiscalYearList;
@@ -128,23 +143,47 @@ export class FiscalYearCalendarComponent implements OnInit {
     }
     this.changeDetector.detectChanges();
     //set the globally set calendar
-    this.calType = this.coreService.DatePreference;;
-    //this.selectedFiscalYear = this.currentFiscalYear;
-    var selFYear = this.FilteredFiscalYearList.filter(f => f.FiscalYearId == this.HospitalInfoMaster.CurrFiscalYear.FiscalYearId);
-    if (selFYear.length > 0 && this.ShowMonthCalendar == false) {
+    this.calType = this.coreService.DatePreference;
+    var selFYear = this.FilteredFiscalYearList.filter(f => f.FiscalYearId === this.HospitalInfoMaster.CurrFiscalYear.FiscalYearId);
+    if (selFYear.length > 0 && this.ShowMonthCalendar === false) {
       this.selectedFiscalYear = selFYear[0];
       this.fiscalYearId = this.selectedFiscalYear.FiscalYearId;
 
     }
     if (this.showSingleDatePicker && !this.ShowMonthCalendar) {
       this.selectedDate = moment().format(ENUM_DateFormats.Year_Month_Day);
+      this.minimumDate = this.currentFiscalYear.StartDate;
+      this.maximumDate = this.currentFiscalYear.EndDate;
     } else {
-      this.fromDate = this.BankReconcilationCustomization ? moment().subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : moment().format(ENUM_DateFormats.Year_Month_Day);
-      this.toDate = this.BankReconcilationCustomization ? moment().subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : moment().format(ENUM_DateFormats.Year_Month_Day);
-    }
+      let savedDateRange = localStorage.getItem("FiscalYear_DateRange");
+      if (savedDateRange) {
+        let dateRangeParsed = JSON.parse(savedDateRange);
 
-    this.minimumDate = this.currentFiscalYear.StartDate;
-    this.maximumDate = this.currentFiscalYear.EndDate;
+        this.isFavorite = dateRangeParsed.useFavorite;
+
+        if (this.isFavorite === true) {
+          this.selectedFiscalYear = this.FilteredFiscalYearList.find(a => a.FiscalYearId === dateRangeParsed.fiscalYearId);
+          this.fiscalYearId = dateRangeParsed.fiscalYearId;
+          this.minimumDate = this.selectedFiscalYear.StartDate;
+          this.maximumDate = this.selectedFiscalYear.EndDate;
+
+          this.changeDetector.detectChanges();
+          this.fromDate = dateRangeParsed.fromDate;
+          this.toDate = dateRangeParsed.toDate;
+          this.showDatePicker = true;
+        }
+        else {
+          this.fromDate = moment().format(ENUM_DateTimeFormat.Year_Month_Day);
+          this.toDate = moment().format(ENUM_DateTimeFormat.Year_Month_Day);
+        }
+      }
+      else {
+        this.fromDate = this.BankReconcilationCustomization ? moment().subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : moment().format(ENUM_DateFormats.Year_Month_Day);
+        this.toDate = this.BankReconcilationCustomization ? moment().subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : moment().format(ENUM_DateFormats.Year_Month_Day);
+        this.minimumDate = this.currentFiscalYear.StartDate;
+        this.maximumDate = this.currentFiscalYear.EndDate;
+      }
+    }
     this.showDatePicker = true;
     this.sendSelectedFiscalYearData();
   }
@@ -154,16 +193,16 @@ export class FiscalYearCalendarComponent implements OnInit {
     if (this.selectedMonth) {
       let check = true;
       this.fiscalYearId = this.selectedFiscalYear.FiscalYearId;
-      if (this.calType == "np") {
-        let sDate = this.selectedFiscalYear.NepaliMonthList.find(nm => nm.MonthName == this.selectedMonth.MonthName);
+      if (this.calType === ENUM_CalanderType.NP) {
+        let sDate = this.selectedFiscalYear.NepaliMonthList.find(nm => nm.MonthName === this.selectedMonth.MonthName);
         if (sDate) {
           this.fromDate = sDate.FirstDay;
           this.toDate = sDate.LastDay;
         } else {
           check = false;
         }
-      } else if (this.calType == "en") {
-        let sDate = this.selectedFiscalYear.EnglishMonthList.find(nm => nm.MonthName == this.selectedMonth.MonthName);
+      } else if (this.calType === ENUM_CalanderType.EN) {
+        let sDate = this.selectedFiscalYear.EnglishMonthList.find(nm => nm.MonthName === this.selectedMonth.MonthName);
         if (sDate) {
           this.fromDate = sDate.FirstDay;
           this.toDate = sDate.LastDay;
@@ -187,10 +226,10 @@ export class FiscalYearCalendarComponent implements OnInit {
       this.changeDetector.detectChanges();
       let isCurrentFiscalYear = (this.selectedFiscalYear.FiscalYearId == this.currentFiscalYear.FiscalYearId) ? true : false;
       if (isCurrentFiscalYear == true) {
-        this.selectedMonth = (this.calType == "np") ? this.selectedFiscalYear.NepaliMonthList.find(x => x.MonthName == this.currentNPMonth) : this.selectedFiscalYear.EnglishMonthList.find(e => e.MonthName == this.currentENMonth);
+        this.selectedMonth = (this.calType === ENUM_CalanderType.NP) ? this.selectedFiscalYear.NepaliMonthList.find(x => x.MonthName === this.currentNPMonth) : this.selectedFiscalYear.EnglishMonthList.find(e => e.MonthName === this.currentENMonth);
         this.onMonthValueChange();
       } else {
-        this.selectedMonth = (this.calType == "np") ? this.selectedFiscalYear.NepaliMonthList[0] : this.selectedFiscalYear.EnglishMonthList[0];
+        this.selectedMonth = (this.calType === ENUM_CalanderType.NP) ? this.selectedFiscalYear.NepaliMonthList[0] : this.selectedFiscalYear.EnglishMonthList[0];
         this.onMonthValueChange();
       }
 
@@ -200,19 +239,19 @@ export class FiscalYearCalendarComponent implements OnInit {
     this.showDatePicker = false;
     this.fiscalYearId = this.selectedFiscalYear.FiscalYearId;
     if (this.showSingleDatePicker) {
-      this.selectedDate = (this.currentFiscalYear.FiscalYearId == this.selectedFiscalYear.FiscalYearId) ? moment().format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
+      this.selectedDate = (this.currentFiscalYear.FiscalYearId === this.selectedFiscalYear.FiscalYearId) ? moment().format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
     }
     else if (!this.showSingleDatePicker && this.DayBookReportCustomization) {
-      this.fromDate = (this.currentFiscalYear.FiscalYearId == this.selectedFiscalYear.FiscalYearId) ? moment().format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
-      this.toDate = (this.currentFiscalYear.FiscalYearId == this.selectedFiscalYear.FiscalYearId) ? moment().format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
+      this.fromDate = (this.currentFiscalYear.FiscalYearId === this.selectedFiscalYear.FiscalYearId) ? moment().format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
+      this.toDate = (this.currentFiscalYear.FiscalYearId === this.selectedFiscalYear.FiscalYearId) ? moment().format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
     }
     else if (!this.showSingleDatePicker && this.BankReconcilationCustomization) {
-      this.fromDate = (this.currentFiscalYear.FiscalYearId == this.selectedFiscalYear.FiscalYearId) ? moment().subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
-      this.toDate = (this.currentFiscalYear.FiscalYearId == this.selectedFiscalYear.FiscalYearId) ? moment().subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
+      this.fromDate = (this.currentFiscalYear.FiscalYearId === this.selectedFiscalYear.FiscalYearId) ? moment().subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
+      this.toDate = (this.currentFiscalYear.FiscalYearId === this.selectedFiscalYear.FiscalYearId) ? moment().subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
     }
     else {
-      this.fromDate = (this.currentFiscalYear.FiscalYearId == this.selectedFiscalYear.FiscalYearId) ? moment().format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
-      this.toDate = (this.currentFiscalYear.FiscalYearId == this.selectedFiscalYear.FiscalYearId) ? moment().format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.EndDate;
+      this.fromDate = (this.currentFiscalYear.FiscalYearId === this.selectedFiscalYear.FiscalYearId) ? moment().format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.StartDate;
+      this.toDate = (this.currentFiscalYear.FiscalYearId === this.selectedFiscalYear.FiscalYearId) ? moment().format(ENUM_DateFormats.Year_Month_Day) : this.selectedFiscalYear.EndDate;
     }
 
     this.showDatePicker = true;
@@ -233,6 +272,7 @@ export class FiscalYearCalendarComponent implements OnInit {
       this.fiscalYearDate.emit(null); this.invalidMessage = "Invalid Date"; return;
     }
     this.sendSelectedFiscalYearData();
+    //this.SaveDateRangeToLocalStorage();
   }
 
   //if the selected fiscal year has future date as minimum date then in that case we need to allow the future date to be selected
@@ -243,14 +283,14 @@ export class FiscalYearCalendarComponent implements OnInit {
   }
 
   public changeToEnglish() {
-    this.calType = 'en';
+    this.calType = ENUM_CalanderType.EN;
     if (this.ShowMonthCalendar) {
       this.sendSelectedFiscalYearData();
     }
   }
 
   public changeToNepali() {
-    this.calType = 'np';
+    this.calType = ENUM_CalanderType.NP;
     if (this.ShowMonthCalendar) {
       this.sendSelectedFiscalYearData();
     }
@@ -258,8 +298,18 @@ export class FiscalYearCalendarComponent implements OnInit {
 
   public CheckFromDate(data) {
     if (!data) { this.fiscalYearDate.emit(null); return; }
+    let savedDateRange = localStorage.getItem("FiscalYear_DateRange");
+    if (savedDateRange) {
+      let dateRangeParsed = JSON.parse(savedDateRange);
+      this.isFavorite = dateRangeParsed.useFavorite;
+    }
     if (this.fromDate) {
-      this.fromDate = (this.isInitialLoad && this.BankReconcilationCustomization) ? moment(data).subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : data;
+      if (this.isInitialLoad) {
+        this.fromDate = (this.BankReconcilationCustomization && !this.isFavorite) ? moment(data).subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : this.fromDate;
+      }
+      else {
+        this.fromDate = (this.BankReconcilationCustomization && !this.isFavorite) ? moment(data).subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : data;
+      }
       if (this.DayBookReportCustomization || this.BankReconcilationCustomization) {
         this.toDate = this.fromDate;
       }
@@ -278,12 +328,31 @@ export class FiscalYearCalendarComponent implements OnInit {
         this.sendSelectedFiscalYearData();
       }
     }
+    this.SaveDateRangeToLocalStorage();
+    // setTimeout(() => {
+
+    // }, 500);
+
   }
 
   public CheckToDate(data) {
+    // setTimeout(() => {
+
+    // }, 500);
     if (!data) { this.fiscalYearDate.emit(null); return; }
+    let savedDateRange = localStorage.getItem("FiscalYear_DateRange");
+    if (savedDateRange) {
+      let dateRangeParsed = JSON.parse(savedDateRange);
+      this.isFavorite = dateRangeParsed.useFavorite;
+    }
     if (this.toDate) {
-      this.toDate = (this.isInitialLoad && this.BankReconcilationCustomization) ? moment(data).subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : data;
+      if (this.isInitialLoad) {
+        this.toDate = (this.BankReconcilationCustomization && !this.isFavorite) ? moment(data).subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : this.toDate;
+      }
+      else {
+        this.toDate = (this.BankReconcilationCustomization && !this.isFavorite) ? moment(data).subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : data;
+      }
+      //this.toDate = (this.isInitialLoad && this.BankReconcilationCustomization && !this.isFavorite) ? moment(data).subtract(1, "days").format(ENUM_DateFormats.Year_Month_Day) : this.toDate;
       if (this.fromDate && this.toDate && moment(this.fromDate).isAfter(this.toDate)) {
         this.invalid = true;
         this.invalidMessage = "To date should be after  from date";
@@ -299,6 +368,7 @@ export class FiscalYearCalendarComponent implements OnInit {
         this.sendSelectedFiscalYearData();
       }
     }
+    this.SaveDateRangeToLocalStorage();
   }
 
   public CheckSelectedDate(data) {
@@ -327,15 +397,16 @@ export class FiscalYearCalendarComponent implements OnInit {
         // var b=moment("2020-07-15").isBetween("2020-07-15","2020-07-15",undefined,'[]');
         // var b1=moment("2020-07-15").isBetween("2020-06-15","2020-07-15",undefined,'[]');
         // var b2=moment("2020-07-15").isBetween("2020-06-15","2020-09-15",undefined,'[]');
-        // var b3=moment("2020-07-15").isBetween("2020-07-15","2020-09-15",undefined,'[]');        
+        // var b3=moment("2020-07-15").isBetween("2020-07-15","2020-09-15",undefined,'[]');
         if (this.fromDate && this.toDate && moment(this.fromDate).isBetween(moment(this.minimumDate).format(ENUM_DateFormats.Year_Month_Day), moment(this.maximumDate).format(ENUM_DateFormats.Year_Month_Day), undefined, '[]')
           && moment(this.toDate).isBetween(moment(this.minimumDate).format(ENUM_DateFormats.Year_Month_Day), moment(this.maximumDate).format(ENUM_DateFormats.Year_Month_Day), undefined, '[]')) {
           this.fiscalYearDate.emit({ fiscalYearId: this.selectedFiscalYear.FiscalYearId, fromDate: this.fromDate, toDate: this.toDate });
+
         }
       }
       else if (this.ShowMonthCalendar) {
-        this.selectedFiscalYear = this.fiscalYearForMonthCalendar.find(f => f.FiscalYearId == this.HospitalInfoMaster.CurrFiscalYear.FiscalYearId);
-        this.selectedMonth = (this.calType == "np") ? this.selectedFiscalYear.NepaliMonthList.find(x => x.MonthName == this.currentNPMonth) : this.selectedFiscalYear.EnglishMonthList.find(e => e.MonthName == this.currentENMonth);
+        this.selectedFiscalYear = this.fiscalYearForMonthCalendar.find(f => f.FiscalYearId === this.HospitalInfoMaster.CurrFiscalYear.FiscalYearId);
+        this.selectedMonth = (this.calType === ENUM_CalanderType.NP) ? this.selectedFiscalYear.NepaliMonthList.find(x => x.MonthName === this.currentNPMonth) : this.selectedFiscalYear.EnglishMonthList.find(e => e.MonthName === this.currentENMonth);
         this.onMonthValueChange();
       }
     } else {
@@ -347,7 +418,41 @@ export class FiscalYearCalendarComponent implements OnInit {
     this.isInitialLoad = false;
   }
 
+  AddToFavorite() {
+    this.isFavorite = true;
+    this.SaveDateRangeToLocalStorage();
+  }
+  RemoveFavorite() {
+    this.isFavorite = false;
+    localStorage.removeItem("FiscalYear_DateRange");
+  }
 
+  SaveDateRangeToLocalStorage() {
+    if (this.isFavorite) {
+      let calType = this.ShowMonthCalendar ? ENUM_CalanderType.EN : ENUM_CalanderType.NP;
+      let fiscalYearObj = null;
+      let fromDate = moment(this.fromDate, ENUM_DateTimeFormat.Year_Month_Day);
+      let toDate = moment(this.toDate, ENUM_DateTimeFormat.Year_Month_Day)
+      let favFromDate = this.fromDate;
+      let favToDate = this.toDate;
+      if (this.fromDate) {
+        fiscalYearObj = this.FiscalYearList.find(a => fromDate.isBetween(moment(a.StartDate, ENUM_DateTimeFormat.Year_Month_Day), moment(a.EndDate, ENUM_DateTimeFormat.Year_Month_Day)) || fromDate.isSame(moment(a.StartDate, ENUM_DateTimeFormat.Year_Month_Day)));
+      }
+      else if (this.toDate) {
+        fiscalYearObj = this.FiscalYearList.find(a => toDate.isBetween(moment(a.StartDate, ENUM_DateTimeFormat.Year_Month_Day), moment(a.EndDate, ENUM_DateTimeFormat.Year_Month_Day)) || toDate.isSame(moment(a.EndDate, ENUM_DateTimeFormat.Year_Month_Day)));
+      }
+      if (fiscalYearObj) {
+        if (fiscalYearObj.FiscalYearId > this.currentFiscalYear.FiscalYearId) {
+          this.fiscalYearId = this.currentFiscalYear.FiscalYearId;
+          favFromDate = favToDate = moment().format(ENUM_DateTimeFormat.Year_Month_Day);
+        }
+        else {
+          this.fiscalYearId = fiscalYearObj.FiscalYearId;
+        }
+      }
+      localStorage.setItem("FiscalYear_DateRange", JSON.stringify({ useFavorite: true, calendarType: calType, fromDate: favFromDate, toDate: favToDate, fiscalYearId: this.fiscalYearId }));
+    }
+  }
 }
 
 

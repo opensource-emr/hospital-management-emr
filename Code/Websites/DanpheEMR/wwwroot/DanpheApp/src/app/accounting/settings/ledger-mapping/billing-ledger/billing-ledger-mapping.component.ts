@@ -114,7 +114,7 @@ export class BillingLedgerMappingComponent {
       this.CurrentLedger.LedgerGroupId = billingLedgerGroup.LedgerGroupId;
       this.ledgerListAutoComplete = this.sourceLedgerList.filter(emp => emp.LedgerGroupId == this.CurrentLedger.LedgerGroupId && emp.LedgerName != "");
       if (this.billingType === ENUM_BillingType.outpatient) {
-        this.ledgerListAutoComplete = this.ledgerListAutoComplete.filter(a => a.LedgerId !== this.billingInpatientCollectionLedger.LedgerId);
+        this.ledgerListAutoComplete = this.ledgerListAutoComplete.filter(a => a.LedgerId !== (this.billingInpatientCollectionLedger ? this.billingInpatientCollectionLedger.LedgerId : 0));
       }
       this.subLedgerListForBillingItems = this.subLedgerMaster.filter(a => this.ledgerListAutoComplete.some(b => a.LedgerId === b.LedgerId));
 
@@ -137,6 +137,13 @@ export class BillingLedgerMappingComponent {
       let subLedgerParma = this.coreService.Parameters.find(a => a.ParameterGroupName === "Accounting" && a.ParameterName === "SubLedgerAndCostCenter");
       if (subLedgerParma) {
         this.subLedgerAndCostCenterSetting = JSON.parse(subLedgerParma.ParameterValue);
+        let index = this.billingLedgerGridColumns.findIndex(a => a.headerName === "Sub-Ledger");
+        if (index >= 0) {
+          this.billingLedgerGridColumns.splice(index, 1);
+        }
+        if (this.subLedgerAndCostCenterSetting.EnableSubLedger) {
+          this.billingLedgerGridColumns.splice(3, 0, { headerName: "Sub-Ledger", field: "SubLedgerName", width: 120 });
+        }
       }
     } catch (ex) {
       this.ShowCatchErrMessage(ex);
@@ -343,7 +350,7 @@ export class BillingLedgerMappingComponent {
   }
   SaveLedgerMapping() {
     if (this.newLedgerMapping && this.newLedgerMapping.LedgerId > 0) {
-      if (this.newLedgerMapping.SubLedgerId > 0) {
+      if (this.subLedgerAndCostCenterSetting.EnableSubLedger ? this.newLedgerMapping.SubLedgerId > 0 : true) {
         this.accountingBLService.SaveBillingLedgerMapping(this.newLedgerMapping).subscribe
           (res => {
             if (res.Status === ENUM_DanpheHTTPResponses.OK) {
@@ -367,7 +374,7 @@ export class BillingLedgerMappingComponent {
 
   UpdateLedgerMapping() {
     if (this.newLedgerMapping && this.newLedgerMapping.LedgerId > 0) {
-      if (this.newLedgerMapping.SubLedgerId > 0) {
+      if (this.subLedgerAndCostCenterSetting.EnableSubLedger ? this.newLedgerMapping.SubLedgerId > 0 : true) {
         this.accountingBLService.UpdateBillLedgerMapping(this.newLedgerMapping).subscribe
           (res => {
             if (res.Status === ENUM_DanpheHTTPResponses.OK) {
@@ -396,10 +403,10 @@ export class BillingLedgerMappingComponent {
     this.notmappedLedgerCount = this.allBillingsledgerList.filter(a => a.BillingType === this.billingType && a.IsMapped == false).length;
     this.ledgerListAutoComplete = this.sourceLedgerList.filter(emp => emp.LedgerGroupId == this.CurrentLedger.LedgerGroupId && emp.LedgerName != "");
     if (this.billingType === ENUM_BillingType.outpatient) {
-      this.ledgerListAutoComplete = this.sourceLedgerList.filter(a => a.LedgerGroupId == this.CurrentLedger.LedgerGroupId && a.LedgerName != "" && a.LedgerId !== this.billingInpatientCollectionLedger.LedgerId);
+      this.ledgerListAutoComplete = this.sourceLedgerList.filter(a => a.LedgerGroupId == this.CurrentLedger.LedgerGroupId && a.LedgerName != "" && a.LedgerId !== (this.billingInpatientCollectionLedger ? this.billingInpatientCollectionLedger.LedgerId : 0));
     }
     else {
-      this.ledgerListAutoComplete = this.sourceLedgerList.filter(a => a.LedgerGroupId == this.CurrentLedger.LedgerGroupId && a.LedgerName != "" && a.LedgerId === this.billingInpatientCollectionLedger.LedgerId);
+      this.ledgerListAutoComplete = this.sourceLedgerList.filter(a => a.LedgerGroupId == this.CurrentLedger.LedgerGroupId && a.LedgerName != "" && a.LedgerId === (this.billingInpatientCollectionLedger ? this.billingInpatientCollectionLedger.LedgerId : 0));
     }
     this.subLedgerListForBillingItems = this.subLedgerMaster.filter(a => this.ledgerListAutoComplete.some(b => a.LedgerId === b.LedgerId));
     this.newLedgerMapping = new AccBillingLedgerMapping_DTO();

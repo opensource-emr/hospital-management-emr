@@ -1,14 +1,15 @@
-import { Component, ChangeDetectorRef, EventEmitter, Output, OnInit, Input } from '@angular/core';
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
+import { UnicodeService } from '../../../common/unicode.service';
 import { CoreService } from '../../../core/shared/core.service';
-import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { PatientService } from '../../../patients/shared/patient.service';
 import { PatientsBLService } from '../../../patients/shared/patients.bl.service';
-import { GovInsurancePatientVM } from '../shared/gov-ins-patient.view-model';
-import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
 import { CountrySubdivision } from '../../../settings-new/shared/country-subdivision.model';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
+import { DanpheHTTPResponse } from '../../../shared/common-models';
+import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { GovInsurancePatientVM } from '../shared/gov-ins-patient.view-model';
 import { GovInsuranceBLService } from '../shared/gov-ins.bl.service';
-import { UnicodeService } from '../../../common/unicode.service';
 
 @Component({
   selector: 'ins-patient-registration',
@@ -38,7 +39,10 @@ export class INSPatientRegistrationComponent {
   @Input("popup-action")
   popupAction: string = "add";//add or edit.. logic will change accordingly.
 
-  public showLocalName:boolean= true;
+  public showLocalName: boolean = true;
+  public showNam_Thar: boolean = true;
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
 
   constructor(public changeDetector: ChangeDetectorRef,
     public msgBoxServ: MessageboxService,
@@ -48,9 +52,11 @@ export class INSPatientRegistrationComponent {
     public govInsBlService: GovInsuranceBLService,
     public unicode: UnicodeService
   ) {
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+    this.showNam_Thar = this.GeneralFieldLabel.showNam_Thar;
 
     this.Initialize();
-    this.showLocalName=this.coreService.showLocalNameFormControl;
+    this.showLocalName = this.coreService.showLocalNameFormControl;
   }
 
   Initialize() {

@@ -13,6 +13,7 @@ namespace DanpheEMR.ServerModel.IncentiveModels
         public int ItemGroupDistributionId { get; set; }
         public string IncentiveType { get; set; }
         public int BillItemPriceId { get; set; }
+        public int? ServiceItemId { get; set; }
         public int EmployeeBillItemsMapId { get; set; }
         public int FromEmployeeId { get; set; }
         public int DistributeToEmployeeId { get; set; }

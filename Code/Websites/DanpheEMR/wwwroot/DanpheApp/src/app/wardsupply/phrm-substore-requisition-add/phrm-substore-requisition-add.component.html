@@ -215,7 +215,7 @@
                     <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
                       <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                       <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                      <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                      <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                       <span style="font-size:15px;"><strong> Pharmacy Unit </strong></span><br />
                     </div>
                   </div>
@@ -233,7 +233,8 @@
                 </div>
                 <div class="right" style="text-align:right;">
                   <p><strong>Requisition Date:</strong>{{requisitionToView.RequisitionDate | date:"yyy-MM-dd"}}&nbsp;
-
+                    <i *ngIf="requisition.RequisitionDate">{{requisitionToView.RequisitionDate | nepaliDate:'format':'YYYY-MM-DD'}} 
+                      </i>
                   </p>
                 </div>
                 <div class="clear"></div>
@@ -270,7 +271,7 @@
                             </span>
                             <p class="tooltiptext ttptextdown noPrint">
                               Cancelled&nbsp;By:&nbsp;{{row.CancelledBy}}<br />
-                              Cancelled&nbsp;On:&nbsp;{{row.CancelledOn | date:"yyy-MM-dd"}}<br />
+                              Cancelled&nbsp;On:&nbsp;{{row.CancelledOn | date:"yyy-MM-dd"}}<i>{{row.CancelledOn | nepaliDate}}</i><br />
                               <em>Remarks:&nbsp;{{row.CancelRemarks}}</em>
                             </p>
                           </span>
@@ -339,7 +340,8 @@
                     <p class="media-body small border-bottom border-gray">
                       <strong>Requisition Date:</strong>
                       {{PHRMSubStoreRequisitionDispatchToReceive.Requisition.RequisitionDate | date : 'yyyy-MM-dd'}}&nbsp;
-
+                      <i *ngIf="PHRMSubStoreRequisitionDispatchToReceive.Requisition.RequisitionDate">{{PHRMSubStoreRequisitionDispatchToReceive.Requisition.RequisitionDate
+                        | nepaliDate:'format':'YYYY-MM-DD'}} </i>
                     </p>
                     <p class="media-body small border-bottom border-gray">
                       <strong>Requisition Status:</strong>
@@ -362,7 +364,7 @@
                           <strong>Received On:</strong>
                           <div *ngIf="!!dispatch.ReceivedOn; else elseBlockTwo">
                             {{dispatch.ReceivedOn | date : "yyyy-MM-dd"}}
-
+                            <i *ngIf="dispatch.ReceivedOn">{{dispatch.ReceivedOn | nepaliDate:'format':'YYYY-MM-DD'}} </i>
                           </div>
                           <ng-template #elseBlockTwo>Not Received</ng-template>
                         </div>

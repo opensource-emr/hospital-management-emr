@@ -3,8 +3,11 @@ import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angu
 import * as moment from 'moment/moment';
 import { CoreService } from '../../core/shared/core.service';
 import { SecurityService } from '../../security/shared/security.service';
+import { PriceCategory } from '../../settings-new/shared/price.category.model';
+import { DanpheHTTPResponse } from '../../shared/common-models';
 import { CommonFunctions } from '../../shared/common.functions';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from '../../shared/shared-enums';
 import { IncentiveBLService } from '../shared/incentive.bl.service';
 import { INCTVGridColumnSettings } from '../shared/inctv-grid-column-settings';
 import { ProfileItemMapModel } from '../shared/profile-item-map.model';
@@ -20,7 +23,7 @@ export class ProfileItemMapComponent {
   public PreviousProfileBillItems: Array<ProfileItemMapModel> = [];
   public uniqueDeptNames = [];
   public selServiceDepartment: string = '';
-  public strSearchitem: string = '';
+  public strSearchItem: string = '';
   //public showAddPage: boolean = false;
   public showEditFields: boolean = false;
   public isDataAvailable: boolean = false;
@@ -28,7 +31,7 @@ export class ProfileItemMapComponent {
   //public selectAll: boolean = false;
 
   public ProfileObj: any = null;
-  public ProfileItemSetup: ProflieItemsVM = new ProflieItemsVM();
+  public ProfileItemSetup: ProfileItemsVM = new ProfileItemsVM();
   public FilteredItemList: any = [];
   public update: boolean = false;
   public newProfile: boolean = true;
@@ -36,7 +39,7 @@ export class ProfileItemMapComponent {
   public ShowEditItem = false;
   public updateSelectedItem: ProfileItemMapModel = new ProfileItemMapModel();
   public ProfileBillItemGridColumns: Array<any> = [];
-  public allBillItems: any = [];
+  // public allBillItems: any = [];
 
   @Input('profileId')
   public selectedProfileId: number = null;
@@ -45,14 +48,15 @@ export class ProfileItemMapComponent {
   @Input('categoryList')
   public PricecategoryList: any = null;
   @Input('all-BillitmList')
-  public set allBillItemList(_allBillItems) {
-    if (_allBillItems) {
-      _allBillItems.forEach(element => {
-        element["Price_Unit"] = this.coreService.currencyUnit + element.Price;
-      });
-      this.allBillItems = _allBillItems;
-    }
-  }
+  public allBillItems: any = [];
+  // public set allBillItemList(_allBillItems) {
+  //   if (_allBillItems) {
+  //     _allBillItems.forEach(element => {
+  //       element["Price_Unit"] = this.coreService.currencyUnit + element.Price;
+  //     });
+  //     this.allBillItems = _allBillItems;
+  //   }
+  // }
 
   //@Input('showAddPage')
   //public set value(val: boolean) {
@@ -63,13 +67,21 @@ export class ProfileItemMapComponent {
   //}
   @Output('callback-add')
   callbackAdd: EventEmitter<Object> = new EventEmitter<Object>();
-  public SelectedItem: ProflieItemsVM = new ProflieItemsVM();
+  public SelectedItem: ProfileItemsVM = new ProfileItemsVM();
+
+  public PriceCategories = new Array<PriceCategory>();
+  public SelectedPriceCategoryId: number = null;
   constructor(
     public incBLservice: IncentiveBLService,
     public msgBoxServ: MessageboxService,
     public securityService: SecurityService,
     public changeDetector: ChangeDetectorRef,
     public coreService: CoreService) {
+    const allPriceCategories = this.coreService.Masters.PriceCategories;
+    if (allPriceCategories && allPriceCategories.length > 0) {
+      this.PriceCategories = allPriceCategories.filter(p => p.IsActive);
+    }
+
     this.GetIncentiveOpdIpdSettings();
     // this.ProfileBillItemGridColumns = GridColumnSettings.ProfileBillItemGridColumns;
   }
@@ -79,8 +91,8 @@ export class ProfileItemMapComponent {
       this.update = true;
       this.newProfile = false;
       this.getProfileItemsDetails();
-      this.GetDeptsForSearchDDL(this.allBillItems);
-      this.FilteredItemList = this.allBillItems;
+      // this.GetDeptsForSearchDDL(this.allBillItems);
+      // this.FilteredItemList = this.allBillItems;
     }
     else {
       this.update = false;
@@ -109,37 +121,38 @@ export class ProfileItemMapComponent {
   }
 
   // not using this method
-  getItemList() {
-    this.incBLservice.getItemsforProfile().subscribe(res => {
-      if (res.Status == 'OK') {
-      }
-      else {
-        this.msgBoxServ.showMessage('failed', [res.ErrorMessage]);
-        console.log(res.ErrorMessage);
-      }
-    });
-  }
+  // getItemList() {
+  //   this.incBLservice.getItemsforProfile().subscribe(res => {
+  //     if (res.Status == 'OK') {
+  //     }
+  //     else {
+  //       this.msgBoxServ.showMessage('failed', [res.ErrorMessage]);
+  //       console.log(res.ErrorMessage);
+  //     }
+  //   });
+  // }
 
   getProfileItemsDetails() {
     try {
-      this.incBLservice.GetProfileItemsMapping(this.selectedProfileId).subscribe(res => {
-        if (res.Status == 'OK') {
+      this.incBLservice.GetProfileItemsMapping(this.selectedProfileId).subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           this.currentProfile = new ProfileModel();
-          let profile = res.Results.profileDetails;
+          let profile = res.Results;
           if (profile) {
             this.currentProfile.ProfileId = profile.ProfileId;
             this.currentProfile.ProfileName = profile.ProfileName;
             this.currentProfile.PriceCategoryId = profile.PriceCategoryId;
             this.currentProfile.PriceCategoryName = profile.PriceCategoryName;
 
-            this.PreviousProfileBillItems = res.Results.profileDetails.MappedItems;
-            this.PreviousProfileBillItems.forEach(a => {
-              var itemObj = this.allBillItems.find(itm => itm.ServiceItemId == a.ServiceItemId);
-              if (itemObj && itemObj.ServiceItemId) {
-                a.ItemName = itemObj.ItemName;
-                a.DepartmentName = itemObj.ServiceDepartmentName;
-              }
-            });
+            this.PreviousProfileBillItems = res.Results.MappedItems;
+            this.GetServiceItemsByPriceCategoryId(this.currentProfile.PriceCategoryId);
+            // this.PreviousProfileBillItems.forEach(a => {
+            //   var itemObj = this.allBillItems.find(itm => itm.ServiceItemId == a.ServiceItemId);
+            //   if (itemObj && itemObj.ServiceItemId) {
+            //     a.ItemName = itemObj.ItemName;
+            //     a.DepartmentName = itemObj.ServiceDepartmentName;
+            //   }
+            // });
             //let itmList = res.Results.itemsDetails;
             //itmList.forEach(el => {
             //  let itm = new ProfileItemMapModel();
@@ -170,12 +183,12 @@ export class ProfileItemMapComponent {
             //});
 
             //this.filteredItemList = this.currentProfileItems;
-            this.GetDeptsForSearchDDL(this.allBillItems);
+            //this.GetDeptsForSearchDDL(this.allBillItems);
           }
           this.isDataAvailable = true;
         }
         else {
-          this.msgBoxServ.showMessage('failed', [res.ErrorMessage]);
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
           console.log(res.ErrorMessage);
         }
       });
@@ -324,12 +337,12 @@ export class ProfileItemMapComponent {
   ItemsListFormatter(data: any): string {
     if (data["Doctor"]) {
       let html: string = data["ServiceDepartmentName"] + "-" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>"
-        + "(" + data["Doctor"].DoctorName + ")" + "&nbsp;&nbsp;" + "<b>" + data["Price_Unit"] + "</b >";
+        + "(" + data["Doctor"].DoctorName + ")" + "&nbsp;&nbsp;" + "<b>" + data["Price"] + "</b >";
       return html;
     }
     else {
       let html: string = data["ServiceDepartmentName"] + "-" + "<font color='blue'; size=03 >" + data["ItemName"] + "</font>"
-        + "&nbsp;&nbsp;" + "&nbsp;&nbsp;" + "<b>" + data["Price_Unit"] + "</b >";
+        + "&nbsp;&nbsp;" + "&nbsp;&nbsp;" + "<b>" + data["Price"] + "</b >";
       return html;
     }
   }
@@ -346,9 +359,8 @@ export class ProfileItemMapComponent {
 
   public SaveProfile() {
     if (this.currentProfile && this.currentProfile.ProfileName) {
-      var priceCAt = this.PricecategoryList.find(a => a.PriceCategoryName.toLowerCase() == "general");
-      this.currentProfile.PriceCategoryId = priceCAt.PriceCategoryId;
-      this.currentProfile.PriceCategoryName = priceCAt.PriceCategoryName;
+      this.currentProfile.PriceCategoryId = this.SelectedPriceCategoryId;
+      // this.currentProfile.PriceCategoryName = priceCAt.PriceCategoryName;
       this.currentProfile.AttachedProfileId = 0
       this.currentProfile.TDSPercentage = 0
       this.currentProfile.IsActive = true;
@@ -380,7 +392,7 @@ export class ProfileItemMapComponent {
   public OnDepartmentChange() {
 
     let srvDeptObj = null;
-    // check if user has given proper input string for department name 
+    // check if user has given proper input string for department name
     //or has selected object properly from the dropdown list.
     if (typeof (this.ProfileItemSetup.SelServDepartment) == 'string') {
       if (this.uniqueDeptNames.length && this.ProfileItemSetup.SelServDepartment)
@@ -393,15 +405,15 @@ export class ProfileItemMapComponent {
     //if selection of department from string or selecting object from the list is true
     //then assign proper department name
     if (srvDeptObj && srvDeptObj.ServiceDepartmentName) {
-      this.FilteredItemList = this.allBillItems.filter(a => a.ServiceDepartmentName == srvDeptObj.ServiceDepartmentName)
+      this.FilteredItemList = this.FilteredItemList.filter(a => a.ServiceDepartmentName == srvDeptObj.ServiceDepartmentName)
     }
     else {
-      this.FilteredItemList = this.allBillItems;
+      this.FilteredItemList = this.FilteredItemList;
     }
   }
 
   public AssignSelectedItem() {
-    //this.ItemsSetup -> This object is binded with dropdown, so taking all property from this. 
+    //this.ItemsSetup -> This object is binded with dropdown, so taking all property from this.
     this.ProfileItemSetup = Object.assign(this.ProfileItemSetup, this.SelectedItem);
     if (this.ProfileItemSetup.ItemName && this.ProfileItemSetup.ItemName != '') {
       if (this.PreviousProfileBillItems.find(a => a.ItemName == this.ProfileItemSetup.ItemName)) {
@@ -441,8 +453,8 @@ export class ProfileItemMapComponent {
   }
 
   public DiscardItem() {
-    this.ProfileItemSetup = new ProflieItemsVM();
-    this.SelectedItem = new ProflieItemsVM();
+    this.ProfileItemSetup = new ProfileItemsVM();
+    this.SelectedItem = new ProfileItemsVM();
     this.OnDepartmentChange();
   }
 
@@ -455,8 +467,9 @@ export class ProfileItemMapComponent {
       profileBillItemsObj.PerformerPercent = this.ProfileItemSetup.PerformerPercent ? this.ProfileItemSetup.PerformerPercent : 0;
       profileBillItemsObj.PrescriberPercent = this.ProfileItemSetup.PrescriberPercent ? this.ProfileItemSetup.PrescriberPercent : 0;
       profileBillItemsObj.ReferrerPercent = this.ProfileItemSetup.ReferrerPercent ? this.ProfileItemSetup.ReferrerPercent : 0;
-      let ServiceItem = this.allBillItems.find(f => f.ServiceItemId == this.ProfileItemSetup.ServiceItemId);
-      profileBillItemsObj.ServiceItemId = ServiceItem.ServiceItemId;
+      profileBillItemsObj.ServiceItemId = this.ProfileItemSetup.ServiceItemId;
+      // let ServiceItem = this.allBillItems.find(f => f.ServiceItemId == this.ProfileItemSetup.ServiceItemId);
+      // profileBillItemsObj.ServiceItemId = ServiceItem.ServiceItemId;
       profileBillItemsObj.ItemName = this.ProfileItemSetup.ItemName;
       profileBillItemsObj.DepartmentName = this.ProfileItemSetup.SelServDepartment;
 
@@ -471,7 +484,7 @@ export class ProfileItemMapComponent {
       }
       else {
         //EmployeeBillItemsObj.BillingTypesApplicable = 'both';
-        this.msgBoxServ.showMessage('Warning', ['Select Ipd/Opd to proceed']);
+        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Warning, ['Select Ipd/Opd to proceed']);
         return;
       }
       this.currentProfileItems.push(profileBillItemsObj);
@@ -482,20 +495,20 @@ export class ProfileItemMapComponent {
           if (res.Status == 'OK') {
             this.selectedProfileId = this.currentProfile.ProfileId;
             this.getProfileItemsDetails();
-            this.ProfileItemSetup = new ProflieItemsVM();
-            this.SelectedItem = new ProflieItemsVM();
-            this.msgBoxServ.showMessage('sucess', ['Profile BillItems Map is successfully saved!!']);
+            this.ProfileItemSetup = new ProfileItemsVM();
+            this.SelectedItem = new ProfileItemsVM();
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Success, ['Profile BillItems Map is successfully saved!!']);
             this.OnDepartmentChange();//this is needed to refresh the items list.
             this.SetFocusOn_SearchBox("srch_itemName");
           }
           else {
-            this.msgBoxServ.showMessage('failed', [res.ErrorMessage]);
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
             console.log(res.ErrorMessage);
           }
         });
     }
     else {
-      this.msgBoxServ.showMessage('Notice', ['Select Item and add Assign and referer percentage.']);
+      this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ['Select Item and add Assign and referer percentage.']);
     }
   }
 
@@ -503,11 +516,11 @@ export class ProfileItemMapComponent {
     switch ($event.Action) {
       case 'edititem': {
         this.updateSelectedItem = $event.Data;
-        if (this.updateSelectedItem.BillingTypesApplicable == 'outpatient') {
+        if (this.updateSelectedItem.BillingTypesApplicable === 'outpatient') {
           this.updateSelectedItem.IpdSelected = false;
           this.updateSelectedItem.OpdSelected = true;
         }
-        else if (this.updateSelectedItem.BillingTypesApplicable == 'inpatient') {
+        else if (this.updateSelectedItem.BillingTypesApplicable === 'inpatient') {
           this.updateSelectedItem.IpdSelected = true;
           this.updateSelectedItem.OpdSelected = false;
         }
@@ -577,10 +590,33 @@ export class ProfileItemMapComponent {
         });
     }
   }
+
+  OnPriceCategoryChanged($event): void {
+    if ($event) {
+      const priceCategoryId = +$event.target.value;
+      this.SelectedPriceCategoryId = priceCategoryId;
+      this.GetServiceItemsByPriceCategoryId(priceCategoryId);
+    }
+  }
+  GetServiceItemsByPriceCategoryId(priceCategoryId: number): void {
+    this.incBLservice.GetItemsForIncentive(priceCategoryId)
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+          this.DiscardItem();
+          const serviceItems = res.Results;
+          this.GetDeptsForSearchDDL(serviceItems);
+          this.FilteredItemList = serviceItems;
+        }
+        else {
+          this.msgBoxServ.showMessage('failed', [res.ErrorMessage]);
+          console.log(res.ErrorMessage);
+        }
+      });
+  }
 }
 
 
-class ProflieItemsVM {
+class ProfileItemsVM {
   public SelServDepartment: any = null;
   public ItemName: string = "";
   public Price: number = null;

@@ -1,5 +1,6 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpHeaders, HttpClient } from '@angular/common/http';
+import { DanpheHTTPResponse } from '../../shared/common-models';
 
 @Injectable()
 export class IncentiveDLService {
@@ -55,11 +56,11 @@ export class IncentiveDLService {
   }
 
   GetEmployeeBillItemsList(employeeId) {
-    return this.http.get<any>(`/api/Incentive/EmployeeBillItems?employeeId=${employeeId}`, this.options);
+    return this.http.get<DanpheHTTPResponse>(`/api/Incentive/EmployeeBillItems?employeeId=${employeeId}`, this.options);
   }
 
-  GetItemsForIncentive() {
-    return this.http.get<any>('/api/Incentive/IncentiveItems', this.options);
+  GetItemsForIncentive(priceCategoryId: number) {
+    return this.http.get<DanpheHTTPResponse>(`/api/Incentive/IncentiveItems?priceCategoryId=${priceCategoryId}`, this.options);
   }
 
   //no reqType found during API segregation

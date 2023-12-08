@@ -161,6 +161,17 @@
             <a class="btn btn-danger" (click)="ClosePopup()" title="Cancel">X</a>
           </div>
           <div class="form-horizontal hm-form incentive_form">
+            <div class="row">
+              <div class="col-md-3" style="padding: 10px 0 10px 31px !important;">
+                PriceCategory:
+                <select name="priceCategorySelection" id="id_select_priceCategory_employee_items_setup"
+                        (change)="OnPriceCategoryChanged($event)">
+                  <option value="">--select PriceCategory--</option>
+                  <option *ngFor="let priceCat of PriceCategories" value="{{priceCat.PriceCategoryId}}">{{priceCat.PriceCategoryName}}</option>
+                </select>
+              </div>
+
+            </div>
             <div>
               <div class="emp-header" *ngIf="!update">
                 <div class="form-group mb10">
@@ -198,7 +209,7 @@
                       </div>
                     </div>
                   </div>-->
-                  <div class="col-md-2" *ngIf="!update && newEmployeeIncentiveInfo">
+                  <div class="col-md-2" *ngIf="!update && NewEmployeeIncentiveInfo">
                     <div class="row">
                       <button class="btn primary-btn btn-success btn-add-new-row"
                               title="Click To Save employee incentive Info" (click)="SaveEmployeeIncentiveInfo()"
@@ -209,7 +220,7 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <div class="col-md-3" *ngIf="!update && newEmployeeIncentiveInfo">
+                  <div class="col-md-3" *ngIf="!update && NewEmployeeIncentiveInfo">
                     <div class="row">
                       <label class="col-md-8">Attach Profile Item Mapping <b>:</b> </label>
                       <div class="col-md-1">
@@ -279,13 +290,13 @@
                           </div>
                         </div>
 
-                        <span class="color-red font-sm" *ngIf="showErrMsg">Profile is required.</span>
+                        <!-- <span class="color-red font-sm" *ngIf="showErrMsg">Profile is required.</span> -->
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="col-md-12" *ngIf="!newEmployeeIncentiveInfo">
+              <div class="col-md-12" *ngIf="!NewEmployeeIncentiveInfo">
                 <table class="table billing-table" style="background-color:initial;margin-top:10px">
                   <thead>
                     <tr>
@@ -424,7 +435,7 @@
                   </tbody>
                 </table>
               </div>
-              <div class="col-md-12" *ngIf="!newEmployeeIncentiveInfo">
+              <div class="col-md-12" *ngIf="!NewEmployeeIncentiveInfo">
                 <div class="row">
                   <div class="col-md-12">
                     <div>
@@ -652,7 +663,8 @@
   </div>
 </div>
 
-<div class="popup-static portlet box portlet-fullscreen custom_modal" *ngIf="showPreview">
+<div class="popup-static portlet box portlet-fullscreen custom_modal"
+     *ngIf="showPreview && (EmployeePreviousBillItems && EmployeePreviousBillItems.length)">
   <div class="portlet-body form">
     <div class="row">
       <div class="col-md-12">

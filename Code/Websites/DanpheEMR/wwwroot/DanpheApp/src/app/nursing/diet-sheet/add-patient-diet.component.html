@@ -1,0 +1,66 @@
+<!-- Modal -->
+<div class="popup-static portlet box portlet-fullscreen custom_modal modal-dialog modal-dialog-centered" *ngIf="showAddDietPopUp">
+    <div class="portlet-body form">
+        <!-- Model Box Body Start -->
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="modelbox-div clearfix">
+                    <div class="caption custom-caption no-margin">
+                        <h3 class="text-left"><span>Add New Diet</span></h3>
+                        <a class="btn btn-danger" (click)="CloseAddDietPopUp()" title="Cancel">X</a>
+                    </div>
+                    <div class="table-container" style="position: relative; margin: 20px;">
+                        <div class="row">
+                            <div class="col-md-6 text-left">
+                                <label>Hospital No:</label> {{selectedIpd.PatientCode}}
+                            </div>
+                            <!--<div class="col-md-6 text-right">
+                                <label>Rank:</label> {{selectedIpd.Rank}}
+                            </div>-->
+                            <div class="col-md-6 text-right">
+                                <label>Address:</label> {{selectedIpd.Address}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 text-left">
+                                <label>Patient Name:</label> {{selectedIpd.ShortName}}
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <label>Age/Sex:</label> {{selectedIpd.AgeSex}}
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div>
+                        <form>
+                            <div class="form-row">
+                                <div class="form-group col-md-5">
+                                    <label for="dietname" style="margin-top:0px">Diet Type:</label>
+                                    <div style="display: inline-block;">
+                                        <input danphe-auto-complete [source]="dietTypes" placeholder="Select Diet Type" [list-formatter]="DietTypeFormatter" display-property-name="DietTypeName" [(ngModel)]="selectedDietType" (focusout)="SelectDietType();" id="dietname" name="dietname">
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="diet" style="margin-top:0px">Extra Diet:</label>
+                                    <input type="text" id="diet" [(ngModel)]="diet.ExtraDiet" name="extraDiet">
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="remarks" style="margin-top:0px">Remarks:</label>
+                                    <input type="text" id="remarks" [(ngModel)]="diet.Remarks" name="remarks">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-12 text-right">
+                                    <button type="submit" class="btn green btn-success" (click)="AddPatientDietType()">
+                                        <i class="fa fa-save"></i> Save
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Model Box Body End -->
+</div>

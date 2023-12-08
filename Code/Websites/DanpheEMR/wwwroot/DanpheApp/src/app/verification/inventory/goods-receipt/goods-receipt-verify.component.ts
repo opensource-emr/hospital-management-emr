@@ -1,17 +1,17 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { VerificationService } from "../../shared/verification.service";
-import { Router } from "@angular/router";
-import { RouteFromService } from "../../../shared/routefrom.service";
-import { CoreService } from "../../../core/shared/core.service";
-import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
-import { VerificationBLService } from "../../shared/verification.bl.service";
-import { SecurityService } from "../../../security/shared/security.service";
-import { VerificationActor } from '../requisition-details/inventory-requisition-details.component';
-import { GoodsReceipt } from '../../../inventory/shared/goods-receipt.model';
-import { GoodsReceiptItems } from '../../../inventory/shared/goods-receipt-item.model';
-import { CommonFunctions } from '../../../shared/common.functions';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Charge } from '../../../procurement/goods-receipt/goods-receipt-view/goods-receipt-view.component';
+import { Router } from "@angular/router";
+import { CoreService } from "../../../core/shared/core.service";
+import { GoodsReceiptItems } from '../../../inventory/shared/goods-receipt-item.model';
+import { GoodsReceipt } from '../../../inventory/shared/goods-receipt.model';
+import { SecurityService } from "../../../security/shared/security.service";
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
+import { CommonFunctions } from '../../../shared/common.functions';
+import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
+import { RouteFromService } from "../../../shared/routefrom.service";
+import { VerificationBLService } from "../../shared/verification.bl.service";
+import { VerificationService } from "../../shared/verification.service";
+import { VerificationActor } from '../requisition-details/inventory-requisition-details.component';
 
 @Component({
   templateUrl: './goods-receipt-verify.html',
@@ -32,6 +32,8 @@ export class GoodsReceiptVerifyComponent implements OnInit, OnDestroy {
   showCCCharge: boolean = false;
   showDiscount: boolean = false;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(
     public verificationService: VerificationService,
     public verificationBLService: VerificationBLService,
@@ -43,6 +45,7 @@ export class GoodsReceiptVerifyComponent implements OnInit, OnDestroy {
     public changeDetector: ChangeDetectorRef) {
     this.GetInventoryBillingHeaderParameter();
     this.checkGRCustomization();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
 
   ngOnDestroy(): void {

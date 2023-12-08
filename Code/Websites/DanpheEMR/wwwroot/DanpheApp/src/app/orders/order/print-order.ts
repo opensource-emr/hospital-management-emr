@@ -1,7 +1,8 @@
 ﻿import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { PatientService } from '../../patients/shared/patient.service';
+import { CoreService } from '../../core/shared/core.service';
 import { Patient } from '../../patients/shared/patient.model';
+import { PatientService } from '../../patients/shared/patient.service';
 
 @Component({
     templateUrl: "../../view/order-view/PrintMedications.html" // "/OrderView/PrintMedications"
@@ -9,10 +10,19 @@ import { Patient } from '../../patients/shared/patient.model';
 
 export class PrintMedicationsComponent {
     public currPat: Patient = new Patient();
-    constructor(public router: Router, public patService: PatientService) {
-        this.currPat = this.patService.getGlobal();
-    }
+    public headerDetails: { hospitalName, address, tel };
 
+    constructor(public router: Router, public patService: PatientService, public coreservice: CoreService,
+    ) {
+        this.currPat = this.patService.getGlobal();
+        this.Loadheader();
+    }
+    public Loadheader() {
+        let headerParms = this.coreservice.Parameters.find(a => a.ParameterGroupName === "Common" && a.ParameterName === "CustomerHeader");
+        if (headerParms) {
+            this.headerDetails = JSON.parse(headerParms.ParameterValue);
+        }
+    }
 
     print() {
         let popupWinindow;
@@ -21,7 +31,7 @@ export class PrintMedicationsComponent {
         popupWinindow.document.open();
         //popupWinindow.document.write('<html><head><link href="../assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" /><link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css" /></head><body onload="window.print()">' + printContents + '</body></html>');
         popupWinindow.document.write('<html><head><link rel="stylesheet" type="text/css" href="../../themes/theme-default/DanpheStyle.css" /></head><body onload="window.print()">' + printContents + '</body></html>');
-        popupWinindow.document.close();        
+        popupWinindow.document.close();
     }
 
 }

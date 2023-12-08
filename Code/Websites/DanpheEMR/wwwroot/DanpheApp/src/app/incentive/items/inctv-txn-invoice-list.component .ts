@@ -6,6 +6,7 @@ import { NepaliCalendarService } from "../../shared/calendar/np/nepali-calendar.
 import { DanpheHTTPResponse } from "../../shared/common-models";
 import { DLService } from "../../shared/dl.service";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from "../../shared/shared-enums";
 import { IncentiveFractionItemsModel } from "../shared/incentive-fraction-item.model";
 import { IncentiveTransactionItemsVM } from "../shared/incentive-transaction-items-vm";
 import { IncentiveBLService } from "../shared/incentive.bl.service";
@@ -77,12 +78,12 @@ export class IncentiveTxnInvoiceListComponent {
     this.dlService.Read(`/api/Incentive/TransactionInvoices?fromDate=${this.fromDate}&toDate=${this.toDate}`)
       .map(res => res)
       .subscribe((res: DanpheHTTPResponse) => {
-        if (res.Status == "OK") {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           this.allInvoiceInfoList = res.Results;
           this.SetFocusOnInvoiceListSearchBox();
         }
         else {
-          this.msgBoxServ.showMessage("failed", ["Unable to get transaction items."]);
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ["Unable to get transaction items."]);
           console.log(res.ErrorMessage);
         }
       });
@@ -96,7 +97,7 @@ export class IncentiveTxnInvoiceListComponent {
     this.dlService.Read(`/api/Incentive/TransactionInvoiceItems?BillingTransactionId=${this.billingtransactionId}`)
       .map(res => res)
       .subscribe((res: DanpheHTTPResponse) => {
-        if (res.Status == "OK") {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           this.allTxnInvoiceItemList = res.Results.TxnItems;
           this.allFractionsListOfInvoice = res.Results.FractionItems;
 
@@ -121,7 +122,7 @@ export class IncentiveTxnInvoiceListComponent {
           this.showAllitemtxn = true;
         }
         else {
-          this.msgBoxServ.showMessage("failed", ["Unable to get transaction items."]);
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ["Unable to get transaction items."]);
           console.log(res.ErrorMessage);
         }
       });
@@ -142,7 +143,7 @@ export class IncentiveTxnInvoiceListComponent {
 
         }
         else {
-          this.msgBoxServ.showMessage("failed", ["Unable to get transaction items."]);
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ["Unable to get transaction items."]);
           console.log(res.ErrorMessage);
         }
       });
@@ -180,6 +181,8 @@ export class IncentiveTxnInvoiceListComponent {
     this.selectedBillTxnItem.AssignedToEmpName = txnItm.AssignedToEmpName;
     this.selectedBillTxnItem.ReferredByEmpName = txnItm.ReferredByEmpName;
     this.selectedBillTxnItem.ServiceItemId = txnItm.ServiceItemId;
+    this.selectedBillTxnItem.PriceCategoryId = txnItm.PriceCategoryId;
+    this.selectedBillTxnItem.PriceCategoryName = txnItm.PriceCategoryName;
 
     this.allTxnInvoiceItemList.forEach(a => {
       a.IsSelected = false;
@@ -388,7 +391,7 @@ export class IncentiveTxnInvoiceListComponent {
 //  public IsSelected: boolean = false;//only for client side.
 //}
 
-//sud:16Feb'20--add this to separate class later on. 
+//sud:16Feb'20--add this to separate class later on.
 class InctvInvoiceInfoVM {
   public PatientId: number = 0;
   public PatientName: string = null;
@@ -419,4 +422,6 @@ class IncentiveTransactionInvoiceItemsVM {
 
   public IsSelected: boolean = false;//only for client side.
   public ServiceItemId: number = null;
+  public PriceCategoryId: number = null;
+  public PriceCategoryName: string = "";
 }

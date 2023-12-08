@@ -13,8 +13,9 @@ export class EmployeeIncentiveInfoModel {
 
   public PriceCategoryName: string = null;
   public PriceCategoryId: number = 0;
+  public FullName: string = "";
 
-  
+
   constructor() {
 
   }

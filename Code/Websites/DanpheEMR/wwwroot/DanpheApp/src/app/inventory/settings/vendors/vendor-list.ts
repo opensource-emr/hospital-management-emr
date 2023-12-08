@@ -1,15 +1,16 @@
 
-import { Component, ChangeDetectorRef } from "@angular/core";
+import { ChangeDetectorRef, Component } from "@angular/core";
 
-import { VendorsModel } from '../shared/vendors.model';
 import { InventorySettingBLService } from "../shared/inventory-settings.bl.service";
+import { VendorsModel } from '../shared/vendors.model';
 
 import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 
-import * as moment from 'moment/moment';
-import { InventoryService } from "../../shared/inventory.service";
+import { CoreService } from "../../../core/shared/core.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
+import { InventoryService } from "../../shared/inventory.service";
 //testing
 @Component({
   selector: 'vendor-list',
@@ -24,10 +25,16 @@ export class VendorListComponent {
   public selectedVendor: VendorsModel;
   public index: number;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
-  constructor(public invSettingBL: InventorySettingBLService, public inventoryService: InventoryService,
+
+
+  constructor(public invSettingBL: InventorySettingBLService, public inventoryService: InventoryService, public coreservice: CoreService,
     public msgBoxService: MessageboxService,
     public changeDetector: ChangeDetectorRef) {
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
+    this.vendorGridColumns = GridColumnSettings.vendorList;
+    this.vendorGridColumns[5].headerName = `${this.GeneralFieldLabel.PANNo} `;
     this.vendorGridColumns = GridColumnSettings.vendorList;
     this.getVendorList();
   }

@@ -21,6 +21,7 @@ using System.Data.SqlClient;
 using DanpheEMR.ServerModel.BillingModels;
 using Microsoft.EntityFrameworkCore;
 using DanpheEMR.ServerModel.MedicareModels;
+using DanpheEMR.Services.SSF.DTO;
 
 namespace DanpheEMR.Controllers
 {
@@ -30,6 +31,7 @@ namespace DanpheEMR.Controllers
 
         double cacheExpMinutes;//= 5;//this should come from configuration later on.
         bool realTimeRemoteSyncEnabled = false;
+        bool RealTimeSSFClaimBooking = false;
         string InvoiceCode = "BL";
         double DepositReturnAmount = 0;
         BillingTransactionModel billTxnReturnData = new BillingTransactionModel();
@@ -42,6 +44,7 @@ namespace DanpheEMR.Controllers
         {
             cacheExpMinutes = _config.Value.CacheExpirationMinutes;
             realTimeRemoteSyncEnabled = _config.Value.RealTimeRemoteSyncEnabled;
+            RealTimeSSFClaimBooking = _config.Value.RealTimeSSFClaimBooking;
 
 
             _billingDbContext = new BillingDbContext(connString);
@@ -626,6 +629,30 @@ namespace DanpheEMR.Controllers
                                 Task.Run(() => BillingBL.SyncBillToRemoteServer(billInvoiceRet, "sales-return", _billingDbContext));
                             }
                             //end--section-6: Send Return Information to IRD SERVER
+
+                            //start: --section 7: Send Return To SSF Server for SSF Patients
+                            var patientSchemes = _billingDbContext.PatientSchemeMaps.Where(a => a.SchemeId == billInvoiceRet.SchemeId && a.PatientId == billInvoiceRet.PatientId).FirstOrDefault();
+                            if (patientSchemes != null)
+                            {
+                                int priceCategoryId = billInvoiceRet.ReturnInvoiceItems[0].PriceCategoryId;
+                                var priceCategory = _billingDbContext.PriceCategoryModels.Where(a => a.PriceCategoryId == priceCategoryId).FirstOrDefault();
+                                if (priceCategory != null && priceCategory.PriceCategoryName.ToLower() == "ssf" && RealTimeSSFClaimBooking)
+                                {
+                                    //making parallel thread call (asynchronous) to post to SSF Server. so that it won't stop the normal BillingFlow.
+                                    SSFDbContext ssfDbContext = new SSFDbContext(connString);
+                                    var billObj = new SSF_ClaimBookingBillDetail_DTO()
+                                    {
+                                        InvoiceNoFormatted = $"CRN{billInvoiceRet.CreditNoteNumber}",
+                                        TotalAmount = -(decimal)billInvoiceRet.TotalAmount, //Keep it negative here, SSF takes return as negative values so that they can subtract later with TotalAmount
+                                        ClaimCode = (long)patientSchemes.LatestClaimCode
+                                    };
+
+                                    SSF_ClaimBookingService_DTO claimBooking = SSF_ClaimBookingService_DTO.GetMappedToBookClaim(billObj, patientSchemes);
+
+                                    Task.Run(() => BillingBL.SyncToSSFServer(claimBooking, "billing", ssfDbContext, patientSchemes, currentUser));
+                                }
+                            }
+                            //end: --section 7: Send Return To SSF Server for SSF Patients
 
                         }
                         dbContextTransaction.Commit();

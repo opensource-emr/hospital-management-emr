@@ -110,7 +110,7 @@ namespace DanpheEMR.Controllers
         {
             AccountingBillLedgerMappingModel accBillLedgerMap = new AccountingBillLedgerMappingModel();
             accBillLedgerMap.LedgerId = accBillingLedgerMapping.LedgerId;
-            accBillLedgerMap.SubLedgerId = accBillingLedgerMapping.SubLedgerId;
+            accBillLedgerMap.SubLedgerId = accBillingLedgerMapping.SubLedgerId == 0 ? null : accBillingLedgerMapping.SubLedgerId;
             accBillLedgerMap.ItemId = accBillingLedgerMapping.ItemId;
             accBillLedgerMap.HospitalId = HospitalId;
             accBillLedgerMap.ServiceDepartmentId = accBillingLedgerMapping.ServiceDepartmentId;
@@ -136,7 +136,7 @@ namespace DanpheEMR.Controllers
         private object UpdateMapBillingIncomeLedger(AccBillingLedgerMapping_DTO accBillingLedgerMapping)
         {
             var ledgerToUpdate = _accountingDbContext.AccountBillLedgerMapping.Where(x => x.BillLedgerMappingId == accBillingLedgerMapping.BillLedgerMappingId).FirstOrDefault();
-            ledgerToUpdate.SubLedgerId = accBillingLedgerMapping.SubLedgerId;
+            ledgerToUpdate.SubLedgerId = accBillingLedgerMapping.SubLedgerId ==  0 ? null : accBillingLedgerMapping.SubLedgerId;
             ledgerToUpdate.LedgerId = accBillingLedgerMapping.LedgerId;
             ledgerToUpdate.ServiceDepartmentId = accBillingLedgerMapping.ServiceDepartmentId;
             ledgerToUpdate.ItemId = accBillingLedgerMapping.ItemId;

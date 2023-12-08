@@ -163,7 +163,7 @@
             <td>
               <form [formGroup]="row.ReturnItemValidator">
                 <input [(ngModel)]="row.ReturnItemRate" style="width:80px;" id="returnrate{{i}}" class="form-control" name="ReturnItemRate"
-                       formControlName="ReturnItemRate" type="number"
+                       formControlName="ReturnItemRate" type="number" (ngModelChange)="CalculateAll(i)"
                        (keyup.enter)="GoToNextInput('qtyip'+i,row.Item,i)" onClick="this.select();"
                        (wheel)="coreService.PreventNumberChangeOnScroll($event)">
                 <span *ngIf="row.ReturnItemRate>row.ItemRate" style="color:orange">Warning: Return Rate is more than ItemRate </span>

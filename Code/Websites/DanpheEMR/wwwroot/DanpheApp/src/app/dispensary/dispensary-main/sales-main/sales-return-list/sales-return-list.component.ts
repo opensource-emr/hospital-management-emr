@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import * as moment from 'moment';
+import { CoreService } from '../../../../core/shared/core.service';
 import { PharmacyReceiptModel } from '../../../../pharmacy/shared/pharmacy-receipt.model';
 import { PharmacyBLService } from '../../../../pharmacy/shared/pharmacy.bl.service';
 import { PharmacyService } from '../../../../pharmacy/shared/pharmacy.service';
@@ -9,6 +10,7 @@ import { PHRMInvoiceReturnModel } from '../../../../pharmacy/shared/phrm-invoice
 import { PHRMInvoiceModel } from '../../../../pharmacy/shared/phrm-invoice.model';
 import { PHRMStoreModel } from '../../../../pharmacy/shared/phrm-store.model';
 import { SecurityService } from '../../../../security/shared/security.service';
+import { GeneralFieldLabels } from '../../../../shared/DTOs/general-field-label.dto';
 import { NepaliCalendarService } from '../../../../shared/calendar/np/nepali-calendar.service';
 import { CommonFunctions } from '../../../../shared/common.functions';
 import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../../shared/danphe-grid/NepaliColGridSettingsModel';
@@ -43,6 +45,7 @@ export class SalesReturnListComponent implements OnInit {
   public saleretId: any;
   public CRNNO: any;
   public RetQty: any;
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   public currentActiveDispensary: PHRMStoreModel;
   public isSelectedDispensaryInsurance: boolean;
@@ -56,7 +59,8 @@ export class SalesReturnListComponent implements OnInit {
     public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef,
     public securityService: SecurityService,
-    public nepaliDate: NepaliCalendarService
+    public nepaliDate: NepaliCalendarService,
+    public coreService: CoreService
 
   ) {
     this.fromDate = moment().format('YYYY-MM-DD');
@@ -65,6 +69,11 @@ export class SalesReturnListComponent implements OnInit {
     this.currentActiveDispensary = this._dispensaryService.activeDispensary;
     this.saleGridColumns = this.isSelectedDispensaryInsurance ? PHRMGridColumns.PHRMInsuranceSaleReturnList : PHRMGridColumns.PHRMSaleReturnList;
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('CreateOn', false));
+    if (this.isSelectedDispensaryInsurance) {
+
+      this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+      this.saleGridColumns[4].headerName = `${this.GeneralFieldLabel.NSHINo} No.`;
+    }
   }
 
   ngOnInit() {

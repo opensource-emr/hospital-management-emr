@@ -4,18 +4,15 @@
       <div class="input-group">
         <div class="icheck-inline">
           <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
-            <input checked="checked" (change)="FilterRequisitionList('all')" name="name" style="width:15px;height:15px" type="radio"
-                   class="ng-untouched ng-pristine ng-valid">
+            <input checked="checked" (change)="FilterRequisitionList('all')" name="name" style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
             <span></span>ALL
           </label>
           <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
-            <input name="name" (change)="FilterRequisitionList('complete')" style="width:15px;height:15px" type="radio"
-                   class="ng-untouched ng-pristine ng-valid">
+            <input name="name" (change)="FilterRequisitionList('complete')" style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
             <span></span>Completed
           </label>
           <label class="mt-checkbox mt-checkbox-outline" style="font-weight: bold;color: green;">
-            <input name="name" (change)="FilterRequisitionList('pending')" style="width:15px;height:15px" type="radio"
-                   class="ng-untouched ng-pristine ng-valid">
+            <input name="name" (change)="FilterRequisitionList('pending')" style="width:15px;height:15px" type="radio" class="ng-untouched ng-pristine ng-valid">
             <span></span>Pending
           </label>
         </div>
@@ -23,9 +20,7 @@
     </div>
 
     <div class="col-lg-12 col-sm-12">
-      <danphe-grid [grid-colDefaults]="requisitionGridColumns" [grid-data]="filterRequisitionList" [rangeType]="dateRange" [show-CustomDate]="true"
-                   [NepaliDateInGridParams]="NepaliDateInRequisitionGridSettings" (onDateChange)="onDateChange($event)"
-                   (grid-actions)="DeptGridAction($event)">
+      <danphe-grid [grid-colDefaults]="requisitionGridColumns" [grid-data]="filterRequisitionList" [rangeType]="dateRange" [show-CustomDate]="true" [NepaliDateInGridParams]="NepaliDateInRequisitionGridSettings" (onDateChange)="onDateChange($event)" (grid-actions)="DeptGridAction($event)">
       </danphe-grid>
     </div>
   </div>
@@ -45,9 +40,7 @@
             <a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="CloseDispatchList()" title="Cancel">X</a>
             <hr />
           </div>
-          <danphe-grid [grid-colDefaults]="DispatchListGridColumns" [grid-data]="dispatchList" (grid-actions)="DispatchDetailsGridAction($event)"
-                       [NepaliDateInGridParams]="NepaliDateInDispatchListGridSettings" [grid-exportOptions]="gridExportOptions"
-                       [grid-showExport]="true">
+          <danphe-grid [grid-colDefaults]="DispatchListGridColumns" [grid-data]="dispatchList" (grid-actions)="DispatchDetailsGridAction($event)" [NepaliDateInGridParams]="NepaliDateInDispatchListGridSettings" [grid-exportOptions]="gridExportOptions" [grid-showExport]="true">
           </danphe-grid>
           <hr />
         </div>
@@ -62,11 +55,9 @@
 
     <div class="col-md-12" style="display: flex; justify-content: center;">
       <div class="col-md-10 col-sm-12 col-xs-12 modelbox-div" style="margin-right: 24px;">
-        <div><a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel"><span class="fa fa-times"> </span></a>
-        </div>
+        <div><a style="float:right;  margin-top:-13px;" class="btn btn-danger" (click)="Close()" title="Cancel"><span class="fa fa-times"> </span></a></div>
         <!-- Nepali Dispatch Receipt -->
-        <app-dispatch-np-view *ngIf="showNepaliReceipt else EnglishReceiptView" [dispatch-id]="DispatchId" [module-type]="'pharmacy-dispensary'"
-                              (call-back-close)="Close()">
+        <app-dispatch-np-view *ngIf="showNepaliReceipt else EnglishReceiptView" [dispatch-id]="DispatchId" [module-type]="'pharmacy-dispensary'" (call-back-close)="Close()">
         </app-dispatch-np-view>
         <!-- English Dispatch Receipt -->
         <ng-template #EnglishReceiptView>
@@ -81,7 +72,7 @@
                     <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
                       <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                       <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                      <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
+                      <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{
                         headerDetail.tel}}</span><br />
                       <span style="font-size:15px;"><strong> Pharmacy Unit </strong></span><br />
                     </div>
@@ -101,9 +92,12 @@
                 </div>
                 <div class="right" style="text-align:right;">
                   <p>Dispatch Date:<b> {{innerDispatchdetails.CreatedOn | date}}</b>&nbsp;
-                    
+                    <i *ngIf="innerDispatchdetails.CreatedOn">{{innerDispatchdetails.CreatedOn |
+                      nepaliDate:'format':'YYYY-MM-DD'}} </i>
                   </p>
                   <p>Requisition Date:<b> {{requisitionDate | date}}</b>&nbsp;
+                    <i *ngIf="requisitionDate">{{requisitionDate | nepaliDate:'format':'YYYY-MM-DD'}} </i>
+                  </p>
                 </div>
                 <div class="clear"></div>
                 <p class="text-center btm-pad border-up-down"><b>DISPATCH DETAILS PRINT</b></p>
@@ -196,7 +190,7 @@
                   <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
                     <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                     <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                    <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                     <span style="font-size:15px;"><strong> Pharmacy Unit </strong></span><br />
                   </div>
                 </div>
@@ -214,7 +208,8 @@
               </div>
               <div class="right" style="text-align:right;">
                 <p><strong>Requisition Date:</strong>{{requisition.RequisitionDate | date:"yyy-MM-dd"}}&nbsp;
-                  
+                  <i *ngIf="requisition.RequisitionDate">({{requisition.RequisitionDate | nepaliDate:'format':'YYYY-MM-DD'}} 
+                    )</i>
                 </p>
               </div>
               <div class="clear"></div>
@@ -237,9 +232,7 @@
                   <tbody>
                     <tr style="text-align:center" *ngFor="let row of requisition.RequisitionItems">
                       <td>
-                        <input *ngIf="row.RequestedItemStatus=='active' || row.RequestedItemStatus=='pending'" class="noPrint"
-                               title="Cancel this item." type="checkbox" [(ngModel)]="row.IsSelected" style="zoom:1.2"
-                               (change)="ShowCancelButtonOnCkboxChange()" />
+                        <input *ngIf="row.RequestedItemStatus=='active' || row.RequestedItemStatus=='pending'" class="noPrint" title="Cancel this item." type="checkbox" [(ngModel)]="row.IsSelected" style="zoom:1.2" (change)="ShowCancelButtonOnCkboxChange()" />
                       </td>
                       <td>{{row.ItemName}}(<i style="color: blue;">{{row.GenericName}}</i>)</td>
                       <td>{{row.RequestedQuantity}}</td>
@@ -251,7 +244,7 @@
                           </span>
                           <p class="tooltiptext ttptextdown noPrint">
                             Cancelled&nbsp;By:&nbsp;{{row.CancelledBy}}<br />
-                            Cancelled&nbsp;On:&nbsp;{{row.CancelledOn | date:"yyy-MM-dd"}}<br />
+                            Cancelled&nbsp;On:&nbsp;{{row.CancelledOn | date:"yyy-MM-dd"}}<i>{{row.CancelledOn | nepaliDate}}</i><br />
                             <em>Remarks:&nbsp;{{row.CancelRemarks}}</em>
                           </p>
                         </span>
@@ -318,8 +311,7 @@
                   <thead>
                     <tr>
                       <th>
-                        <input checked type="checkbox" class="chk-itms" name="SelectAllRequisition" [(ngModel)]="selectAllRequisition"
-                               (change)="toogleAllDispatchItems()">
+                        <input checked type="checkbox" class="chk-itms" name="SelectAllRequisition" [(ngModel)]="selectAllRequisition" (change)="toogleAllDispatchItems()">
                       </th>
                       <th>
                         Item Name
@@ -349,15 +341,13 @@
                   <tbody>
                     <tr *ngFor="let row of requisitionToDispatch.RequisitionItems; let i = index">
                       <td>
-                        <input checked type="checkbox" class="chk-itms" name="ItemSelection" [(ngModel)]="row.IsDispatchingNow"
-                               [attr.disabled]="(row.IsDispatchForbidden == true) ? true : null" (change)="checkIfAllSelected()">
+                        <input checked type="checkbox" class="chk-itms" name="ItemSelection" [(ngModel)]="row.IsDispatchingNow" [attr.disabled]="(row.IsDispatchForbidden == true) ? true : null" (change)="checkIfAllSelected()">
                       </td>
                       <td>
                         <input name="ItemName" [(ngModel)]="row.ItemName" [attr.disabled]="true" class="table-input" type="text" />
                       </td>
                       <td>
-                        <input name="AllocatedStoreRackName" [(ngModel)]="row.AllocatedStoreRackName" [attr.disabled]="true" class="table-input"
-                               type="text" />
+                        <input name="AllocatedStoreRackName" [(ngModel)]="row.AllocatedStoreRackName" [attr.disabled]="true" class="table-input" type="text" />
                       </td>
                       <td>
                         <input name="RequestedQuantity" [(ngModel)]="row.RequestedQuantity" [attr.disabled]="true" class="table-input" type="text" />
@@ -369,11 +359,9 @@
                         <table class="table table-condensed">
                           <tr *ngFor="let dispatchingItem of row.DispatchedItems; let j = index">
                             <td>
-                              <select name="BatchNo" id="BatchNo{{i}}{{j}}" [(ngModel)]="dispatchingItem.BatchNo"
-                                      [attr.disabled]="(row.IsDispatchingNow == false) ? true : null" (ngModelChange)="OnBatchChange(i,j)">
+                              <select name="BatchNo" id="BatchNo{{i}}{{j}}" [(ngModel)]="dispatchingItem.BatchNo" [attr.disabled]="(row.IsDispatchingNow == false) ? true : null" (ngModelChange)="OnBatchChange(i,j)">
                                 <option disabled [value]="null">select batch</option>
-                                <option *ngFor="let stock of row.AvailableStockList" [value]="stock.BatchNo">{{stock.BatchNo}} (Qty :
-                                  {{stock.AvailableQuantity}})</option>
+                                <option *ngFor="let stock of row.AvailableStockList" [value]="stock.BatchNo">{{stock.BatchNo}} (Qty : {{stock.AvailableQuantity}})</option>
                               </select>
                             </td>
                             <!-- <td>
@@ -382,17 +370,14 @@
                                     </td> -->
                             <td>{{dispatchingItem.ExpiryDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</td>
                             <td>
-                              <input type="number" name="AvailableQuantity" [attr.disabled]="true" id="AvailableQuantity{{i}}{{j}}" min="0"
-                                     [(ngModel)]="dispatchingItem.AvailableQuantity">
+                              <input type="number" name="AvailableQuantity" [attr.disabled]="true" id="AvailableQuantity{{i}}{{j}}" min="0" [(ngModel)]="dispatchingItem.AvailableQuantity">
                             </td>
                             <td>
-                              <input type="number" name="DispatchedQuantity" [attr.disabled]="(row.IsDispatchingNow == false) ? true : null"
-                                     id="DispatchedQuantity{{i}}{{j}}" min="0" [(ngModel)]="dispatchingItem.DispatchedQuantity">
+                              <input type="number" name="DispatchedQuantity" [attr.disabled]="(row.IsDispatchingNow == false) ? true : null" id="DispatchedQuantity{{i}}{{j}}" min="0" [(ngModel)]="dispatchingItem.DispatchedQuantity">
                             </td>
                             <td>
                               <!-- only show add button for the last item-->
-                              <button *ngIf="j == (row.DispatchedItems.length-1); else removeItemButton" class="btn btn-sm btn-primary"
-                                      (click)="AddDispatchRow(i)"><i class="fa fa-plus"></i></button>
+                              <button *ngIf="j == (row.DispatchedItems.length-1); else removeItemButton" class="btn btn-sm btn-primary" (click)="AddDispatchRow(i)"><i class="fa fa-plus"></i></button>
                               <ng-template #removeItemButton>
                                 <button class="btn btn-sm btn-danger" (click)="RemoveDispatchRow(i,j)"><i class="fa fa-remove"></i></button>
                               </ng-template>
@@ -446,7 +431,7 @@
                       <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
                         <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                         <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                        <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                        <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                         <span style="font-size:15px;"><strong> Pharmacy Unit </strong></span><br />
                       </div>
                     </div>

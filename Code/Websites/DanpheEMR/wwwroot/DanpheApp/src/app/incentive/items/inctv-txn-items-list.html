@@ -1,4 +1,3 @@
-
 <div class="row">
   <div class="col-md-12 margin-top-10">
     <div class="row font-small">
@@ -30,7 +29,7 @@
           </div>
           <div class="col-md-3">
             <button (click)="LoadData()" class="btn blue" style="padding: 5px 10px;">
-              <i class="fa fa-refresh"></i>  Load
+              <i class="fa fa-refresh"></i> Load
             </button>
           </div>
         </div>
@@ -55,9 +54,11 @@
         <div class="flex-container rd-align  margin-top-15">
           <input type="radio" id="chk_show_all" [(ngModel)]="displayOptions" name="filters" (change)="FilterItemsByRadioBtnSelection()" value="All" />
           <label for="chk_show_all">Show All</label>
-          <input type="radio" id="chk_assignedto" [(ngModel)]="displayOptions" name="filters" (change)="FilterItemsByRadioBtnSelection()" value="Assigned" style="margin-left: 16px;zoom: 1.2;" />
+          <input type="radio" id="chk_assignedto" [(ngModel)]="displayOptions" name="filters" (change)="FilterItemsByRadioBtnSelection()"
+                 value="Assigned" style="margin-left: 16px;zoom: 1.2;" />
           <label for="chk_assignedto">Assigned Only</label>
-          <input type="radio" id="chk_referredBy" [(ngModel)]="displayOptions" name="filters" (change)="FilterItemsByRadioBtnSelection()" value="Referred" style="margin-left: 16px;zoom: 1.2;" />
+          <input type="radio" id="chk_referredBy" [(ngModel)]="displayOptions" name="filters" (change)="FilterItemsByRadioBtnSelection()"
+                 value="Referred" style="margin-left: 16px;zoom: 1.2;" />
           <label for="chk_referredBy">Referral Only</label>
         </div>
 
@@ -92,7 +93,7 @@
           <th>Assigned Amt.</th>
           <th></th>
         </tr>
-        <ng-container *ngFor="let itm of finalFilteredList">
+        <ng-container *ngFor="let itm of finalFilteredList; let i = index;">
           <tr [style.background-color]=" itm.IsSelected ? '#d9daea' : '#fff'">
             <td>
               <input type="checkbox" [(ngModel)]="itm.IsSelected" style="zoom:1.2" (change)="ShowSaveButtonOnCkboxChange()" />

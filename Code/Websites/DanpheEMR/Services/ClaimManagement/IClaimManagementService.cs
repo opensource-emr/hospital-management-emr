@@ -1,10 +1,6 @@
 ﻿using DanpheEMR.DalLayer;
 using DanpheEMR.Security;
-using DanpheEMR.ServerModel;
-using DanpheEMR.ServerModel.ClaimManagementModels;
 using DanpheEMR.Services.ClaimManagement.DTOs;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
-using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 
@@ -28,6 +24,7 @@ namespace DanpheEMR.Services.ClaimManagement
         object GetBillingCreditBillItems(int BillingTransactionId, ClaimManagementDbContext _claimManagementgDbContext);
         object GetPharmacyCreditBillItems(int PharmacyInvoiceId, ClaimManagementDbContext _claimManagementgDbContext);
         object GetApiIntegrationNameByOrganizationId(int OrganizationId, ClaimManagementDbContext _claimManagementgDbContext);
+        object GetECHSPatientWithVisitInformation(string search, ClaimManagementDbContext _claimManagementgDbContext);
         #endregion
 
         #region POST

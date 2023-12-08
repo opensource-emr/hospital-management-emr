@@ -7,6 +7,9 @@ using DanpheEMR.ServerModel;
 using System.Data.Entity;
 using DanpheEMR.ServerModel.EmergencyModels;
 using DanpheEMR.ServerModel.BillingModels;
+using DanpheEMR.ServerModel.PatientModels;
+using System.Data.SqlClient;
+using System.Data;
 
 namespace DanpheEMR.DalLayer
 {
@@ -22,7 +25,7 @@ namespace DanpheEMR.DalLayer
         //public DbSet<DischargeSummaryModel> DischargeSummary { get; set; }
         public DbSet<ServiceDepartmentModel> ServiceDepartment { get; set; }
         public DbSet<BillingTransactionItemModel> BillingTransactionItems { get; set; }
-        public DbSet<BillServiceItemModel> BillItemPrice { get; set; }
+        public DbSet<BillServiceItemModel> BillServiceItems { get; set; }
         public DbSet<BillingCounter> BillingCounter { get; set; }
         public DbSet<DepartmentModel> Departments { get; set; }
         public DbSet<EmergencyDischargeSummaryModel> DischargeSummary { get; set; }
@@ -35,10 +38,15 @@ namespace DanpheEMR.DalLayer
         public DbSet<ModeOfArrival> ModeOfArrival { get; set; }
         public DbSet<EmergencyPatientCases> PatientCases { get; set; }
         public DbSet<UploadConsentForm> Consentform { get; set; }
-
+        public DbSet<BillServiceItemSchemeSettingModel> ServiceItemSchemeSettings { get; set; }
         public DbSet<MunicipalityModel> Municipalities { get; set; }
         public DbSet<LabTestComponentResult> LabTestComponentResult { get; set; }
         public DbSet<BillMapPriceCategoryServiceItemModel> BillPriceCategoryServiceItems { get; set; }
+        public DbSet<PatientSchemeMapModel> PatientSchemeMaps { get; set; }
+        public DbSet<PriceCategoryModel> priceCategories { get; set; }
+        public DbSet<EthnicGroupModel> Ethnicity { get; set; }
+        public DbSet<BillingFiscalYear> BillingFiscalYears { get; set; }
+
         public EmergencyDbContext(string conn) : base(conn)
         {
             this.Configuration.LazyLoadingEnabled = true;
@@ -78,6 +86,18 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<MunicipalityModel>().ToTable("MST_Municipality");
             modelBuilder.Entity<LabTestComponentResult>().ToTable("LAB_TXN_TestComponentResult");
             modelBuilder.Entity<BillMapPriceCategoryServiceItemModel>().ToTable("BIL_MAP_PriceCategoryServiceItem");
+            modelBuilder.Entity<PatientSchemeMapModel>().ToTable("PAT_MAP_PatientSchemes");
+            modelBuilder.Entity<BillServiceItemSchemeSettingModel>().ToTable("BIL_MAP_ServiceItemSchemeSetting");
+            modelBuilder.Entity<PriceCategoryModel>().ToTable("BIL_CFG_PriceCategory");
+            modelBuilder.Entity<EthnicGroupModel>().ToTable("MST_EthnicGroup");
+            modelBuilder.Entity<BillingFiscalYear>().ToTable("BIL_CFG_FiscalYears");
+        }
+
+        public DataTable GetDataTableFromStoredProc(int selectedCase)
+        {
+            List<SqlParameter> paramList = new List<SqlParameter>() { new SqlParameter("@SelectedCase", selectedCase) };
+            DataTable allERTriagedPatients = DALFunctions.GetDataTableFromStoredProc("SP_ER_GetERTriagedPatientList", paramList, this);
+            return allERTriagedPatients;
         }
     }
 }

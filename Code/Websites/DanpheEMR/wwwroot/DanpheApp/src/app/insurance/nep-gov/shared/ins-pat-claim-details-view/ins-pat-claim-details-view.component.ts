@@ -1,7 +1,9 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
 import * as moment from 'moment/moment';
+import { CoreService } from "../../../../core/shared/core.service";
 import { ReportingService } from "../../../../reporting/shared/reporting-service";
 import { SecurityService } from "../../../../security/shared/security.service";
+import { GeneralFieldLabels } from "../../../../shared/DTOs/general-field-label.dto";
 import { CommonFunctions } from "../../../../shared/common.functions";
 import { DLService } from "../../../../shared/dl.service";
 import { MessageboxService } from "../../../../shared/messagebox/messagebox.service";
@@ -39,13 +41,19 @@ export class InsPatientClaimDetailsView {
   public phrmTotal: Array<any> = new Array<any>();
   public billTotal: Array<any> = new Array<any>();
   public grandTotal: Number = 0;
+  public coreService: CoreService;
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(_dlService: DLService,
     public msgBoxServ: MessageboxService,
     public reportServ: ReportingService,
     public changeDetector: ChangeDetectorRef,
     public insuranceBlService: GovInsuranceBlService,
     public securityService: SecurityService) {
+
     this.dlService = _dlService;
+    this.GeneralFieldLabel = this.coreService.GetFieldLabelParameter();
+
   }
   ngOnInit() {
     this.printedBy = this.securityService.GetLoggedInUser().UserName;

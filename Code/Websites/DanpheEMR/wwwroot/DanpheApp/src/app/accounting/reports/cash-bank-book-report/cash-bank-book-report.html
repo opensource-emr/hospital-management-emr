@@ -67,7 +67,7 @@
                 <table style="width:100% !important;" class="hidden-print">
                     <tr>
                         <td style="text-align: left;">
-                            Printed On: &nbsp; {{todayDate}}
+                            Printed On: &nbsp; {{todayDate}}  {{todayDate | nepaliDate:'format':'YYYY-MM-DD'}} 
                         </td>
                         <td style="text-align: right;">
                             For the period (AD): &nbsp; {{ fromDate }} To {{ toDate }}
@@ -85,7 +85,9 @@
                                    style="margin-left: 30px;" (change)="HandleHideZeroTxn()"><label class="hidden-print" for="Hide_zero_txn"
                                    style="margin-left: 10px;">Hide Zero Transaction</label>
                         </td>
-                       
+                        <td style="text-align: right;">
+                            (BS): &nbsp; {{ fromDate | nepaliDate:'format':'YYYY-MM-DD' }} To {{ toDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                        </td>
                     </tr>
                 </table>
                 <br>

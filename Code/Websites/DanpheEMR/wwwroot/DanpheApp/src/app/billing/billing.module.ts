@@ -2,15 +2,14 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
 //commented for Quick-Appointment. //review it and correct it later: sudarshan.
 //import { BillingService } from './shared/billing.service'
 import { BillingRoutingModule } from "./billing-routing.module";
 
 //Billing components
 import { BillingDepositComponent } from './bill-deposit/billing-deposit.component';
-import { ProvisionalBillingComponent } from './bill-provisional/provisional-billing.component';
-import { BillingTransactionItemComponent } from './bill-transaction/billing-transaction-item.component';
+import { OutpatientProvisionalBillingComponent } from './bill-provisional/outpatient-er-list/outpatient-provisional-billing.component';
+import { BillingPayProvisionalComponent } from './bill-provisional/pay-provisional/billing-pay-provisional.component';
 import { BillingTransactionComponent } from './bill-transaction/billing-transaction.component';
 import { BillingMainComponent } from './billing-main.component';
 import { BillingSearchPatientComponent_Old } from './search-patient/billing-search-patient-old.component';
@@ -66,6 +65,9 @@ import { BillingDenominationReportComponent } from './bill-denomination/Reports/
 import { BillingDenominationSummaryReportComponent } from './bill-denomination/Reports/bill-denomination-summary-reports';
 import { TransferHandoverReportComponent } from './bill-denomination/Reports/transfer-handover-report/transfer-handover-report';
 import { BillingDenominationMainComponent } from './bill-denomination/bill-denomination-main.component';
+import { BIL_ProvisionalClearance_MainComponent } from './bill-provisional/bil-provisional-clearance-main.component';
+import { BilProvisionalDischargeListComponent } from './bill-provisional/provisional-discharge-list/bil-provisional-discharge-list.component';
+import { ProvisionalItemsViewDetailsComponent } from './bill-provisional/provisional-items-view-details/bil-provisional-items.component';
 import { BILL_CreditNoteComponent } from './bill-return/bill-credit-note.component';
 import { BillSettlementInvoiceDetail } from './bill-settlements/bill-settlement-invoice-detail.component';
 import { BillingTransactionComponent_New } from './bill-transaction/billing-transaction-new.component';
@@ -95,16 +97,16 @@ import { BillingMasterDlService } from './shared/billing-master.dl.service';
     SettingsSharedModule,
     BillingPrintSharedModule,
     StickerSharedModule,
-    UtilitiesSharedModule
+    UtilitiesSharedModule,
   ],
   declarations: [
     BillingMainComponent,
-    BillingTransactionItemComponent,
+    BillingPayProvisionalComponent,
     BillingDepositComponent,
     BillingSearchPatientComponent_Old,
     BillingSearchPatientNewComponent,
     BillingTransactionComponent,
-    ProvisionalBillingComponent,
+    OutpatientProvisionalBillingComponent,
     BillOrderRequestComponent,
     BillCancellationRequestComponent,
     BillingDashboardComponent,
@@ -131,6 +133,9 @@ import { BillingMasterDlService } from './shared/billing-master.dl.service';
     BillSettlementInvoiceDetail,
     BillingTransactionComponent_New,
     BillingCounterActivateComponent,
+    BIL_ProvisionalClearance_MainComponent,
+    BilProvisionalDischargeListComponent,
+    ProvisionalItemsViewDetailsComponent
   ],
   bootstrap: []//do we need anything here ? <sudarshan:2jan2017>
 })

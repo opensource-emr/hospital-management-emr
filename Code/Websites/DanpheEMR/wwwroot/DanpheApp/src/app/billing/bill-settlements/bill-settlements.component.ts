@@ -415,7 +415,7 @@ export class BillSettlementsComponent {
           billingTransaction.BillingTransactionItems.push(curBilTxnItm);
 
         });
-        this.router.navigate(['/Billing/BillingTransactionItem']);
+        this.router.navigate(['/Billing/PayProvisional']);
 
       });
   }

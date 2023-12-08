@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
+import { CoreService } from "../../../../core/shared/core.service";
 import { SecurityService } from "../../../../security/shared/security.service";
+import { GeneralFieldLabels } from "../../../../shared/DTOs/general-field-label.dto";
 import { DischargeSummaryViewModel } from "../discharge-summary-view-model";
 
 @Component({
@@ -23,10 +25,11 @@ export class SCHDischargeSummaryTemplateComponent {
     hasEditDischargeSunnaryPermission: boolean = false;
     hideBtn: boolean = false;
     test: DischargeSummaryViewModel;
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
-    constructor(public securityService: SecurityService) {
+    constructor(public securityService: SecurityService, public coreservice: CoreService,) {
         this.hasEditDischargeSunnaryPermission = this.securityService.HasPermission('btn-edit-discharge-summary-after-final-submit');
-
+        this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
     }
     ngOnInit() {
         this.test = this.dsVM;

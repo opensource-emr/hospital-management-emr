@@ -29,6 +29,12 @@ using EntityState = System.Data.Entity.EntityState;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using DanpheEMR.ViewModel.Clinical;
 using Microsoft.AspNetCore.Http;
+using Syncfusion.XlsIO;
+using DanpheEMR.ServerModel.ClinicalModels.BloodSugarMonitoring;
+using DanpheEMR.ServerModel.ClinicalModels.Diet;
+using DanpheEMR.ServerModel.ClinicalModels.ConsulationRequests;
+using DanpheEMR.ServerModel.ClinicalModels.DTOs;
+using DbFunctions = System.Data.Entity.DbFunctions;
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace DanpheEMR.Controllers.Clinical
@@ -76,15 +82,29 @@ namespace DanpheEMR.Controllers.Clinical
 
         [HttpGet]
         [Route("InputOutput")]
-        public IActionResult InputOutput(int patientVisitId)
+        public IActionResult InputOutput(int patientVisitId, DateTime? fromDate, DateTime? toDate)
         {
             // else if (reqType == "inputoutput" && providerId != 0)
+            List<InputOutputModel> ioList = new List<InputOutputModel>();
+            if (fromDate == null & toDate == null)
+            {
+                fromDate = DateTime.Now;
+                toDate = DateTime.Now;
+            }
 
-            Func<object> func = () => _clinicalDbContext.InputOutput.Where(p => p.PatientVisitId == patientVisitId).ToList();
+            ioList = _clinicalDbContext.InputOutput
+                    .Where(p => p.PatientVisitId == patientVisitId && (DbFunctions.TruncateTime(p.CreatedOn) >= fromDate && DbFunctions.TruncateTime(p.CreatedOn) <= toDate))
+                    .ToList();
+
+            List<InputOutputModel> AllIOList = _clinicalDbContext.InputOutput.Where(p => p.PatientVisitId == patientVisitId).ToList();
+            decimal lastBalance = 0;
+            if (AllIOList.Count > 0)
+            {
+                var lastRecord = AllIOList[AllIOList.Count - 1];
+                //lastBalance = (decimal)lastRecord.Balance;
+            }
+            Func<object> func = () => new { ioList = ioList, lastBalance = lastBalance };
             return InvokeHttpGetFunction(func);
-
-
-
         }
 
         [HttpGet]
@@ -661,7 +681,8 @@ namespace DanpheEMR.Controllers.Clinical
                              join prescription in _clinicalDbContext.ClinicalPrescriptionNote on note.NotesId equals prescription.NotesId
                              join subjective in _clinicalDbContext.SubjectiveNotes on note.NotesId equals subjective.NotesId
                              join pat in _clinicalDbContext.Patients on prescription.PatientId equals pat.PatientId
-                             join primaryDoc in _clinicalDbContext.Employee on note.PerformerId equals primaryDoc.EmployeeId
+                             join primaryDoc in _clinicalDbContext.Employee on note.PerformerId equals primaryDoc.EmployeeId into pd
+                             from primaryDoctor in pd.DefaultIfEmpty()
                              join sd in _clinicalDbContext.Employee on note.SecondaryDoctorId equals sd.EmployeeId into secondaryDocTemp
                              from secondaryDoc in secondaryDocTemp.DefaultIfEmpty()
                              join emp in _clinicalDbContext.Employee on note.CreatedBy equals emp.EmployeeId
@@ -683,12 +704,12 @@ namespace DanpheEMR.Controllers.Clinical
                                  WrittenBy = emp.FullName,
                                  noteType.NoteType,
                                  CreatedBy = emp.FullName,
-                                 PrimaryDoctor = primaryDoc.FullName,
+                                 PrimaryDoctor = primaryDoctor != null ? primaryDoctor.FullName : "Self",
                                  SecondaryDoctor = secondaryDoc.FullName,
                                  pat.Age,
                                  Sex = pat.Gender,
                                  pat.PatientCode,
-                                 PatientName = pat.FirstName + " " + (String.IsNullOrEmpty(pat.MiddleName) ? " " : pat.MiddleName) + " " + pat.LastName
+                                 PatientName = pat.ShortName
 
                              }).ToList();
             return viewnotes;
@@ -2128,7 +2149,17 @@ namespace DanpheEMR.Controllers.Clinical
             Func<object> func = () => GetTemplateDetailByNoteId(noteId);
             return InvokeHttpGetFunction(func);
         }
+        [HttpGet]
+        [Route("getClinicalIntakeOutputParameter")]
+        public IActionResult getClinicalIntakeOutputParameter()
+        {
+            // else if (reqType == "activemedical")
 
+            Func<object> func = () => (from clinicalIntakeOutputParameter in _clinicalDbContext.ClinicalIntakeOutputParameters
+                                       where clinicalIntakeOutputParameter.IsActive
+                                       select clinicalIntakeOutputParameter).ToList();
+            return InvokeHttpGetFunction(func);
+        }
         private object GetTemplateDetailByNoteId(int noteId)
         {
             var notesData = _clinicalDbContext.Notes.Find(noteId);
@@ -2322,7 +2353,7 @@ namespace DanpheEMR.Controllers.Clinical
             //  else if (reqType == "socialhistory")
             string str = this.ReadPostData();
             RbacUser currentUser = HttpContext.Session.Get<RbacUser>(ENUM_SessionVariables.CurrentUser);
-            Func<object> func = () => AddSurgicalHistory(str, currentUser);
+            Func<object> func = () => AddSocialHistory(str, currentUser);
             return InvokeHttpPostFunction(func);
 
         }
@@ -3628,12 +3659,7 @@ namespace DanpheEMR.Controllers.Clinical
 
             _clinicalDbContext.SocialHistory.Add(socialHistory);
             _clinicalDbContext.SaveChanges();
-
-            SocialHistory SocialHistory = new SocialHistory();
-            SocialHistory.CreatedOn = socialHistory.CreatedOn;
-            SocialHistory.SocialHistoryId = socialHistory.SocialHistoryId;
-
-            return SocialHistory;
+            return socialHistory;
         }
         private object AddSurgicalHistory(string str, RbacUser currentUser)
         {
@@ -3645,12 +3671,7 @@ namespace DanpheEMR.Controllers.Clinical
 
             _clinicalDbContext.SurgicalHistory.Add(surgicalHistory);
             _clinicalDbContext.SaveChanges();
-
-            SurgicalHistory SurgicalHistory = new SurgicalHistory();
-            SurgicalHistory.CreatedOn = surgicalHistory.CreatedOn;
-            SurgicalHistory.SurgicalHistoryId = surgicalHistory.SurgicalHistoryId;
-
-            return SurgicalHistory;
+            return surgicalHistory;
         }
         private object AddFamilyHistory(string str, RbacUser currentUser)
         {
@@ -5767,7 +5788,249 @@ namespace DanpheEMR.Controllers.Clinical
             Func<object> func = () => PutEyeMasterDetail(str, currentUser);
             return InvokeHttpPutFunction(func);
         }
+        [HttpGet]
+        [Route("bloodsugar")]
+        public IActionResult getpatientBloodSugarInfo(int patientVisitId)
+        {
+            Func<object> func = () => getPatientSugarInfo(patientVisitId);
+            return InvokeHttpGetFunction(func);
+        }
+        private object getPatientSugarInfo(int patientVisitId)
+        {
+            if (patientVisitId != 0)
+            {
+                var patientBloodSugarInfo = (from bs in _clinicalDbContext.BloodSugar
+                                             join emp in _clinicalDbContext.Employee on bs.CreatedBy equals emp.EmployeeId
+                                             where bs.PatientVisitId == patientVisitId
+                                             select new
+                                             {
+                                                 BloodSugarMonitoringId = bs.BloodSugarMonitoringId,
+                                                 PatientId = bs.PatientId,
+                                                 PatientVisitId = bs.PatientVisitId,
+                                                 EntryDateTime = bs.EntryDateTime,
+                                                 RbsValue = bs.RbsValue,
+                                                 Insulin = bs.Insulin,
+                                                 EnteredBy = emp.FullName,
+                                                 Remarks = bs.Remarks,
+                                                 CreatedOn = bs.CreatedOn,
+                                                 CreatedBy = bs.CreatedBy,
+                                                 ModifiedOn = bs.ModifiedOn,
+                                                 ModifiedBy = bs.ModifiedBy,
+                                                 IsActive = bs.IsActive
+                                             }).ToList();
 
+                return patientBloodSugarInfo;
+            }
+            else
+            {
+                return new Exception("PatientVisitId is neccessary");
+            }
+        }
+        [HttpGet]
+        [Route("patient-admission-info")]
+        public IActionResult AdmitttedPatientInfo(int patientVisitId)
+        {
+            Func<object> func = () => getAdmittedPatientInfo(patientVisitId);
+            return InvokeHttpGetFunction(func);
+        }
+        private object getAdmittedPatientInfo(int patientVisitId)
+        {
+            if (patientVisitId != 0)
+            {
+                var patientAdmissionInfo = (from adm in _clinicalDbContext.Admission
+                                            join pat in _clinicalDbContext.Patients on adm.PatientId equals pat.PatientId
+                                            join bedinfo in _clinicalDbContext.PatientBedInfos on adm.PatientVisitId equals bedinfo.PatientVisitId
+                                            join bed in _clinicalDbContext.Beds on bedinfo.BedId equals bed.BedId
+                                            where adm.PatientVisitId == patientVisitId
+                                            select new
+                                            {
+                                                HospitalNo = pat.PatientCode,
+                                                PatientName = pat.ShortName,
+                                                DateOfBirth = pat.DateOfBirth,
+                                                Gender = pat.Gender,
+                                                Rank = pat.Rank,
+                                                BedNo = bed.BedNumber,
+                                                DOA = adm.AdmissionDate
+                                            }).FirstOrDefault();
+
+                if (patientAdmissionInfo != null)
+                {
+                    int age = CalculateAge(patientAdmissionInfo.DateOfBirth.Value);
+                    string ageSex = age + "/" + patientAdmissionInfo.Gender.Substring(0, 1);
+
+                    return new
+                    {
+                        HospitalNo = patientAdmissionInfo.HospitalNo,
+                        PatientName = patientAdmissionInfo.PatientName,
+                        AgeSex = ageSex,
+                        Rank = patientAdmissionInfo.Rank,
+                        BedNo = patientAdmissionInfo.BedNo,
+                        DOA = patientAdmissionInfo.DOA
+                    };
+                }
+                else
+                {
+                    return new Exception("Patient Admission is neccessary");
+                }
+            }
+            else
+            {
+                return new Exception("PatientVisitId is neccessary");
+            }
+        }
+        private static int CalculateAge(DateTime dateOfBirth)
+        {
+            DateTime today = DateTime.Today;
+            int age = today.Year - dateOfBirth.Year;
+            if (dateOfBirth > today.AddYears(-age))
+                age--;
+            return age;
+        }
+        [HttpPost]
+        [Route("bloodsugar")]
+        public IActionResult postBloodSugar([FromBody] BloodSugarModel bloodSugar)
+        {
+            _clinicalDbContext.BloodSugar.Add(bloodSugar);
+            _clinicalDbContext.SaveChanges();
+            Func<object> func = () => bloodSugar.BloodSugarMonitoringId;
+            return InvokeHttpPostFunction(func);
+        }
+
+
+
+        [HttpGet]
+        [Route("ConsultationRequestsByPatientVisitId")]
+        public IActionResult ConsultationRequestsByPatientVisitId(int PatientVisitId)
+        {
+            var ConsultationRequests = (
+                from cr in _clinicalDbContext.ConsultationRequest
+                join pat in _clinicalDbContext.Patients on cr.PatientId equals pat.PatientId
+                join visits in _clinicalDbContext.Visit on cr.PatientVisitId equals visits.PatientVisitId
+                /*join bed in clinicalDbContext.Beds on cr.BedId equals bed.BedId*/
+                join ward in _clinicalDbContext.Wards on cr.WardId equals ward.WardId
+                join reqEmp in _clinicalDbContext.Employee on cr.RequestingConsultantId equals reqEmp.EmployeeId
+                join reqDept in _clinicalDbContext.Departments on cr.RequestingDepartmentId equals reqDept.DepartmentId
+                join conEmp in _clinicalDbContext.Employee on cr.ConsultingDoctorId equals conEmp.EmployeeId into conEmpGroup
+                from conEmp in conEmpGroup.DefaultIfEmpty()
+                join conDept in _clinicalDbContext.Departments on cr.ConsultingDepartmentId equals conDept.DepartmentId into conDeptGroup
+                from conDept in conDeptGroup.DefaultIfEmpty()
+                where cr.PatientVisitId == PatientVisitId && cr.IsActive == true
+                select new ConsultationRequestForGetDTO
+                {
+                    ConsultationRequestId = cr.ConsultationRequestId,
+                    PatientId = cr.PatientId,
+                    PatientVisitId = cr.PatientVisitId,
+                    WardId = cr.WardId.Value,
+                    WardName = ward.WardName,
+                    BedId = cr.BedId.Value,
+                    RequestedOn = cr.RequestedOn,
+                    RequestingConsultantId = cr.RequestingConsultantId,
+                    RequestingConsultantName = reqEmp.FullName,
+                    RequestingDepartmentId = cr.RequestingDepartmentId,
+                    RequestingDepartmentName = reqDept.DepartmentName,
+                    PurposeOfConsultation = cr.PurposeOfConsultation,
+                    ConsultingDoctorId = cr.ConsultingDoctorId,
+                    ConsultingDoctorName = conEmp.FullName,
+                    ConsultingDepartmentId = cr.ConsultingDepartmentId,
+                    ConsultingDepartmentName = conDept.DepartmentName,
+                    ConsultantResponse = cr.ConsultantResponse,
+                    ConsultedOn = cr.ConsultedOn,
+                    Status = cr.Status,
+                    IsActive = cr.IsActive
+                }).OrderByDescending(a => a.ConsultationRequestId).ToList();
+            Func<object> func = () => ConsultationRequests;
+            return InvokeHttpPutFunction(func);
+        }
+
+        [HttpGet]
+        [Route("GetAllApptDepartment")]
+        public IActionResult GetAllApptDepartment()
+        {
+            Func<object> func = () => _clinicalDbContext.Departments.Where(x => x.IsAppointmentApplicable == true && x.IsActive == true).ToList();
+            return InvokeHttpPutFunction(func);
+        }
+
+        [HttpGet]
+        [Route("GetAllAppointmentApplicableDoctor")]
+        public IActionResult GetAllAppointmentApplicableDoctor()
+        {
+            Func<object> func = () => _clinicalDbContext.Employee.Where(x => x.IsAppointmentApplicable == true && x.IsActive == true).ToList();
+            return InvokeHttpPutFunction(func);
+        }
+
+        [HttpPost]
+        [Route("AddNewConsultationRequest")]
+        public IActionResult AddNewConsultationRequest([FromBody] ConsultationRequestDTO newConsultationRequest)
+        {
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+
+            using (var consultationRequestTransactionScope = _clinicalDbContext.Database.BeginTransaction())
+            {
+                try
+                {
+                    ConsultationRequestModel ConsultationRequest = new ConsultationRequestModel();
+                    ConsultationRequest.PatientId = newConsultationRequest.PatientId;
+                    ConsultationRequest.PatientVisitId = newConsultationRequest.PatientVisitId;
+                    ConsultationRequest.WardId = newConsultationRequest.WardId;
+                    ConsultationRequest.BedId = newConsultationRequest.BedId;
+                    ConsultationRequest.RequestedOn = DateTime.Now;
+                    ConsultationRequest.RequestingConsultantId = newConsultationRequest.RequestingConsultantId;
+                    ConsultationRequest.RequestingDepartmentId = newConsultationRequest.RequestingDepartmentId;
+                    ConsultationRequest.ConsultingDoctorId = newConsultationRequest.ConsultingDoctorId;
+                    ConsultationRequest.ConsultingDepartmentId = newConsultationRequest.ConsultingDepartmentId;
+                    ConsultationRequest.PurposeOfConsultation = newConsultationRequest.PurposeOfConsultation;
+                    ConsultationRequest.Status = newConsultationRequest.Status;
+                    ConsultationRequest.IsActive = newConsultationRequest.IsActive;
+                    ConsultationRequest.CreatedOn = DateTime.Now;
+                    ConsultationRequest.CreatedBy = currentUser.EmployeeId;
+                    _clinicalDbContext.ConsultationRequest.Add(ConsultationRequest);
+                    _clinicalDbContext.SaveChanges();
+                    consultationRequestTransactionScope.Commit();
+                    Func<object> func = () => ConsultationRequest.ConsultationRequestId;
+                    return InvokeHttpPutFunction(func);
+                }
+                catch (Exception ex)
+                {
+                    consultationRequestTransactionScope.Rollback();
+                    throw new Exception(ex.Message + " exception details:" + ex.ToString());
+                }
+            }
+        }
+
+        [HttpPut]
+        [Route("ResponseConsultationRequest")]
+        public IActionResult ResponseConsultationRequest([FromBody] ConsultationRequestDTO responseConsultationRequest)
+        {
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+            ConsultationRequestModel ConsultationRequest = _clinicalDbContext.ConsultationRequest
+                                                                                    .Where(x => x.ConsultationRequestId == responseConsultationRequest.ConsultationRequestId)
+                                                                                    .FirstOrDefault();
+
+            using (var consultationRequestTransactionScope = _clinicalDbContext.Database.BeginTransaction())
+            {
+                try
+                {
+                    ConsultationRequest.ConsultingDoctorId = responseConsultationRequest.ConsultingDoctorId;
+                    ConsultationRequest.ConsultingDepartmentId = responseConsultationRequest.ConsultingDepartmentId;
+                    ConsultationRequest.ConsultantResponse = responseConsultationRequest.ConsultantResponse;
+                    ConsultationRequest.ConsultedOn = DateTime.Now;
+                    ConsultationRequest.Status = responseConsultationRequest.Status;
+                    ConsultationRequest.ModifiedOn = DateTime.Now;
+                    ConsultationRequest.ModifiedBy = currentUser.EmployeeId;
+                    _clinicalDbContext.Entry(ConsultationRequest).State = EntityState.Modified;
+                    _clinicalDbContext.SaveChanges();
+                    consultationRequestTransactionScope.Commit();
+                    Func<object> func = () => ConsultationRequest.ConsultationRequestId;
+                    return InvokeHttpPutFunction(func);
+                }
+                catch (Exception ex)
+                {
+                    consultationRequestTransactionScope.Rollback();
+                    throw new Exception(ex.Message);
+                }
+            }
+
+        }
         //[HttpPut]
         //[Route("EyeMasterDetail")]
         //public IActionResult UpdateEyeMasterDetail()
@@ -8813,8 +9076,125 @@ namespace DanpheEMR.Controllers.Clinical
         //    }
         //    return DanpheJSONConvert.SerializeObject(responseData, true);
         //}
-    }
 
+
+        [HttpGet]
+        [Route("DietTypes")]
+        public IActionResult DietTypes()
+        {
+            Func<object> func = () => _clinicalDbContext.DietType.Where(d => d.IsActive == true).ToList();
+            return InvokeHttpPutFunction(func);
+        }
+
+
+        [HttpGet]
+        [Route("InpatientListWithDietDetail")]
+        public IActionResult InpatientListWithDietDetail(int WardId)
+        {
+            var IplistwithDiet = from adm in _clinicalDbContext.Admission
+                                 join visit in
+                                     (from PBI in _clinicalDbContext.PatientBedInfos
+                                      group PBI by PBI.PatientId into g
+                                      select new
+                                      {
+                                          PatientId = g.Key,
+                                          LatestPatientBedInfoId = g.Max(p => p.PatientBedInfoId),
+                                          LatestPatientVisitId = g.Max(p => p.PatientVisitId)
+                                      }) on adm.PatientVisitId equals visit.LatestPatientVisitId
+                                 join pat in _clinicalDbContext.Patients on adm.PatientId equals pat.PatientId
+                                 join schemeMap in _clinicalDbContext.PatientMapScheme on pat.PatientId equals schemeMap.PatientId
+                                 join scheme in _clinicalDbContext.Scheme on schemeMap.SchemeId equals scheme.SchemeId
+                                 join PBI in _clinicalDbContext.PatientBedInfos on new { Id = visit.LatestPatientBedInfoId, VisitId = visit.LatestPatientVisitId } equals new { Id = PBI.PatientBedInfoId, VisitId = PBI.PatientVisitId }
+                                 join bed in _clinicalDbContext.Beds on PBI.BedId equals bed.BedId
+                                 join ward in _clinicalDbContext.Wards on PBI.WardId equals ward.WardId
+                                 join patDiet in (from d in _clinicalDbContext.PatientDiet
+                                                  group d by d.PatientId into dietGrp
+                                                  select new
+                                                  {
+                                                      PatientId = dietGrp.Key,
+                                                      LatestPatientVisitId = dietGrp.Max(v => v.PatientVisitId),
+                                                      latestDietTypeId = dietGrp.OrderByDescending(d => d.PatientDietId).FirstOrDefault().DietTypeId,
+                                                      latestExtraDiet = dietGrp.OrderByDescending(e => e.PatientDietId).FirstOrDefault().ExtraDiet,
+                                                      latestRemarks = dietGrp.OrderByDescending(r => r.PatientDietId).FirstOrDefault().Remarks,
+                                                      latestModifiedOn = dietGrp.OrderByDescending(m => m.PatientDietId).FirstOrDefault().ModifiedOn,
+                                                      latestCreatedOn = dietGrp.OrderByDescending(m => m.PatientDietId).FirstOrDefault().CreatedOn
+
+                                                  }) on new { LatestPatientVisitId = visit.LatestPatientVisitId, PatientId = visit.PatientId } equals new { patDiet.LatestPatientVisitId, patDiet.PatientId } into dietJoin
+                                 from patDiet in dietJoin.DefaultIfEmpty()
+                                 join dietType in _clinicalDbContext.DietType on patDiet.latestDietTypeId equals dietType.DietTypeId into dietTypeJoin
+                                 from dietType in dietTypeJoin.DefaultIfEmpty()
+                                 where adm.AdmissionStatus == "admitted" && ward.WardId == WardId
+                                 orderby adm.AdmissionDate descending
+                                 select new
+                                 {
+                                     pat.Address,
+                                     pat.PatientCode,
+                                     // pat.Rank,
+                                     pat.ShortName,
+                                     AgeSex = pat.Age + "/" + pat.Gender,
+                                     adm.AdmissionDate,
+                                     bed.BedNumber,
+                                     DietTypeName = dietType.DietTypeName,
+                                     ExtraDiet = patDiet.latestExtraDiet,
+                                     Remarks = patDiet.latestRemarks,
+                                     ModifiedOn = (DateTime?)patDiet.latestModifiedOn,
+                                     CreatedOn = (DateTime?)patDiet.latestCreatedOn,
+                                     ward.WardName,
+                                     ward.WardId,
+                                     adm.PatientId,
+                                     adm.PatientVisitId,
+                                     scheme.SchemeName
+                                 };
+
+            Func<object> func = () => IplistwithDiet.ToList();
+            return InvokeHttpPutFunction(func);
+        }
+        [HttpGet]
+        [Route("PatientDietHistory")]
+        public IActionResult PatientDietHistory(int PatientVisitId)
+        {
+
+
+            Func<object> func = () => (from patDiet in _clinicalDbContext.PatientDiet
+                                       join pd in _clinicalDbContext.DietType on patDiet.DietTypeId equals pd.DietTypeId
+                                       join emp in _clinicalDbContext.Employee on patDiet.CreatedBy equals emp.EmployeeId
+                                       where patDiet.PatientVisitId == PatientVisitId
+                                       select new
+                                       {
+                                           patDiet.PatientDietId,
+                                           patDiet.PatientId,
+                                           patDiet.CreatedOn,
+                                           patDiet.PatientVisitId,
+                                           patDiet.DietTypeId,
+                                           patDiet.ExtraDiet,
+                                           patDiet.Remarks,
+                                           emp.FullName,
+                                           pd.DietTypeName
+                                       }).ToList();
+            return InvokeHttpPutFunction(func);
+        }
+        [HttpPost]
+        [Route("AddPatientDietType")]
+        public IActionResult AddPatientDietType([FromBody] PatientDietDTO diet)
+        {
+            PatientDietModel newDiet = new PatientDietModel();
+            newDiet.PatientId = diet.PatientId;
+            newDiet.PatientVisitId = diet.PatientVisitId;
+            newDiet.DietTypeId = diet.DietTypeId;
+            newDiet.ExtraDiet = diet.ExtraDiet;
+            newDiet.WardId = diet.WardId;
+            newDiet.RecordedOn = diet.RecordedOn;
+            newDiet.Remarks = diet.Remarks;
+            newDiet.CreatedBy = diet.CreatedBy;
+            newDiet.CreatedOn = diet.CreatedOn;
+            newDiet.IsActive = diet.IsActive;
+
+            _clinicalDbContext.PatientDiet.Add(newDiet);
+            _clinicalDbContext.SaveChanges();
+            Func<object> func = () => newDiet;
+            return InvokeHttpPutFunction(func);
+        }
+    }
 }
 
 

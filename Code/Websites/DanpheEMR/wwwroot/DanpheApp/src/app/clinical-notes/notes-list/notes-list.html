@@ -59,7 +59,8 @@
   </div>
   <div class="tabbable-custom">
     <div class="tab-content">
-      <danphe-grid [grid-colDefaults]="ViewTemplateGridColumn" (grid-actions)="ViewNoteTemplateListGridAction($event)" [grid-data]="patientClinicalNotes" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
+      <danphe-grid [grid-colDefaults]="ViewTemplateGridColumn" (grid-actions)="ViewNoteTemplateListGridAction($event)"
+                   [grid-data]="patientClinicalNotes" [NepaliDateInGridParams]="NepaliDateInGridSettings"> </danphe-grid>
     </div>
   </div>
 </div>
@@ -80,11 +81,13 @@
             <div id="print-template" class="printStyle print-border print-margin">
               <!--            <div class="panel-heading"> Free Text Template </div>-->
               <div class="" style="margin-bottom: 10px;">
-                <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
+                <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;"
+                       src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
                 <div style="width: 64%;float: left;padding-bottom:  0px;">
-                  <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                  <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span
+                          style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                     <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                    <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                     <span style="font-size:15px;"><strong> Clinical Unit </strong></span><br />
                   </div>
                 </div>
@@ -116,7 +119,8 @@
                           <tbody>
                             <tr>
                               <td>Recorded On</td>
-                              <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
+                              <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong>
+                              </td>
                             </tr>
                             <tr>
                               <td>Height</td>
@@ -190,7 +194,8 @@
                 <div class="col-md-12 col-xs-12 col-sm-12">
                   <p *ngIf="allergieLists.length==0">Patient has no allergy details</p>
                   <p *ngIf="vitalsList.length==0">Patient has no vitals till date</p>
-                  <table class="table table-striped table-hover" style="background-color:initial; margin:0px;margin-bottom: 5px; text-align: justify;">
+                  <table class="table table-striped table-hover"
+                         style="background-color:initial; margin:0px;margin-bottom: 5px; text-align: justify;">
                     <thead>
                       <tr class="tbl-td-padding">
                         <th>Free Text </th>
@@ -210,7 +215,8 @@
           </div>
           <div class="panel-footer">
             <div *ngIf="!freeNotesTempData[0].IsPending" class="center-style">
-              <div class=""> <a (click)="printTemplate()" class="btn btn-primary"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+              <div class=""> <a (click)="printTemplate()" class="btn btn-primary"> Print <i class="glyphicon glyphicon-print"></i> </a><span>
+                </span><span> </span> &nbsp; </div>
             </div>
           </div>
         </div>
@@ -231,11 +237,13 @@
           <div id="print-template" class="row printStyle print-border">
             <div class="panel-heading"> Procedure Notes Template </div>
             <div class="row" style="margin-bottom: 10px;">
-              <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
+              <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;"
+                     src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
               <div style="width: 64%;float: left;padding-bottom:  0px;">
-                <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span
+                        style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                   <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                  <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                  <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                   <span style="font-size:15px;"><strong> Clinical Unit </strong></span><br />
                 </div>
               </div>
@@ -267,7 +275,8 @@
                         <tbody>
                           <tr>
                             <td>Recorded On</td>
-                            <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
+                            <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong>
+                            </td>
                           </tr>
                           <tr>
                             <td>Height</td>
@@ -358,7 +367,8 @@
                       <td> {{procedureNotesTempData[0].Remarks}}</td>
                     </tr>
                     <tr rowspan="4">
-                      <td colspan="4"><textarea disabled style="height: 100px;width:100%" placeholder="Free Text">{{procedureNotesTempData[0].FreeText}}</textarea></td>
+                      <td colspan="4"><textarea disabled style="height: 100px;width:100%"
+                                  placeholder="Free Text">{{procedureNotesTempData[0].FreeText}}</textarea></td>
                     </tr>
                   </tbody>
                 </table>
@@ -366,7 +376,8 @@
             </div>
           </div>
           <div *ngIf="!procedureNotesTempData[0].IsPending" class="row center-style">
-            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i>
+              </a><span> </span><span> </span> &nbsp; </div>
           </div>
         </div>
       </div>
@@ -386,11 +397,13 @@
             <div id="print-template" class="printStyle print-border">
               <div class="panel-heading mb10"> Progress Note </div>
               <div>
-                <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
+                <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;"> <img class="img-responsive" style="max-height:70px;"
+                       src="../../../themes/theme-default/images/hospital-logo.PNG" /> </div>
                 <div style="width: 64%;float: left;padding-bottom:  0px;">
-                  <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
+                  <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span
+                          style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                     <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                    <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                     <span style="font-size:15px;"><strong> Clinical Unit </strong></span><br />
                   </div>
                 </div>
@@ -412,13 +425,18 @@
                     </div>
                     <div class="col-md-4">
                       <label class="patient-hdr-label"><strong>Primary Doctor:</strong></label> {{progressNotesTempData[0].PrimaryDoctor}}<br>
-                      <label *ngIf="progressNotesTempData[0].SecondaryDoctor" class="patient-hdr-label"><strong>Secondary Doctor:</strong>{{progressNotesTempData[0].SecondaryDoctor}}</label> <br>
-                      <label *ngIf="progressNotesTempData[0].WrittenBy" class="patient-hdr-label"><b>Written By:</b></label> {{progressNotesTempData[0].WrittenBy}}<br>
+                      <label *ngIf="progressNotesTempData[0].SecondaryDoctor" class="patient-hdr-label"><strong>Secondary
+                          Doctor:</strong>{{progressNotesTempData[0].SecondaryDoctor}}</label> <br>
+                      <label *ngIf="progressNotesTempData[0].WrittenBy" class="patient-hdr-label"><b>Written By:</b></label>
+                      {{progressNotesTempData[0].WrittenBy}}<br>
                     </div>
                     <div class="col-md-4">
-                      <label *ngIf="progressNotesTempData[0].Date" class="patient-hdr-label"><b>Date:</b></label> {{progressNotesTempData[0].Date}}<br>
-                      <label *ngIf="progressNotesTempData[0].CreatedOn" class="patient-hdr-label"><b>Start Time :</b></label> {{progressNotesTempData[0].CreatedOn | date: 'dd-MM-yyyy h:mm:ss'}}<br>
-                      <label *ngIf="progressNotesTempData[0].ModifiedOn" class=" patient-hdr-label"><b>Finished Time :</b></label> {{progressNotesTempData[0].ModifiedOn | date: 'dd-MM-yyyy h:mm:ss'}}<br>
+                      <label *ngIf="progressNotesTempData[0].Date" class="patient-hdr-label"><b>Date:</b></label>
+                      {{progressNotesTempData[0].Date}}<br>
+                      <label *ngIf="progressNotesTempData[0].CreatedOn" class="patient-hdr-label"><b>Start Time :</b></label>
+                      {{progressNotesTempData[0].CreatedOn | date: 'dd-MM-yyyy h:mm:ss'}}<br>
+                      <label *ngIf="progressNotesTempData[0].ModifiedOn" class=" patient-hdr-label"><b>Finished Time :</b></label>
+                      {{progressNotesTempData[0].ModifiedOn | date: 'dd-MM-yyyy h:mm:ss'}}<br>
                     </div>
                   </div>
                 </div>
@@ -432,7 +450,8 @@
                           <tbody>
                             <tr>
                               <td>Recorded On</td>
-                              <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong></td>
+                              <td *ngFor="let vitals of vitalsList"><strong>{{vitals.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</strong>
+                              </td>
                             </tr>
                             <tr>
                               <td>Height</td>
@@ -534,7 +553,8 @@
               </div>
             </div>
             <div class="row center-style">
-              <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+              <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i>
+                </a><span> </span><span> </span> &nbsp; </div>
             </div>
           </div>
         </div>
@@ -557,7 +577,8 @@
             <discharge-summary-view [selectedADT]="selectedPatient" [showSummaryView]="showDischargeSummaryView"></discharge-summary-view>
           </div>
           <div class="row center-style">
-            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i>
+              </a><span> </span><span> </span> &nbsp; </div>
           </div>
         </div>
       </div>
@@ -580,7 +601,8 @@
             <view-history-and-physical-note> </view-history-and-physical-note>
           </div>
           <div class="row center-style">
-            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i>
+              </a><span> </span><span> </span> &nbsp; </div>
           </div>
         </div>
       </div>
@@ -602,7 +624,8 @@
             <view-emergency-note> </view-emergency-note>
           </div>
           <div class="row center-style">
-            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp; </div>
+            <div class="col-md-12 col-xs-12 "> <a (click)="printTemplate()" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i>
+              </a><span> </span><span> </span> &nbsp; </div>
           </div>
         </div>
       </div>
@@ -636,7 +659,8 @@
         <div class="modelbox-footer">
           <div class="row">
             <div class="col-md-12">
-              <a (click)="printTemplate('print-cln-prescription')" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span> </span><span> </span> &nbsp;
+              <a (click)="printTemplate('print-cln-prescription')" class="btn btn-default"> Print <i class="glyphicon glyphicon-print"></i> </a><span>
+              </span><span> </span> &nbsp;
             </div>
           </div>
         </div>

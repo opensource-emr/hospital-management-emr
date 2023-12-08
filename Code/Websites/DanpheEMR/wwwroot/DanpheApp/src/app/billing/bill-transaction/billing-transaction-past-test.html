@@ -16,15 +16,15 @@
     font-size: 12px;
   }
 
-  table.past-test-table tr th {
-    border: none;
-    /*font-size: 0.9em;*/
-    border-top: 2px solid #eee;
-    border-bottom: 2px solid #eee;
-    background: #eee;
-    padding: 4px 7px;
-    font-weight: bold;
-  }
+    table.past-test-table tr th {
+      border: none;
+      /*font-size: 0.9em;*/
+      border-top: 2px solid #eee;
+      border-bottom: 2px solid #eee;
+      background: #eee;
+      padding: 4px 7px;
+      font-weight: bold;
+    }
 
   .bg-white .billing-head {
     font-size: 1em;
@@ -34,8 +34,7 @@
     margin-top: auto;
   }
 
-  table.past-test-table tr th,
-  table.past-test-table tr td {
+  table.past-test-table tr th, table.past-test-table tr td {
     padding: 4px 7px;
     border: 1px solid #eee;
   }
@@ -48,9 +47,10 @@
       <tr>
         <!-- <th>S.N</th> -->
         <th style="width: 120px;">
-          Date<b *ngIf="!IsLocalDate"></b>
+          Date<b *ngIf="!IsLocalDate">(AD)</b><b *ngIf="IsLocalDate">(BS)</b>
           <div class="tooltip ng-star-inserted" style="color: #0069FF;z-index: inherit;">
-            <span *ngIf="!IsLocalDate" style="display: inline-block;background: #D8DEF1;cursor: pointer;">
+            <span style="display: inline-block;background: #D8DEF1;cursor: pointer;">
+              <i class="fa fa-refresh" (click)="ChangeDateFormate()"></i>
             </span>
             <p class="tooltiptext ttptextdown no-print">Change date format to AD/BS</p>
           </div>
@@ -63,8 +63,8 @@
     <tbody>
       <tr *ngFor="let data of allTests; let i=index;">
         <!-- <td>{{i+1}}</td> -->
-        <td *ngIf="!IsLocalDate" style="width: 120px;">{{data.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</td>
-        <td *ngIf="IsLocalDate" style="width: 120px;">{{data.CreatedOn | nepaliDate:'format':'YYYY-MM-DD hh:mm'}}</td>
+        <td *ngIf="!IsLocalDate" style="width: 120px;">{{data.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD  HH:mm'}}</td>
+        <td *ngIf="IsLocalDate" style="width: 120px;">{{data.CreatedOn | nepaliDate:'format':'YYYY-MM-DD  hh:mm'}}</td>
         <td>{{data.ItemName}}</td>
         <td>{{data.InvoiceNumber}}</td>
         <td>
@@ -72,7 +72,7 @@
             <span style="display: inline-block; padding: 1px 2px 0px;cursor: pointer;">
               {{data.UserFirstName}}
             </span>
-            <p class="tooltiptext ttptextdown no-print"> {{data.User}} </p>
+            <p class="tooltiptext ttptextdown no-print">  {{data.User}} </p>
           </div>
         </td>
       </tr>

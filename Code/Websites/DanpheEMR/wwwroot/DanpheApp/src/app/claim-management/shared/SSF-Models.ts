@@ -140,3 +140,23 @@ export class SSFClaimResponseInfo {
   public ClaimCode: number = 0;
   public InvoiceNoCSV: string = "";
 }
+
+export class ClaimBookingRoot_DTO {
+  public BookedAmount: number = 0;
+  public Patient: string = "";
+  public Scheme: string = "";
+  public SubProduct: number | null;
+  public PatientId: number = null;
+  public HospitalNo: string = "";
+  public PolicyNo: string = "";
+  public LatestClaimCode: number = null;
+  public IsAccidentCase: boolean = false;
+  // public ClaimBookings = new Array<ClaimBooking_DTO>();
+  public BillingInvoiceNo: string = "";
+  public PharmacyInvoiceNo: string = "";
+}
+
+export class ClaimBooking_DTO {
+  public BillingInvoiceNo: string = "";
+  public PharmacyInvoiceNo: string = "";
+}

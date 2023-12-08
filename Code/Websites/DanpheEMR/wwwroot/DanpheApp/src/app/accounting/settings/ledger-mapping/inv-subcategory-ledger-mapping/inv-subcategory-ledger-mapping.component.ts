@@ -4,7 +4,8 @@ import { AccountingService } from "../../../../accounting/shared/accounting.serv
 import { CoreService } from "../../../../core/shared/core.service";
 import { SecurityService } from "../../../../security/shared/security.service";
 import { MessageboxService } from "../../../../shared/messagebox/messagebox.service";
-import { ENUM_Data_Type } from "../../../../shared/shared-enums";
+import { ENUM_ACC_ADDLedgerLedgerType, ENUM_DanpheHTTPResponseText, ENUM_Data_Type, ENUM_MessageBox_Status } from "../../../../shared/shared-enums";
+import { SubLedger_DTO } from "../../../transactions/shared/DTOs/subledger-dto";
 import { AccountingSettingsBLService } from "../../shared/accounting-settings.bl.service";
 import { CostCenterModel } from "../../shared/cost-center.model";
 import { LedgerModel } from "../../shared/ledger.model";
@@ -18,52 +19,65 @@ import { ledgerGroupModel } from "../../shared/ledgerGroup.model";
 
 export class InventorySubcategoryLedgerMappingComponent {
 
-    public loading: boolean = false;
+    public Loading: boolean = false;
 
     public CurrentLedger: LedgerModel;
     public CurrentLedgerGroup: ledgerGroupModel;
-    public selLedgerGroup: any;
-    public showAddLedgerGroupPopUp: boolean = false;
-    public selLedger: Array<LedgerModel> = new Array<LedgerModel>();
-    public completeledgerList: Array<LedgerModel> = new Array<LedgerModel>();
-    public ledgerList: Array<LedgerModel> = new Array<LedgerModel>();
+    public SelLedgerGroup: any;
+    //public showAddLedgerGroupPopUp: boolean = false;
+    public SelLedger: Array<LedgerModel> = new Array<LedgerModel>();
+    //public completeledgerList: Array<LedgerModel> = new Array<LedgerModel>();
+    public LedgerList: Array<LedgerModel> = new Array<LedgerModel>();
     public NewledgerList: Array<LedgerModel> = new Array<LedgerModel>();
-    public primaryGroupList: any[];
-    public coaList: any[];
-    public ledgergroupList: Array<LedgerModel> = new Array<LedgerModel>();
-    public sourceLedGroupList: Array<LedgerModel> = new Array<LedgerModel>();
-    public sourceLedgerList: Array<LedgerModel> = new Array<LedgerModel>();
+    public PrimaryGroupList: any[];
+    public ChartOfAccountList: any[];
+    public LedgergroupList: Array<LedgerModel> = new Array<LedgerModel>();
+    public SourceLedgerGroupList: Array<LedgerModel> = new Array<LedgerModel>();
+    public SourceLedgerList: Array<LedgerModel> = new Array<LedgerModel>();
 
     public Dr: boolean;
     public Cr: boolean;
 
-    public ledgerMappingList: any;
+    public LedgerMappingList: any;
 
     // for sub-navigation data info
-    public isSelectAll: boolean = false;
-    public ledgerTypeParamter: any;
-    public selectedLedgerCount: number = 0;
-    public selectedLedgerData: any;
-    public totalLedger: number;
-    public mappedLedger: number;
-    public notmappedLedger: number;
-    public ledgerListAutoComplete: Array<LedgerModel> = new Array<LedgerModel>();
-    public costCenters: Array<CostCenterModel> = new Array<CostCenterModel>();
-    public selectedCostCenter: Array<CostCenterModel> = new Array<CostCenterModel>();
+    public IsSelectAll: boolean = false;
+    public LedgerTypeParamter: any;
+    public SelectedLedgerCount: number = 0;
+    public SelectedLedgerData: any;
+    public TotalLedger: number;
+    public MappedLedger: number;
+    public NotmappedLedger: number;
+    public LedgerListAutoComplete: Array<LedgerModel> = new Array<LedgerModel>();
+    public CostCenters: Array<CostCenterModel> = new Array<CostCenterModel>();
+    public SelectedCostCenter: Array<CostCenterModel> = new Array<CostCenterModel>();
 
 
     // START: Inventory Subcategory Ledger 
-    public typeinventorysubcategory: boolean = false;
-    public showinventorysubcategoryAllLedgers: boolean = false;
-    public inventorysubcategoryledgerList: Array<LedgerModel> = new Array<LedgerModel>();
-    public inventorySubList: any;
+    // public typeinventorysubcategory: boolean = false;
+    public ShowInventorySubCategoryAllLedgers: boolean = false;
+    public InventorySubCategoryLedgerList: Array<LedgerModel> = new Array<LedgerModel>();
+    public InventorySubList: any;
     // END: Inventory Subcategory Ledger
 
-    public provisionalLedgerCode: number = 0;
+    public ProvisionalLedgerCode: number = 0;
 
     public ConsultantfilterType: string = "all";
-    public disabledRow: boolean = true;
-    public allcoaList: any[];
+    public DisabledRow: boolean = true;
+    public AllCostOfAccountingList: any[];
+    public SubLedgerAndCostCenterSetting = {
+        "EnableSubLedger": false,
+        "EnableCostCenter": false
+    };
+    public SelectedSubLedger: Array<any> = [];
+    public SubLedgerListForInventorySubStore: Array<SubLedger_DTO> = new Array<SubLedger_DTO>();
+    public SubLedgerMaster: Array<SubLedger_DTO> = new Array<SubLedger_DTO>();
+    public InventorySubCategoryLedgerParam = {
+        LedgergroupUniqueName: "",
+        LedgerType: "",
+        COA: "",
+        LedgerName: ""
+    }
 
     constructor(public accountingSettingsBLService: AccountingSettingsBLService,
         public securityService: SecurityService,
@@ -72,6 +86,7 @@ export class InventorySubcategoryLedgerMappingComponent {
         public accountingBLService: AccountingBLService,
         public coreService: CoreService,
         public accountingService: AccountingService) {
+        this.SubLedgerMaster = this.accountingService.accCacheData.SubLedgerAll ? this.accountingService.accCacheData.SubLedgerAll : [];
         //this.GetProvisionalLedgerCode();
         this.GetLedgerGroup();
         this.getLedgerList();
@@ -79,28 +94,33 @@ export class InventorySubcategoryLedgerMappingComponent {
         this.GetLedgerMapping();
         this.getPrimaryGroupList();
         this.getCoaList();
-        this.costCenters = this.accountingService.accCacheData.CostCenters ? this.accountingService.accCacheData.CostCenters : [];
+        this.CostCenters = this.accountingService.accCacheData.CostCenters ? this.accountingService.accCacheData.CostCenters : [];
     }
 
     public getCoaList() {
         if (!!this.accountingService.accCacheData.COA && this.accountingService.accCacheData.COA.length > 0) { //mumbai-team-june2021-danphe-accounting-cache-change
-            this.allcoaList = this.accountingService.accCacheData.COA; //mumbai-team-june2021-danphe-accounting-cache-change
-            this.allcoaList = this.allcoaList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+            this.AllCostOfAccountingList = this.accountingService.accCacheData.COA; //mumbai-team-june2021-danphe-accounting-cache-change
+            this.AllCostOfAccountingList = this.AllCostOfAccountingList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
         }
     }
     public getPrimaryGroupList() {
         if (!!this.accountingService.accCacheData.PrimaryGroup && this.accountingService.accCacheData.PrimaryGroup.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
-            this.primaryGroupList = this.accountingService.accCacheData.PrimaryGroup;//mumbai-team-june2021-danphe-accounting-cache-change
-            this.primaryGroupList = this.primaryGroupList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+            this.PrimaryGroupList = this.accountingService.accCacheData.PrimaryGroup;//mumbai-team-june2021-danphe-accounting-cache-change
+            this.PrimaryGroupList = this.PrimaryGroupList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
         }
     }
     public Getledgers() {
         try {
-            let ledgers = this.coreService.Parameters.filter(p => p.ParameterGroupName == "Accounting" && p.ParameterName == "LedgerGroupMapping");
+            let ledgers = this.coreService.Parameters.filter(p => p.ParameterGroupName === "Accounting" && p.ParameterName === "LedgerGroupMapping");
             if (ledgers.length > 0) {
-                this.ledgerTypeParamter = JSON.parse(ledgers[0].ParameterValue);
+                this.LedgerTypeParamter = JSON.parse(ledgers[0].ParameterValue);
+                this.InventorySubCategoryLedgerParam = this.LedgerTypeParamter.find(a => a.LedgerType === ENUM_ACC_ADDLedgerLedgerType.InventoryConsumption);
             } else {
-                this.msgBoxServ.showMessage("error", ['Ledgers type not found.']);
+                this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ['Ledgers type not found.']);
+            }
+            let subLedgerParam = this.coreService.Parameters.find(a => a.ParameterGroupName === "Accounting" && a.ParameterName === "SubLedgerAndCostCenter");
+            if (subLedgerParam) {
+                this.SubLedgerAndCostCenterSetting = JSON.parse(subLedgerParam.ParameterValue);
             }
         } catch (ex) {
             this.ShowCatchErrMessage(ex);
@@ -109,7 +129,7 @@ export class InventorySubcategoryLedgerMappingComponent {
     ngOnInit() {
         this.NewledgerList = new Array<LedgerModel>();
         this.Cr = this.Dr = null;
-        this.loading = false;
+        this.Loading = false;
         this.CurrentLedger = new LedgerModel();
         this.CurrentLedgerGroup = new ledgerGroupModel();
         this.CurrentLedger.CreatedBy = this.securityService.GetLoggedInUser().EmployeeId;
@@ -123,19 +143,19 @@ export class InventorySubcategoryLedgerMappingComponent {
     }
 
     CallBackLedgerGroup(res) {
-        this.sourceLedGroupList = new Array<LedgerModel>();
-        this.sourceLedGroupList = res;
-        this.sourceLedGroupList = this.sourceLedGroupList.slice();
-        this.ledgergroupList = [];
-        this.coaList = [];
-        this.ledgerList = new Array<LedgerModel>();
+        this.SourceLedgerGroupList = new Array<LedgerModel>();
+        this.SourceLedgerGroupList = res;
+        this.SourceLedgerGroupList = this.SourceLedgerGroupList.slice();
+        this.LedgergroupList = [];
+        this.ChartOfAccountList = [];
+        this.LedgerList = new Array<LedgerModel>();
     }
     //adding new Ledger
     AddLedger() {
-        this.NewledgerList = this.inventorySubList.filter(a => a.isSelectAll = true);
+        this.NewledgerList = this.InventorySubList.filter(a => a.IsSelectAll = true);
         this.CheckDrCrValidation();
-        if (this.CurrentLedger.LedgerGroupId == 0 || this.CurrentLedger.LedgerGroupId == null) {
-            this.msgBoxServ.showMessage("error", ["Please select ledger group"]);
+        if (this.CurrentLedger.LedgerGroupId === 0 || this.CurrentLedger.LedgerGroupId === null) {
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ["Please select ledger group"]);
         }
         else {
             let ledgerValidation = true;
@@ -151,66 +171,66 @@ export class InventorySubcategoryLedgerMappingComponent {
                 }
             };
             if (ledgerValidation) {
-                this.loading = true;
+                this.Loading = true;
                 ///During First Time Add Current Balance and Opening Balance is Equal                 
                 this.accountingSettingsBLService.AddLedgerList(this.NewledgerList)
                     .subscribe(
                         res => {
-                            if (res.Status == "OK") {
-                                this.msgBoxServ.showMessage("success", ["Ledgers Added"]);
+                            if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
+                                this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Success, ["Ledgers Added"]);
                                 this.CallBackAddLedger(res);
                                 //this.GetProvisionalLedgerCode();
-                                this.loading = false;
+                                this.Loading = false;
                             }
                             else {
-                                this.msgBoxServ.showMessage("error", ["Duplicate ledger not allowed"]);
-                                this.loading = false;
+                                this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ["Duplicate ledger not allowed"]);
+                                this.Loading = false;
                             }
                         },
                         err => {
                             this.logError(err);
-                            this.loading = false;
+                            this.Loading = false;
                         });
             } else {
-                this.loading = false;
+                this.Loading = false;
             }
         }
     }
 
     //after adding Ledger is succesfully added  then this function is called.
     CallBackAddLedger(res) {
-        if (res.Status == "OK" && res.Results != null) {
+        if (res.Status === ENUM_DanpheHTTPResponseText.OK && res.Results != null) {
             res.Results.forEach(ledger => {//mumbai-team-june2021-danphe-accounting-cache-change
                 ledger.PrimaryGroup = this.CurrentLedger.PrimaryGroup;
                 ledger.COA = this.CurrentLedger.COA;
                 ledger.LedgerGroupId = this.CurrentLedger.LedgerGroupId;
                 ledger.LedgerGroupName = this.CurrentLedger.LedgerGroupName;
                 this.getLedgerList();
-                this.sourceLedgerList.push(ledger);
+                this.SourceLedgerList.push(ledger);
                 this.accountingService.accCacheData.LedgersALL.push(ledger);//mumbai-team-june2021-danphe-accounting-cache-change
             });
         }
-        else if (res.Status == "OK" && res.Results == null) {
-            this.msgBoxServ.showMessage("notice-message", ["Ledger under LedgerGroup already exist.Please deactivate the previous ledger to add a new one with same name"]);
+        else if (res.Status === ENUM_DanpheHTTPResponseText.OK && res.Results === null) {
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ["Ledger under LedgerGroup already exist.Please deactivate the previous ledger to add a new one with same name"]);
         }
         else {
-            this.msgBoxServ.showMessage("error", ["Check log for details"]);
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ["Check log for details"]);
             console.log(res.ErrorMessage);
         }
     }
     logError(err: any) {
         console.log(err);
     }
-    CheckProperSelectedLedger(selLedgerGroup) {
+    CheckProperSelectedLedger(SelLedgerGroup) {
         try {
-            for (var i = 0; i < this.ledgergroupList.length; i++) {
-                if (this.ledgergroupList[i].LedgerGroupId == selLedgerGroup.LedgerGroupId) {
+            for (var i = 0; i < this.LedgergroupList.length; i++) {
+                if (this.LedgergroupList[i].LedgerGroupId === SelLedgerGroup.LedgerGroupId) {
                     this.CurrentLedger.checkSelectedLedger = false;
                     break;
                 }
                 else {
                     ////if LedgerGroupId is Undefined meanse Wrong Ledger Is Selected
-                    if (selLedgerGroup.LedgerGroupId == undefined) {
+                    if (SelLedgerGroup.LedgerGroupId === undefined) {
                         this.CurrentLedger.checkSelectedLedger = true;
                         break;
                     }
@@ -230,24 +250,24 @@ export class InventorySubcategoryLedgerMappingComponent {
     }
     public AssignSelectedLedgerGroup() {
         if (this.CurrentLedger.LedgerGroupName) {
-            let AllowToCreateLedgers = JSON.parse(this.coreService.Parameters.filter(p => p.ParameterGroupName == "Accounting" && p.ParameterName == "AllowToCreateAllLedgersFromDefaultTab")[0].ParameterValue);
-            this.selLedgerGroup = this.ledgergroupList.filter(s => s.LedgerGroupName == this.CurrentLedger.LedgerGroupName)[0];
+            let AllowToCreateLedgers = JSON.parse(this.coreService.Parameters.filter(p => p.ParameterGroupName === "Accounting" && p.ParameterName == "AllowToCreateAllLedgersFromDefaultTab")[0].ParameterValue);
+            this.SelLedgerGroup = this.LedgergroupList.filter(s => s.LedgerGroupName === this.CurrentLedger.LedgerGroupName)[0];
 
             if (!AllowToCreateLedgers) {
-                let ledgerGroupUnqName = this.ledgerTypeParamter.filter(l => l.LedgergroupUniqueName == this.selLedgerGroup.Name);
+                let ledgerGroupUnqName = this.LedgerTypeParamter.filter(l => l.LedgergroupUniqueName === this.SelLedgerGroup.Name);
                 if (ledgerGroupUnqName.length > 0) {
-                    this.disabledRow = false;
+                    this.DisabledRow = false;
                     this.msgBoxServ.showMessage('Notice', ['Create ledger for this ledgerGroup from respective tab']);
                 }
                 else {
-                    this.disabledRow = true;
+                    this.DisabledRow = true;
                 }
             }
 
-            if ((this.selLedgerGroup.LedgerGroupId != 0) && (this.selLedgerGroup.LedgerGroupId != null)) {
-                this.CurrentLedger.LedgerGroupId = this.selLedgerGroup.LedgerGroupId;
-                this.CurrentLedger.LedgerGroupName = this.selLedgerGroup.LedgerGroupName;
-                this.ledgerList = this.sourceLedgerList.filter(a => a.LedgerGroupName == this.CurrentLedger.LedgerGroupName);
+            if ((this.SelLedgerGroup.LedgerGroupId != 0) && (this.SelLedgerGroup.LedgerGroupId != null)) {
+                this.CurrentLedger.LedgerGroupId = this.SelLedgerGroup.LedgerGroupId;
+                this.CurrentLedger.LedgerGroupName = this.SelLedgerGroup.LedgerGroupName;
+                this.LedgerList = this.SourceLedgerList.filter(a => a.LedgerGroupName === this.CurrentLedger.LedgerGroupName);
             }
             this.NewledgerList.forEach(a => {
                 a.PrimaryGroup = this.CurrentLedger.PrimaryGroup;
@@ -260,42 +280,42 @@ export class InventorySubcategoryLedgerMappingComponent {
         }
     }
     public PrimaryGroupChanged() {
-        this.coaList = [];
-        this.ledgergroupList = [];
-        this.selLedgerGroup = null;
+        this.ChartOfAccountList = [];
+        this.LedgergroupList = [];
+        this.SelLedgerGroup = null;
         this.CurrentLedger.LedgerGroupName = null;
-        let primaryGroupId = this.primaryGroupList.filter(p => p.PrimaryGroupName == this.CurrentLedger.PrimaryGroup)[0].PrimaryGroupId;
-        this.coaList = this.allcoaList.filter(c => c.PrimaryGroupId == primaryGroupId);
-        this.CurrentLedger.COA = this.coaList[0].ChartOfAccountName;
+        let primaryGroupId = this.PrimaryGroupList.filter(p => p.PrimaryGroupName === this.CurrentLedger.PrimaryGroup)[0].PrimaryGroupId;
+        this.ChartOfAccountList = this.AllCostOfAccountingList.filter(c => c.PrimaryGroupId === primaryGroupId);
+        this.CurrentLedger.COA = this.ChartOfAccountList[0].ChartOfAccountName;
         this.COAChanged();
     }
     public COAChanged() {
         if (this.CurrentLedger.COA) {
-            this.ledgergroupList = [];
-            this.selLedgerGroup = null;
+            this.LedgergroupList = [];
+            this.SelLedgerGroup = null;
             this.CurrentLedger.LedgerGroupName = null;
-            this.ledgergroupList = this.sourceLedGroupList.filter(a => a.COA == this.CurrentLedger.COA);
+            this.LedgergroupList = this.SourceLedgerGroupList.filter(a => a.COA === this.CurrentLedger.COA);
         }
     }
     //on default ledger creation time
     public CheckDuplicateLedger(index: number) {
         if (this.NewledgerList[index].LedgerName) {
             this.changeDetector.detectChanges();
-            let count = this.sourceLedgerList.filter(s => s.LedgerName == this.NewledgerList[index].LedgerName).length;
-            let check = this.NewledgerList.filter(s => s.LedgerName == this.NewledgerList[index].LedgerName).length;
+            let count = this.SourceLedgerList.filter(s => s.LedgerName === this.NewledgerList[index].LedgerName).length;
+            let check = this.NewledgerList.filter(s => s.LedgerName === this.NewledgerList[index].LedgerName).length;
 
             if (count > 0 || check > 1) {
                 this.NewledgerList[index].LedgerName = null;
-                this.msgBoxServ.showMessage("notice", ['duplicate ledger not allowed']);
-                this.loading = false;
+                this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ['Duplicate ledger not allowed']);
+                this.Loading = false;
             }
 
         }
     }
     public getLedgerList() {
         if (!!this.accountingService.accCacheData.LedgersALL && this.accountingService.accCacheData.LedgersALL.length > 0) {//mumbai-team-june2021-danphe-accounting-cache-change
-            this.sourceLedgerList = this.accountingService.accCacheData.LedgersALL;//mumbai-team-june2021-danphe-accounting-cache-change
-            this.sourceLedgerList = this.sourceLedgerList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
+            this.SourceLedgerList = this.accountingService.accCacheData.LedgersALL;//mumbai-team-june2021-danphe-accounting-cache-change
+            this.SourceLedgerList = this.SourceLedgerList.slice();//mumbai-team-june2021-danphe-accounting-cache-change
         }
     }
     LedgerGroupListFormatter(data: any): string {
@@ -309,20 +329,20 @@ export class InventorySubcategoryLedgerMappingComponent {
         return data["EmployeeName"];;
     }
     ChangeOpeningBalType(e, index: number) {
-        this.loading = false;
-        if (e.target.name == "Dr") {
+        this.Loading = false;
+        if (e.target.name === "Dr") {
             if (e.target.checked) {
-                this.inventorySubList[index].DrCr = true;
-                this.inventorySubList[index].DrCr = true;
-                this.inventorySubList[index].Cr = false;
-                this.inventorySubList[index].Dr = true;
+                this.InventorySubList[index].DrCr = true;
+                this.InventorySubList[index].DrCr = true;
+                this.InventorySubList[index].Cr = false;
+                this.InventorySubList[index].Dr = true;
             }
         }
-        if (e.target.name == "Cr") {
+        if (e.target.name === "Cr") {
             if (e.target.checked) {
-                this.inventorySubList[index].DrCr = false;
-                this.inventorySubList[index].Dr = false;
-                this.inventorySubList[index].Cr = true;
+                this.InventorySubList[index].DrCr = false;
+                this.InventorySubList[index].Dr = false;
+                this.InventorySubList[index].Cr = true;
             }
         }
     }
@@ -346,8 +366,8 @@ export class InventorySubcategoryLedgerMappingComponent {
     GetLedgerMapping() {
         this.accountingBLService.GetLedgerMappingDetails()
             .subscribe(res => {
-                if (res.Status == "OK") {
-                    this.ledgerMappingList = res.Results;
+                if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
+                    this.LedgerMappingList = res.Results;
                 }
             });
     }
@@ -356,7 +376,7 @@ export class InventorySubcategoryLedgerMappingComponent {
         try {
             if (this.NewledgerList.length > 1) {
                 this.NewledgerList.splice(index, 1);
-                this.selLedger.splice(index, 1);
+                this.SelLedger.splice(index, 1);
             }
         } catch (ex) {
             this.ShowCatchErrMessage(ex);
@@ -369,25 +389,25 @@ export class InventorySubcategoryLedgerMappingComponent {
         try {
             if (searchKey && searchKey.trim()) {
 
-                if (this.ConsultantfilterType == 'withacchead') {
-                    this.inventorySubList = this.inventorysubcategoryledgerList.filter(l => l.SubCategoryName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId > 0);
+                if (this.ConsultantfilterType === 'withacchead') {
+                    this.InventorySubList = this.InventorySubCategoryLedgerList.filter(l => l.SubCategoryName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId > 0);
                 }
-                else if (this.ConsultantfilterType == 'withoutacchead') {
-                    this.inventorySubList = this.inventorysubcategoryledgerList.filter(l => l.SubCategoryName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId == 0);
+                else if (this.ConsultantfilterType === 'withoutacchead') {
+                    this.InventorySubList = this.InventorySubCategoryLedgerList.filter(l => l.SubCategoryName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1 && l.LedgerId === 0);
                 }
                 else {
-                    this.inventorySubList = this.inventorysubcategoryledgerList.filter(l => l.SubCategoryName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1);
+                    this.InventorySubList = this.InventorySubCategoryLedgerList.filter(l => l.SubCategoryName.toLowerCase().indexOf(searchKey.toLowerCase()) > -1);
                 }
             }
             else {
-                if (this.ConsultantfilterType == 'withacchead') {
-                    this.inventorySubList = this.inventorysubcategoryledgerList.filter(l => l.LedgerId > 0);
+                if (this.ConsultantfilterType === 'withacchead') {
+                    this.InventorySubList = this.InventorySubCategoryLedgerList.filter(l => l.LedgerId > 0);
                 }
-                else if (this.ConsultantfilterType == 'withoutacchead') {
-                    this.inventorySubList = this.inventorysubcategoryledgerList.filter(l => l.LedgerId == 0);
+                else if (this.ConsultantfilterType === 'withoutacchead') {
+                    this.InventorySubList = this.InventorySubCategoryLedgerList.filter(l => l.LedgerId == 0);
                 }
                 else {
-                    this.inventorySubList = this.inventorysubcategoryledgerList;
+                    this.InventorySubList = this.InventorySubCategoryLedgerList;
                 }
             }
         }
@@ -398,124 +418,156 @@ export class InventorySubcategoryLedgerMappingComponent {
 
     AssignSelectedLedger(index) {
         try {
-
-            var ledgerNameSelected = (typeof (this.inventorySubList[index].LedgerName) == 'object') ? this.inventorySubList[index].LedgerName.LedgerName.trim().toLowerCase() : this.inventorySubList[index].LedgerName.trim().toLowerCase();
-            var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase() == ledgerNameSelected);
+            let oldLedgerId = this.InventorySubList[index] ? this.InventorySubList[index].LedgerId : 0;
+            var ledgerNameSelected = (typeof (this.InventorySubList[index].LedgerName) === 'object') ? this.InventorySubList[index].LedgerName.LedgerName.trim().toLowerCase() : this.InventorySubList[index].LedgerName.trim().toLowerCase();
+            var ledger = this.LedgerListAutoComplete.filter(l => l.LedgerName.trim().toLowerCase() === ledgerNameSelected);
             if (ledger.length > 0) {
-                this.inventorySubList[index].Code = ledger[0].Code;
-                this.inventorySubList[index].LedgerId = ledger[0].LedgerId;
-                this.inventorySubList[index].LedgerName = ledger[0].LedgerName;
+                this.InventorySubList[index].Code = ledger[0].Code;
+                this.InventorySubList[index].LedgerId = ledger[0].LedgerId;
+                this.InventorySubList[index].LedgerName = ledger[0].LedgerName;
             } else {
-                this.inventorySubList[index].Code = "";
-                this.inventorySubList[index].LedgerId = 0;
+                this.InventorySubList[index].Code = "";
+                this.InventorySubList[index].LedgerId = 0;
+            }
+            if (oldLedgerId !== this.InventorySubList[index].LedgerId) {
+                this.InventorySubList[index].SubLedgerName = "";
+                this.InventorySubList[index].SubLedgerId = 0;
+                this.SelectedSubLedger[index] = new SubLedger_DTO();
             }
         }
         catch (ex) {
 
         }
     }
+
     SelectAllChkOnChange() {
-        if (this.isSelectAll) {
-
-            this.inventorySubList.forEach(a => {
-                a.IsSelected = true;
-                a.IsActive = true;
-                if (a.IsSelected) {
-                    if (a.IsMapped == false) {
-                        a.LedgerName = a.SubCategoryName;
-                        a.Code = "";
-                        a.LedgerId = 0;
+        if (this.IsSelectAll) {
+            let ledgerObj = this.LedgerListAutoComplete.find(a => a.Name === this.InventorySubCategoryLedgerParam.LedgerName)
+            if (this.SubLedgerAndCostCenterSetting.EnableSubLedger && !ledgerObj) {
+                this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, [`Please set default ledger in LedgerGroupMapping parameter for inventory consumption.`]);
+            }
+            else {
+                this.InventorySubList.forEach((a, index) => {
+                    a.IsSelected = true;
+                    a.IsActive = true;
+                    if (a.IsSelected) {
+                        if (a.IsMapped === false) {
+                            a.LedgerName = this.SubLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj.LedgerName) : a.StoreName;
+                            a.Code = this.SubLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj ? ledgerObj.Code : "") : "";
+                            a.LedgerId = this.SubLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj ? ledgerObj.LedgerId : 0) : 0;
+                            a.SubLedgerName = a.StoreName;
+                            this.SelectedSubLedger[index] = a.StoreName;
+                        }
                     }
-                }
-            });
-
+                    a.LedgerValidator.get("LedgerName").enable();
+                });
+            }
         }
         else {
-            this.inventorySubList.forEach(a => {
-                if (a.IsMapped == false) {
+
+            this.InventorySubList.forEach((a, index) => {
+                if (a.IsMapped === false) {
                     a.LedgerName = "";
                     a.Code = "";
                     a.LedgerId = 0;
+                    a.SubLedgerName = "";
+                    this.SelectedSubLedger[index] = "";
+                }
+                else {
+                    var ledger = this.LedgerListAutoComplete.filter(l => l.LedgerName === a.LedgerName);
+                    if (ledger.length === 0) {
+                        let data = this.LedgerListAutoComplete.filter(l => l.LedgerId === a.LedgerId);
+                        if (data.length > 0) {
+                            a.Code = data[0].Code;
+                            a.LedgerId = data[0].LedgerId;
+                            a.LedgerName = data[0].LedgerName;
+                        }
+                    }
                 }
                 a.IsSelected = false;
+                a.LedgerValidator.get("LedgerName").disable();
             });
         }
         this.ShowSaveButtonOnCkboxChange();
     }
 
-    SingleCkboxChange(index) {
-        this.selectedLedgerCount = this.inventorySubList.filter(a => a.IsSelected == true).length;
 
-        if (this.inventorySubList[index].IsSelected) {
-            if (this.inventorySubList[index].IsMapped == false) {
-                this.inventorySubList[index].LedgerName = "";//remove autocomplete Ledgername
-                this.inventorySubList[index].Code = "";
-                this.inventorySubList[index].LedgerId = 0;
+
+    SingleCkboxChange(index) {
+        this.SelectedLedgerCount = this.InventorySubList.filter(a => a.IsSelected === true).length;
+
+        if (this.InventorySubList[index].IsSelected) {
+            if (this.InventorySubList[index].IsMapped === false) {
+                this.InventorySubList[index].LedgerName = "";//remove autocomplete Ledgername
+                this.InventorySubList[index].Code = "";
+                this.InventorySubList[index].LedgerId = 0;
+                this.SelectedSubLedger[index] = "";
+
             }
         }
-        else if ((this.inventorySubList[index].IsSelected == false)) {
-            if (this.inventorySubList[index].IsMapped == false) {
-                this.inventorySubList[index].LedgerName = "";
-                this.inventorySubList[index].Code = "";
-                this.inventorySubList[index].LedgerId = 0;
+        else if ((this.InventorySubList[index].IsSelected === false)) {
+            if (this.InventorySubList[index].IsMapped === false) {
+                this.InventorySubList[index].LedgerName = "";
+                this.InventorySubList[index].Code = "";
+                this.InventorySubList[index].LedgerId = 0;
+                this.SelectedSubLedger[index] = "";
             }
             else {
-                // ledgerListAutoComplete empty becaose of in invsubcategory ledgergroup on coa
-                // var ledger = this.ledgerListAutoComplete.filter(l => l.LedgerName == this.inventorySubList[index].LedgerName);
+                // LedgerListAutoComplete empty becaose of in invsubcategory ledgergroup on coa
+                // var ledger = this.LedgerListAutoComplete.filter(l => l.LedgerName == this.InventorySubList[index].LedgerName);
                 // if (ledger.length == 0) {
-                //   let data = this.ledgerListAutoComplete.filter(l => l.LedgerId == this.inventorySubList[index].LedgerId);
-                //   this.inventorySubList[index].Code = data[0].Code;
-                //   this.inventorySubList[index].LedgerId = data[0].LedgerId;
-                //   this.inventorySubList[index].LedgerName = data[0].LedgerName;
+                //   let data = this.LedgerListAutoComplete.filter(l => l.LedgerId == this.InventorySubList[index].LedgerId);
+                //   this.InventorySubList[index].Code = data[0].Code;
+                //   this.InventorySubList[index].LedgerId = data[0].LedgerId;
+                //   this.InventorySubList[index].LedgerName = data[0].LedgerName;
                 // }
             }
         }
     }
 
     ShowSaveButtonOnCkboxChange() {
-        this.isSelectAll = this.inventorySubList.every(a => a.IsSelected == true);
-        this.selectedLedgerCount = this.inventorySubList.filter(a => a.IsSelected == true).length;
+        this.IsSelectAll = this.InventorySubList.every(a => a.IsSelected === true);
+        this.SelectedLedgerCount = this.InventorySubList.filter(a => a.IsSelected === true).length;
     }
 
     // START:Inventory Subcategory ledger
     SetInventorySubcategoryData() {
-        this.selectedLedgerCount = 0;
+        this.SelectedLedgerCount = 0;
         this.changeDetector.detectChanges();
         this.getInventorySubcategorylist();
         this.CurrentLedger = new LedgerModel();
-        let LedgerGroupData = this.ledgerTypeParamter.find(a => a.LedgerType == 'inventorysubcategory').LedgergroupUniqueName;
-        let consultLedger = this.sourceLedGroupList.find(a => a.LedgerGroupName == LedgerGroupData);
+        let LedgerGroupData = this.LedgerTypeParamter.find(a => a.LedgerType === ENUM_ACC_ADDLedgerLedgerType.InventoryConsumption).LedgergroupUniqueName;
+        let consultLedger = this.SourceLedgerGroupList.find(a => a.LedgerGroupName === LedgerGroupData);
 
         if (consultLedger != null || consultLedger != undefined) {
-            let primaryGroupId = this.primaryGroupList.filter(p => p.PrimaryGroupName == consultLedger.PrimaryGroup)[0].PrimaryGroupId;
-            this.coaList = this.allcoaList.filter(c => c.PrimaryGroupId == primaryGroupId);
+            let primaryGroupId = this.PrimaryGroupList.filter(p => p.PrimaryGroupName === consultLedger.PrimaryGroup)[0].PrimaryGroupId;
+            this.ChartOfAccountList = this.AllCostOfAccountingList.filter(c => c.PrimaryGroupId === primaryGroupId);
 
-            this.ledgergroupList = this.sourceLedGroupList.filter(a => a.COA == consultLedger.COA);
+            this.LedgergroupList = this.SourceLedgerGroupList.filter(a => a.COA === consultLedger.COA);
             this.CurrentLedger.PrimaryGroup = consultLedger.PrimaryGroup;
             this.CurrentLedger.COA = consultLedger.COA;
             this.CurrentLedger.LedgerGroupId = consultLedger.LedgerGroupId;
-            this.ledgerListAutoComplete = this.sourceLedgerList.filter(emp => emp.LedgerGroupId == this.CurrentLedger.LedgerGroupId && emp.LedgerName != "");
-
+            this.LedgerListAutoComplete = this.SourceLedgerList.filter(emp => emp.LedgerGroupId === this.CurrentLedger.LedgerGroupId && emp.LedgerName != "");
+            this.SubLedgerListForInventorySubStore = this.SubLedgerMaster.filter(a => this.LedgerListAutoComplete.some(b => a.LedgerId === b.LedgerId));
         }
         else {
-            this.msgBoxServ.showMessage('notice', ['Please first create ledger group for Inventory Subcategory ']);
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ['Please first create ledger group for Inventory Subcategory ']);
         }
     }
     onledgerGroupChange() {
-        this.inventorySubList.forEach(a => {
+        this.InventorySubList.forEach(a => {
             a.LedgerGroupName = this.CurrentLedger.LedgerGroupName;
             a.LedgerGroupId = this.CurrentLedger.LedgerGroupId;
         });
-        this.ledgerListAutoComplete = this.sourceLedgerList.filter(emp => emp.LedgerGroupId == this.CurrentLedger.LedgerGroupId && emp.LedgerName != "");
+        this.LedgerListAutoComplete = this.SourceLedgerList.filter(emp => emp.LedgerGroupId === this.CurrentLedger.LedgerGroupId && emp.LedgerName != "");
 
     }
     //get inventory subcategory list
     getInventorySubcategorylist() {
         this.accountingSettingsBLService.GetInvSubcategoryList()
             .subscribe(res => {
-                if (res.Status == "OK") {
-
-                    this.inventorysubcategoryledgerList = new Array<LedgerModel>();
+                if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
+                    this.InventorySubCategoryLedgerList = new Array<LedgerModel>();
                     let data = res.Results;
                     data.forEach((emp, index) => {
                         var led = new LedgerModel();
@@ -523,44 +575,51 @@ export class InventorySubcategoryLedgerMappingComponent {
                         led.LedgerId = (emp.LedgerId != null) ? emp.LedgerId : 0,
                             led.LedgerGroupId = (emp.LedgerGroupId != null) ? emp.LedgerGroupId : this.CurrentLedger.LedgerGroupId,
                             led.LedgerName = (emp.LedgerName != null) ? emp.LedgerName : "",
-                            led.LedgerReferenceId = (emp.LedgerReferenceId != null) ? emp.LedgerReferenceId : emp.SubCategoryId,
+                            led.LedgerReferenceId = (emp.LedgerReferenceId != null) ? emp.LedgerReferenceId : emp.StoreId,
                             led.IsActive = (emp.IsActive != null) ? emp.IsActive : false,
-                            led.Dr = (emp.DrCr == true) ? emp.DrCr : null;
-                        led.Cr = (emp.DrCr == false) ? true : null;
-                        led.LedgerType = "inventorysubcategory",
-                            this.inventorysubcategoryledgerList.push(led);
-                        let costCenter = this.costCenters.find(a => a.CostCenterId === emp.CostCenterId);
+                            led.Dr = (emp.DrCr === true) ? emp.DrCr : null;
+                        led.Cr = (emp.DrCr === false) ? true : null;
+                        led.LedgerType = ENUM_ACC_ADDLedgerLedgerType.InventoryConsumption,
+                            led.LedgerValidator.get("COA").setValue(this.CurrentLedger.COA);
+                        led.LedgerValidator.get("PrimaryGroup").setValue(this.CurrentLedger.PrimaryGroup);
+                        led.LedgerValidator.get("LedgerGroupName").setValue(this.CurrentLedger.LedgerGroupName);
+                        this.InventorySubCategoryLedgerList.push(led);
+                        this.SelectedSubLedger[index] = emp.SubLedgerName;
+                        let costCenter = this.CostCenters.find(a => a.CostCenterId === emp.CostCenterId);
+                        if (!led.IsSelected)
+                            led.LedgerValidator.get("LedgerName").disable();
+                        led.LedgerGroupId = this.CurrentLedger.LedgerGroupId;
                         if (costCenter) {
-                            this.selectedCostCenter[index] = costCenter;
+                            this.SelectedCostCenter[index] = costCenter;
                         }
                     });
-                    this.inventorySubList = this.inventorysubcategoryledgerList;
-                    if (this.inventorySubList.length > 0) {
-                        this.showinventorysubcategoryAllLedgers = true;
+                    this.InventorySubList = this.InventorySubCategoryLedgerList;
+                    if (this.InventorySubList.length > 0) {
+                        this.ShowInventorySubCategoryAllLedgers = true;
                     }
-                    this.totalLedger = this.inventorySubList.length;
-                    this.mappedLedger = this.inventorySubList.filter(l => l.IsMapped == true).length;
-                    this.notmappedLedger = this.inventorySubList.filter(l => l.IsMapped == false).length;
+                    this.TotalLedger = this.InventorySubList.length;
+                    this.MappedLedger = this.InventorySubList.filter(l => l.IsMapped === true).length;
+                    this.NotmappedLedger = this.InventorySubList.filter(l => l.IsMapped === false).length;
                 }
             });
     }
 
 
     ToggleInventorySubcategory(mapped) {
-        if (mapped == 'true') {
+        if (mapped === 'true') {
             this.ConsultantfilterType = 'withacchead';
-            this.inventorySubList = this.inventorysubcategoryledgerList.filter(emp => emp.LedgerId > 0);
-            this.selectedLedgerData = null;
+            this.InventorySubList = this.InventorySubCategoryLedgerList.filter(emp => emp.LedgerId > 0);
+            this.SelectedLedgerData = null;
         }
-        else if (mapped == 'false') {
+        else if (mapped === 'false') {
             this.ConsultantfilterType = 'withoutacchead';
-            this.inventorySubList = this.inventorysubcategoryledgerList.filter(emp => emp.LedgerId == 0);
-            this.selectedLedgerData = null;
+            this.InventorySubList = this.InventorySubCategoryLedgerList.filter(emp => emp.LedgerId === 0);
+            this.SelectedLedgerData = null;
         }
         else {
             this.ConsultantfilterType = 'all';
-            this.inventorySubList = this.inventorysubcategoryledgerList;
-            this.selectedLedgerData = null;
+            this.InventorySubList = this.InventorySubCategoryLedgerList;
+            this.SelectedLedgerData = null;
         }
     }
     //END : Inventory subcategory Ledger 
@@ -571,11 +630,11 @@ export class InventorySubcategoryLedgerMappingComponent {
         try {
             this.accountingSettingsBLService.GetProvisionalLedgerCode()
                 .subscribe(res => {
-                    if (res.Status == "OK") {
-                        this.provisionalLedgerCode = parseInt(res.Results);
+                    if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
+                        this.ProvisionalLedgerCode = parseInt(res.Results);
                     }
                     else {
-                        this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+                        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, [res.ErrorMessage]);
                     }
                 },
                     err => {
@@ -587,8 +646,36 @@ export class InventorySubcategoryLedgerMappingComponent {
     }
 
     AssignCostCenter(index) {
-        if (typeof this.selectedCostCenter[index] === ENUM_Data_Type.Object && this.selectedCostCenter[index] !== null) {
-            this.inventorySubList[index].CostCenterId = this.selectedCostCenter[index].CostCenterId
+        if (typeof this.SelectedCostCenter[index] === ENUM_Data_Type.Object && this.SelectedCostCenter[index] !== null) {
+            this.InventorySubList[index].CostCenterId = this.SelectedCostCenter[index].CostCenterId
+        }
+    }
+    public SubLedgerListFormatter(subLedger: SubLedger_DTO): string {
+        return `${subLedger["SubLedgerName"]} (${subLedger["LedgerName"]})`;
+    }
+    AssignSelectedSubLedger(index) {
+        if (typeof this.SelectedSubLedger[index] === ENUM_Data_Type.Object && this.SelectedSubLedger[index].SubLedgerId > 0) {
+            this.InventorySubList[index].Code = this.SelectedSubLedger[index].SubLedgerCode
+            this.InventorySubList[index].LedgerId = this.SelectedSubLedger[index].LedgerId;
+            this.InventorySubList[index].SubLedgerName = this.SelectedSubLedger[index].SubLedgerName;
+            this.InventorySubList[index].SubLedgerId = this.SelectedSubLedger[index].SubLedgerId;
+            var Ledger = this.LedgerListAutoComplete.find(a => a.LedgerId === this.SelectedSubLedger[index].LedgerId);
+            if (Ledger) {
+                this.InventorySubList[index].LedgerName = Ledger.LedgerName;
+            }
+        }
+        else {
+            if (this.SelectedSubLedger[index] === ENUM_Data_Type.String) {
+                if (this.SelectedSubLedger[index].trim() === "") {
+                    this.InventorySubList[index].LedgerId = 0;
+                    this.InventorySubList[index].SubLedgerId = 0;
+                    this.InventorySubList[index].LedgerName = "";
+                    this.InventorySubList[index].SubLedgerName = "";
+                }
+                else {
+                    this.InventorySubList[index].SubLedgerName = this.SelectedSubLedger[index];
+                }
+            }
         }
     }
 }

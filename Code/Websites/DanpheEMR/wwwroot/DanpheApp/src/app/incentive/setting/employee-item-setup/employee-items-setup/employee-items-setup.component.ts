@@ -3,8 +3,11 @@ import { cloneDeep } from 'lodash';
 import * as moment from 'moment/moment';
 import { CoreService } from '../../../../core/shared/core.service';
 import { SecurityService } from '../../../../security/shared/security.service';
+import { PriceCategory } from '../../../../settings-new/shared/price.category.model';
+import { DanpheHTTPResponse } from '../../../../shared/common-models';
 import { CommonFunctions } from '../../../../shared/common.functions';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
+import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from '../../../../shared/shared-enums';
 import { EmployeeBillItemsMapModel } from '../../../shared/employee-billItems-map.model';
 import { EmployeeIncentiveInfoModel } from '../../../shared/employee-incentiveInfo.model';
 import { IncentiveBLService } from '../../../shared/incentive.bl.service';
@@ -20,7 +23,7 @@ export class EmployeeItemsSetupComponent {
 
   //sud:6-Oct'20-- we'll implement this later after requirement clarity for PriceCategory.
   //for now Normal will be our default pricecategory.
-  public defPriceCate_HardCoded = { PriceCategoryId: 1, PriceCategoryName: "Normal" }
+  // public defPriceCate_HardCoded = { PriceCategoryId: 1, PriceCategoryName: "Normal" }
 
   public currentItemList: any = [];
   public FilteredItemList: any = [];
@@ -69,13 +72,20 @@ export class EmployeeItemsSetupComponent {
   public ProfilePreviewGridColumns: Array<any> = [];
   public DocObj: any = null;
   public IsPercentageValid: boolean = true;
-
+  public ServiceItemId: number = null;
+  public PriceCategories = new Array<PriceCategory>();
+  public SelectedPriceCategoryId: number = null;
+  public NewEmployeeIncentiveInfo: boolean = true;
 
   constructor(public msgBoxServ: MessageboxService,
     public changeDetector: ChangeDetectorRef,
     public incentiveBLService: IncentiveBLService,
     public securityService: SecurityService,
     public coreService: CoreService) {
+    const allPriceCategories = this.coreService.Masters.PriceCategories;
+    if (allPriceCategories && allPriceCategories.length > 0) {
+      this.PriceCategories = allPriceCategories.filter(p => p.IsActive);
+    }
 
     //this.EmployeeItemGridColumns = INCTVGridColumnSettings.EmployeeItemList;
     this.ProfilePreviewGridColumns = INCTVGridColumnSettings.ProfilePreviewList;
@@ -102,18 +112,18 @@ export class EmployeeItemsSetupComponent {
 
     if (this.CurrentEmployeeId) {
       this.update = true;
-      this.newEmployeeIncentiveInfo = false;
+      this.NewEmployeeIncentiveInfo = false;
       this.DocObj = this.allDoctorList.find(a => a.EmployeeId == this.CurrentEmployeeId);
       this.GetEmployeeBillItemsList(this.CurrentEmployeeId);
     }
     else {
       this.update = false;
-      this.newEmployeeIncentiveInfo = true;
+      this.NewEmployeeIncentiveInfo = true;
       this.DocObj = null;
       this.currentEmployeeIncentiveInfo = new EmployeeIncentiveInfoModel();
     }
-    this.GetDeptsForSearchDDL(this.allBillItems);
-    this.FilteredItemList = this.allBillItems;
+    // this.GetDeptsForSearchDDL(this.allBillItems);
+    // this.FilteredItemList = this.allBillItems;
 
     // console.log(this.DocObj);
   }
@@ -121,8 +131,8 @@ export class EmployeeItemsSetupComponent {
   GetEmployeeBillItemsList(empId) {
     try {
       this.incentiveBLService.GetEmployeeBillItemsList(empId)
-        .subscribe(res => {
-          if (res.Status == 'OK') {
+        .subscribe((res: DanpheHTTPResponse) => {
+          if (res.Status === ENUM_DanpheHTTPResponses.OK) {
             var employeeIncentiveInfo = res.Results;
             this.EmployeePreviousBillItems = employeeIncentiveInfo.EmployeeBillItemsMap;
             this.currentEmployeeIncentiveInfo = employeeIncentiveInfo;
@@ -131,14 +141,14 @@ export class EmployeeItemsSetupComponent {
             //this.currentEmployeeIncentiveInfo.PriceCategoryId = pricecategoryObj.PriceCategoryId;
 
             if (this.EmployeePreviousBillItems && this.EmployeePreviousBillItems.length) {
-              this.EmployeePreviousBillItems.forEach(a => {
-                var bilitm = this.allBillItems.find(b => b.ServiceItemId == a.ServiceItemId);
-                if (bilitm) {
-                  a.ItemName = bilitm.ItemName;
-                  a.DepartmentName = bilitm.ServiceDepartmentName;
-                }
-                a.GroupDistributionCount = a.GroupDistribution.length;
-              });
+              // this.EmployeePreviousBillItems.forEach(a => {
+              //   var bilitm = this.allBillItems.find(b => b.ServiceItemId == a.ServiceItemId);
+              //   if (bilitm) {
+              //     a.ItemName = bilitm.ItemName;
+              //     a.DepartmentName = bilitm.ServiceDepartmentName;
+              //   }
+              //   a.GroupDistributionCount = a.GroupDistribution.length;
+              // });
             }
             else {
               //if no item found then set focus on itemname searchbox.
@@ -169,12 +179,12 @@ export class EmployeeItemsSetupComponent {
       });
   }
 
-  public GetDeptsForSearchDDL(itemList: Array<any>) {
-    let allDepts = itemList.map(el => {
+  public GetDepartmentsForSearchDDL(itemList: Array<any>) {
+    let allDepartments = itemList.map(el => {
       return el.ServiceDepartmentName;
     });
 
-    let uniqueItms = CommonFunctions.GetUniqueItemsFromArray(allDepts);
+    let uniqueItms = CommonFunctions.GetUniqueItemsFromArray(allDepartments);
 
     //to change Array<string> to Array<Object>
     //searchbox needs Object array for binding, but above uniqueItems list gives Array<string>
@@ -234,6 +244,7 @@ export class EmployeeItemsSetupComponent {
       }
       case 'groupdistribution': {
         this.updateSelectedItem = $event.Data;
+        this.ServiceItemId = $event.Data.ServiceItemId;
         this.ItemGroupDistribution = this.updateSelectedItem.GroupDistribution;
         this.ItemGroupDistribution.forEach(a => {
           a.DocObj = this.allDoctorList.find(b => b.EmployeeId == a.DistributeToEmployeeId);
@@ -262,7 +273,7 @@ export class EmployeeItemsSetupComponent {
   public OnDepartmentChange() {
 
     let srvDeptObj = null;
-    // check if user has given proper input string for department name 
+    // check if user has given proper input string for department name
     //or has selected object properly from the dropdown list.
     if (typeof (this.ItemsSetup.SelServDepartment) == 'string') {
       if (this.uniqueDeptNames.length && this.ItemsSetup.SelServDepartment)
@@ -275,19 +286,19 @@ export class EmployeeItemsSetupComponent {
     //if selection of department from string or selecting object from the list is true
     //then assign proper department name
     if (srvDeptObj && srvDeptObj.ServiceDepartmentName) {
-      this.FilteredItemList = this.allBillItems.filter(a => a.ServiceDepartmentName == srvDeptObj.ServiceDepartmentName)
+      this.FilteredItemList = this.FilteredItemList.filter(a => a.ServiceDepartmentName == srvDeptObj.ServiceDepartmentName)
     }
     else {
-      this.FilteredItemList = this.allBillItems;
+      this.FilteredItemList = this.FilteredItemList;
     }
 
   }
 
   public AssignSelectedItem() {
-    //this.ItemsSetup -> This object is binded with dropdown, so taking all property from this. 
+    //this.ItemsSetup -> This object is binded with dropdown, so taking all property from this.
     if (this.ItemsSetup.ItemName && this.ItemsSetup.ItemName != '') {
-      if (this.EmployeePreviousBillItems.find(a => a.ItemName == this.ItemsSetup.ItemName)) {
-        this.msgBoxServ.showMessage('Warning', [this.ItemsSetup.ItemName + ' is already added, Please edit the percentage from below list.']);
+      if (this.EmployeePreviousBillItems.find(a => a.ServiceItemId === this.ItemsSetup.ItemName.ServiceItemId && a.PriceCategoryId === this.SelectedPriceCategoryId)) {
+        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Warning, [` ${this.ItemsSetup.ItemName} is already added with selected PriceCategory , Please edit the percentage from below list.`]);
         this.SetFocusOn_SearchBox("srch_itemName");
         this.ItemsSetup.SelServDepartment = null;
         this.ItemsSetup.Price = 0;
@@ -310,13 +321,13 @@ export class EmployeeItemsSetupComponent {
     if (this.ItemsSetup && this.ItemsSetup.ItemName) {
       var EmployeeBillItemsObj = new EmployeeBillItemsMapModel();
       EmployeeBillItemsObj.EmployeeId = this.DocObj.EmployeeId;
-      EmployeeBillItemsObj.PriceCategoryId = this.defPriceCate_HardCoded.PriceCategoryId;// this.currentEmployeeIncentiveInfo.PriceCategoryId;
-      EmployeeBillItemsObj.BillItemPriceId = this.ItemsSetup.ItemName.BillItemPriceId;
+      EmployeeBillItemsObj.PriceCategoryId = this.SelectedPriceCategoryId;// this.currentEmployeeIncentiveInfo.PriceCategoryId;
+      EmployeeBillItemsObj.ServiceItemId = this.ItemsSetup.ItemName.ServiceItemId;
       EmployeeBillItemsObj.PerformerPercent = this.ItemsSetup.PerformerPercent ? this.ItemsSetup.PerformerPercent : 0;
       EmployeeBillItemsObj.PrescriberPercent = this.ItemsSetup.PrescriberPercent ? this.ItemsSetup.PrescriberPercent : 0;
       EmployeeBillItemsObj.ReferrerPercent = this.ItemsSetup.ReferrerPercent ? this.ItemsSetup.ReferrerPercent : 0;
-      let serviceItem = this.allBillItems.find(a => a.ServiceItemId == this.ItemsSetup.ItemName.ServiceItemId);
-      EmployeeBillItemsObj.ServiceItemId = serviceItem.ServiceItemId;
+      // let serviceItem = this.allBillItems.find(a => a.ServiceItemId == this.ItemsSetup.ItemName.ServiceItemId);
+      // EmployeeBillItemsObj.ServiceItemId = serviceItem.ServiceItemId;
       EmployeeBillItemsObj.ItemName = this.ItemsSetup.ItemName;
       EmployeeBillItemsObj.DepartmentName = this.ItemsSetup.SelServDepartment;
       EmployeeBillItemsObj.GroupDistribution = null;
@@ -346,22 +357,22 @@ export class EmployeeItemsSetupComponent {
 
 
       this.incentiveBLService.SaveEmployeeBillItemsMap(this.currentEmployeeIncentiveInfo)
-        .subscribe(res => {
-          if (res.Status == 'OK') {
+        .subscribe((res: DanpheHTTPResponse) => {
+          if (res.Status === ENUM_DanpheHTTPResponses.OK) {
             this.GetEmployeeBillItemsList(res.Results.EmployeeId);
             this.ItemsSetup = new EmployeeIncentiveSetupVM();
-            this.msgBoxServ.showMessage('sucess', ['Employee BillItems Map is successfully saved!!']);
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Success, ['Employee BillItems Map is successfully saved!!']);
             this.OnDepartmentChange();//this is needed to refresh the items list.
             this.SetFocusOn_SearchBox("srch_itemName");
           }
           else {
-            this.msgBoxServ.showMessage('failed', [res.ErrorMessage]);
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
             console.log(res.ErrorMessage);
           }
         });
     }
     else {
-      this.msgBoxServ.showMessage('Notice', ['Select Item and add Assign and referer percentage.']);
+      this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ['Select Item and add Assign and referer percentage.']);
     }
 
 
@@ -420,9 +431,9 @@ export class EmployeeItemsSetupComponent {
   }
 
   //this adds a new row only when Current BillItem has NO-Group Distribution.
-  //by default it adds the assigned to percentage to this newly created row. 
+  //by default it adds the assigned to percentage to this newly created row.
   public AddFirstRowForEmptyGroupDistribution(itemObj) {
-    //Add a new row and assign the current employee to it, only when there's nothing in the group-distribution of current bill-item. 
+    //Add a new row and assign the current employee to it, only when there's nothing in the group-distribution of current bill-item.
     if (this.ItemGroupDistribution.length == 0) {
       let firstRow: ItemGroupDistributionModel = new ItemGroupDistributionModel();
       //assign values to newRow from available variables
@@ -441,7 +452,7 @@ export class EmployeeItemsSetupComponent {
     }
     else {
       //remove if there are one or more empty rows.
-      //this happens when user clicks on Plus button and doesn't select any emplyee, and then clicks on other item from left side. 
+      //this happens when user clicks on Plus button and doesn't select any emplyee, and then clicks on other item from left side.
       let i = this.ItemGroupDistribution.length;
       //decrement i since we're removing the item from the same array we're looping.
       while (i--) {
@@ -482,7 +493,7 @@ export class EmployeeItemsSetupComponent {
     if (this.ItemGroupDistribution && this.ItemGroupDistribution.length > 1) {
       this.ItemGroupDistribution.forEach(a => {
         if (a.DocObj.EmployeeId) {
-          a.BillItemPriceId = this.updateSelectedItem.BillItemPriceId
+          a.ServiceItemId = this.ServiceItemId;
           a.DistributeToEmployeeId = a.DocObj.EmployeeId;
           a.FromEmployeeId = this.DocObj.EmployeeId;
           a.EmployeeBillItemsMapId = this.updateSelectedItem.EmployeeBillItemsMapId ? this.updateSelectedItem.EmployeeBillItemsMapId : 0;
@@ -573,55 +584,45 @@ export class EmployeeItemsSetupComponent {
     this.OnDepartmentChange();
   }
 
-  public newEmployeeIncentiveInfo: boolean = true;
+
   public SaveEmployeeIncentiveInfo() {
     if (this.existingEmpList && this.existingEmpList.length > 0) {
       let employeeIncentive = this.existingEmpList.find(e => e.EmployeeId === this.DocObj.EmployeeId);
       if (employeeIncentive && employeeIncentive.EmployeeId > 0) {
-        this.msgBoxServ.showMessage('failed', ['Employee is Already Added, try to add another employee']);
+        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ['Employee is Already Added, try to add another employee']);
         return;
       }
     }
     if (this.showProfleDD && this.selProfileForAttach == null) {
-      this.msgBoxServ.showMessage('failed', ['Please select a profile first']);
+      this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ['Please select a profile first']);
     } else {
       if (this.currentEmployeeIncentiveInfo && this.currentEmployeeIncentiveInfo.EmployeeId) {
         this.currentEmployeeIncentiveInfo.CreatedBy = this.securityService.loggedInUser.EmployeeId;//change this and assign from server side..
         this.currentEmployeeIncentiveInfo.CreatedOn = moment().format('YYYY-MM-DD');
         this.incentiveBLService.SaveEmployeeBillItemsMap(this.currentEmployeeIncentiveInfo)
           .subscribe(res => {
-            if (res.Status == 'OK') {
-              this.newEmployeeIncentiveInfo = false;
+            if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+              this.NewEmployeeIncentiveInfo = false;
               this.update = true;//after this part, it will be treated as update.
               //this.changeDetector.detectChanges();
               this.currentEmployeeIncentiveInfo = res.Results;
-              this.msgBoxServ.showMessage('sucess', ['Employee Incentive Info is successfully saved!!']);
+              this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Success, ['Employee Incentive Info is successfully saved!!']);
 
 
               //After the success, we need to Re-Bind with the grid and group distribution part..
-              this.EmployeePreviousBillItems = this.currentEmployeeIncentiveInfo.EmployeeBillItemsMap;
-
-              //var pricecategoryObj = this.categoryList.find(a => a.PriceCategoryName == "Normal");
-              //this.currentEmployeeIncentiveInfo.PriceCategoryId = pricecategoryObj.PriceCategoryId;
-              this.EmployeePreviousBillItems.forEach(a => {
-                var bilitm = this.allBillItems.find(b => b.BillItemPriceId == a.BillItemPriceId);
-                if (bilitm) {
-                  a.ItemName = bilitm.ItemName;
-                  a.DepartmentName = bilitm.ServiceDepartmentName;
-                }
-                a.GroupDistributionCount = a.GroupDistribution ? a.GroupDistribution.length : 0;
-              });
+              this.GetEmployeeBillItemsList(this.currentEmployeeIncentiveInfo.EmployeeId);
+              //this.EmployeePreviousBillItems = this.currentEmployeeIncentiveInfo.EmployeeBillItemsMap;
 
               this.changeDetector.detectChanges();
             }
             else {
-              this.msgBoxServ.showMessage('failed', ['Something Went Wrong ,Please Try Again']);
+              this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ['Something Went Wrong ,Please Try Again']);
               console.log(res.ErrorMessage);
             }
           });
       }
       else {
-        this.msgBoxServ.showMessage('Notice', ['Select Dotor to save employee incentive info.']);
+        this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, ['Select Dotor to save employee incentive info.']);
       }
     }
 
@@ -649,16 +650,19 @@ export class EmployeeItemsSetupComponent {
   public GetBillItemProfileMap(profileId) {
     this.incentiveBLService.GetProfileItemsMapping(profileId)
       .subscribe(res => {
-        if (res.Status == 'OK') {
-          let profile = res.Results.profileDetails;
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+          let profile = res.Results;
 
           this.currentEmployeeIncentiveInfo.EmployeeBillItemsMap = [];//clear billitems map on profile changed.
 
           profile.MappedItems.forEach(el => {
             var EmployeeBillItemsObj = new EmployeeBillItemsMapModel();
             EmployeeBillItemsObj.EmployeeId = this.DocObj.EmployeeId;
-            EmployeeBillItemsObj.PriceCategoryId = this.defPriceCate_HardCoded.PriceCategoryId;// el.PriceCategoryId;
+            EmployeeBillItemsObj.PriceCategoryId = profile.PriceCategoryId;// el.PriceCategoryId;
+            EmployeeBillItemsObj.PriceCategoryName = el.PriceCategoryName;
             EmployeeBillItemsObj.ServiceItemId = el.ServiceItemId;
+            EmployeeBillItemsObj.ItemName = el.ItemName;
+            EmployeeBillItemsObj.DepartmentName = el.DepartmentName;
             EmployeeBillItemsObj.PerformerPercent = el.PerformerPercent ? el.PerformerPercent : 0;
             EmployeeBillItemsObj.PrescriberPercent = el.PrescriberPercent ? el.PrescriberPercent : 0;
             EmployeeBillItemsObj.ReferrerPercent = el.ReferrerPercent ? el.ReferrerPercent : 0;
@@ -670,18 +674,18 @@ export class EmployeeItemsSetupComponent {
 
           this.EmployeePreviousBillItems = this.currentEmployeeIncentiveInfo.EmployeeBillItemsMap;
 
-          this.EmployeePreviousBillItems.forEach(a => {
-            var bilitm = this.allBillItems.find(b => b.ServiceItemId == a.ServiceItemId);
-            if (bilitm) {
-              a.ItemName = bilitm.ItemName;
-              a.DepartmentName = bilitm.ServiceDepartmentName;
-            }
-            a.GroupDistributionCount = a.GroupDistribution ? a.GroupDistribution.length : 0;
-          });
+          // this.EmployeePreviousBillItems.forEach(a => {
+          //   var bilitm = this.allBillItems.find(b => b.ServiceItemId == a.ServiceItemId);
+          //   if (bilitm) {
+          //     a.ItemName = bilitm.ItemName;
+          //     a.DepartmentName = bilitm.ServiceDepartmentName;
+          //   }
+          //   a.GroupDistributionCount = a.GroupDistribution ? a.GroupDistribution.length : 0;
+          // });
 
         }
         else {
-          this.msgBoxServ.showMessage('failed', [res.ErrorMessage]);
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
           console.log(res.ErrorMessage);
         }
       });
@@ -747,19 +751,21 @@ export class EmployeeItemsSetupComponent {
   }
 
   public PreviewItem(data) {
-    this.showPreview = true;
     this.selProfileForAttach = data;
     this.incentiveBLService.GetProfileItemsMapping(this.selProfileForAttach.ProfileId)
       .subscribe(res => {
-        if (res.Status == 'OK') {
-          let profile = res.Results.profileDetails;
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+          let profile = res.Results;
 
           this.currentEmployeeIncentiveInfo.EmployeeBillItemsMap = [];//clear billitems map on profile changed.
 
           profile.MappedItems.forEach(el => {
-            var EmployeeBillItemsObj = new EmployeeBillItemsMapModel();
-            EmployeeBillItemsObj.PriceCategoryId = this.defPriceCate_HardCoded.PriceCategoryId;// el.PriceCategoryId;
-            EmployeeBillItemsObj.BillItemPriceId = el.BillItemPriceId;
+            let EmployeeBillItemsObj = new EmployeeBillItemsMapModel();
+            EmployeeBillItemsObj.PriceCategoryId = this.SelectedPriceCategoryId;// el.PriceCategoryId;
+            EmployeeBillItemsObj.PriceCategoryName = el.PriceCategoryName;
+            EmployeeBillItemsObj.ServiceItemId = el.ServiceItemId;
+            EmployeeBillItemsObj.ItemName = el.ItemName;
+            EmployeeBillItemsObj.DepartmentName = el.DepartmentName;
             EmployeeBillItemsObj.PerformerPercent = el.PerformerPercent ? el.PerformerPercent : 0;
             EmployeeBillItemsObj.PrescriberPercent = el.PrescriberPercent ? el.PrescriberPercent : 0;
             EmployeeBillItemsObj.ReferrerPercent = el.ReferrerPercent ? el.ReferrerPercent : 0;
@@ -770,19 +776,20 @@ export class EmployeeItemsSetupComponent {
           });
 
           this.EmployeePreviousBillItems = this.currentEmployeeIncentiveInfo.EmployeeBillItemsMap;
-          this.EmployeePreviousBillItems.forEach(a => {
-            var bilitm = this.allBillItems.find(b => b.BillItemPriceId == a.BillItemPriceId);
-            if (bilitm) {
-              a.ItemName = bilitm.ItemName;
-              a.DepartmentName = bilitm.ServiceDepartmentName;
-            }
-          });
+          // this.EmployeePreviousBillItems.forEach(a => {
+          //   var bilitm = this.allBillItems.find(b => b.ServiceItemId == a.ServiceItemId);
+          //   if (bilitm) {
+          //     a.ItemName = bilitm.ItemName;
+          //     a.DepartmentName = bilitm.ServiceDepartmentName;
+          //   }
+          // });
           this.EmployeePreviousBillItems = this.EmployeePreviousBillItems.filter(e => {
             return e.ItemName !== "";
           })
+          this.showPreview = true;
         }
         else {
-          this.msgBoxServ.showMessage('failed', [res.ErrorMessage]);
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, [res.ErrorMessage]);
           console.log(res.ErrorMessage);
         }
       });
@@ -797,7 +804,7 @@ export class EmployeeItemsSetupComponent {
 
   public SaveSelectedProfile() {
     if (this.DocObj == null) {
-      this.msgBoxServ.showMessage('failed', ['Select Employee Name first.']);
+      this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ['Select Employee Name first.']);
     } else {
       this.profileChanged();
       this.showProfileTable = false;
@@ -823,6 +830,29 @@ export class EmployeeItemsSetupComponent {
       this.showProfileTable = true;
     }
   }
+
+  OnPriceCategoryChanged($event): void {
+    if ($event) {
+      const priceCategoryId = +$event.target.value;
+      this.SelectedPriceCategoryId = priceCategoryId;
+      this.GetServiceItemsByPriceCategoryId(priceCategoryId);
+    }
+  }
+  GetServiceItemsByPriceCategoryId(priceCategoryId: number): void {
+    this.incentiveBLService.GetItemsForIncentive(priceCategoryId)
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+          this.DiscardItem();
+          const serviceItems = res.Results;
+          this.GetDepartmentsForSearchDDL(serviceItems);
+          this.FilteredItemList = serviceItems;
+        }
+        else {
+          this.msgBoxServ.showMessage('failed', [res.ErrorMessage]);
+          console.log(res.ErrorMessage);
+        }
+      });
+  }
 }
 
 class EmployeeIncentiveSetupVM {
@@ -836,6 +866,8 @@ class EmployeeIncentiveSetupVM {
   public ReferrerPercent: number = 0; // Krishna, 24th,jun'22, Added new ReferrerPercent.
   public OpdSelected: boolean = true;
   public IpdSelected: boolean = true;
+  public ServiceItemId: number = null;
+  public PriceCategoryId: number = null;
 }
 
 

@@ -61,9 +61,10 @@ export class DepositReceiptComponent {
   public openBrowserPrintWindow: boolean = false;
   public browserPrintContentObj: any;
 
+  public EnableEnglishCalendarOnly: boolean = false;
   public defaultFocusPrint: string = null;
   public closePopUpAfterInvoicePrint: boolean = true;
-  public headerDetail: { CustomerName, Address, Email, CustomerRegLabel, CustomerRegNo, Tel };
+  public headerDetail: { hospitalName, address, email, tel };
   public InvoiceDisplaySettings: any = { ShowHeader: true, ShowQR: true, ShowHospLogo: true, ShowPriceCategory: false, HeaderType: '' };
 
 
@@ -75,14 +76,21 @@ export class DepositReceiptComponent {
     public changeDetector: ChangeDetectorRef) {
 
     this.InvoiceDisplaySettings = this.coreService.GetInvoiceDisplaySettings();
+    this.GetCalendarParameter();
 
-
-    let paramValue = this.coreService.Parameters.find(a => a.ParameterName === 'BillingHeader').ParameterValue;
+    let paramValue = this.coreService.Parameters.find(a => a.ParameterName === 'CustomerHeader').ParameterValue;
     if (paramValue)
       this.headerDetail = JSON.parse(paramValue);
     //this.SetPrinterFromParam();
   }
 
+  GetCalendarParameter(): void {
+    const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+    if (param && param.ParameterValue) {
+      const paramValue = JSON.parse(param.ParameterValue);
+      this.EnableEnglishCalendarOnly = paramValue;
+    }
+  }
   ngOnInit() {
     //this.currencyUnit = this.billingService.currencyUnit;
     if (this.deposit) {
@@ -111,8 +119,13 @@ export class DepositReceiptComponent {
   }
 
   GetLocalDate(engDate: string): string {
-    let npDate = this.nepaliCalendarServ.ConvertEngToNepDateString(engDate);
-    return npDate + " BS";
+    if (this.EnableEnglishCalendarOnly) {
+      return null;
+    } else {
+      let npDate = this.nepaliCalendarServ.ConvertEngToNepDateString(engDate);
+      //return npDate + " BS";
+      return `(${npDate} BS)`;
+    }
   }
 
 

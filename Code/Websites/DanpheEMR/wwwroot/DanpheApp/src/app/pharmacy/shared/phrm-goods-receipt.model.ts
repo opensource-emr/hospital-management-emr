@@ -1,7 +1,8 @@
 import {
       FormBuilder,
       FormControl,
-      FormGroup
+      FormGroup,
+      Validators
 } from '@angular/forms';
 import * as moment from 'moment/moment';
 
@@ -32,7 +33,6 @@ export class PHRMGoodsReceiptModel {
       public StoreName: string = "";
       public CreditPeriod: number = 0;
       public IsTransferredToACC: boolean = false;
-      ////display purpose
       public VATAmount: number = 0;
       public FiscalYearId: number = 0;
       public CurrentFiscalYear: string = "";
@@ -46,12 +46,13 @@ export class PHRMGoodsReceiptModel {
       public PaymentStatus: string = "pending";
       public CCAmount: number = 0;
       public PurchaseOrderNo: number = 0;
+      public VATPercentage: number = 0;
       constructor() {
             var _formBuilder = new FormBuilder();
             this.GoodReceiptValidator = _formBuilder.group({
                   'SubTotal': [],
-                  'DiscountPercent': [],
-                  'DiscountAmount': [],
+                  'DiscountPercentage': [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+                  'DiscountAmount': [0, [Validators.required, Validators.min(0)]],
                   'VATAmount': [],
                   'Adjustment': [],
                   'TotalAmount': []

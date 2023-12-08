@@ -9,6 +9,7 @@ import { CoreService } from '../../../core/shared/core.service';
 import { PharmacyService } from '../../shared/pharmacy.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import * as moment from 'moment/moment';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 @Component({
       templateUrl: "./phrm-store-dispatch-details.components.html"
 })
@@ -24,6 +25,7 @@ export class PHRMStoreDispatchDetailsComponent {
       public receivedby: string = "";
       msgBoxServ: any;
 
+      public GeneralFieldLabel = new GeneralFieldLabels();
 
       constructor(
             public PharmacyBLService: PharmacyBLService,
@@ -34,6 +36,7 @@ export class PHRMStoreDispatchDetailsComponent {
             public coreservice: CoreService) {
             this.LoadRequisitionDetails(this.PharmacyService.Id);
             this.GetInventoryBillingHeaderParameter();;
+            this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
       }
 
       LoadRequisitionDetails(RequisitionId: number) {

@@ -4,6 +4,7 @@
     margin-top: 8px;
     margin-bottom: 10px;
     margin-left: 20px;
+    font-size: 12px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 
@@ -17,7 +18,7 @@
   table td,
   table th {
     padding: 0 !important;
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .column {
@@ -36,7 +37,7 @@
   }
 
   .c_paragraphs {
-    font-size: 10px !important;
+    font-size: 12px !important;
     margin: 0 0 0 0;
     padding: 0;
   }
@@ -73,8 +74,10 @@
               <p class="c_paragraphs" style="text-align: center;">{{ headerDetail.DDA}}</p>
             </td>
             <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
-              <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;"><strong>PAN No.
-                  : {{headerDetail.PANno}}</strong> </p>
+              <p *ngIf="headerDetail.PANno!==''" class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0; color: #000 !important;">
+                <strong>{{GeneralFieldLabel.PANNo}}
+                  : {{headerDetail.PANno}}</strong>
+              </p>
             </td>
           </tr>
         </table>
@@ -90,7 +93,7 @@
             </td>
           </tr>
           <tr style="border: 1px solid #ccc; color:black!important;">
-            <td colspan="12" style="padding: 5px;">
+            <td colspan="12" style="padding: 5px!important;">
               <table style="width: 100%; margin-bottom: 0;">
                 <tr>
                   <td colspan="6" style="text-align: left;">
@@ -110,7 +113,9 @@
                   <td colspan="6" style="text-align: left;">
                     <p class="c_paragraphs"><strong>Patient's Name: </strong>{{ProvisionalInvoice.PatientInfo.ShortName}}</p>
                   </td>
-
+                  <td colspan="6" style="text-align: right;">
+                    <p class="c_paragraphs">{{ProvisionalInvoice.InvoiceDate | nepaliDate }}</p>
+                  </td>
                 </tr>
                 <tr *ngIf="ProvisionalInvoice.PatientInfo.PatientId > 0">
                   <td colspan="6" style="text-align: left;">
@@ -130,7 +135,7 @@
                     </p>
                   </td>
                   <td colspan="6" style="text-align: right;" *ngIf="ProvisionalInvoice.ProviderNMCNumber">
-                    <p class="c_paragraphs"><strong> NMCNumber:</strong>{{ProvisionalInvoice.ProviderNMCNumber}}</p>
+                    <p class="c_paragraphs"><strong> {{GeneralFieldLabel.NMCNo}}:</strong>{{ProvisionalInvoice.ProviderNMCNumber}}</p>
                   </td>
                 </tr>
                 <tr *ngIf="ProvisionalInvoice.ClaimCode || ProvisionalInvoice.PolicyNo">
@@ -150,40 +155,41 @@
             </td>
           </tr>
           <tr style="color:black!important;">
-            <th style="padding: 10px 10px 5px 10px;">SN.</th>
-            <th colspan="4" style="padding: 10px 10px 5px 10px;">Particular(s)</th>
-            <th style="padding: 10px 10px 5px 10px;">Qty</th>
-            <th colspan="2" style="padding: 10px 10px 5px 10px;">Expiry</th>
-            <th style="padding: 10px 10px 5px 10px;">Batch</th>
-            <th style="padding: 10px 10px 5px 10px;">Rack No.</th>
-            <th style="padding: 10px 10px 5px 10px;">Rate</th>
-            <th style="padding: 10px 10px 5px 10px;">Amount</th>
+            <th style="padding: 3px 5px !important;"><strong>SN.</strong></th>
+            <th colspan="4" style="padding: 3px 5px !important;"> <strong>Particular(s)</strong></th>
+            <th style="padding: 3px 5px !important;"><strong>Qty</strong></th>
+            <th colspan="2" style="padding: 3px 5px !important;"><strong>Expiry</strong></th>
+            <th style="padding: 3px 5px !important;"><strong>Batch</strong></th>
+            <th style="padding: 3px 5px !important;"><strong>Rack No.</strong></th>
+            <th style="padding: 3px 5px !important;"><strong>Rate</strong></th>
+            <th style="padding: 3px 5px !important; text-align: right;"><strong>Amount</strong></th>
           </tr>
           <tr *ngFor="let row of ProvisionalInvoice.ProvisionalInvoiceItems; let i=index" style="color:black!important;">
-            <td style="padding: 0px 10px; ">{{i+1}}</td>
-            <td colspan="4" style="padding: 0px 10px;">{{row.ItemDisplayName}} </td>
-            <td style="padding: 0px 10px; ">{{row.Quantity}}</td>
-            <td colspan="2" style="padding: 0px 10px; ">{{row.ExpiryDate | date: 'dd MMM yyy'}}</td>
-            <td style="padding: 0px 10px; ">{{row.BatchNo}}</td>
-            <td style="padding: 0px 10px; ">{{row.RackNo}}</td>
-            <td style="padding: 0px 10px; ">{{row.SalePrice | number: "1.2-4"}} </td>
-            <td style="padding: 0px 10px; ">{{row.SubTotal | number: "1.2-4"}}</td>
+            <td style="padding: 3px 5px !important; ">{{i+1}}</td>
+            <td colspan="4" style="padding: 3px 5px !important;">{{row.ItemDisplayName}} </td>
+            <td style="padding: 3px 5px !important; ">{{row.Quantity}}</td>
+            <td colspan="2" style="padding: 3px 5px !important; ">{{row.ExpiryDate | date: 'dd MMM yyy'}}</td>
+            <td style="padding: 3px 5px !important; ">{{row.BatchNo}}</td>
+            <td style="padding: 3px 5px !important; ">{{row.RackNo}}</td>
+            <td style="padding: 3px 5px !important; ">{{row.SalePrice | number: "1.2-4"}} </td>
+            <td style="padding: 3px 5px !important; text-align: right; ">{{row.SubTotal | number: "1.2-4"}}</td>
           </tr>
           <tr style="border-top: 1px solid #ccc; color:black!important;">
-            <td colspan="8" style="padding: 5px; vertical-align: top;">
+            <td colspan="8" style="padding: 5px!important;">
               <p class="c_paragraphs"><strong>In Words :{{ProvisionalInvoice.TotalAmount | NumberInWords}} <span
                         *ngIf="ProvisionalInvoice.TotalAmount !=0">Only</span></strong></p>
             </td>
-            <td colspan="3" style="padding: 5px; text-align: right;">
+            <td colspan="3" style="padding: 5px!important; text-align: right;">
               <p class="c_paragraphs"><strong>SubTotal: </strong></p>
               <p *ngIf="ProvisionalInvoice.DiscountAmount  && IsItemLevelDiscountApplicable || IsMainDiscountAvailable" class="c_paragraphs">
-                <strong>Discount:</strong></p>
+                <strong>Discount:</strong>
+              </p>
               <p *ngIf="ProvisionalInvoice.VATAmount && IsItemLevelVATApplicable" class="c_paragraphs"><strong>VAT:</strong></p>
               <p *ngIf="ProvisionalInvoice.CoPaymentCashAmount" class="c_paragraphs"><strong>CoPay Cash Amount: </strong></p>
               <p *ngIf="ProvisionalInvoice.CoPaymentCreditAmount" class="c_paragraphs"><strong>CoPay Credit Amount: </strong></p>
               <p class="c_paragraphs"><strong>Total Amount: </strong></p>
             </td>
-            <td style="padding: 10px 0px 10px 10px;;">
+            <td style="padding: 5px!important; text-align: right;">
               <p class="c_paragraphs">{{ProvisionalInvoice.SubTotal | number: "1.2-4"}}</p>
               <p class="c_paragraphs" *ngIf="ProvisionalInvoice.DiscountAmount  && IsItemLevelDiscountApplicable || IsMainDiscountAvailable">
                 {{ProvisionalInvoice.DiscountAmount |number: "1.2-4"}}</p>
@@ -196,16 +202,16 @@
             </td>
           </tr>
           <tr>
-            <td colspan="6" style="padding: 0 10px; vertical-align: top;" style="color:black!important;">
+            <td colspan="6" style="padding: 5px!important; vertical-align: top;" style="color:black!important;">
               <p class="c_paragraphs"><strong>User: </strong>{{ProvisionalInvoice.UserName}}</p>
             </td>
-            <td colspan="6" style="padding: 0 10px; vertical-align: top; text-align: right;" style="color:black!important;">
+            <td colspan="6" style="padding: 5px!important; vertical-align: top; text-align: right;" style="color:black!important;">
               <p class="c_paragraphs" style="text-align: right;"><strong>Time: </strong>{{ProvisionalInvoice.InvoiceDate |
                 DanpheDateTime:'format':'HH:mm'}}</p>
             </td>
           </tr>
           <tr>
-            <td colspan="12" style="padding: 5px; text-align: center;" style="color:black!important;">
+            <td colspan="12" style="padding: 5px!important; text-align: center;" style="color:black!important;">
               <p class="c_paragraphs" *ngIf="showEnglish">{{englishText}}</p>
               <p class="c_paragraphs" *ngIf="showNepali">{{nepaliText}}</p>
             </td>

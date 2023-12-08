@@ -9,7 +9,7 @@
       <div class="col-md-12">
         <div>
           <a class="btn blue bordered btn-sm cstm-pat-registration-hdr">
-            <span style="display: inline-block; margin-left: 5px;">All Orders of {{selectedPatient.FullName}}</span>
+            <span style="display: inline-block; margin-left: 5px;">All Orders of {{SelectedPatient.FullName}}</span>
           </a>
         </div>
       </div>
@@ -19,7 +19,7 @@
           <div class="col-md-12">
             <ul class="nav nav-tabs">
               <li class="active"><a data-toggle="tab" href="#allorders">Lab/Imaging Orders</a></li>
-              <li><a data-toggle="tab" href="#drugorders" (click)="showPharmacyOrder()">Pharmacy Orders</a></li>
+              <li><a data-toggle="tab" href="#drugorders" (click)="ShowPharmacyOrder()">Pharmacy Orders</a></li>
             </ul>
           </div>
 
@@ -34,23 +34,32 @@
                   <table class="table table-bordered" style="color: #000;">
                     <tbody>
                       <tr>
-                        <td><strong>Hospital Number</strong> &nbsp;{{selectedPatient.PatientCode}}</td>
-                        <td><strong>Age/Sex</strong>&nbsp;{{selectedPatient.Age}}/{{selectedPatient.Gender}}</td>
-                        <td><strong>Visit Date/Time</strong>&nbsp;{{selectedPatient.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
-                        <td *ngIf="selectedPatient && selectedPatient.Case"><strong>Case</strong>&nbsp;{{selectedPatient.Case}}</td>
+                        <td><strong>Hospital Number</strong> &nbsp;{{SelectedPatient.PatientCode}}</td>
+                        <td><strong>Age/Sex</strong>&nbsp;{{SelectedPatient.Age}}/{{SelectedPatient.Gender}}</td>
+                        <td><strong>Visit Date/Time</strong>&nbsp;{{SelectedPatient.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}
+                        </td>
+                        <td *ngIf="SelectedPatient && SelectedPatient.Case"><strong>Case</strong>&nbsp;{{SelectedPatient.Case}}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
 
+              <div class="col-md-6" style="margin-bottom: 10px;" *ngIf="showSchemePriceCategory">
+                <scheme-pricecategory-select
+                                             [selected-scheme-priceCategory]="SelectedSchemePriceCategory"
+                                             [disable-selection]="true">
+                </scheme-pricecategory-select>
+              </div>
+
               <div style="width: 100%;display: table;">
                 <div class="col-md-12">
-                  <ward-billitem-request *ngIf="showOrderRequest" [counterId]="emergencyCounterId" [billItems]="allBillItems"
-                                         [patientId]="selectedPatient.PatientId" [visitId]="selectedPatient.PatientVisitId"
+                  <ward-billitem-request *ngIf="ShowOrderRequest" [counterId]="EmergencyCounterId" [billItems]="AllBillItems"
+                                         [patientId]="SelectedPatient.PatientId" [visitId]="SelectedPatient.PatientVisitId"
                                          [visitType]="'emergency'" [billingType]="'outpatient'" [showPriceCategory]="false"
-                                         [past-tests]="provisionalItemsDetails"
-                                         (emit-billItemReq)="OrderRequested()"></ward-billitem-request>
+                                         [past-tests]="ProvisionalItemsDetails"
+                                         (emit-billItemReq)="OrderRequested()"
+                                         [scheme-priceCategory]="SelectedSchemePriceCategory"></ward-billitem-request>
                 </div>
               </div>
               <hr />
@@ -60,8 +69,8 @@
               <div class="col-md-12">
 
 
-                <div *ngIf="provisionalItemsDetails && provisionalItemsDetails.length > 0" class="table-responsive">
-                  <danphe-grid [grid-colDefaults]="ERPatientWardBillGridCol" [grid-data]="provisionalItemsDetails"
+                <div *ngIf="ProvisionalItemsDetails && ProvisionalItemsDetails.length > 0" class="table-responsive">
+                  <danphe-grid [grid-colDefaults]="ERPatientWardBillGridCol" [grid-data]="ProvisionalItemsDetails"
                                [NepaliDateInGridParams]="NepaliDateInGridSettings" (grid-actions)="ERWardItemListAction($event)">
                   </danphe-grid>
                 </div>
@@ -72,23 +81,26 @@
 
             <div id="drugorders" class="tab-pane fade">
               <div class="col-md-12">
-                <button *ngIf="!showAddNewDrug" (click)="showAddNewDrug=true;showDrugRequest=true;" class="btn btn-primary btn-sm margin-7-lft margin-15-bt"> Add New Medicine</button>
-                <button *ngIf="showAddNewDrug" (click)="showAddNewDrug=false;showDrugRequest=false;" class="btn btn-cancel btn-sm margin-7-lft margin-15-bt"> Show Medicine List</button>
+                <button *ngIf="!ShowAddNewDrug" (click)="showAddNewDrug=true;showDrugRequest=true;"
+                        class="btn btn-primary btn-sm margin-7-lft margin-15-bt"> Add New Medicine</button>
+                <button *ngIf="ShowAddNewDrug" (click)="showAddNewDrug=false;showDrugRequest=false;"
+                        class="btn btn-cancel btn-sm margin-7-lft margin-15-bt"> Show Medicine List</button>
               </div>
               <div class="col-md-12">
                 <div class="table-responsive">
                   <table class="table table-bordered" style="color: #000;">
                     <tbody>
                       <tr>
-                        <td><strong>Hospital Number</strong> &nbsp;{{selectedPatient.PatientCode}}</td>
-                        <td><strong>Age/Sex</strong>&nbsp;{{selectedPatient.Age}}/{{selectedPatient.Gender}}</td>
-                        <td><strong>Visit Date/Time</strong>&nbsp;{{selectedPatient.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</td>
-                        <td *ngIf="selectedPatient && selectedPatient.Case"><strong>Case</strong>&nbsp;{{selectedPatient.Case}}</td>
+                        <td><strong>Hospital Number</strong> &nbsp;{{SelectedPatient.PatientCode}}</td>
+                        <td><strong>Age/Sex</strong>&nbsp;{{SelectedPatient.Age}}/{{SelectedPatient.Gender}}</td>
+                        <td><strong>Visit Date/Time</strong>&nbsp;{{SelectedPatient.VisitDateTime | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}
+                        </td>
+                        <td *ngIf="SelectedPatient && SelectedPatient.Case"><strong>Case</strong>&nbsp;{{SelectedPatient.Case}}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                <div *ngIf="!showAddNewDrug">
+                <div *ngIf="!ShowAddNewDrug">
                   <div *ngIf="PHRMOrdersList && PHRMOrdersList.length > 0" class="table-responsive">
                     <table class="table table-striped table-hover" style="width: 100%;margin-top: 15px;">
                       <thead>
@@ -112,13 +124,14 @@
 
               </div>
 
-              <div *ngIf="showAddNewDrug" style="width: 100%;display: table;">
+              <div *ngIf="ShowAddNewDrug" style="width: 100%;display: table;">
                 <div class="col-md-12">
-                  <drugs-request *ngIf="showDrugRequest" [patient]="currentPat" [visit]="currentVisit" [moduleName]="'emergency'" (successCallBack)="AddSuccessFullDataEntered($event)"></drugs-request>
+                  <drugs-request *ngIf="ShowDrugRequest" [patient]="CurrentPatient" [visit]="CurrentVisit" [moduleName]="'emergency'"
+                                 (successCallBack)="AddSuccessFullDataEntered($event)"></drugs-request>
                 </div>
               </div>
             </div>
-          </div>         
+          </div>
 
         </div>
 
@@ -126,7 +139,9 @@
       </div>
     </div>
   </div>
-  <a *ngIf="isPopUp" (click)="Close()" style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;"><i class="fa fa-2x fa-close"></i></a>
+  <a *ngIf="isPopUp" (click)="CloseWardBillingRequestPopUp()"
+     style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;"><i
+       class="fa fa-2x fa-close"></i></a>
 </div>
 
 
@@ -144,13 +159,13 @@
         <div class="modelbox-body">
           <div>
             Cancel Remarks:&nbsp;
-            <textarea [(ngModel)]="cancelRemarks" class="form-control" name="cancelremarks"></textarea>
+            <textarea [(ngModel)]="CancelRemarks" class="form-control" name="cancelremarks"></textarea>
           </div>
         </div>
         <div class="modelbox-footer">
           <div class="all-buttons text-right">
             <button type="button" class="btn btn-primary btn-sm margin-7-hr"
-                    (click)="cancelRequest(selectedBillForCancel, selIndexForCancel)">
+                    (click)="CancelRequest(SelectedBillForCancel, SelIndexForCancel)">
               Proceed
             </button>
           </div>

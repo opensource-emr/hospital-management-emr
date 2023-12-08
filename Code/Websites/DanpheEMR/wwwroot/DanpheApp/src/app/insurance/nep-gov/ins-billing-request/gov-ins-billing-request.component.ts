@@ -17,6 +17,7 @@ import { CallbackService } from "../../../shared/callback.service";
 import { ServiceDepartmentVM } from "../../../shared/common-masters.model";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { CommonFunctions } from "../../../shared/common.functions";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { RouteFromService } from "../../../shared/routefrom.service";
 import { ENUM_BillingStatus, ENUM_BillPaymentMode, ENUM_InvoiceType, ENUM_OrderStatus, ENUM_PriceCategory, ENUM_VisitType } from "../../../shared/shared-enums";
@@ -101,6 +102,8 @@ export class GovInsBillingRequestComponent {
   public defDiscountSchemeId: number = null;//sud:10-Oct'21--To assign Default Membership Type for Insurance Visit. 
   public provReceiptInputs = { PatientId: 0, ProvFiscalYrId: 0, ProvReceiptNo: 0, visitType: null };
 
+  //public nhifNumber: string = "";
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(
     public patientService: PatientService,
@@ -114,6 +117,15 @@ export class GovInsBillingRequestComponent {
     public messageBoxService: MessageboxService,
     public coreService: CoreService,
     public insuranceService: GovInsuranceService, public insuranceBLService: GovInsuranceBlService) {
+
+    /*var nhifNumber = JSON.parse
+      (coreService.Parameters.find(p => p.ParameterGroupName == "NSHINumber" && p.ParameterName == "NSHILable").ParameterValue);
+    if (nhifNumber) {
+      this.nhifNumber = nhifNumber.NSHINo;
+    }*/
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
+
     this.model = new BillingTransaction();
     this.billingService.CreateNewGlobalBillingTransaction();
     this.currentCounter = this.securityService.getLoggedInCounter().CounterId;
@@ -231,7 +243,7 @@ export class GovInsBillingRequestComponent {
         new_index = this.model.BillingTransactionItems.length - 1;
       }
       else {
-        new_index = index + 1
+        new_index = index + 1;
       }
       window.setTimeout(function () {
         let itmNameBox = document.getElementById('items-box' + new_index);
@@ -444,7 +456,7 @@ export class GovInsBillingRequestComponent {
     if (this.insuranceService.BillingFlow == 'insurance') {
       this.model.BillingTransactionItems.forEach(itm => {
         itm.IsInsurance = true;
-      })
+      });
     }
     if (billingFlow == "provisional") {
       if (this.model.BillingTransactionItems) {
@@ -549,7 +561,7 @@ export class GovInsBillingRequestComponent {
       }
       //incase of emergency do not assign other visit details by default.
       else {
-        let visit = this.visitList.find(a => a.PerformerId == this.model.BillingTransactionItems[j].PrescriberId)
+        let visit = this.visitList.find(a => a.PerformerId == this.model.BillingTransactionItems[j].PrescriberId);
         if (visit)
           this.model.BillingTransactionItems[j].PatientVisitId = visit.PatientVisitId;
       }
@@ -582,7 +594,7 @@ export class GovInsBillingRequestComponent {
       let isFormValid = true;
       if (!this.model.ClaimCode) {
         isFormValid = false;
-        this.messageBoxService.showMessage("error", ['Claim code required. Please create visit first.'])
+        this.messageBoxService.showMessage("error", ['Claim code required. Please create visit first.']);
       }
       this.UpdatePriceValidty();
       if (isFormValid && this.CheckInsuranceTxnApplicable()) {
@@ -870,7 +882,7 @@ export class GovInsBillingRequestComponent {
         }
         else {
           this.messageBoxService.showMessage("failed", ["Unable to complete transaction."]);
-          console.log(res.ErrorMessage)
+          console.log(res.ErrorMessage);
           this.loading = false;
         }
       });
@@ -1059,7 +1071,7 @@ export class GovInsBillingRequestComponent {
         this.model.BillingTransactionItems[i].EnableControl("ServiceDepartmentId", false);
         this.FilterBillItems(i);
         this.AssignSelectedItem(i);
-        let visit = this.visitList.find(a => a.PerformerName.toLowerCase() == "self")
+        let visit = this.visitList.find(a => a.PerformerName.toLowerCase() == "self");
         if (visit) {
           this.AssignRequestedByDoctor(i);
         }
@@ -1440,7 +1452,7 @@ export class GovInsBillingRequestComponent {
 
           }
           else {
-            console.log("failed", ["Problem! Cannot get the Current Visit Context ! "])
+            console.log("failed", ["Problem! Cannot get the Current Visit Context ! "]);
           }
         },
           err => { console.log(err.ErrorMessage); });
@@ -1653,7 +1665,7 @@ export class GovInsBillingRequestComponent {
   //this is only for insurance amount calculation
   CalculateInsuranceAmounts() {
     if (this.insuranceService.BillingFlow == "insurance") {
-      let amount = this.model.TotalAmount
+      let amount = this.model.TotalAmount;
       let ins_InsuranceBalance = this.currBillingContext.Insurance.Ins_InsuranceBalance;
       let provisionalInsAmount = this.currBillingContext.Insurance.InsuranceProvisionalAmount;
       this.RemainingInsuranceBalance = ins_InsuranceBalance - (amount + provisionalInsAmount);
@@ -1835,7 +1847,7 @@ export class GovInsBillingRequestComponent {
     let labtypeInStorage = localStorage.getItem('InsBillingSelectedLabTypeName');
     if (labtypeInStorage) {
       //let val = this.LabType.find(p => p.DisplayName == labtypeInStorage);
-      this.LabTypeName = labtypeInStorage
+      this.LabTypeName = labtypeInStorage;
     } else {
       localStorage.setItem('InsBillingSelectedLabTypeName', this.LabTypeName);
     }

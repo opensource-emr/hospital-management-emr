@@ -12,6 +12,7 @@ using System.Data.SqlClient;
 using System.Data;
 using DanpheEMR.Security;
 using DanpheEMR.Enums;
+using AutoMapper;
 
 namespace DanpheEMR.Controllers
 {
@@ -33,17 +34,17 @@ namespace DanpheEMR.Controllers
         {
             //if (reqType == "profileList")
             Func<object> func = () => (from p in _incentiveDbContext.Profile
-                          join c in _incentiveDbContext.PriceCategories on p.PriceCategoryId equals c.PriceCategoryId
-                          select new
-                          {
-                              p.ProfileId,
-                              p.ProfileName,
-                              p.PriceCategoryId,
-                              c.PriceCategoryName,
-                              p.TDSPercentage,
-                              p.IsActive,
-                              p.Description
-                          }).ToList();
+                                       join c in _incentiveDbContext.PriceCategories on p.PriceCategoryId equals c.PriceCategoryId
+                                       select new
+                                       {
+                                           p.ProfileId,
+                                           p.ProfileName,
+                                           p.PriceCategoryId,
+                                           c.PriceCategoryName,
+                                           p.TDSPercentage,
+                                           p.IsActive,
+                                           p.Description
+                                       }).ToList();
             return InvokeHttpGetFunction(func);
         }
 
@@ -61,18 +62,18 @@ namespace DanpheEMR.Controllers
         public IActionResult ProfileItems()
         {
             //else if (reqType == "getItemsforProfile")
-            Func<object> func =() => (from itm in _billingDbContext.BillServiceItems
-                          join dep in _billingDbContext.ServiceDepartment on itm.ServiceDepartmentId equals dep.ServiceDepartmentId
-                          where 
-                          //itm.IsFractionApplicable == true && 
-                          itm.IsActive == true
-                          select new
-                          {
-                              itm.ServiceItemId,
-                              itm.ItemName,
-                              dep.ServiceDepartmentName,
-                              dep.Department
-                          }).ToList();
+            Func<object> func = () => (from itm in _billingDbContext.BillServiceItems
+                                       join dep in _billingDbContext.ServiceDepartment on itm.ServiceDepartmentId equals dep.ServiceDepartmentId
+                                       where
+                                       //itm.IsFractionApplicable == true && 
+                                       itm.IsActive == true
+                                       select new
+                                       {
+                                           itm.ServiceItemId,
+                                           itm.ItemName,
+                                           dep.ServiceDepartmentName,
+                                           dep.Department
+                                       }).ToList();
             return InvokeHttpGetFunction(func);
         }
 
@@ -91,104 +92,112 @@ namespace DanpheEMR.Controllers
         {
             //else if (reqType == "getEmployeeIncentiveInfo")
             Func<object> func = () => (from empInctvinfo in _incentiveDbContext.EmployeeIncentiveInfo
-                                   join emp in _incentiveDbContext.Employee on empInctvinfo.EmployeeId equals emp.EmployeeId
-                                   select new
-                                   {
-                                       empInctvinfo.EmployeeIncentiveInfoId,
-                                       emp.EmployeeId,
-                                       emp.FullName,
-                                       empInctvinfo.TDSPercent,
-                                       EmpTDSPercent = emp.TDSPercent,
-                                       empInctvinfo.IsActive,
-                                       empInctvinfo.CreatedBy,
-                                       empInctvinfo.CreatedOn
-                                   }).ToList();
+                                       join emp in _incentiveDbContext.Employee on empInctvinfo.EmployeeId equals emp.EmployeeId
+                                       select new
+                                       {
+                                           empInctvinfo.EmployeeIncentiveInfoId,
+                                           emp.EmployeeId,
+                                           emp.FullName,
+                                           empInctvinfo.TDSPercent,
+                                           EmpTDSPercent = emp.TDSPercent,
+                                           empInctvinfo.IsActive,
+                                           empInctvinfo.CreatedBy,
+                                           empInctvinfo.CreatedOn
+                                       }).ToList();
             return InvokeHttpGetFunction(func);
         }
 
         [HttpGet]
         [Route("IncentiveItems")]
-        public IActionResult IncentiveItems()
+        public IActionResult IncentiveItems(int priceCategoryId)
         {
-            Func<object> func = () => GetIncentiveItems();
+            Func<object> func = () => GetIncentiveItems(priceCategoryId);
             return InvokeHttpGetFunction(func);
         }
 
-        private object GetIncentiveItems()
+        private object GetIncentiveItems(int priceCategoryId)
         {
             //else if (reqType == "getItemsForIncentive")
             var defaultPriceCategory = _billingDbContext.PriceCategoryModels.FirstOrDefault(a => a.IsDefault == true);
-            if (defaultPriceCategory == null)
+            if (priceCategoryId == 0 || priceCategoryId == null && defaultPriceCategory != null)
             {
-                throw new Exception("There is no default priceCategory, Please check it.");
+                priceCategoryId = defaultPriceCategory.PriceCategoryId;
             }
-            else
-            {
-                var incentiveItems = (from itm in _billingDbContext.BillServiceItems
+
+            var incentiveItems = (from itm in _billingDbContext.BillServiceItems
                                       //join dep in _billingDbContext.ServiceDepartment on itm.ServiceDepartmentId equals dep.ServiceDepartmentId
-                                      join srv in _billingDbContext.ServiceDepartment on itm.ServiceDepartmentId equals srv.ServiceDepartmentId
-                                      join priceCatServItem in _billingDbContext.BillItemsPriceCategoryMaps on itm.ServiceItemId equals priceCatServItem.ServiceItemId
-                                      where itm.IsActive == true && priceCatServItem.PriceCategoryId == defaultPriceCategory.PriceCategoryId && itm.IsIncentiveApplicable == true
-                                      select new
-                                      {
-                                          itm.ServiceItemId,
-                                          itm.ItemName,
-                                          priceCatServItem.Price,
-                                          itm.ItemCode,
-                                          srv.ServiceDepartmentName,
-                                          srv.ServiceDepartmentShortName,
-                                          Doctor = (from doc in _billingDbContext.Employee.DefaultIfEmpty()
-                                                    where doc.IsAppointmentApplicable == true && srv.IntegrationName == "OPD"
-                                                    && srv.ServiceDepartmentId == itm.ServiceDepartmentId
-                                                    select new
-                                                    {
-                                                        DoctorId = doc != null ? doc.EmployeeId : 0,
-                                                        DoctorName = doc != null ? doc.FullName : "",
-                                                    }).FirstOrDefault(),
-                                      }).ToList().OrderBy(b => b.ServiceDepartmentName);
-                return incentiveItems;
-            }
+                                  join srv in _billingDbContext.ServiceDepartment on itm.ServiceDepartmentId equals srv.ServiceDepartmentId
+                                  join priceCatServItem in _billingDbContext.BillItemsPriceCategoryMaps on itm.ServiceItemId equals priceCatServItem.ServiceItemId
+                                  join priceCat in _billingDbContext.PriceCategoryModels on priceCatServItem.PriceCategoryId equals priceCat.PriceCategoryId
+                                  where itm.IsActive == true && priceCatServItem.PriceCategoryId == priceCategoryId && itm.IsIncentiveApplicable == true
+                                  select new
+                                  {
+                                      itm.ServiceItemId,
+                                      itm.ItemName,
+                                      priceCatServItem.Price,
+                                      itm.ItemCode,
+                                      srv.ServiceDepartmentName,
+                                      srv.ServiceDepartmentShortName,
+                                      priceCat.PriceCategoryName,
+                                      Doctor = (from doc in _billingDbContext.Employee.DefaultIfEmpty()
+                                                where doc.IsAppointmentApplicable == true && srv.IntegrationName == "OPD"
+                                                && srv.ServiceDepartmentId == itm.ServiceDepartmentId
+                                                select new
+                                                {
+                                                    DoctorId = doc != null ? doc.EmployeeId : 0,
+                                                    DoctorName = doc != null ? doc.FullName : "",
+                                                }).FirstOrDefault(),
+                                  }).ToList().OrderBy(b => b.ServiceDepartmentName);
+            return incentiveItems;
+
         }
 
         [HttpGet]
         [Route("EmployeeBillItems")]
         public IActionResult EmployeeBillItems(int employeeId)
-         {
+        {
             //else if (reqType == "getEmployeeBillItemsList")
             Func<object> func = () => (from empInctvinfo in _incentiveDbContext.EmployeeIncentiveInfo
-                                    join emp in _incentiveDbContext.Employee on empInctvinfo.EmployeeId equals emp.EmployeeId
-                                    where empInctvinfo.EmployeeId == employeeId
+                                       join emp in _incentiveDbContext.Employee on empInctvinfo.EmployeeId equals emp.EmployeeId
+                                       where empInctvinfo.EmployeeId == employeeId
 
-                                    select new
-                                    {
-                                        empInctvinfo.EmployeeIncentiveInfoId,
-                                        emp.EmployeeId,
-                                        emp.FullName,
-                                        empInctvinfo.TDSPercent,
-                                        EmpTDSPercent = emp.TDSPercent,
-                                        empInctvinfo.IsActive,
-                                        EmployeeBillItemsMap = (from empBillItmMap in _incentiveDbContext.EmployeeBillItemsMap
-                                                                where empBillItmMap.EmployeeId == empInctvinfo.EmployeeId
-                                                                join bilItm in _incentiveDbContext.BillItemPrice on empBillItmMap.ServiceItemId equals bilItm.ServiceItemId
-                                                                where empBillItmMap.IsActive && bilItm.IsActive == true 
-                                                                //&& bilItm.IsFractionApplicable == true
-                                                                select new
-                                                                {
-                                                                    empBillItmMap.EmployeeBillItemsMapId,
-                                                                    empBillItmMap.EmployeeId,
-                                                                    empBillItmMap.PriceCategoryId,
-                                                                    empBillItmMap.ServiceItemId,
-                                                                    empBillItmMap.PerformerPercent,
-                                                                    empBillItmMap.PrescriberPercent,
-                                                                    ReferrerPercent = empBillItmMap.ReferrerPercent != null ? empBillItmMap.ReferrerPercent : 0,
-                                                                    empBillItmMap.IsActive,
-                                                                    empBillItmMap.HasGroupDistribution,
-                                                                    empBillItmMap.BillingTypesApplicable,
-                                                                    empBillItmMap.CreatedBy,
-                                                                    empBillItmMap.CreatedOn,
-                                                                    GroupDistribution = _incentiveDbContext.ItemGroupDistribution.Where(a => a.EmployeeBillItemsMapId == empBillItmMap.EmployeeBillItemsMapId).ToList(),
-                                                                }).ToList()
-                                    }).FirstOrDefault();
+                                       select new
+                                       {
+                                           empInctvinfo.EmployeeIncentiveInfoId,
+                                           emp.EmployeeId,
+                                           emp.FullName,
+                                           empInctvinfo.TDSPercent,
+                                           EmpTDSPercent = emp.TDSPercent,
+                                           empInctvinfo.IsActive,
+                                           EmployeeBillItemsMap = (from empBillItmMap in _incentiveDbContext.EmployeeBillItemsMap
+                                                                   where empBillItmMap.EmployeeId == empInctvinfo.EmployeeId
+                                                                   join bilItm in _incentiveDbContext.ServiceItems on empBillItmMap.ServiceItemId equals bilItm.ServiceItemId
+                                                                   join servDep in _incentiveDbContext.ServiceDepartments on bilItm.ServiceDepartmentId equals servDep.ServiceDepartmentId
+                                                                   join priceCat in _incentiveDbContext.PriceCategories on empBillItmMap.PriceCategoryId equals priceCat.PriceCategoryId
+                                                                   where empBillItmMap.IsActive && bilItm.IsActive == true
+                                                                   //&& bilItm.IsFractionApplicable == true
+                                                                   select new
+                                                                   {
+                                                                       empBillItmMap.EmployeeBillItemsMapId,
+                                                                       empBillItmMap.EmployeeId,
+                                                                       empBillItmMap.PriceCategoryId,
+                                                                       priceCat.PriceCategoryName,
+                                                                       empBillItmMap.ServiceItemId,
+                                                                       empBillItmMap.PerformerPercent,
+                                                                       empBillItmMap.PrescriberPercent,
+                                                                       ReferrerPercent = empBillItmMap.ReferrerPercent != null ? empBillItmMap.ReferrerPercent : 0,
+                                                                       empBillItmMap.IsActive,
+                                                                       empBillItmMap.HasGroupDistribution,
+                                                                       empBillItmMap.BillingTypesApplicable,
+                                                                       empBillItmMap.CreatedBy,
+                                                                       empBillItmMap.CreatedOn,
+                                                                       bilItm.ItemName,
+                                                                       ServiceDepartmentId = servDep.ServiceDepartmentId,
+                                                                       DepartmentName = servDep.ServiceDepartmentName,
+                                                                       GroupDistribution = _incentiveDbContext.ItemGroupDistribution.Where(a => a.EmployeeBillItemsMapId == empBillItmMap.EmployeeBillItemsMapId).ToList(),
+                                                                       GroupDistributionCount = _incentiveDbContext.ItemGroupDistribution.Where(a => a.EmployeeBillItemsMapId == empBillItmMap.EmployeeBillItemsMapId).ToList().Count()
+                                                                   }).ToList()
+                                       }).FirstOrDefault();
             return InvokeHttpGetFunction(func);
         }
 
@@ -197,16 +206,16 @@ namespace DanpheEMR.Controllers
         public IActionResult TransactionItems(DateTime fromDate, DateTime toDate)
         {
             //else if (reqType == "view-txn-items-list")
-            Func<object> func = () => DALFunctions.GetDataTableFromStoredProc("SP_INCTV_GetBillingTxnItems_BetweenDate", new List<SqlParameter>() {  new SqlParameter("@FromDate", fromDate), new SqlParameter("@ToDate", toDate) }, _incentiveDbContext);
+            Func<object> func = () => DALFunctions.GetDataTableFromStoredProc("SP_INCTV_GetBillingTxnItems_BetweenDate", new List<SqlParameter>() { new SqlParameter("@FromDate", fromDate), new SqlParameter("@ToDate", toDate) }, _incentiveDbContext);
             return InvokeHttpGetFunction(func);
         }
 
         [HttpGet]
         [Route("TransactionInvoices")]
-        public IActionResult TransactionInvoices(DateTime fromDate, DateTime toDate, int? employeeId=0)
+        public IActionResult TransactionInvoices(DateTime fromDate, DateTime toDate, int? employeeId = 0)
         {
             //else if (reqType == "view-txn-InvoiceLevel")
-            Func<object> func = () => DALFunctions.GetDataTableFromStoredProc("SP_INCTV_ViewTxn_InvoiceLevel", new List<SqlParameter>() {  new SqlParameter("@FromDate", fromDate), new SqlParameter("@ToDate", toDate), new SqlParameter("@EmployeeId", employeeId), }, _incentiveDbContext);
+            Func<object> func = () => DALFunctions.GetDataTableFromStoredProc("SP_INCTV_ViewTxn_InvoiceLevel", new List<SqlParameter>() { new SqlParameter("@FromDate", fromDate), new SqlParameter("@ToDate", toDate), new SqlParameter("@EmployeeId", employeeId), }, _incentiveDbContext);
             return InvokeHttpGetFunction(func);
         }
 
@@ -234,8 +243,8 @@ namespace DanpheEMR.Controllers
         {
             //else if (reqType == "incentive-applicable-docter-list")
             Func<object> func = () => (from emp in _incentiveDbContext.Employee
-                           where emp.IsActive == true && emp.IsIncentiveApplicable == true
-                           select emp).OrderBy(a => a.FirstName).ToList();
+                                       where emp.IsActive == true && emp.IsIncentiveApplicable == true
+                                       select emp).OrderBy(a => a.FirstName).ToList();
             return InvokeHttpGetFunction(func);
         }
 
@@ -404,40 +413,70 @@ namespace DanpheEMR.Controllers
 
         private object GetProfileItemsMapping(int profileId)
         {
-            var itemsDetails = (from itm in _billingDbContext.BillServiceItems
-                                join dep in _billingDbContext.ServiceDepartment on itm.ServiceDepartmentId equals dep.ServiceDepartmentId
-                                join srv in _billingDbContext.ServiceDepartment on itm.ServiceDepartmentId equals srv.ServiceDepartmentId
-                                where
-                                //itm.IsFractionApplicable == true &&
-                                itm.IsActive == true
-                                select new
-                                {
-                                    itm.ServiceItemId,
-                                    itm.ItemName,
-                                    dep.ServiceDepartmentName,
-                                    Doctor = (from doc in _billingDbContext.Employee.DefaultIfEmpty()
-                                              where doc.IsAppointmentApplicable == true && doc.EmployeeId == itm.IntegrationItemId && srv.IntegrationName == "OPD"
-                                              && srv.ServiceDepartmentId == itm.ServiceDepartmentId
-                                              select new
-                                              {
-                                                  DoctorId = doc != null ? doc.EmployeeId : 0,
-                                                  DoctorName = doc != null ? doc.FullName : "",
-                                              }).FirstOrDefault(),
-                                }).ToList().OrderBy(b => b.ServiceDepartmentName);
+            //var itemsDetails = (from itm in _billingDbContext.BillServiceItems
+            //                    join dep in _billingDbContext.ServiceDepartment on itm.ServiceDepartmentId equals dep.ServiceDepartmentId
+            //                    join srv in _billingDbContext.ServiceDepartment on itm.ServiceDepartmentId equals srv.ServiceDepartmentId
+            //                    where
+            //                    //itm.IsFractionApplicable == true &&
+            //                    itm.IsActive == true
+            //                    select new
+            //                    {
+            //                        itm.ServiceItemId,
+            //                        itm.ItemName,
+            //                        dep.ServiceDepartmentName,
+            //                        Doctor = (from doc in _billingDbContext.Employee.DefaultIfEmpty()
+            //                                  where doc.IsAppointmentApplicable == true && doc.EmployeeId == itm.IntegrationItemId && srv.IntegrationName == "OPD"
+            //                                  && srv.ServiceDepartmentId == itm.ServiceDepartmentId
+            //                                  select new
+            //                                  {
+            //                                      DoctorId = doc != null ? doc.EmployeeId : 0,
+            //                                      DoctorName = doc != null ? doc.FullName : "",
+            //                                  }).FirstOrDefault(),
+            //                    }).ToList().OrderBy(b => b.ServiceDepartmentName);
 
-            var profileDetails = (from p in _incentiveDbContext.Profile
-                                  join c in _incentiveDbContext.PriceCategories on p.PriceCategoryId equals c.PriceCategoryId
-                                  where p.ProfileId == profileId
-                                  select new
-                                  {
-                                      p.ProfileId,
-                                      p.ProfileName,
-                                      c.PriceCategoryId,
-                                      c.PriceCategoryName,
-                                      MappedItems = _incentiveDbContext.ProfileItemMap.Where(a => a.ProfileId == p.ProfileId && a.IsActive == true).ToList()
-                                  }).FirstOrDefault();
+            //var profileDetails = (from p in _incentiveDbContext.Profile
+            //                      join c in _incentiveDbContext.PriceCategories on p.PriceCategoryId equals c.PriceCategoryId
+            //                      where p.ProfileId == profileId
+            //                      select new
+            //                      {
+            //                          p.ProfileId,
+            //                          p.ProfileName,
+            //                          c.PriceCategoryId,
+            //                          c.PriceCategoryName,
+            //                          MappedItems = _incentiveDbContext.ProfileItemMap.Where(a => a.ProfileId == p.ProfileId && a.IsActive == true).ToList()
+            //                      }).FirstOrDefault();
 
-            var result = new { profileDetails, itemsDetails };
+            //var result = new { profileDetails, itemsDetails };
+            var result = (from profile in _incentiveDbContext.Profile
+                          join priceCat in _incentiveDbContext.PriceCategories on profile.PriceCategoryId equals priceCat.PriceCategoryId
+                          where profile.ProfileId == profileId
+                          select new
+                          {
+                              profile.ProfileId,
+                              profile.ProfileName,
+                              profile.PriceCategoryId,
+                              priceCat.PriceCategoryName,
+                              MappedItems = (from profileItems in _incentiveDbContext.ProfileItemMap.Where(p => p.ProfileId == profileId)
+                                             join priceCategory in _incentiveDbContext.PriceCategories on profileItems.PriceCategoryId equals priceCategory.PriceCategoryId
+                                             join servItm in _incentiveDbContext.ServiceItems on profileItems.ServiceItemId equals servItm.ServiceItemId
+                                             join servDep in _incentiveDbContext.ServiceDepartments on servItm.ServiceDepartmentId equals servDep.ServiceDepartmentId
+                                             select new
+                                             {
+                                                 BillItemProfileMapId = profileItems.BillItemProfileMapId,
+                                                 ProfileId = profileItems.ProfileId,
+                                                 ServiceItemId = profileItems.ServiceItemId,
+                                                 PerformerPercent = profileItems.PerformerPercent,
+                                                 PrescriberPercent = profileItems.PrescriberPercent,
+                                                 PriceCategoryId = profileItems.PriceCategoryId,
+                                                 PriceCategoryName = priceCategory.PriceCategoryName,
+                                                 BillingTypesApplicable = profileItems.BillingTypesApplicable,
+                                                 ReferrerPercent = profileItems.ReferrerPercent,
+                                                 IsActive = profileItems.IsActive,
+                                                 ItemName = servItm.ItemName,
+                                                 ServiceDepartmentId = servDep.ServiceDepartmentId,
+                                                 DepartmentName = servDep.ServiceDepartmentName
+                                             }).ToList()
+                          }).FirstOrDefault();
             return result;
         }
         private object GetTransactionInvoiceItems(int BillingTansactionId)

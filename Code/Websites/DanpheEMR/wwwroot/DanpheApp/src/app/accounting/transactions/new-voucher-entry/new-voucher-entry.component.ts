@@ -128,6 +128,7 @@ export class VoucherEntryNewComponent {
     public ledgerWiseSubLedgerMaster: Array<Array<SubLedger_DTO>> = new Array<Array<SubLedger_DTO>>();
     public paymentOrReceiptPartyName: string = "";
     public paymentOrReceiptPartyNameLength: number = 0;
+    public SelectedFiscalYearId: number = 0;
 
     constructor(
         public accountingBLService: AccountingBLService,
@@ -139,8 +140,8 @@ export class VoucherEntryNewComponent {
         this.subLedgerMaster = this.ledgerWiseSubLedgerMaster[0] = this.accountingService.accCacheData.SubLedgerAll ? this.accountingService.accCacheData.SubLedgerAll : [];
         this.DrCrList = [{ 'DrCr': 'Dr' }, { 'DrCr': 'Cr' }];
         this.selDrCrArray[0] = "Dr";
-        this.todaysDate = moment().format('YYYY-MM-DD');
-        this.TransactionDate = moment().format('YYYY-MM-DD');
+        this.todaysDate = moment().format(ENUM_DateTimeFormat.Year_Month_Day);
+        this.TransactionDate = moment().format(ENUM_DateTimeFormat.Year_Month_Day);
         if (this.accountingService.accCacheData.CostCenters && accountingService.accCacheData.CostCenters.length) {
 
             this.costCenterList = this.accountingService.accCacheData.CostCenters.filter(c => c.IsActive);
@@ -173,6 +174,7 @@ export class VoucherEntryNewComponent {
         if (event) {
             this.TransactionDate = event.selectedDate;
             this.validDate = true;
+            this.SelectedFiscalYearId = event.fiscalYearId;
             this.GettempVoucherNumber(this.transaction.VoucherId, this.sectionId, this.TransactionDate);
         }
         else {
@@ -405,6 +407,15 @@ export class VoucherEntryNewComponent {
     //POST the txn to Database 
     SaveVoucherToDb() {
         if (this.Validate()) {
+            this.transaction.FiscalYearId = this.currFiscalYear.FiscalYearId;
+            if (this.IsBackDateEntry == false) {
+                this.transaction.IsBackDateEntry = false;
+                this.transaction.TransactionDate = moment().format(ENUM_DateTimeFormat.Year_Month_Day_Hour_Minute);
+            }
+            else {
+                this.transaction.IsBackDateEntry = true;
+                this.transaction.TransactionDate = this.TransactionDate.concat(" 00:01:00");
+            }
             this.accountingBLService.PostToTransaction(this.transaction).
                 subscribe(res => {
                     if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
@@ -456,6 +467,20 @@ export class VoucherEntryNewComponent {
         if (this.transaction.TransactionItems.length > 2) {
             this.transaction.TransactionItems = this.transaction.TransactionItems.filter(a => a.LedgerId > 0);
         }
+
+        let defaultCostCenter = this.costCenterList.find(a => a.IsDefault === true);
+
+        if (!this.subLedgerAndCostCenterSetting.EnableCostCenter) {
+            this.transaction.TransactionItems.forEach(txnItem => {
+                if (defaultCostCenter) {
+                    txnItem.TransactionItemValidator.controls['CostCenter'].setValue(defaultCostCenter.CostCenterId);
+                    txnItem.CostCenterId = defaultCostCenter.CostCenterId;
+                } else {
+                    this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ['Default CostCenter not found.']);
+                }
+            });
+        }
+
         this.transaction.UpdateValidator("off", "PayeeName", "required");
         this.transaction.UpdateValidator("off", "ChequeNumber", "");
         if (!this.CheckCalculations()) {
@@ -484,7 +509,8 @@ export class VoucherEntryNewComponent {
                         }
                         if (!txnItem.IsValidCheck(undefined, undefined)) {
                             if (this.selectedVoucherCode === ENUM_ACC_VoucherCode.PaymentVoucher || ENUM_ACC_VoucherCode.ReceiptVoucher) {
-                                if ((txnItem.Amount === this.extraTransactionItemForPaymentOrReceiptVoucher.Amount && txnItem.LedgerId === this.extraTransactionItemForPaymentOrReceiptVoucher.LedgerId && (this.subLedgerAndCostCenterSetting.EnableSubLedger && txnItem.SubLedgers && txnItem.SubLedgers.length > 0))) {
+                                if ((txnItem.Amount === this.extraTransactionItemForPaymentOrReceiptVoucher.Amount && txnItem.LedgerId === this.extraTransactionItemForPaymentOrReceiptVoucher.LedgerId &&
+                                    ((this.subLedgerAndCostCenterSetting.EnableSubLedger && txnItem.SubLedgers && txnItem.SubLedgers.length > 0) || !this.subLedgerAndCostCenterSetting.EnableSubLedger))) {
                                     txnValidation = true;
                                 }
                                 else {
@@ -507,17 +533,8 @@ export class VoucherEntryNewComponent {
                 this.HideSavebtn = false;
                 if (txnValidation && this.CheckCalculations()) {
                     this.transaction.TotalAmount = this.totalDebit;
-                    this.transaction.FiscalYearId = this.currFiscalYear.FiscalYearId;
-
                     if (this.checkDateValidation()) {
-                        if (this.IsBackDateEntry == false) {
-                            this.transaction.IsBackDateEntry = false;
-                            this.transaction.TransactionDate = moment().format(ENUM_DateTimeFormat.Year_Month_Day_Hour_Minute);
-                        }
-                        else {
-                            this.transaction.IsBackDateEntry = true;
-                            this.transaction.TransactionDate = this.TransactionDate.concat(" 00:01:00");
-                        }
+
                         let txnItems = _.cloneDeep(this.transaction.TransactionItems);
                         let groupedData = txnItems.reduce((acc, currVal) => {
                             if (acc.hasOwnProperty(currVal.CostCenterId.toString())) {
@@ -746,11 +763,15 @@ export class VoucherEntryNewComponent {
                 this.selSubLedgerCode.splice(index, 1);
                 this.selDrCrArray.splice(index, 1);
                 this.selectedSubLedger.splice(index, 1);
+                this.selectedLedgerCode.splice(index, 1);
             }
             else if (this.transaction.TransactionItems.length === 1) {
                 this.selSubLedgerCode[index] = "";
                 this.selLedgerArr[index] = "";
                 this.selectedSubLedger[index] = "";
+                this.selectedLedgerCode[index] = "";
+                this.transaction.TransactionItems[index].Amount = null;
+                this.transaction.TransactionItems[index].Description = null;
             }
             this.CalculateLedger();
         } catch (ex) {
@@ -1012,14 +1033,23 @@ export class VoucherEntryNewComponent {
     }
 
     public AssignSelectedTransaction() {
+        let data = this.accountingService.copyVoucherData;
+        this.transaction = new TransactionModel();
         if (this.routeFromService.RouteFrom === ENUM_ACC_RouteFrom.VoucherVerify) {
             this.voucherVerificationRequired = true;
+            this.transaction.FiscalYearId = data.FiscalYearId;
+            this.TransactionDate = data.TransactionDate;
         }
         else if (this.routeFromService.RouteFrom === ENUM_ACC_RouteFrom.EditVoucher) {
             this.isEditVoucher = true;
+            this.TransactionDate = data.TransactionDate;
+            this.transaction.FiscalYearId = data.FiscalYearId;
         }
-        let data = this.accountingService.copyVoucherData;
-        this.transaction = new TransactionModel();
+        else {
+            this.transaction.FiscalYearId = this.currFiscalYear.FiscalYearId;
+            this.TransactionDate = moment().format(ENUM_DateTimeFormat.Year_Month_Day);
+        }
+        this.transaction.TransactionDate = this.TransactionDate;
         this.transaction.VoucherNumber = data.VoucherNumber;
         this.transaction.VoucherId = this.selVoucherTypeId = this.voucherTypeList.find(a => a.VoucherName == data.VoucherType).VoucherId;
         this.transaction.TransactionId = data.TransactionId;
@@ -1090,7 +1120,6 @@ export class VoucherEntryNewComponent {
         this.TempVoucherNumber = data.VoucherNumber;
 
         this.GettempVoucherNumber(this.transaction.VoucherId, data.SectionId, this.todaysDate);
-        this.transaction.FiscalYearId = this.currFiscalYear.FiscalYearId;
         this.transaction.Remarks = data.Remarks;
         this.transaction.ChequeDate = data.ChequeDate;
         this.transaction.ChequeNumber = data.ChequeNumber;
@@ -1136,17 +1165,24 @@ export class VoucherEntryNewComponent {
         this.fiscalYId = this.fiscalYearIdForCopyVoucher;
     }
     public AssignExtraLedger(): void {
-        if (typeof this.additionalPartyDetailForPaymentOrReceiptVoucher.selectedLedger === ENUM_Data_Type.Object) {
+        if (typeof this.additionalPartyDetailForPaymentOrReceiptVoucher.selectedLedger === ENUM_Data_Type.Object && this.additionalPartyDetailForPaymentOrReceiptVoucher.selectedLedger) {
             this.extraTransactionItemForPaymentOrReceiptVoucher.LedgerId = this.additionalPartyDetailForPaymentOrReceiptVoucher.selectedLedger.LedgerId;
             this.additionalPartyDetailForPaymentOrReceiptVoucher.selectedSubLedgerCode = null;
             this.additionalPartyDetailForPaymentOrReceiptVoucher.selectedSubLedger = null;
             this.extraTransactionItemForPaymentOrReceiptVoucher.SubLedgers = [];
+            this.additionalPartyDetailForPaymentOrReceiptVoucher.selectedLedgerCode = this.allLedgerList.find(a => a.LedgerId === this.additionalPartyDetailForPaymentOrReceiptVoucher.selectedLedger.LedgerId).Code;
             this.paymentORreciptSubLedgerList = this.subLedgerMaster.filter(a => a.LedgerId === this.additionalPartyDetailForPaymentOrReceiptVoucher.selectedLedger.LedgerId);
             if (this.subLedgerAndCostCenterSetting.EnableSubLedger) {
                 this.ChangeFocus("extra_SubLedger_Code_for_PMTV_and_Receipt");
             }
-            else {
+            else if (this.subLedgerAndCostCenterSetting.EnableCostCenter) {
                 this.ChangeFocus("id_extraTransactionItemForPaymentOrReceiptVoucher_costCenterId_voucherEntry");
+            }
+            else if (this.paymentMode !== this.paymentModeList.Bank && !this.subLedgerAndCostCenterSetting.EnableCostCenter && !this.subLedgerAndCostCenterSetting.EnableSubLedger) {
+                this.ChangeFocus("extra_Narration_for_PMTV_and_Receipt")
+            }
+            else if (this.paymentMode == this.paymentModeList.Bank && !this.subLedgerAndCostCenterSetting.EnableCostCenter && !this.subLedgerAndCostCenterSetting.EnableSubLedger) {
+                this.ChangeFocus("input_voucherEntry_chequeNumber")
             }
         }
         else {
@@ -1489,6 +1525,9 @@ export class VoucherEntryNewComponent {
     public UpdateTransaction() {
         if (this.Validate()) {
             if (this.transaction.TransactionId > 0) {
+                this.transaction.TransactionDate = this.TransactionDate;
+                if (this.SelectedFiscalYearId > 0)
+                    this.transaction.FiscalYearId = this.SelectedFiscalYearId;
                 this.accountingBLService
                     .PutToTransaction(this.transaction)
                     .subscribe((res) => {

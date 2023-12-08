@@ -9,16 +9,23 @@
         </div>
 
         <div class="modelbox-body">
-          <select [(ngModel)]="selectedVendorId">
-            <option *ngFor="let ven of vendorList" value="{{ven.LabVendorId}}">
-              {{ven.VendorName}}
-            </option>
-          </select>
+          <div class="row">
+            <div class="col-md-5">
+              External Vendor:
+            </div>
+            <div class="col-md-7">
+              <select [(ngModel)]="selectedVendorId">
+                <option *ngFor="let ven of vendorList" [ngValue]=ven.LabVendorId>
+                  {{ven.VendorName}}
+                </option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div class="modelbox-footer">
           <div class="all-buttons text-right">
-            <button class="btn btn-primary btn-sm margin-7-hr"  (click)="UpdateVendorForRequisitions()">Submit </button>
+            <button class="btn green btn-success btn-sm margin-7-hr" (click)="UpdateVendorForRequisitions()">Submit </button>
             <button type="button" class="btn btn-cancel btn-sm margin-7-hr" (click)="OnClose()">
               Close
             </button>
@@ -28,8 +35,6 @@
         <div class="close-modelbox">
           <button class="btn btn-danger" (click)="OnClose()">X</button>
         </div>
-
-
       </div>
     </div>
   </div>

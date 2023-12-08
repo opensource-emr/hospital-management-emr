@@ -1,4 +1,5 @@
 {
+
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
@@ -10,22 +11,12 @@
     "experimentalDecorators": true,
     "importHelpers": false,
     "target": "es5",
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-    "lib": [
-      "es2018",
-      "dom"
-    ],
+    "typeRoots": [ "node_modules/@types" ],
+    "lib": [ "es2018", "dom" ],
     "strict": false,
     "skipLibCheck": true,
     "paths": {
-      "*": [
-        "./typings/*"
-      ],
-      "@angular/*": [
-        "node_modules/@angular/*"
-      ],
+      "*": [ "./typings/*" ],
       "htmlDocx": [
         "./typings/modules/htmldocx/htmldocx.d.ts"
       ]
@@ -42,5 +33,4 @@
     "node_modules",
     "src/**/*.spec.ts"
   ]
-  
 }

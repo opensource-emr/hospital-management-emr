@@ -14,7 +14,7 @@
                     <div style="width: 64%;float: left;padding-bottom:  0px;">
                       <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                         <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                        <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                        <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                         <span style="font-size:14px; margin-right: 30px;"><strong>PHARMACY UNIT</strong></span>
                       </div>
                     </div>
@@ -28,7 +28,7 @@
                       <p>Goods Receipt No.:<b>{{currentGR.CurrentFiscalYear}}-{{currentGR.GoodReceiptPrintId}}</b></p>
                       <p>Supplier Name :<b> {{currentGR.SupplierName}}</b> </p>
                       <p>Contact No.:<b> {{currentGR.ContactNo}}</b></p>
-                      <p>PAN. No:<b>{{currentGR.Pin}}</b>
+                      <p>{{GeneralFieldLabel.PANNo}}:<b>{{currentGR.Pin}}</b>
                     </div>
                     <div class="right" style="text-align:right;">
                       <p>Supplier Bill Date :<b> {{currentGR.SupplierBillDate | DanpheDateTime:'format':'YYYY-MM-DD'}}</b></p>
@@ -124,6 +124,10 @@
                               <td><b>{{currentGR.VATAmount | number : "1.2-2"}}</b></td>
                             </tr>
                             <tr>
+                              <td>CC Amount</td>
+                              <td><b>{{currentGR.CCAmount | number : "1.2-2"}}</b></td>
+                              </tr>
+                              <tr>
                               <td>Total Amount</td>
                               <td><b>{{currentGR.TotalAmount | number : "1.2-2"}}</b></td>
                             </tr>

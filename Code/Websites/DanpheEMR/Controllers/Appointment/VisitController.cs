@@ -33,6 +33,7 @@ using DanpheEMR.ServerModel.InsuranceModels;
 using DanpheEMR.Services.Visits.DTO;
 using DanpheEMR.ServerModel.PatientModels;
 using System.Data.Entity.Migrations;
+using DocumentFormat.OpenXml.Bibliography;
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 //test for checkin
 namespace DanpheEMR.Controllers
@@ -41,6 +42,7 @@ namespace DanpheEMR.Controllers
     public class VisitController : CommonController
     {
         bool realTimeRemoteSyncEnabled = false;
+        bool RealTimeSSFClaimBooking = false;
         private DanpheHTTPResponse<object> _objResponseData;
         private readonly VisitDbContext _visitDbContext;
         private readonly CoreDbContext _coreDbContext;
@@ -48,9 +50,12 @@ namespace DanpheEMR.Controllers
         private readonly MasterDbContext _masterDbContext;
         private readonly BillingDbContext _billingDbContext;
         private readonly PatientDbContext _patDbContext;
+        private readonly SSFDbContext _ssfDbContext;
+
         public VisitController(IOptions<MyConfiguration> _config) : base(_config)
         {
             realTimeRemoteSyncEnabled = _config.Value.RealTimeRemoteSyncEnabled;
+            RealTimeSSFClaimBooking = _config.Value.RealTimeSSFClaimBooking;
             _visitDbContext = new VisitDbContext(connString);
             _coreDbContext = new CoreDbContext(connString);
             _objResponseData = new DanpheHTTPResponse<object>();
@@ -59,6 +64,7 @@ namespace DanpheEMR.Controllers
             _masterDbContext = new MasterDbContext(connString);
             _billingDbContext = new BillingDbContext(connString);
             _patDbContext = new PatientDbContext(connString);
+            _ssfDbContext = new SSFDbContext(connString);
         }
 
         //[HttpGet]
@@ -167,6 +173,14 @@ namespace DanpheEMR.Controllers
             return InvokeHttpGetFunction<object>(func);
         }
 
+
+        [HttpGet]
+        [Route("PatientVisitContextForProvisionalPayment")]
+        public ActionResult PatientVisitContextForProvisionalPayment(int patientId, int visitId)
+        {
+            Func<object> func = () => GetPatientVisitContextForProvisionalPayment(patientId, visitId);
+            return InvokeHttpGetFunction<object>(func);
+        }
 
         [HttpGet]
         [Route("DoctorNewOpdBillingItems")]
@@ -554,12 +568,18 @@ namespace DanpheEMR.Controllers
                             quickVisit.Patient = AddPatientForVisit(_visitDbContext, quickVisit.Patient, currentUser.EmployeeId);
                             AddPatientCareTaker(_visitDbContext, quickVisit.CareTaker, quickVisit.Patient.PatientId);
                             quickVisit.Visit = AddVisit(_visitDbContext, quickVisit.Patient.PatientId, quickVisit.Visit, quickVisit.BillingTransaction, currentUser.EmployeeId, quickVisit.Patient);
-                            VisitBL.SavePatientScheme(_visitDbContext, quickVisit, currentUser.EmployeeId);
+                            string department = GetDepartmentName();
+                            if (department != null && quickVisit.Visit.DepartmentName.ToLower() == department.ToLower())
+                            {
+                                AddEmergencyPatient(_visitDbContext, quickVisit.Visit, currentUser.EmployeeId, quickVisit.Patient);
+                            }
+                            
                             quickVisit.BillingTransaction = AddBillingTransactionForPatientVisit(_visitDbContext,
                                 quickVisit.BillingTransaction,
                                 quickVisit.Visit.PatientId,
                                  quickVisit.Visit,
                                 currentUser.EmployeeId);
+                            VisitBL.SavePatientScheme(_visitDbContext, quickVisit, currentUser, RealTimeSSFClaimBooking, _ssfDbContext);
                             //if (quickVisit.Visit.AppointmentType.ToLower() == "transfer" || quickVisit.Visit.AppointmentType.ToLower() == "referral")
                             if (quickVisit.Visit.AppointmentType.ToLower() == ENUM_AppointmentType.transfer.ToLower()
                                 || quickVisit.Visit.AppointmentType.ToLower() == ENUM_AppointmentType.referral.ToLower())
@@ -596,7 +616,71 @@ namespace DanpheEMR.Controllers
                 throw ex;
             }
         }
+        private void AddEmergencyPatient(VisitDbContext visitDbContext, VisitModel currVisit, int currentUserId, PatientModel patient)
+        {
+            int patientNumber = GetLatestERPatientNum(visitDbContext);
+            var emergencyPatientObj = new EmergencyPatientModel
+            {
+                ERPatientNumber = patientNumber,
+                PatientId = patient.PatientId,
+                PatientVisitId = currVisit.PatientVisitId,
+                VisitDateTime = DateTime.Now,
+                FirstName = patient.FirstName,
+                MiddleName = patient.MiddleName,
+                LastName = patient.LastName,
+                Gender = patient.Gender,
+                Age = patient.Age,
+                DateOfBirth = patient.DateOfBirth,
+                ContactNo = patient.PhoneNumber,
+                PerformerId = currVisit.PerformerId,
+                PerformerName = currVisit.PerformerName,
+                Address = patient.Address,
+                ERStatus = ENUM_ERStatus.New,
+                CreatedBy = currentUserId,
+                CreatedOn = DateTime.Now,
+                IsActive = true,
+                IsExistingPatient = true,
+                IsPoliceCase = false,
+                OldPatientId = "true"
+            };
 
+            visitDbContext.EmergencyPatients.Add(emergencyPatientObj);
+            visitDbContext.SaveChanges();
+
+        }
+
+        private int GetLatestERPatientNum(VisitDbContext visitDbContext)
+        {
+            var allERPatList = (from erpat in visitDbContext.EmergencyPatients
+                                select erpat).ToList();
+            int latestPatientNum = allERPatList.Count > 0 ? allERPatList.Max(val => val.ERPatientNumber) + 1 : 1;
+            return latestPatientNum;
+
+        }
+        private string GetDepartmentName()
+        {
+            try
+            {
+                using (CoreDbContext coreDbContext = new CoreDbContext(connString))
+                {
+                    var parameter = coreDbContext.Parameters
+                       .FirstOrDefault(a => a.ParameterName == "ERDepartmentName" && a.ParameterGroupName == "Common");
+                    if (parameter != null)
+                    {
+                        string department = parameter.ParameterValue;
+                        if (!string.IsNullOrEmpty(department))
+                        {
+                            return department;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred: " + ex.Message);
+            }
+            return null;
+        }
         private object CreateVisitForOnlineAppointment(string strLocal, RbacUser currentUser)
         {
             DanpheHTTPResponse<QuickVisitVM> responseData = new DanpheHTTPResponse<QuickVisitVM>();
@@ -625,7 +709,7 @@ namespace DanpheEMR.Controllers
                                 quickVisit.Visit.PatientId,
                                  quickVisit.Visit,
                                 currentUser.EmployeeId);
-                            VisitBL.SavePatientScheme(_visitDbContext, quickVisit, currentUser.EmployeeId);
+                            VisitBL.SavePatientScheme(_visitDbContext, quickVisit, currentUser, RealTimeSSFClaimBooking, _ssfDbContext);
                             visitDbTransaction.Commit();
                             quickVisit.Visit.QueueNo = VisitBL.CreateNewPatientQueueNo(_visitDbContext, quickVisit.Visit.PatientVisitId, connString);
                         }
@@ -841,26 +925,33 @@ namespace DanpheEMR.Controllers
         private static Int64? GenerateClaimCode(VisitDbContext visitDbContext, int currPatientId, PatientModel patient)
         {
             // logic to find the last visit of the patient
-            var previousVisitContext = visitDbContext.Visits.Where(a => a.PatientId == currPatientId).OrderByDescending(a => a.PatientVisitId).FirstOrDefault();
-            if (previousVisitContext != null)
-            {
-                if (DateTime.Now.Date == previousVisitContext.CreatedOn.Date && (patient.PatientScheme.PolicyNo != null && VisitBL.IsClaimed(visitDbContext, patient.PatientScheme.LatestClaimCode, currPatientId) == false))
-                {
-                    return patient.PatientScheme.LatestClaimCode;
-                }
-                else
-                {
-                    Random generator = new Random();
-                    String r = generator.Next(1, 10000).ToString("D4");
-                    return Int64.Parse(r + DateTime.Now.Minute + DateTime.Now.Second);
-                }
-            }
-            else
-            {
-                Random generator = new Random();
-                String r = generator.Next(1, 10000).ToString("D4");
-                return Int64.Parse(r + DateTime.Now.Minute + DateTime.Now.Second);
-            }
+            //var previousVisitContext = visitDbContext.Visits.Where(a => a.PatientId == currPatientId).OrderByDescending(a => a.PatientVisitId).FirstOrDefault();
+            //if (previousVisitContext != null)
+            //{
+            //    //if (DateTime.Now.Date == previousVisitContext.CreatedOn.Date && (patient.PatientScheme.PolicyNo != null && VisitBL.IsClaimed(visitDbContext, patient.PatientScheme.LatestClaimCode, currPatientId) == false))
+            //    //{
+            //    //    return patient.PatientScheme.LatestClaimCode;
+            //    //}
+            //    //else
+            //    //{
+            //    //    Random generator = new Random();
+            //    //    String r = generator.Next(1, 10000).ToString("D4");
+            //    //    return Int64.Parse(r + DateTime.Now.Minute + DateTime.Now.Second);
+            //    //}
+            //    Random generator = new Random();
+            //    String r = generator.Next(1, 10000).ToString("D4");
+            //    return Int64.Parse(r + DateTime.Now.Minute + DateTime.Now.Second);
+            //}
+            //else
+            //{
+            //    Random generator = new Random();
+            //    String r = generator.Next(1, 10000).ToString("D4");
+            //    return Int64.Parse(r + DateTime.Now.Minute + DateTime.Now.Second);
+            //}
+
+            Random generator = new Random();
+            String r = generator.Next(1, 10000).ToString("D4");
+            return Int64.Parse(r + DateTime.Now.Minute + DateTime.Now.Second);
         }
 
         private void GeneratePatientVisitCodeAndSave(VisitDbContext visitDbContext, VisitModel currVisit, string connString)
@@ -1487,7 +1578,8 @@ namespace DanpheEMR.Controllers
                                       ItemName = itmPrice.ItemLegalName,
                                       Price = itmPrice.Price,
                                       IsTaxApplicable = srvItm.IsTaxApplicable,
-                                      IsZeroPriceAllowed = itmPrice.IsZeroPriceAllowed
+                                      IsZeroPriceAllowed = itmPrice.IsZeroPriceAllowed,
+                                      IsDiscountApplicable = itmPrice.IsDiscountApplicable
                                   }).ToList();
             return docNewOpdItems;
         }
@@ -2233,6 +2325,30 @@ namespace DanpheEMR.Controllers
             }
             return scheme;
         }
+
+        private object GetPatientVisitContextForProvisionalPayment(int patientId, int visitId)
+        {
+           var patientVisitContext = (from vis in _visitDbContext.Visits
+                                      join patMap in _visitDbContext.PatientSchemeMaps on vis.PatientVisitId equals patMap.LatestPatientVisitId into grp
+                                      from patientScheme in grp.DefaultIfEmpty()
+                                      where vis.PatientId == patientId && (visitId > 0 ? vis.PatientVisitId == visitId : true)
+                                      select new
+                                      {
+                                          PatientId = vis.PatientId,
+                                          PatientVisitId = vis.PatientVisitId,
+                                          PerformerId = vis.PerformerId,
+                                          PerformerName = "",
+                                          VisitType = vis.VisitType,
+                                          VisitDate = vis.VisitDate,
+                                          ClaimCode = vis.ClaimCode,
+                                          MemberNo = patientScheme.PolicyNo,
+                                          SchemeId = vis.SchemeId,
+                                          PriceCategoryId = vis.PriceCategoryId,
+                                          RequestingDepartmentId = vis.DepartmentId
+                                      }).OrderByDescending(a => a.VisitDate).FirstOrDefault();
+            return patientVisitContext;
+        }
     }
+
 
 }

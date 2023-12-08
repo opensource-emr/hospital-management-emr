@@ -1,10 +1,8 @@
 ﻿import {
-    NgForm,
-    FormGroup,
-    FormControl,
-    Validators,
     FormBuilder,
-    ReactiveFormsModule
+    FormControl,
+    FormGroup,
+    Validators
 } from '@angular/forms';
 import * as moment from 'moment/moment';
 
@@ -31,7 +29,7 @@ export class ActiveMedical {
         this.ActiveMedicalValidator = _formBuilder.group({
             'ICD10Code': ['', Validators.compose([Validators.required])],
             'OnSetDate': ['', Validators.compose([Validators.required, this.dateValidator])],
-            'Note': ['', Validators.compose([Validators.required, Validators.maxLength(200)])],
+            'Note': ['', Validators.compose([Validators.maxLength(200)])],
         });
     }
     dateValidator(control: FormControl): { [key: string]: boolean } {

@@ -1234,7 +1234,7 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
               newReq.Notes = odr.Remarks ? odr.Remarks : "";
               newReq.OrderStatus = "active";
               newReq.Route = odr.Route ? odr.Route : "mouth";
-              newReq.PerformerId = this.visitService.globalVisit.PerformerId;
+              newReq.PrescriberId = this.visitService.globalVisit.PerformerId;
               newReq.GenericId = currGeneric ? currGeneric.GenericId : 0;
               newReq.GenericName = currGeneric ? currGeneric.GenericName : '';
               newReq.Quantity = newReq.Frequency * newReq.HowManyDays;
@@ -1350,7 +1350,7 @@ export class FreeNotesComponent implements OnInit, OnDestroy {
               newReq.Notes = odr.Remarks ? odr.Remarks : "";
               newReq.OrderStatus = "active";
               newReq.Route = odr.Route ? odr.Route : "mouth";
-              newReq.PerformerId = this.visitService.globalVisit.PerformerId;
+              newReq.PrescriberId = this.visitService.globalVisit.PerformerId;
               newReq.GenericId = currGeneric ? currGeneric.GenericId : 0;
               newReq.GenericName = currGeneric ? currGeneric.GenericName : '';
               newReq.Quantity = newReq.Frequency * newReq.HowManyDays;

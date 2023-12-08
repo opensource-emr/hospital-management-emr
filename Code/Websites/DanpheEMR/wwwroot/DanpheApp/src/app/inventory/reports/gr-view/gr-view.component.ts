@@ -5,6 +5,7 @@ import { CoreService } from "../../../core/shared/core.service";
 import { GoodsReceipt } from "../../shared/goods-receipt.model";
 import { GoodsReceiptItems } from "../../shared/goods-receipt-item.model";
 import * as moment from "moment/moment";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 @Component({
   selector: "gr-view",
   templateUrl: "./gr-view.component.html",
@@ -23,12 +24,16 @@ export class GRViewComponent {
   private GRId: number = 0;
   @Output('close-gr-popup')
   public closeGRPopup: EventEmitter<Object> = new EventEmitter<Object>();
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(
     public changeDetect: ChangeDetectorRef,
     public messageBoxService: MessageboxService,
     public inventoryBLService: InventoryBLService,
     public coreservice: CoreService
-  ) { }
+  ) { 
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
+  }
 
   @Input("GRId")
   public set getGRId(val) {

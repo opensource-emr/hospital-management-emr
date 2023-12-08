@@ -957,7 +957,7 @@ namespace DanpheEMR.Controllers
                             where priceCatServItem.PriceCategoryId == 1 //Krishna 13thMarch'23
                             select new
                             {
-                                BillItemPriceId = item.ServiceItemId,
+                                ServiceItemId = item.ServiceItemId,
                                 ServiceDepartmentId = srv.ServiceDepartmentId,
                                 ServiceDepartmentName = srv.ServiceDepartmentName,
                                 ServiceDepartmentShortName = srv.ServiceDepartmentShortName,
@@ -1353,7 +1353,7 @@ namespace DanpheEMR.Controllers
         {
             var itemList = _billingDbContext.ReportingItemsAndBillingItemMappingModels
                         .Where(a => a.ReportingItemsId == reportingItemsId)
-                        .OrderBy(a => a.BillItemPriceId).ToList();
+                        .OrderBy(a => a.ServiceItemId).ToList();
             return itemList;
         }
 
@@ -1916,7 +1916,11 @@ namespace DanpheEMR.Controllers
 
                     ExistingList.ForEach(a =>
                     {
-                        a.DiscountPercent = billingPackage.DiscountPercent;
+                        var packageServiceItem = billingPackage.BillingPackageServiceItemList.Find(p => p.PackageServiceItemId == a.PackageServiceItemId);
+                        if(packageServiceItem != null)
+                        {
+                        a.DiscountPercent = packageServiceItem.DiscountPercent;
+                        }
                         a.ModifiedBy = currentuser.EmployeeId;
                         a.ModifiedOn = DateTime.Now;
                         _billingDbContext.Entry(a).State = EntityState.Modified;

@@ -37,7 +37,7 @@ export class EmployeeItemsSetupMainComponent {
     this.EmployeeIncentiveSetupGridColumns = INCTVGridColumnSettings.EmployeeItemSetupList;
     this.GetEmployeeIncentiveInfo();
     this.LoadDocterList();
-    this.GetItemsForIncentive();
+    //this.GetItemsForIncentive();
     this.GetProfileList();
   }
 
@@ -168,7 +168,7 @@ export class EmployeeItemsSetupMainComponent {
   }
 
 
-  //sud:06-Oct-2020 : For TDS UPdate 
+  //sud:06-Oct-2020 : For TDS UPdate
   public selEmpObjForTds: any = null;
   SaveTDSPercent() {
     //Write code to update TDS for current employee..

@@ -10,7 +10,7 @@
       <div style="font-size:15px;font-weight: 700;" *ngIf="headerDetail.header4">{{headerDetail.header4}}</div>
       <div style="font-size:15px;font-weight: 700;" *ngIf="headerDetail.hospitalName">{{headerDetail.hospitalName}}</div>
       <div style="font-size:15px;font-weight: 700;" *ngIf="headerDetail.address">{{headerDetail.address}}</div>
-      <div style="font-size:13px;font-weight: 700;" *ngIf="showPANNo">PAN No:{{headerDetail.PANno}}, </div>
+      <div style="font-size:13px;font-weight: 700;" *ngIf="showPANNo">{{GeneralFieldLabel.PANNo}}:{{headerDetail.PANno}}, </div>
       <div style="font-size:13px;font-weight: 700;" *ngIf="showPhoneNo">Phone No:{{headerDetail.tel}}</div>
     </div>
     <div style="font-size:14px; text-align: center;"><strong>{{unitname}}</strong></div>
@@ -24,7 +24,7 @@
     <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
       <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
       <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-      <span style="font-size:13px;" *ngIf="showPANNo">PAN No:{{headerDetail.PANno}}, </span>
+      <span style="font-size:13px;" *ngIf="showPANNo">{{GeneralFieldLabel.PANNo}}:{{headerDetail.PANno}}, </span>
       <span style="font-size:13px;" *ngIf="showPhoneNo">Phone No:{{headerDetail.tel}}</span><br />
       <span style="font-size:14px;"><strong>{{unitname}}</strong></span>
     </div>
@@ -38,7 +38,7 @@
     <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
       <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
       <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-      <span style="font-size:13px;" *ngIf="showPANNo">PAN No:{{headerDetail.PANno}}, </span>
+      <span style="font-size:13px;" *ngIf="showPANNo">{{GeneralFieldLabel.PANNo}}{{headerDetail.PANno}}, </span>
       <span style="font-size:13px;" *ngIf="showPhoneNo">Phone No:{{headerDetail.tel}}</span><br />
       <span style="font-size:14px;"><strong>{{unitname}}</strong></span>
     </div>
@@ -52,7 +52,7 @@
     <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
       <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
       <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-      <span style="font-size:13px;" *ngIf="showPANNo && headerDetail.PANno">PAN No:{{headerDetail.PANno}}<span *ngIf="showPhoneNo && headerDetail.tel">,</span></span>
+      <span style="font-size:13px;" *ngIf="showPANNo && headerDetail.PANno">{{GeneralFieldLabel.PANNo}}:{{headerDetail.PANno}}<span *ngIf="showPhoneNo && headerDetail.tel">,</span></span>
       <span style="font-size:13px;" *ngIf="showPhoneNo && headerDetail.tel">Phone No:{{headerDetail.tel}}</span><br />
       <span style="font-size:14px;"><strong>{{unitname}}</strong></span>
     </div>
@@ -66,7 +66,7 @@
     <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
       <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
       <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-      <span style="font-size:13px;" *ngIf="showPANNo && headerDetail.PANno">PAN No:{{headerDetail.PANno}}<span *ngIf="showPhoneNo && headerDetail.tel">,</span></span>
+      <span style="font-size:13px;" *ngIf="showPANNo && headerDetail.PANno">{{GeneralFieldLabel.PANNo}}:{{headerDetail.PANno}}<span *ngIf="showPhoneNo && headerDetail.tel">,</span></span>
       <span style="font-size:13px;" *ngIf="showPhoneNo && headerDetail.tel">Phone No:{{headerDetail.tel}}</span><br />
       <span style="font-size:14px;"><strong>{{unitname}}</strong></span>
     </div>
@@ -80,7 +80,7 @@
     <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
       <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
       <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-      <span style="font-size:13px;" *ngIf="showPANNo">PAN No:{{headerDetail.PANno}}, </span>
+      <span style="font-size:13px;" *ngIf="showPANNo">{{GeneralFieldLabel.PANNo}}:{{headerDetail.PANno}}, </span>
       <span style="font-size:13px;" *ngIf="showPhoneNo">Phone No:{{headerDetail.tel}}</span><br />
       <span>For MR</span>
 

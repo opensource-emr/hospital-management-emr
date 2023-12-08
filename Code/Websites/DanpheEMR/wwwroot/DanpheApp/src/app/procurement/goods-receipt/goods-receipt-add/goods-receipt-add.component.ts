@@ -71,6 +71,7 @@ export class GoodsReceiptAddComponent implements OnInit {
   public duplicateInvoice: boolean = false;
   addOtherChargeToTotalAmount: boolean = false;
   showSpecification: boolean = false;
+  AllowVerificationEdit: boolean = true;
   constructor(public routeFrom: RouteFromService, public goodReceiptService: GoodReceiptService, public securityService: SecurityService, public procurementBLService: ProcurementBLService, public inventoryService: InventoryService, public changeDetectorRef: ChangeDetectorRef, public messageBoxService: MessageboxService, public coreService: CoreService, public router: Router, private _activateInventoryService: ActivateInventoryService, public inventoryFieldCustomizationService: InventoryFieldCustomizationService) {
 
     this.disableTextBox = true;
@@ -83,6 +84,7 @@ export class GoodsReceiptAddComponent implements OnInit {
     this.getINVOtherChargesDetails();
     this.CheckIfOtherChargeAddToTotalAmount();
     this.GetInventoryFieldCustomization();
+    this.GetSigningPanelConfiguration();
   }
   private checkIfDateEntryAllowed(decidingFactorForEditMode = true) {
     //in normal scenario, if user has permission, s/he can adjusts date
@@ -149,15 +151,18 @@ export class GoodsReceiptAddComponent implements OnInit {
     }
   }
   public SetDefaultVerifier() {
-    var ProcurementVerificationSetting = this.coreService.Parameters.find(param => param.ParameterGroupName == "Inventory" && param.ParameterName == "ProcurementVerificationSettings").ParameterValue;
-    var ProcurementVerificationSettingParsed = JSON.parse(ProcurementVerificationSetting);
-    if (ProcurementVerificationSettingParsed != null) {
-      if (ProcurementVerificationSettingParsed.EnableVerification == true) {
-        this.goodsReceipt.IsVerificationEnabled = true;
-        this.SetVerifiersFromVerifierIdsObj(ProcurementVerificationSettingParsed.VerifierIds);
-      }
-      else {
-        this.IsVerificationActivated = false;
+    let ProcurementVerificationSetting = this.coreService.Parameters.find(param => param.ParameterGroupName == "Inventory" && param.ParameterName == "ProcurementGoodsReceiptVerificationSettings");
+    if (ProcurementVerificationSetting) {
+      let ProcurementVerificationSettingParsed = JSON.parse(ProcurementVerificationSetting.ParameterValue);
+      if (ProcurementVerificationSettingParsed != null) {
+        if (ProcurementVerificationSettingParsed.EnableVerification) {
+          this.goodsReceipt.IsVerificationEnabled = true;
+          this.IsVerificationActivated = true;
+          this.SetVerifiersFromVerifierIdsObj(ProcurementVerificationSettingParsed.VerifierIds);
+        }
+        else {
+          this.IsVerificationActivated = false;
+        }
       }
     }
   }
@@ -170,7 +175,7 @@ export class GoodsReceiptAddComponent implements OnInit {
       }
       else {
         //if more than three verifiers are selected, it will take only first three.
-        VerifierIdsParsed = VerifierIdsParsed.slice(0, 2);
+        // VerifierIdsParsed = VerifierIdsParsed.slice(0, 2);
         VerifierIdsParsed.forEach(a => this.goodsReceipt.VerifierList.push(this.VerifierList.find(v => v.Id == a.Id && v.Type == a.Type)));
       }
     }
@@ -215,7 +220,17 @@ export class GoodsReceiptAddComponent implements OnInit {
       // filter items based on gr category
       //this.FilterItemByGRCategory();
       //to check for previous verifiers from edit mode
-      this.SetVerifiersFromVerifierIdsObj(this.goodsReceipt.VerifierIds);
+      if (this.goodsReceipt.VerifierIds && !this.goodsReceipt.VerificationId) {
+        this.SetVerifiersFromVerifierIdsObj(this.goodsReceipt.VerifierIds);
+        this.AllowVerificationEdit = true;
+        this.IsVerificationActivated = true;
+      }
+      else {
+        this.SetVerifiersFromVerifierIdsObj(this.goodsReceipt.VerifierIds);
+        this.AllowVerificationEdit = false;
+        this.IsVerificationActivated = true;
+      }
+
       this.IsGRItemNotEditable = true;
 
       let currVendor = this.VendorList.find(s => s.VendorName == goodsReceiptDetail.VendorName);
@@ -887,10 +902,10 @@ export class GoodsReceiptAddComponent implements OnInit {
     }
   }
   CheckIfAddVerifierAllowed() {
-    return this.goodsReceipt.VerifierList.some(V => V.Id == undefined) || this.goodsReceipt.VerifierList.length >= 3 || this.editGR ? true : false;
+    return this.goodsReceipt.VerifierList.some(V => V.Id == undefined) || this.goodsReceipt.VerifierList.length >= this.VerificationLevel;
   }
   CheckIfDeleteVerifierAllowed() {
-    return this.goodsReceipt.VerifierList.length <= 1 || this.editGR ? true : false;
+    return this.goodsReceipt.VerifierList.length <= 1;
   }
 
   public get IsGoodsReceiptDateValid(): boolean {
@@ -1075,5 +1090,23 @@ export class GoodsReceiptAddComponent implements OnInit {
   GetInventoryFieldCustomization(): void {
     let parameter = this.inventoryFieldCustomizationService.GetInventoryFieldCustomization();
     this.showSpecification = parameter.showSpecification;
+  }
+
+  GetSignatoryName(index: number): string {
+    if (this.VerifierSignatories && this.VerifierSignatories.length) {
+      return this.VerifierSignatories[index];
+    }
+  }
+
+  public VerifierSignatories: [] = [];
+  public VerificationLevel: number = 0;
+  GetSigningPanelConfiguration() {
+    this.VerifierSignatories = [];
+    var signingPanelConfigurationParameter = this.coreService.Parameters.find(param => param.ParameterGroupName === 'Procurement' && param.ParameterName == "SigningPanelConfiguration")
+    if (signingPanelConfigurationParameter) {
+      let signingPanelConfigurationParameterValue = JSON.parse(signingPanelConfigurationParameter.ParameterValue);
+      this.VerifierSignatories = signingPanelConfigurationParameterValue.VerifierSignatories;
+      this.VerificationLevel = signingPanelConfigurationParameterValue.VerificationLevel;
+    }
   }
 }

@@ -25,7 +25,8 @@
           </div>
         </div>
       </div>
-      <button *ngIf="showPatRegistration" class="btn green btn-success pull-right" (click)="ShowOpPatAddPopUp()"><i
+      <button *ngIf="securityService.HasPermission('btn-opbilling-addnewpatient') && showPatRegistration" class="btn green btn-success pull-right"
+              (click)="ShowOpPatAddPopUp()"><i
            class="fa fa-plus"></i>Add New Patient</button>
     </div>
 
@@ -129,7 +130,7 @@
       </div>
     </div>
   </div>
-  <bill-op-patient-add *ngIf="showAddNewOpPopUp" (callBackAddClose)="GetBackFromOpPatAdd($event)"></bill-op-patient-add>
+  <bill-op-patient-add *ngIf="showAddNewOpPopUp" (CallBackAddClose)="GetBackFromOpPatAdd($event)"></bill-op-patient-add>
 </div>
 
 <div class="popup-static portlet box portlet-fullscreen" *ngIf="showPatientSticker">

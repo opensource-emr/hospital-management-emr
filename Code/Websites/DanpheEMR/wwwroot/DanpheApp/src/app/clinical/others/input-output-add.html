@@ -4,95 +4,158 @@
             <div class="cstm-close" (click)="close()">
                 <a><i class="fa fa-close"></i> </a>
             </div>
-            <h3 class="cstm-add-heading">{{CurrentInputOutput.InputOutputId ? 'Update' : 'Add' }} Input/output</h3>
+            <!-- <h3 class="cstm-add-heading">{{CurrentInputOutput.InputOutputId ? 'Update' : 'Add' }} Input/output</h3> -->
 
-            <div class="form-group cstm-form-group">
-                <label class="control-label cstm-control-label col-md-4">Intake Type<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                <div class="col-md-8">
-                    <select placeholder="Unit" class="form-control cstm-form-control"
-                            formControlName="IntakeType"
-                            [(ngModel)]="CurrentInputOutput.IntakeType">
-                        <option value="Oral">Oral</option>
-                        <option value="IV Fluid">IV Fluid</option>
-                        <option value="Blood Product">BloodProduct</option>
-                    </select>
-                    <span class="error-msg"
-                          *ngIf="CurrentInputOutput.IsDirty('IntakeType')"
-                          [hidden]="CurrentInputOutput.IsValidCheck('IntakeType','required')">Select Intake Type</span>
-
-                </div>
+            <div class="add-input-output">
+                <span style="font-weight: 500; color: #272727;">
+                    <input [(ngModel)]="isInputOutput" (click)="ClearOutput()" name="IsIntakeOutput" width="200" type="radio"
+                           [ngModelOptions]="{standalone: true}" [value]="true" id="IsIntakeOutput" />
+                    &nbsp;<label for="IsReportWithResultYes">Intake</label> &ensp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input [(ngModel)]="isInputOutput" (click)="ClearIntake()" name="IsIntakeOutput" width="200" type="radio"
+                           id="IsReportWithResultNo"
+                           [ngModelOptions]="{standalone: true}" [value]="false" />
+                    &nbsp;<label for="IsReportWithResultNo">Output</label>
+                </span>
             </div>
-            <div class="form-group cstm-form-group">
-                <label class="control-label cstm-control-label col-md-4">Total Intake<b class="color-red">  *</b><b style="float:right;">:</b></label>
-                <div class="col-md-8" style="padding:0px">
+            <div *ngIf="isInputOutput">
+                <div class="form-group cstm-form-group">
+                    <label class="control-label cstm-control-label col-md-4">Intake Type<b class="color-red"> *</b><b
+                           style="float:right;">:</b></label>
                     <div class="col-md-8">
-                        <input type="number" class="form-control cstm-form-control"
-                               formControlName="TotalIntake"
-                               [(ngModel)]="CurrentInputOutput.TotalIntake" />
-
-                    </div>
-                    <div class="col-md-4" style="padding-left:0px">
-                        <select placeholder="Unit" class="form-control cstm-form-control" style="margin:0px"
-                                [ngModelOptions]="{standalone: true}"
-                                [(ngModel)]="CurrentInputOutput.Unit">
-                            <option value="ltr">ltr</option>
-                            <option value="ml" selected>ml</option>
+                        <select placeholder="Unit" class="form-control cstm-form-control"
+                                formControlName="IntakeOutputType" (change)="AssignSelectedIntakeType($event)">
+                            <option *ngFor="let data of ClinicalIntakeListForParent" value="{{data.IntakeOutputId}}">
+                                {{data.ParameterValue}}</option>
                         </select>
+                        <span class="error-msg" *ngIf="CurrentInputOutput.IsDirty('IntakeOutputType')"
+                              [hidden]="CurrentInputOutput.IsValidCheck('IntakeOutputType','required')">Select Intake
+                            Type</span>
                     </div>
+                </div>
+                <div class="form-group cstm-form-group" *ngIf="IsSubIntakeAvilable">
+                    <label class="control-label cstm-control-label col-md-4">Intake Sub Type<b
+                           style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                        <select placeholder="Unit" class="form-control cstm-form-control"
+                                formControlName="IntakeOutputType" (change)="AssignSelectedSubIntakeType($event)">
+                            <option *ngFor="let data of ClinicalIntakeListForChild" value="{{data.IntakeOutputId}}">
+                                {{data.ParameterValue}} </option>
+                        </select>
+                        <span class="error-msg" *ngIf="CurrentInputOutput.IsDirty('IntakeOutputType')"
+                              [hidden]="CurrentInputOutput.IsValidCheck('IntakeOutputType','required')">Select Sub-Intake
+                            Type</span>
+                    </div>
+                </div>
+                <div class="form-group cstm-form-group">
+                    <label class="control-label cstm-control-label col-md-4">Quantity<b class="color-red"> *</b><b style="float:right;">:</b></label>
+                    <div class="col-md-8" style="padding:0px">
+                        <div class="col-md-8">
+                            <input type="number" class="form-control cstm-form-control"
+                                   formControlName="IntakeOutputValue"
+                                   [(ngModel)]="CurrentInputOutput.IntakeOutputValue" />
+                        </div>
+                        <div class="col-md-4" style="padding-left:0px">
+                            <select placeholder="Unit" class="form-control cstm-form-control" style="margin:0px"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="CurrentInputOutput.Unit">
+                                <option value="ml" selected>ml</option>
+                            </select>
+                        </div>
+                        <span class="error-msg" *ngIf="CurrentInputOutput.IsDirty('IntakeOutputValue')"
+                              [hidden]="CurrentInputOutput.IsValidCheck('IntakeOutputValue','required')">Enter
+                            Quantity</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="control-label cstm-control-label col-md-4">Remarks</label>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control cstm-form-control"
+                               formControlName="Remarks"
+                               [(ngModel)]="CurrentInputOutput.Remarks" />
+                    </div>
+                </div>
 
-                    <span class="error-msg"
-                          *ngIf="CurrentInputOutput.IsDirty('TotalIntake')"
-                          [hidden]="CurrentInputOutput.IsValidCheck('TotalIntake','required')">Enter Total Intake</span>
+            </div>
+            <div *ngIf="!isInputOutput">
+                <div class="form-group cstm-form-group">
+                    <label class="control-label cstm-control-label col-md-4">Output Type<b class="color-red"> *</b><b
+                           style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                        <select placeholder="Unit" class="form-control cstm-form-control"
+                                formControlName="IntakeOutputType" (change)="AssignSelectedOutputType($event)">
+                            <option *ngFor=" let i of ClinicalOutputListForParent" value="{{i.IntakeOutputId}}">
+                                {{i.ParameterValue}}</option>
+                        </select>
+                        <span class="error-msg" *ngIf="CurrentInputOutput.IsDirty('IntakeOutputType')"
+                              [hidden]="CurrentInputOutput.IsValidCheck('IntakeOutputType','required')">Select Output
+                            Type</span>
+                    </div>
+                </div>
+                <div class="form-group cstm-form-group" *ngIf="IsSubOutputAvilable">
+                    <label class="control-label cstm-control-label col-md-4">Output Sub Type<b
+                           style="float:right;">:</b></label>
+                    <div class="col-md-8">
+                        <select placeholder="Unit" class="form-control cstm-form-control"
+                                formControlName="IntakeOutputType" (change)=" AssignSelectedSubOutputType($event)">
+                            <option *ngFor="let data of ClinicalOutputListForChild" value="{{data.IntakeOutputId}}">
+                                {{data.ParameterValue}}</option>
+                        </select>
+                        <span class="error-msg" *ngIf="CurrentInputOutput.IsDirty('IntakeOutputType')"
+                              [hidden]="CurrentInputOutput.IsValidCheck('IntakeOutputType','required')">Select Sub-Output
+                            Type</span>
+                    </div>
+                </div>
+                <div class="form-group cstm-form-group">
+                    <label class="control-label cstm-control-label col-md-4">Quantity<b class="color-red">*</b><b style="float:right;">:</b></label>
+                    <div class="col-md-8" style="padding:0px">
+                        <div class="col-md-8">
+                            <input type="number" class="form-control cstm-form-control"
+                                   formControlName="IntakeOutputValue"
+                                   [(ngModel)]="CurrentInputOutput.IntakeOutputValue" />
+                        </div>
+                        <div class="col-md-4" style="padding-left:0px">
+                            <select placeholder="Unit" class="form-control cstm-form-control" style="margin:0px"
+                                    [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="CurrentInputOutput.Unit">
+                                <option value="ml" selected>ml</option>
+                            </select>
+                        </div>
+                        <span class="error-msg" *ngIf="CurrentInputOutput.IsDirty('IntakeOutputValue')"
+                              [hidden]="CurrentInputOutput.IsValidCheck('IntakeOutputValue','required')">Enter
+                            Quantity</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="control-label cstm-control-label col-md-4">Color</label>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control cstm-form-control"
+                               formControlName="Color"
+                               [(ngModel)]="CurrentInputOutput.Color" />
+                    </div>
+                </div>
 
+                <div>
+                    <label class="control-label cstm-control-label col-md-4">Quality</label>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control cstm-form-control"
+                               formControlName="Quality"
+                               [(ngModel)]="CurrentInputOutput.Quality" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="control-label cstm-control-label col-md-4">Remarks</label>
+                    <div class="col-md-8">
+                        <input type="text" class="form-control cstm-form-control"
+                               formControlName="Remarks"
+                               [(ngModel)]="CurrentInputOutput.Remarks" />
+                    </div>
                 </div>
             </div>
-            <div class="form-group cstm-form-group">
-                <label class="control-label cstm-control-label col-md-4">Output Type<b style="float:right;">:</b></label>
-                <div class="col-md-8">
-                    <input type="text" class="form-control cstm-form-control" maxlength="50"
-                           [ngModelOptions]="{standalone: true}"
-                           [(ngModel)]="CurrentInputOutput.OutputType" readonly />
-                </div>
-            </div>
-
-            <div class="form-group cstm-form-group">
-                <label class="control-label cstm-control-label col-md-4">Total Output<b class="color-red">*</b><b style="float:right;">:</b></label>
-                <div class="col-md-8">
-                    <input style="width: 75%; float: left;margin-right: 8px;" type="number" class="form-control cstm-form-control"
-                           formControlName="TotalOutput"
-                           [(ngModel)]="CurrentInputOutput.TotalOutput" />
-                    <span style="line-height: 3;">{{CurrentInputOutput.Unit}}</span>
-                    <span class="error-msg"
-                          *ngIf="CurrentInputOutput.IsDirty('TotalOutput')"
-                          [hidden]="CurrentInputOutput.IsValidCheck('TotalOutput','required')">Enter Total Output</span>
-                </div>
-            </div>
-            <div class="form-group cstm-form-group">
-                <label class="control-label cstm-control-label col-md-4">Balance<b style="float:right;">:</b></label>
-                <div class="col-md-8">
-                    <input type="number" class="form-control cstm-form-control" [(ngModel)]="CurrentInputOutput.Balance"
-                           value="{{CurrentInputOutput.TotalIntake+lastBalance-CurrentInputOutput.TotalOutput}}"
-                           [ngModelOptions]="{standalone: true}" disabled /><br />
-                </div>
-            </div>
-
-
-            <!--<div>
-                <input type="button" class="btn btn-primary" style="background: #374150;margin-left:15px;" *ngIf="!updateButton" value="Add" (click)="AddInputOutput()" />
-                <input type="button" class="btn btn-primary" style="background: #374150;margin-left:15px;" *ngIf="updateButton" value="Update" (click)="Update()" />
-            </div>-->
             <div>
-
-                <button (click)="SubmitForm()" class="btn btn-primary">{{CurrentInputOutput.InputOutputId ? 'Update' : 'Add' }}</button>
-
+                <button (click)="SubmitForm()" class="btn btn-primary" style="margin: 15px 0px 0px 15px">Save</button>
             </div>
-
-
         </div>
-
-
-
-
-
     </form>
 </div>

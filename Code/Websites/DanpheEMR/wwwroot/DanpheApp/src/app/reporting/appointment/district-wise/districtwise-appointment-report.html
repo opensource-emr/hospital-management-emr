@@ -12,7 +12,7 @@
         <div>
           <div class="col-md-12">
             <div class="caption custom-caption" style="float: left;"> <i class="glyphicon glyphicon-asterisk"></i> <span
-                class="caption-subject">District Wise Appointment Report</span>
+                    class="caption-subject">{{GeneralFieldLabel.DistrictState}} Wise Appointment Report</span>
             </div>
             <div style="float: right;font-size: 13px;color: grey;">
               *Note: Inpatient Visits (Admissions) are not included in this report.
@@ -25,10 +25,10 @@
             </div>
             <div class="col-md-3 col-xs-12">
               <div class="form-group row">
-                <label class="control-label col-md-4">District<b style="float:right;">:</b></label>
+                <label class="control-label col-md-4">{{GeneralFieldLabel.DistrictState}}<b style="float:right;">:</b></label>
                 <div class="col-md-8">
                   <input class="form-control" value="" [(ngModel)]="districtwiseappointment.distProvider"
-                    [ngModelOptions]="{standalone: true}" placeholder="Enter District Name" />
+                         [ngModelOptions]="{standalone: true}" placeholder="Enter {{GeneralFieldLabel.DistrictState}} Name" />
                 </div>
               </div>
             </div>
@@ -55,17 +55,17 @@
   <div class="row">
     <div class="col-lg-12 col-sm-12">
       <danphe-grid [grid-colDefaults]="DistrictWiseAppointmentReportColumns"
-        [grid-data]="DistrictWiseAppointmentReportData" [grid-exportOptions]="gridExportOptions"
-        [grid-showExport]="true"> </danphe-grid>
+                   [grid-data]="DistrictWiseAppointmentReportData" [grid-exportOptions]="gridExportOptions"
+                   [grid-showExport]="true"> </danphe-grid>
     </div>
     <div class="col-md-12" style="margin-bottom: 50px;margin-top: 20px;">
       <div id="dvDistApptSummary"
-        *ngIf="DistrictWiseAppointmentReportData && DistrictWiseAppointmentReportData.length>0">
+           *ngIf="DistrictWiseAppointmentReportData && DistrictWiseAppointmentReportData.length>0">
         <div>
           <label class="summ-title"> Summary </label>
           &nbsp;&nbsp;&nbsp;
           <label *ngIf="selGenderName !='all'" class="summ-title"
-            style="text-transform: uppercase;">({{selGenderName}})</label>
+                 style="text-transform: uppercase;">({{selGenderName}})</label>
         </div>
         <table border="1" style="width: 40%;">
           <thead>

@@ -1,5 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { CoreService } from "../../../core/shared/core.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
@@ -32,11 +34,14 @@ export class MarketingReferralReferringPartyComponent implements OnInit {
     public selectedReferringPartyGroupObj: ReferralPartyGroup_DTO = new ReferralPartyGroup_DTO();
     public selectedOrganizationObj: ReferringOrganization_DTO = new ReferringOrganization_DTO();
     public referringPartyGroupObj: ReferralPartyGroup_DTO = new ReferralPartyGroup_DTO();
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
     constructor(public msgBoxServ: MessageboxService,
         public changeDetector: ChangeDetectorRef,
+        public coreservice: CoreService,
         public mktReferralBLService: MarketingReferralBLService,
         public mktReferral: MarketingReferralService) {
+        this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
         var _formbuilder = new FormBuilder();
         this.ReferringPartyGroupValidator = _formbuilder.group({
             'ReferringPartyName': ['', Validators.required],
@@ -46,6 +51,8 @@ export class MarketingReferralReferringPartyComponent implements OnInit {
             'ContactNo': ['', Validators.required],
         });
         this.mktreferralReferringPartyListGridColumns = this.mktReferral.settingsGridCols.mktreferralReferringPartyListGridCols;
+        this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
+        this.mktreferralReferringPartyListGridColumns[7].headerName = `${this.GeneralFieldLabel.PANNo}`;
     }
 
     ngOnInit() {

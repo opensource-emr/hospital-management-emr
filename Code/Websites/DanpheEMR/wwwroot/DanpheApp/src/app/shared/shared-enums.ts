@@ -145,6 +145,7 @@ export enum ENUM_ACC_ADDLedgerLedgerType {
   Consultant = 'consultant',
   CreditOrganization = 'creditorganization',
   InventorySubCategory = 'inventorysubcategory',
+  InventoryConsumption = 'InventoryConsumption',
   BillingPriceItem = 'billingincomeledger',
   PaymentModes = 'paymentmodes',
   BankReconciliationCategory = 'bankreconciliationcategory',
@@ -161,7 +162,8 @@ export enum ENUM_ACC_ReportStaticName {
   BankReconciliation = 'BankReconciliation',
   CashBankBookReport = 'CashBankBookReport',
   DayBookReport = 'DayBookReport',
-  SubLedgerReport = 'SubLedgerReport'
+  SubLedgerReport = 'SubLedgerReport',
+  AccountHeadDetailReport = 'AccountHeadDetailReport'
 }
 export enum ENUM_ACC_ReportName {
   LedgerReport = "/Accounting/Reports/LedgerReport",
@@ -175,6 +177,7 @@ export enum ENUM_ACC_ReportName {
   CashBankBookReport = '/Accounting/Reports/Cash-BankBookReport',
   DayBookReport = '/Accounting/Reports/DayBookReport',
   SubLedgerReport = '/Accounting/Reports/SubLedgerReport',
+  AccountHeadDetailReport = '/Accounting/Reports/AccountHeadDetailReport',
 }
 export enum ENUM_SSF_EligibilityType {
   Medical = "Medical",
@@ -557,4 +560,79 @@ export enum ENUM_ServiceCategoryCodes {
 export enum ENUM_CancellationService {
   PR = "PR",
   PRC = "PRC"
+}
+
+export enum ENUM_ProvisionalBillingContext {
+  Outpatient = "Outpatient",
+  ProvisionalDischarge = "ProvisionalDischarge"
+}
+export enum ENUM_DischargeType {
+  Lama = "LAMA",
+  Death = "Death",
+  Recovered = "Recovered",
+}
+
+export enum ENUM_Genders {
+  Male = "male",
+  Female = "female",
+  Others = "others"
+}
+export enum ENUM_RecoveredDischargeConditions {
+  Delivery = "delivery",
+  Normal = "normal"
+}
+export enum ENUM_DischargeSummaryDisplayLabels {
+  DischargeCondition = " <strong> Discharge Condition :</strong> ",
+  DeathPeriod = " <strong> Death Period : </strong>",
+  SelectedDiagnosis = " <strong> Selected Diagnosis : </strong> ",
+  ProvisionalDiagnosis = " <strong> Provisional Diagnosis : </strong> ",
+  Anesthetists = " <strong> Anesthetists : </strong> ",
+  ResidenceDrName = "<strong> Residence Dr : </strong>",
+  BabyWeight = "<strong> Baby Weight(gm) : </strong>",
+  OtherDiagnosis = "<strong> Other Diagnosis :</strong>",
+  ClinicalFindings = "<strong>Clinical Findings :</strong> ",
+  ChiefComplaint = "<strong> Chief Complaint : </strong>",
+  PatientIllnessHistory = "<strong> Patient Illness History :</strong> ",
+  PastHistory = "<strong> Past History :</strong> ",
+  CaseSummary = "<strong>Case Summary : </strong>",
+  Procedure = "<strong> Procedure : </strong>",
+  OperativeFindings = "<strong> Operative Findings : </strong>",
+  HistologyReport = "<strong> Histology Report : </strong>",
+  HospitalCourse = "<strong> Hospital Course : </strong>",
+  Treatment = "<strong> Treatment During Hospital Stay : </strong>",
+  Condition = "<strong> Condition On Discharge : </strong>",
+  PendingReports = "<strong> Pending Reports : </strong>",
+  SpecialNotes = "<strong> Special Notes : </strong>",
+  Allergies = "<strong> Allergies : </strong>",
+  Activities = "<strong> Activities : </strong>",
+  Diet = "<strong> Diet : </strong>",
+  RestDays = "<strong> Rest Days : </strong>",
+  FollowUp = "<strong> Follow Up : </strong>",
+  Others = "<strong> Others : </strong>",
+  CheckedBy = "<strong> Checked By : </strong>",
+  Medications = "<strong> Medications : </strong>",
+  LabTests = "<strong> Lab Tests : </strong>",
+  Consultants = "<strong> Consultants : </strong>"
+}
+export enum ENUM_CalendarTypes {
+    English = "en",
+    Nepali = "np"
+}
+
+export enum ENUM_SSF_BookingStatus {
+  Booked = "Booked",
+  NotBooked = "Not Booked"
+}
+export enum ENUM_ConsultationRequestStatus {
+  Requested = "Requested",
+  Consulted = "Consulted"
+}
+export enum ENUM_IntakeOutputType {
+  Intake = "Intake",
+  Output = "Output"
+}
+export enum ENUM_ExternalLab_SampleStatus {
+  SampleCollected = "Sample Collected",
+  SampleDispatched = "Sample Dispatched",
+  ReportReceived = "Report Received"
 }

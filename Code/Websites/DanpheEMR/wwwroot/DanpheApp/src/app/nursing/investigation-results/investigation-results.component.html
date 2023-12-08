@@ -1,0 +1,67 @@
+<div>
+    <h4 class="text-center">
+        <strong>
+            Investigation Results
+        </strong>
+    </h4>
+</div>
+<div class="col-md-12" style="margin-top:20px; margin-left: 650px;">
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group row">
+                <label class="control-label col-md-3">Last</label>
+                <div class="col-md-5">
+                    <input class="form-control" type="number" [(ngModel)]="Days" id="inputBox" (input)="validateInput()"
+                           (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                    <div *ngIf="isInvalidInput" class="error-message">Please enter days from 1 to 20</div>
+                </div>
+                <label class="control-label col-md-1">Days</label>
+            </div>
+        </div>
+        <div class="col-md-1">
+            <div class="form-group">
+                <button type="button" class="btn green btn-success" (click)="LoadReport()"> <i class="fa fa-search"></i>
+                    Show Result
+                </button>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <button class="btn green btn-success" style="margin-left: 155px; " (click)="PrintResults()">
+                    <span>Print</span>&nbsp;&nbsp;
+                    &nbsp;&nbsp; <i class="glyphicon glyphicon-print"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row" style="margin-top:20px;">
+    <div class="col-md-12" id="result_list">
+        <div class="table-container" style="position: relative;">
+            <table class="table table-bordered" style="margin-top: 0px;">
+                <thead style="background-color: rgb(51, 138, 245); color: white;">
+                    <tr>
+                        <th>TestName</th>
+                        <th>ComponentName</th>
+                        <th>Unit</th>
+                        <th *ngFor="let header of DateHeaders">{{ header }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of investigationResultViewList">
+                        <td>{{ row.TestName }}</td>
+                        <td>{{ row.ComponentName }}</td>
+                        <td>{{ row.Unit }}</td>
+                        <td *ngFor="let value of row.Values">{{value}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<investigation-results-print *ngIf="showPrintPage"
+                             [inner-html-data]="divContentObj"
+                             [show-investigation-results-print-page]="showPrintPage"
+                             (hidePrintPage)="HidePrintPage()">
+</investigation-results-print>

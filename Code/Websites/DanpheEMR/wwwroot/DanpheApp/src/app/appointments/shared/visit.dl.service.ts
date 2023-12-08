@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { forkJoin } from 'rxjs';
 
 //IMPORTANT !!--move the visit logic to some other layer--kept to separate it out from billing--sudarshan-23feb'17
+import { ClaimBookingRoot_DTO } from '../../claim-management/shared/SSF-Models';
 import { ClaimRoot } from '../../insurance/ssf/shared/SSF-Models';
 import { DanpheHTTPResponse } from '../../shared/common-models';
 import { RouteFromService } from '../../shared/routefrom.service';
@@ -245,6 +246,21 @@ export class VisitDLService {
     }
 
     return this.http.post<any>("/api/SSF/SubmitClaim", ClaimRoot, httpOptions);
+  }
+
+  public GetClaimBookingDetails(claimCode: number) {
+    const httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    }
+
+    return this.http.get<any>("/api/SSF/GetClaimBookingDetail?claimCode=" + claimCode, httpOptions);
+  }
+  public BookClaim(claimBookingObj: ClaimBookingRoot_DTO) {
+    const httpOptions = {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    }
+
+    return this.http.post<any>("/api/SSF/BookClaim", claimBookingObj, httpOptions);
   }
   public GetRank() {
     return this.http.get<any>("/api/Visit/GetRank", this.options);

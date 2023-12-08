@@ -8,8 +8,8 @@ import { InventorySummaryReport } from '../shared/inventory-summary-report.model
 import * as moment from 'moment/moment';
 import { CoreService } from '../../../core/shared/core.service';
 import { CommonFunctions } from '../../../shared/common.functions';
-import { IGridFilterParameter } from '../../../shared/danphe-grid/grid-filter-parameter.interface';
 import { NepaliDateInGridParams } from '../../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { IGridFilterParameter } from '../../../shared/danphe-grid/grid-filter-parameter.interface';
 import { ReportGridColumnSettings } from '../../../shared/danphe-grid/report-grid-column-settings.constant';
 import { ENUM_DanpheHTTPResponseText } from '../../../shared/shared-enums';
 import { INV_RPT_InventorySummaryReport_DTO } from '../dto/inv_rpt_inventory-summary-report.dto';
@@ -33,6 +33,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     public InventorySummaryReportData: Array<INV_RPT_InventorySummaryReport_DTO> = new Array<INV_RPT_InventorySummaryReport_DTO>();
     public Store: StoreModel = { StoreId: null, StoreName: 'All' };
     public storeId: number = null;
+
 
     public summary = {
         OpeningValue: 0, OpeningQuantity: 0, PurchaseValue: 0, PurchaseQuantity: 0, StockManageInValue: 0, StockManageInQuantity: 0, StockManageOutValue: 0,
@@ -69,7 +70,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     }
     ngOnDestroy() {
 
-        this.reportServ.reportGridCols = new ReportGridColumnSettings(this.coreService.taxLabel);
+        this.reportServ.reportGridCols = new ReportGridColumnSettings(this.coreService.taxLabel, this.coreService);
     }
     ngAfterViewChecked() {
         this.dateRange = "<b>From:</b>&nbsp;" + this.FromDate + "&nbsp;<b>To:</b>&nbsp;" + this.ToDate;

@@ -2,13 +2,14 @@
 using DanpheEMR.Core.Configuration;
 using DanpheEMR.DalLayer;
 using DanpheEMR.Enums;
+using DanpheEMR.Security;
 using DanpheEMR.ServerModel.SSFModels;
-using DanpheEMR.ServerModel.SSFModels.ClaimResponse;
 using DanpheEMR.Services.SSF;
+using DanpheEMR.Services.SSF.DTO;
+using DanpheEMR.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
-using System.Numerics;
 using System.Threading.Tasks;
 
 namespace DanpheEMR.Controllers.SSF
@@ -123,6 +124,52 @@ namespace DanpheEMR.Controllers.SSF
                 return BadRequest(responseData);
             }
 
+        }
+
+        [HttpPost]
+        [Route("BookClaim")]
+        public async Task<IActionResult> BookClaim([FromBody] ClaimBookingRoot_DTO claimBooking)
+        {
+            RbacUser currentUser = HttpContext.Session.Get<RbacUser>(ENUM_SessionVariables.CurrentUser);
+            try
+            {
+                var result = await _ISSFService.BookClaim(_SSFDbContext, claimBooking, currentUser);
+                if (result.ErrorMessage != null)
+                {
+                    responseData.ErrorMessage = result.ErrorMessage;
+                }
+                else
+                {
+                    responseData.Results = result.ResponseStatus;
+                }
+                responseData.Status = result.ResponseStatus;
+                return Ok(responseData);
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = ENUM_Danphe_HTTP_ResponseStatus.Failed;
+                responseData.ErrorMessage = ex.Message + " exception details:" + ex.ToString();
+                return BadRequest(responseData);
+            }
+        }
+
+
+        [HttpGet]
+        [Route("GetClaimBookingDetail")]
+        public async Task<IActionResult> GetClaimBookingDetail(Int64 claimCode)
+        {
+            try
+            {
+                responseData.Results = await _ISSFService.GetClaimBookingDetail(_SSFDbContext, claimCode);
+                responseData.Status = "OK";
+                return Ok(responseData);
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = "Failed";
+                responseData.ErrorMessage = ex.Message + "exception details:" + ex.ToString();
+                return BadRequest(responseData);
+            }
         }
 
         [HttpGet]

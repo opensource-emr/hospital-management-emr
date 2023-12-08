@@ -1,13 +1,13 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
-import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
-import { AccountingReportsBLService } from "../shared/accounting-reports.bl.service";
-import { CommonFunctions } from '../../../shared/common.functions';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import * as moment from 'moment/moment';
-import { DLService } from "../../../shared/dl.service";
 import { CoreService } from '../../../core/shared/core.service';
+import { CommonFunctions } from '../../../shared/common.functions';
+import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
+import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
+import { DLService } from "../../../shared/dl.service";
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { AccountingService } from '../../shared/accounting.service';
+import { AccountingReportsBLService } from "../shared/accounting-reports.bl.service";
 
 @Component({
   selector: 'my-app',
@@ -27,20 +27,20 @@ export class DailyTransactionReportComponent {
   public isDeposit: boolean = false;
   public isBilling: boolean = false;
   public isReturnBilling: boolean = false;
-  public showExportbtn : boolean=false;
+  public showExportbtn: boolean = false;
   public fiscalyearList: any;
-  public calType: string = "";   
+  public calType: string = "";
   public showPrint: boolean = false;
   public printDetaiils: any;
   public selectedDate: string = "";
-  public fiscalYearId:number=null; 
+  public fiscalYearId: number = null;
   btndisabled = false;
   public dateRange: string = "";
   constructor(
     _dlService: DLService,
     public msgBoxServ: MessageboxService,
     public accReportBLService: AccountingReportsBLService,
-    public coreservice : CoreService,
+    public coreservice: CoreService,
     public accountingService: AccountingService,
     public changeDetector: ChangeDetectorRef) {
     this.dailyTxnGridColumns = GridColumnSettings.AccDailyTxnReport;
@@ -53,12 +53,12 @@ export class DailyTransactionReportComponent {
 
   //loads CalendarTypes from Paramter Table (database) and assign the require CalendarTypes to local variable.
   LoadCalendarTypes() {
-   let Parameter = this.coreservice.Parameters;
-   Parameter = Parameter.filter(parms => parms.ParameterName == "CalendarTypes");
-   let calendarTypeObject = JSON.parse(Parameter[0].ParameterValue);
-   this.calType = calendarTypeObject.AccountingModule;
-   }
-   
+    let Parameter = this.coreservice.Parameters;
+    Parameter = Parameter.filter(parms => parms.ParameterName == "CalendarTypes");
+    let calendarTypeObject = JSON.parse(Parameter[0].ParameterValue);
+    this.calType = calendarTypeObject.AccountingModule;
+  }
+
   gridExportOptions = {
     fileName: 'DailyTransactionReport_' + moment().format('YYYY-MM-DD') + '.xls',
   };
@@ -69,44 +69,44 @@ export class DailyTransactionReportComponent {
       this.fiscalyearList = this.fiscalyearList.slice(); //mumbai-team-june2021-danphe-accounting-cache-change
     }
   }
-  public validDate:boolean=true;
-  selectDate(event){
+  public validDate: boolean = true;
+  selectDate(event) {
     if (event) {
       this.fromDate = event.fromDate;
       this.toDate = event.toDate;
       this.fiscalYearId = event.fiscalYearId;
       this.validDate = true;
       this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
-    } 
+    }
     else {
-      this.validDate =false;
-    } 
+      this.validDate = false;
+    }
   }
   loadData() {
-    this.btndisabled=true;
-    if (this.checkDateValidation()) {        
-      this.accReportBLService.GetDailyTxnReport(this.fromDate, this.toDate,this.fiscalYearId)
+    this.btndisabled = true;
+    if (this.checkDateValidation()) {
+      this.accReportBLService.GetDailyTxnReport(this.fromDate, this.toDate)
         .subscribe(res => {
           if (res.Status == 'OK' && res.Results.length) {
-            this.btndisabled=false;
+            this.btndisabled = false;
             this.formattingData(res.Results);
             //this.dailyTxnList = res.Results;
             this.showReportData = true;
           }
           else {
-            this.btndisabled=false;
+            this.btndisabled = false;
             this.msgBoxServ.showMessage("notice", ["no record found."]);
           }
         });
-      
+
     }
-    else{
-      this.btndisabled=false;
+    else {
+      this.btndisabled = false;
     }
   }
 
   checkDateValidation() {
-    if(!this.validDate){
+    if (!this.validDate) {
       this.msgBoxServ.showMessage("error", ['select proper date']);
       return false;
     }
@@ -141,7 +141,7 @@ export class DailyTransactionReportComponent {
       Obj["TransactionDate"] = a.TransactionDate;
       Obj["TransactionId"] = a.TransactionId;
       Obj["TransactionType"] = a.TransactionType;
-      Obj["SectionId"] = a.SectionId;     
+      Obj["SectionId"] = a.SectionId;
       let str = a.VoucherNumber ? a.VoucherNumber.slice(0, 3) : "";
       Obj["showOptions"] = str == "ACC" ? false : true;   //manual entry will have ACC as voucherNo.. so no details are present to show
       a.txnItems.forEach(b => {
@@ -242,78 +242,78 @@ export class DailyTransactionReportComponent {
           });
         }
         else if (this.selectedTxn.SectionId == 2) {
-          if(data.DepositData.length>0){
+          if (data.DepositData.length > 0) {
             this.isDeposit = true;
             this.txnDepositData = data.DepositData;
           }
-          else if(data.BillData.length>0){
+          else if (data.BillData.length > 0) {
             this.isBilling = true;
             this.txnOriginData = data.BillData;
           }
-          else if(data.ReturnBillData.length>0){
+          else if (data.ReturnBillData.length > 0) {
             this.isReturnBilling = true;
             this.txnOriginData = data.ReturnBillData;
           }
-            //this.txnOriginData.forEach(a => {
-            //    if (a.TransactionType == "DepositAdd" || a.TransactionType == "DepositReturn") {
-            //        //    subTotal += a.itm.SubTotal;
-            //        // amountTotal += a.itm.TotalAmount;
-            //        amountTotal += a.TotalAmount;
-            //    }
-            //    else {
-            //        taxTotal += a.itm.Tax;
-            //        discountAmount += a.itm.DiscountAmount;
-            //        salesTotal = salesTotal + (a.itm.TotalAmount - a.itm.Tax);
-            //        amountTotal += a.itm.TotalAmount;
-            //    }
-            //});
-            if (this.isDeposit){
-              if (this.txnDepositData.length) {
-                this.txnDepositData.forEach(a => {
-                  depositTotal += a.TotalAmount;
-                });
-              }
-              else {
-                this.isDeposit = false;
-              }
+          //this.txnOriginData.forEach(a => {
+          //    if (a.TransactionType == "DepositAdd" || a.TransactionType == "DepositReturn") {
+          //        //    subTotal += a.itm.SubTotal;
+          //        // amountTotal += a.itm.TotalAmount;
+          //        amountTotal += a.TotalAmount;
+          //    }
+          //    else {
+          //        taxTotal += a.itm.Tax;
+          //        discountAmount += a.itm.DiscountAmount;
+          //        salesTotal = salesTotal + (a.itm.TotalAmount - a.itm.Tax);
+          //        amountTotal += a.itm.TotalAmount;
+          //    }
+          //});
+          if (this.isDeposit) {
+            if (this.txnDepositData.length) {
+              this.txnDepositData.forEach(a => {
+                depositTotal += a.TotalAmount;
+              });
             }
-            if (this.isBilling){
-              if (this.txnOriginData.length) {
-                this.txnOriginData.forEach(a => {
-                  taxTotal += a.itm.Tax;
-                  discountAmount += a.itm.DiscountAmount;
-                  salesTotal = salesTotal + (a.itm.TotalAmount - a.itm.Tax);
-                  amountTotal += a.itm.TotalAmount;
-                });
-              }
-              else {
-                this.isBilling = false;
-              }
+            else {
+              this.isDeposit = false;
             }
-            if (this.isReturnBilling){
-              if (this.txnOriginData.length) {
-                this.txnOriginData.forEach(a => {
-                  taxTotal += a.itm.RetTaxAmount;
-                  discountAmount += a.itm.RetDiscountAmount;
-                  salesTotal = salesTotal + (a.itm.RetTotalAmount - a.itm.RetTaxAmount);
-                  amountTotal += a.itm.RetTotalAmount;
-                });
-              }
-              else {
-                this.isReturnBilling = false;
-              }
-            }  
+          }
+          if (this.isBilling) {
+            if (this.txnOriginData.length) {
+              this.txnOriginData.forEach(a => {
+                taxTotal += a.itm.Tax;
+                discountAmount += a.itm.DiscountAmount;
+                salesTotal = salesTotal + (a.itm.TotalAmount - a.itm.Tax);
+                amountTotal += a.itm.TotalAmount;
+              });
+            }
+            else {
+              this.isBilling = false;
+            }
+          }
+          if (this.isReturnBilling) {
+            if (this.txnOriginData.length) {
+              this.txnOriginData.forEach(a => {
+                taxTotal += a.itm.RetTaxAmount;
+                discountAmount += a.itm.RetDiscountAmount;
+                salesTotal = salesTotal + (a.itm.RetTotalAmount - a.itm.RetTaxAmount);
+                amountTotal += a.itm.RetTotalAmount;
+              });
+            }
+            else {
+              this.isReturnBilling = false;
+            }
+          }
         }
-        else if (this.selectedTxn.SectionId == 5){
-          this.txnOriginData = data;       
+        else if (this.selectedTxn.SectionId == 5) {
+          this.txnOriginData = data;
         }
         else {
-            this.txnOriginData = data;
-            this.txnOriginData.forEach(a => {
-              taxTotal += a.VATAmount;
-              discountAmount += a.DiscountAmount;
-              amountTotal += a.TotalAmount;
-            });
+          this.txnOriginData = data;
+          this.txnOriginData.forEach(a => {
+            taxTotal += a.VATAmount;
+            discountAmount += a.DiscountAmount;
+            amountTotal += a.TotalAmount;
+          });
         }
 
         this.selectedTxn["discountAmount"] = CommonFunctions.parseAmount(discountAmount);
@@ -345,12 +345,12 @@ export class DailyTransactionReportComponent {
     let popupWinindow;
     var headerContent = document.getElementById("headerForPrint").innerHTML;
     var printContents = '<style> table { border-collapse: collapse; border-color: black; } th { color:black; background-color: #599be0; } </style>';
-    printContents += document.getElementById("printpage").innerHTML;    
+    printContents += document.getElementById("printpage").innerHTML;
     this.showPrint = false;
     this.printDetaiils = null;
     this.changeDetector.detectChanges();
     this.showPrint = true;
-    this.printDetaiils = headerContent + printContents ; 
+    this.printDetaiils = headerContent + printContents;
 
   }
   Close() {
@@ -358,14 +358,14 @@ export class DailyTransactionReportComponent {
     this.showDetailsPopUp = false;
     this.selectedTxn = null;
   }
-  showExport(){
+  showExport() {
 
-    let exportshow = this.coreservice.Parameters.find(a => a.ParameterName =="AllowSingleVoucherExport" && a.ParameterGroupName == "Accounting").ParameterValue;
-        if ( exportshow== "true"){
-          this.showExportbtn =true;     
-        }
-        else{
-            this.showExportbtn = false;
-        }
-      }
+    let exportshow = this.coreservice.Parameters.find(a => a.ParameterName == "AllowSingleVoucherExport" && a.ParameterGroupName == "Accounting").ParameterValue;
+    if (exportshow == "true") {
+      this.showExportbtn = true;
+    }
+    else {
+      this.showExportbtn = false;
+    }
+  }
 }

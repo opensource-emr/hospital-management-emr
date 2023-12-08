@@ -1,25 +1,24 @@
-import { Component } from '@angular/core'
-import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { OrderService } from './shared/order.service';
 
-import { LabTest } from '../labs/shared/lab-test.model';
-import { ImagingItem } from '../radiology/shared/imaging-item.model';
-import { MedicationPrescription } from "../clinical/shared/medication-prescription.model";
 
 //Security Service for Loading Child Route from Security Service
-import { SecurityService } from "../security/shared/security.service";
-import { MessageboxService } from '../shared/messagebox/messagebox.service';
-import { RouteFromService } from "../shared/routefrom.service";
-import { PHRMPrescriptionItem } from "../pharmacy/shared/phrm-prescription-item.model";
-import { DoctorsBLService } from '../doctors/shared/doctors.bl.service';
-import { PatientService } from '../patients/shared/patient.service';
+import { CurrentVisitContextVM } from '../appointments/shared/current-visit-context.model';
 import { VisitService } from '../appointments/shared/visit.service';
+import { BillingTransactionItem } from '../billing/shared/billing-transaction-item.model';
+import { DoctorsBLService } from '../doctors/shared/doctors.bl.service';
+import { LabsBLService } from '../labs/shared/labs.bl.service';
 import { Patient } from '../patients/shared/patient.model';
+import { PatientService } from '../patients/shared/patient.service';
+import { SecurityService } from "../security/shared/security.service";
 import { DanpheHTTPResponse } from '../shared/common-models';
 import { CommonFunctions } from '../shared/common.functions';
+import { MessageboxService } from '../shared/messagebox/messagebox.service';
+import { RouteFromService } from "../shared/routefrom.service";
+import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from '../shared/shared-enums';
 import { OrderItemsVM } from './shared/orders-vms';
-import { BillItemRequisition } from '../billing/shared/bill-item-requisition.model';
 
 @Component({
   selector: 'my-app',
@@ -34,24 +33,28 @@ export class OrderMainComponent {
     headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
   };
   validRoutes: any;
+  public currPatVisitContext = new CurrentVisitContextVM();
+  public IsMedicationPresent: boolean;
   constructor(public ordServ: OrderService, public router: Router,
     public securityService: SecurityService, public http: HttpClient,
     public msgBoxServ: MessageboxService,
     public routeFromService: RouteFromService,
     public doctorsBlService: DoctorsBLService,
     public patService: PatientService,
-    public visitService: VisitService) {
+    public visitService: VisitService,
+    public labBLService: LabsBLService) {
     this.initialLoad();
   }
   public initialLoad() {
     //get the chld routes of ADTMain from valid routes available for this user.
     this.validRoutes = this.securityService.GetChildRoutes("Doctors/PatientOverviewMain/Orders");
-    //below three calls gives orderitems in formatted manner. 
+    //below three calls gives orderitems in formatted manner.
     this.GetActiveOrders();
-    this.LoadAllOrderItems();
+    this.GetCurrentPatientVisitContext();
+    // this.LoadAllOrderItems();
     this.LoadAllPreferences();
 
-    //in the mean time, load all required module's items so that we can map them later on. 
+    //in the mean time, load all required module's items so that we can map them later on.
     this.ordServ.LoadAllImagingItems();
     this.ordServ.LoadAllLabTests();
     this.ordServ.LoadAllMedications();
@@ -74,9 +77,10 @@ export class OrderMainComponent {
   public itemsInCurrentGeneric: Array<any> = null;
   public itemsType: Array<any> = [];
   public selItemType: string = "All";
+  public MedicationExist: boolean;
 
   public currPat: Patient = new Patient();
-  public otherActiveRequests: Array<BillItemRequisition> = [];
+  public otherActiveRequests: Array<BillingTransactionItem> = [];
   //used to view lab report of selected test
   public labRequisitionIdList: Array<number>;
   public showLabReport: boolean = false;
@@ -99,7 +103,19 @@ export class OrderMainComponent {
 
   }
 
-
+  GetCurrentPatientVisitContext() {
+    let patientId = this.patService.getGlobal().PatientId;
+    let patientVisitId = this.visitService.getGlobal().PatientVisitId;
+    this.labBLService.GetDataOfInPatient(patientId, patientVisitId)
+      .subscribe(res => {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+          this.currPatVisitContext = res.Results;
+          this.LoadAllOrderItems();
+        } else {
+          this.msgBoxServ.showMessage(ENUM_DanpheHTTPResponses.Failed, ["Problem! Cannot get the Current Visit Context ! "])
+        }
+      });
+  }
 
   CallBackGetActiveOrders(res) {
 
@@ -127,6 +143,9 @@ export class OrderMainComponent {
       pat.Vitals = retPatient.Vitals;
       pat.Problems = retPatient.Problems;
       pat.MedicationPrescriptions = retPatient.MedicationPrescriptions;
+      if (retPatient.MedicationPrescriptions && retPatient.MedicationPrescriptions.length > 0) { //Bibek: this is done to display the print medication button if medication exist 
+        this.MedicationExist = true;
+      }
       pat.LabRequisitions = retPatient.LabRequisitions;
       //pat.ImagingReports = retPatient.ImagingReports;
       pat.ImagingItemRequisitions = retPatient.ImagingItemRequisitions;
@@ -142,21 +161,26 @@ export class OrderMainComponent {
   }
 
   LoadAllOrderItems() {
-    this.http.get<any>('/api/Orders/OrderItems', this.options).map(res => res)
-      .subscribe((res: DanpheHTTPResponse) => {
-        if (res.Status == "OK") {
-          this.allOrdItems = res.Results;
-          this.allOrdItems.forEach(itm => {
-            itm.IsSelected = false;
-            itm.FormattedName = itm.Type + "-" + itm.ItemName;
-          });
+    if (this.currPatVisitContext && this.currPatVisitContext.PriceCategoryId) {
+      this.http.get<any>('/api/Orders/OrderItems?priceCategoryId=' + this.currPatVisitContext.PriceCategoryId, this.options).map(res => res)
+        .subscribe((res: DanpheHTTPResponse) => {
+          if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+            this.allOrdItems = res.Results;
+            this.allOrdItems.forEach(itm => {
+              itm.IsSelected = false;
+              itm.FormattedName = itm.Type + "-" + itm.ItemName;
+            });
 
-          this.GenerateItemTypes();
-        }
-        else {
-          this.msgBoxServ.showMessage("failed", ['Failed. please check log for details.'], res.ErrorMessage);
-        }
-      });
+            this.GenerateItemTypes();
+          }
+          else {
+            this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ['Failed. please check log for details.'], res.ErrorMessage);
+          }
+        });
+    } else {
+      this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Failed, ['Failed. Patient Current Visit Context is not loaded.']);
+    }
+
   }
 
 
@@ -199,6 +223,25 @@ export class OrderMainComponent {
       });
   }
 
+  // orderItemsListFormatter(data: any): string {
+  //   let isGeneric = data["IsGeneric"];
+  //   let retHtml = "";
+
+
+  //   if (!isGeneric) {
+  //     let dosage = data["Dosage"];
+  //     let freq = data["FreqInWords"];
+
+
+  //     retHtml = data["ItemName"] + "|" + data["GenericName"] + "|" + (dosage != null && dosage != "" ? dosage : "Dose:NA") + "|" + (freq != null && freq != "" ? freq : "Frequency:NA" + " | Available Quantity: " + data["AvailableQuantity"]);
+  //     // retHtml = "(" + data["Type"] + ")" + "<b>" + data["ItemName"] + "</b>";
+  //   }
+  //   else {
+  //     retHtml = "(" + data["Type"] + ")" + data["ItemName"] + " | Available Quantity: " + data["AvailableQuantity"];
+  //   }
+
+  //   return retHtml;
+  // }
   orderItemsListFormatter(data: any): string {
     let isGeneric = data["IsGeneric"];
     let retHtml = "";
@@ -209,7 +252,7 @@ export class OrderMainComponent {
       let freq = data["FreqInWords"];
 
 
-      retHtml = data["ItemName"] + "|" + data["GenericName"] + "|" + (dosage != null && dosage != "" ? dosage : "Dose:NA") + "|" + (freq != null && freq != "" ? freq : "Frequency:NA" + " | Available Quantity: " + data["AvailableQuantity"]);
+      retHtml = data["ItemName"] + "|" + data["ServiceDepartmentName"];
       // retHtml = "(" + data["Type"] + ")" + "<b>" + data["ItemName"] + "</b>";
     }
     else {
@@ -218,7 +261,6 @@ export class OrderMainComponent {
 
     return retHtml;
   }
-
   OrderItemValueChanged() {
     if (this.selOrdItem && this.selOrdItem.ItemId) {
       this.showGenericSelection = false;
@@ -237,7 +279,7 @@ export class OrderMainComponent {
       let selItm = this.empAllPreferences ? this.empAllPreferences
         .find(itm => this.selOrdItem.ItemId == itm.ItemId && itm.Type == this.selOrdItem.Type
           && itm.IsGeneric == this.selOrdItem.IsGeneric) : null;
-      //if this itm is in favourites, we need to change there as well. 
+      //if this itm is in favourites, we need to change there as well.
       if (!selItm) {
         selItm = this.selOrdItem;
       }
@@ -245,6 +287,20 @@ export class OrderMainComponent {
       this.AddNewItemToOrders(selItm);
       this.selOrdItem = null;
       // }
+    }
+    else {
+      this.showGenericSelection = false;
+      //check if this item is present in preferences, else send dropdown selected item as parameter.
+      let selItm = this.empAllPreferences ? this.empAllPreferences
+        .find(itm => this.selOrdItem.ItemId == itm.ItemId && itm.Type == this.selOrdItem.Type
+          && itm.IsGeneric == this.selOrdItem.IsGeneric) : null;
+      //if this itm is in favourites, we need to change there as well.
+      if (!selItm) {
+        selItm = this.selOrdItem;
+      }
+
+      this.AddNewItemToOrders(selItm);
+      this.selOrdItem = null;
     }
   }
 
@@ -260,7 +316,7 @@ export class OrderMainComponent {
     //check if this item is present in preferences, else send dropdown selected item as parameter.
     let prefItem = this.empAllPreferences ? this.empAllPreferences
       .find(itm => item.ItemId == itm.ItemId && itm.Type == item.Type) : null;
-    //if this itm is in favourites, we need to change there as well. 
+    //if this itm is in favourites, we need to change there as well.
     if (!prefItem) {
       prefItem = item;
     }

@@ -1,11 +1,12 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { DispensaryService } from '../../../../dispensary/shared/dispensary.service';
 import { CoreService } from '../../../../core/shared/core.service';
+import { DispensaryService } from '../../../../dispensary/shared/dispensary.service';
 import { Patient } from '../../../../patients/shared/patient.model';
 import { PatientService } from '../../../../patients/shared/patient.service';
 import { PharmacyBLService } from '../../../../pharmacy/shared/pharmacy.bl.service';
 import { SecurityService } from '../../../../security/shared/security.service';
+import { GeneralFieldLabels } from '../../../../shared/DTOs/general-field-label.dto';
 import { CallbackService } from '../../../../shared/callback.service';
 import { GridEmitModel } from '../../../../shared/danphe-grid/grid-emit.model';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
@@ -31,6 +32,7 @@ export class PatientListComponent implements OnInit {
   public enableServerSideSearch: boolean = false;
   currentActiveDispensary: any;
   IsCurrentDispensaryInsurace: any;
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(
     public router: Router,
     public patientService: PatientService,
@@ -60,6 +62,8 @@ export class PatientListComponent implements OnInit {
         this.Load("");
         this.patientGridColumns = (this.IsCurrentDispensaryInsurace == true) ? DispensaryGridColumns.PHRMINSPatientList : DispensaryGridColumns.PHRMPatientList;
         this.patGirdDataApi = APIsByType.PatByName;
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+        this.patientGridColumns[2].headerName = `${this.GeneralFieldLabel.NSHINo} Number`;
       }
     }
     catch (exception) {

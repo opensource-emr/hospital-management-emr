@@ -15,6 +15,7 @@ import { RouteFromService } from '../../../../../shared/routefrom.service';
 import DispensaryGridColumns from '../../../../shared/dispensary-grid.column';
 import { DispensaryService } from '../../../../shared/dispensary.service';
 import { DispensaryRequisitionService } from '../dispensary-requisition.service';
+import { GeneralFieldLabels } from "../../../../../shared/DTOs/general-field-label.dto";
 
 @Component({
   selector: 'app-requisition-list',
@@ -60,6 +61,8 @@ export class RequisitionListComponent implements OnInit {
   public DispatchNepaliDateInGridSettings: NepaliDateInGridParams = new NepaliDateInGridParams();
   public showNepaliReceipt: boolean;
 
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(public coreService: CoreService, private _dispensaryService: DispensaryService, public dispensaryRequistionService: DispensaryRequisitionService,
     public pharmacyBLService: PharmacyBLService,
     public pharmacyService: PharmacyService,
@@ -73,7 +76,7 @@ export class RequisitionListComponent implements OnInit {
     this.RequisitionNepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('RequisitionDate', false));
     this.DispatchNepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('CreatedOn', false));
     this.GetPharmacyBillingHeaderParameter()
-
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
 
   }
   ngOnInit(): void {

@@ -87,14 +87,14 @@
           <img src="\themes\theme-default\images\office-logo-new.png" alt="" height="50px" width="100px">
         </td>
         <td colspan="4" width="50%">
-          <h3 class="c_name" style="text-align: center; margin-bottom: 0px;"><strong>{{headerDetail.CustomerName}}</strong></h3>
-          <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">{{headerDetail.Address}}</p>
-          <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">Ph No: {{headerDetail.Tel}}</p>
+          <h3 class="c_name" style="text-align: center; margin-bottom: 0px;"><strong>{{headerDetail.hospitalName}}</strong></h3>
+          <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">{{headerDetail.address}}</p>
+          <p class="c_paragraphs" style="text-align: center; margin-bottom: 0px;">Ph No: {{headerDetail.tel}}</p>
         </td>
         <td colspan="2" width="25%" style="text-align: right; vertical-align: top;">
-          <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;">
+          <!-- <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;">
             <strong>{{headerDetail.CustomerRegLabel}}</strong>
-          </p>
+          </p> -->
         </td>
       </tr>
     </table>
@@ -116,7 +116,7 @@
               <td colspan="6" style="text-align: right;">
                 <p class="c_paragraphs" style="margin-bottom: 1px;">Date: <strong>{{deposit.CreatedOn |
                     DanpheDateTime:'format':'YYYY-MM-DD'}}
-                   </strong></p>
+                    {{localDate}}</strong></p>
               </td>
             </tr>
             <tr>

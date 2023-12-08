@@ -12,6 +12,7 @@ import { CoreService } from "../../../core/shared/core.service";
 import { SettingsBLService } from "../../../settings-new/shared/settings.bl.service";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from "../../../shared/shared-enums";
+import { LabVendorsModel } from "../../external-labs/vendors-settings/lab-vendors.model";
 import { LabCategoryModel } from "../../shared/lab-category.model";
 import { LabComponentModel } from "../../shared/lab-component-json.model";
 import { LabReportTemplateModel } from "../../shared/lab-report-template.model";
@@ -59,6 +60,7 @@ export class AddLabTestComponent {
   public allCategories: Array<LabCategoryModel> = new Array<LabCategoryModel>();
 
   public preSelectedSpecimens: Array<Specimen_DTO> = new Array<Specimen_DTO>();
+  public ExternalVendorList: Array<LabVendorsModel> = new Array<LabVendorsModel>();
   constructor(
     public labSettingBlService: LabSettingsBLService,
     public messageBoxService: MessageboxService,
@@ -72,6 +74,7 @@ export class AddLabTestComponent {
     this.GetAllComponentList();
     this.GetAllLabCategory();
     this.GetAllSpecimenList();
+    this.GetAllLabVendorList();
   }
 
   ngOnInit() {
@@ -219,6 +222,22 @@ export class AddLabTestComponent {
     );
   }
 
+  GetAllLabVendorList() {
+    this.labSettingBlService.GetLabVendors()
+      .subscribe((res: DanpheHTTPResponse) => {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+          let allVendorList = res.Results;
+          this.ExternalVendorList = allVendorList.filter(vendor => vendor.IsExternal === true);
+        } else {
+          this.messageBoxService.showMessage(ENUM_MessageBox_Status.Error, ["Cannot get the Lab Vendor List, Please Try Later!"])
+          this.ExternalVendorList = new Array<LabVendorsModel>();
+        }
+      },
+        (err: DanpheHTTPResponse) => {
+          console.log(err.ErrorMessage);
+        });
+  }
+
   public myListFormatter(data: any): string {
     let html = data["ServiceDepartmentName"];
     return html;
@@ -331,25 +350,30 @@ export class AddLabTestComponent {
         //this.labTest.ReportTemplateId = this.rptTemplateId;
 
         if (this.labTest.IsValidCheck(undefined, undefined)) {
-          if ((this.labTest.HasNegativeResults && this.labTest.NegativeResultText !== null) || !this.labTest.HasNegativeResults
-          ) {
-            this.labSettingBlService
-              .PostNewLabTest(this.labTest)
-              .subscribe((res) => {
-                if (res.Status === ENUM_DanpheHTTPResponses.OK) {
-                  this.CallBackAddUpdate(res);
-                  this.messageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["New LabTest Added"]);
-                } else {
-                  this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Something Wrong " + res.ErrorMessage,]);
-                  this.loading = false;
-                }
-              });
+          if ((this.labTest.HasNegativeResults && this.labTest.NegativeResultText !== null) || !this.labTest.HasNegativeResults) {
+            if (!this.labTest.IsOutsourceTest || (this.labTest.IsOutsourceTest && this.labTest.DefaultOutsourceVendorId > 0)) {
+              this.labSettingBlService
+                .PostNewLabTest(this.labTest)
+                .finally(() => { this.loading = false; })
+                .subscribe((res) => {
+                  if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+                    this.CallBackAddUpdate(res);
+                    this.messageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["New LabTest Added"]);
+                  } else {
+                    this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Something Wrong " + res.ErrorMessage,]);
+                  }
+                });
+            }
+            else {
+              this.messageBoxService.showMessage(ENUM_MessageBox_Status.Warning, ["Please Select Default OutsourceVendor from the list"]);
+              this.loading = false;
+            }
           } else {
-            this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Please Enter NegativeResult Description",]);
+            this.messageBoxService.showMessage(ENUM_MessageBox_Status.Warning, ["Please Enter NegativeResult Description",]);
             this.loading = false;
           }
         } else {
-          this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["There is Validation Error. Please Try Later",]);
+          this.messageBoxService.showMessage(ENUM_MessageBox_Status.Warning, ["There is Validation Error. Please Try Later",]);
           this.loading = false;
         }
       } else {
@@ -405,23 +429,31 @@ export class AddLabTestComponent {
         );
 
         if (this.labTest.IsValidCheck(undefined, undefined)) {
-          if ((this.labTest.HasNegativeResults && this.labTest.NegativeResultText != null) || !this.labTest.HasNegativeResults
-          ) {
-            this.labSettingBlService
-              .UpdateNewLabTest(this.labTest)
-              .subscribe((res) => {
-                if (res.Status === ENUM_DanpheHTTPResponses.OK) {
-                  this.CallBackAddUpdate(res);
-                  this.messageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["LabTest Updated."]);
-                } else {
-                  this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Something Wrong " + res.ErrorMessage,]);
-                  this.loading = false;
-                }
-              });
+          if ((this.labTest.HasNegativeResults && this.labTest.NegativeResultText != null) || !this.labTest.HasNegativeResult) {
+            if (!this.labTest.IsOutsourceTest || (this.labTest.IsOutsourceTest && this.labTest.DefaultOutsourceVendorId > 0)) {
+              this.labSettingBlService
+                .UpdateNewLabTest(this.labTest)
+                .finally(() => { this.loading = false })
+                .subscribe((res) => {
+                  if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+                    this.CallBackAddUpdate(res);
+                    this.messageBoxService.showMessage(ENUM_MessageBox_Status.Success, ["LabTest Updated."]);
+                  } else {
+                    this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["Something Wrong " + res.ErrorMessage,]);
+                  }
+                });
+            }
+            else {
+              this.messageBoxService.showMessage(ENUM_MessageBox_Status.Warning, ["Please Select Default OutsourceVendor from the list"]);
+              this.loading = false;
+            }
           } else {
-            this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["There is Validation Error. Please Try Again",]);
+            this.messageBoxService.showMessage(ENUM_MessageBox_Status.Warning, ["Please Enter NegativeResult Description",]);
             this.loading = false;
           }
+        } else {
+          this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ["There is Validation Error. Please Try Again",]);
+          this.loading = false;
         }
       } else {
         this.messageBoxService.showMessage(ENUM_MessageBox_Status.Error, validationMsg.ErrMsg);
@@ -445,7 +477,7 @@ export class AddLabTestComponent {
         []
       );
 
-      if ((validComponent).length > 0) {
+      if ((validComponent).length == 0) {
         this.labTest.LabTestComponentMap = validComponent;
       }
 

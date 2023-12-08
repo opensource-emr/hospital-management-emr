@@ -32,10 +32,13 @@
     <div>
       <div id="dvReport" *ngIf="displayReport" style="padding-left: 15px;">
         <table *ngIf="displayReport"
-          style="width:100%;box-shadow: 10px 10px 5px #888888;background-color: white;border-top: 2px solid #000;">
-          <tr><td style="font-weight: bold;text-align: center;">Details Sales Report</td></tr>
+               style="width:100%;box-shadow: 10px 10px 5px #888888;background-color: white;border-top: 2px solid #000;">
+          <tr>
+            <td style="font-weight: bold;text-align: center;">Details Sales Report</td>
+          </tr>
           <tr>
             <td><b>Name Of Service Provider :{{headerDetail.CustomerName}}</b> <br />
+              <!-- // <b>Taxpayers {{ headerDetail.CustomerRegLabel}}</b><br /> -->
               <b>Taxpayers {{ headerDetail.CustomerRegLabel}}</b><br />
               <b>Duration of Sales :</b> {{displayStartDate}} / {{displayEndDate}}<br />
             </td>
@@ -57,7 +60,7 @@
                   <td class="Selected" width="50px"><b>Date (BS)</b></td>
                   <td class="Selected" width="50px"><b>Bill No.</b></td>
                   <td class="Selected" width="100px"><b>Buyer'sName</b></td>
-                  <td class="Selected" width="70px"><b>Buyer's PAN Number</b></td>
+                  <td class="Selected" width="70px"><b>Buyer's {{GeneralFieldLabel.PANNo}}</b></td>
                   <td class="Selected" width="80px"><b>Amount</b></td>
                   <td class="Selected" width="80px"><b>TAX({{coreservice.currencyUnit}})</b></td>
                 </tr>

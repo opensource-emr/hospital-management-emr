@@ -10,7 +10,7 @@ import { RouteFromService } from "../../../shared/routefrom.service";
 import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from "../../../shared/shared-enums";
 import { VerificationBLService } from "../../shared/verification.bl.service";
 import { VerificationService } from "../../shared/verification.service";
-
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 @Component({
   selector: "app-inventory-requisition-details",
   templateUrl: "./inventory-requisition-details.html"
@@ -23,6 +23,8 @@ export class VER_INV_RequisitionDetailsComponent implements OnInit, OnDestroy {
   public loading: boolean = false;
   public headerDetail: { header1, header2, header3, header4, hospitalName; address; email; PANno; tel; DDA };
   public nextVerifiersPermission: string = "";
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
   public CopyOfRequisitionItemsQuantity: Array<{
     RequisitionItemId;
     Quantity;
@@ -39,6 +41,7 @@ export class VER_INV_RequisitionDetailsComponent implements OnInit, OnDestroy {
     public changeDetector: ChangeDetectorRef
   ) {
     this.GetInventoryBillingHeaderParameter();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
 
   ngOnInit() {

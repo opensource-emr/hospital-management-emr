@@ -24,6 +24,7 @@
                                [source]="srvdeptList" placeholder="Enter Department Name"
                                display-property-name="ServiceDepartmentName" value-property-name=null onClick="this.select();"
                                (focusout)="OnSrvDeptValueChanged()" max-num-list="15" [disabled]="update"
+                               (ngModelChange)="AssignSelectedDepartment()"
                                formControlName="ServiceDepartmentId" />
                         <span class="color-red font-sm"
                               [hidden]="CurrentBillingItem.IsValidCheck('ServiceDepartmentId','required') || !(CurrentBillingItem.IsDirty('ServiceDepartmentId'))">
@@ -61,7 +62,7 @@
                 </div>
                 <div class="row" style="margin-left: 4px;">
                   <div class="form-group col-md-6">
-                    <label class="control-label col-md-4" s>Item Name<sup>*</sup><b>:</b> </label>
+                    <label class="control-label col-md-4">Item Name<sup>*</sup><b>:</b> </label>
                     <div class="col-md-8">
                       <div class="div-relative">
                         <input type="text" name="ItemName" class="form-control" maxlength="100"
@@ -337,7 +338,7 @@
                             <div style="display: flex; align-items: center;">
                               <input type="checkbox" id="{{'id_custom_isSelected_field'+i}}"
                                      style="zoom: 1.5;margin-top: -4px;" [(ngModel)]="row.IsSelected"
-                                     [ngModelOptions]="{standalone: true}">
+                                     [ngModelOptions]="{standalone: true}" (ngModelChange)="AssignItemLegalNameCode(i)">
                               <span style="padding: 5px;">{{ row.PriceCategoryName }}</span>
                             </div>
 

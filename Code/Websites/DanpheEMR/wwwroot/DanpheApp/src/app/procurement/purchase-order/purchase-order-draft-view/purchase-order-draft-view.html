@@ -82,7 +82,7 @@
                                 <div class="text-center bill-head" style=" text-align: center; font-family: sans-serif; margin-top: 10px;">
                                     <span style="font-size: 20px"><strong>{{ headerDetail.hospitalName }}</strong></span><br />
                                     <span style="font-size: 18px">{{ headerDetail.address }}</span><br />
-                                    <span style="font-size: 16px">PAN no: {{ headerDetail.PANno }} , Tel:
+                                    <span style="font-size: 16px">{{GeneralFieldLabel.PANNo}}: {{ headerDetail.PANno }} , Tel:
                                         {{ headerDetail.tel }}</span><br />
                                     <span style="font-size: 16px"><strong> Procurement Unit </strong></span><br />
                                 </div>
@@ -115,7 +115,7 @@
 
                             </tr>
                             <tr>
-                                <td style="padding: 0 5px;"><b>PAN No. :</b></td>
+                                <td style="padding: 0 5px;"><b>{{GeneralFieldLabel.PANNo}} :</b></td>
                                 <td style="padding: 0 5px;" colspan="1">{{purchaseorderDraft.VendorPANNumber}}</td>
 
                             </tr>

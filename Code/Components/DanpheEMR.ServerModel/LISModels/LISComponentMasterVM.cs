@@ -42,6 +42,7 @@ namespace DanpheEMR.ServerModel
         public long BarcodeNumber { get; set; }
         public string Value { get; set; }
         public string Unit { get; set; }
+        public int MachineId { get; set; }
         public string LISComponentName { get; set; }
     }
 

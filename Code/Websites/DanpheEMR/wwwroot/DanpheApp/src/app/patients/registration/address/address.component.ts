@@ -1,18 +1,19 @@
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 
-import { PatientService } from '../../shared/patient.service';
 import { IRouteGuard } from '../../../shared/route-guard.interface';
+import { PatientService } from '../../shared/patient.service';
 import { PatientsBLService } from '../../shared/patients.bl.service';
 
-import { Address } from "../../shared/address.model"
-import { Patient } from "../../shared/patient.model"
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { DanpheCache, MasterType } from "../../../shared/danphe-cache-service-utility/cache-services";
 import { CoreService } from "../../../core/shared/core.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
+import { DanpheCache, MasterType } from "../../../shared/danphe-cache-service-utility/cache-services";
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { Address } from "../../shared/address.model";
+import { Patient } from "../../shared/patient.model";
 
 
 @Component({
-  templateUrl: "./address.html"
+    templateUrl: "./address.html"
 })
 export class AddressComponent implements IRouteGuard {
     // binding logic
@@ -30,11 +31,12 @@ export class AddressComponent implements IRouteGuard {
     //declare boolean loading variable for disable the double click event of button
     loading: boolean = false;
     public Countries: Array<any> = null;
-    public defaultCountry : any;
-    constructor(_serv: PatientService, public patientBLService: PatientsBLService,  
-        public msgBoxServ: MessageboxService,public coreService : CoreService
+    public defaultCountry: any;
+    public GeneralFieldLabel = new GeneralFieldLabels();
+    constructor(_serv: PatientService, public patientBLService: PatientsBLService,
+        public msgBoxServ: MessageboxService, public coreService: CoreService
     ) {
-
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
         this.currentPatient = _serv.getGlobal();
         this.addresses = this.currentPatient.Addresses;
         //setting default country and state/district...according to the selction in the basic info page(according to santosh sir).
@@ -45,7 +47,7 @@ export class AddressComponent implements IRouteGuard {
 
     }
 
-    ngOnInit(){
+    ngOnInit() {
         this.defaultCountry = this.coreService.GetDefaultCountry();
     }
     public Edit(selectedAddress: Address) {
@@ -55,15 +57,15 @@ export class AddressComponent implements IRouteGuard {
     }
     public Update() {
 
-      
-     
+
+
         for (var i in this.currentAddress.AddressValidator.controls) {
             this.currentAddress.AddressValidator.controls[i].markAsDirty();
             this.currentAddress.AddressValidator.controls[i].updateValueAndValidity();
         }
         this.loading = true;
         if (this.currentAddress.IsValidCheck(undefined, undefined) == true) {
-              //set the ddl values only if current model is valid. 
+            //set the ddl values only if current model is valid. 
             this.SetDDLSelectedValues();
             for (let address of this.addresses) {
                 if (address.AddressType == this.currentAddress.AddressType) {
@@ -89,7 +91,7 @@ export class AddressComponent implements IRouteGuard {
     }
 
     public AddAddress(address: Address) {
-        
+
         // for loop is used to show validation message ..if required  field is not filled
         for (var i in this.currentAddress.AddressValidator.controls) {
             this.currentAddress.AddressValidator.controls[i].markAsDirty();
@@ -107,7 +109,7 @@ export class AddressComponent implements IRouteGuard {
 
                 for (var a = 0; a < this.addresses.length; a++) {
                     if (this.addresses[a].AddressType == this.currentAddress.AddressType) {
-                        this.msgBoxServ.showMessage("error", [this.currentAddress.AddressType +" Address is already added"]);
+                        this.msgBoxServ.showMessage("error", [this.currentAddress.AddressType + " Address is already added"]);
                         //alert(this.currentAddress.AddressType + " Address is already added");
                         return;
                     }
@@ -143,7 +145,7 @@ export class AddressComponent implements IRouteGuard {
 
     }
 
-  
+
     // this is used to get data from master table according to the countryId
     GetDDLSelectedText(dropdownId: string): string {
         //we're typecasting to HTMLSelectElement and then HTMLScriptElement to get the dropdown value.
@@ -153,37 +155,37 @@ export class AddressComponent implements IRouteGuard {
     }
     SetDDLSelectedValues() {
         let countryName = this.GetDDLSelectedText("ddlCountry");
-        let CountrySubDivisionName=null;
-        if(this.currentAddress.CountryId == this.defaultCountry.CountryId)
-        CountrySubDivisionName = this.GetDDLSelectedText("ddlCountrySubDivision");
+        let CountrySubDivisionName = null;
+        if (this.currentAddress.CountryId == this.defaultCountry.CountryId)
+            CountrySubDivisionName = this.GetDDLSelectedText("ddlCountrySubDivision");
         this.currentAddress.CountrySubDivisionName = CountrySubDivisionName;
         this.currentAddress.CountryName = countryName;
 
     }
     GoToNextInput(id: string) {
         window.setTimeout(function () {
-          let itmNameBox = document.getElementById(id);
-          if (itmNameBox) {
-            itmNameBox.focus();
-          }
+            let itmNameBox = document.getElementById(id);
+            if (itmNameBox) {
+                itmNameBox.focus();
+            }
         }, 600);
-      }
+    }
 
     GetCountry() {
-			this.Countries = DanpheCache.GetData(MasterType.Country,null);
+        this.Countries = DanpheCache.GetData(MasterType.Country, null);
         // this.patientBLService.GetCountries()
-            // .subscribe(res => {
-                // if (res.Status == 'OK') {
-                    // this.Countries = res.Results;
-                // } else {
-                    // this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
+        // .subscribe(res => {
+        // if (res.Status == 'OK') {
+        // this.Countries = res.Results;
+        // } else {
+        // this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
 
-                // }
-            // },
-                // err => {
-                    // this.msgBoxServ.showMessage("failed", ["failed get countries. please check log for details."]);
+        // }
+        // },
+        // err => {
+        // this.msgBoxServ.showMessage("failed", ["failed get countries. please check log for details."]);
 
-                // });
+        // });
     }
     GetCountrySubDivision(currentAddress) {
         if (this.currentAddress.CountryId != 0) {
@@ -195,20 +197,20 @@ export class AddressComponent implements IRouteGuard {
                 if (res.Status == 'OK') {
                     this.CountrySubDivisionList = res.Results;
                 } else {
-                   // alert(res.ErrorMessage);
+                    // alert(res.ErrorMessage);
                     this.msgBoxServ.showMessage("error", [res.ErrorMessage]);
-                    
+
                 }
             },
-            err => {
-                this.msgBoxServ.showMessage("failed", ["failed get cities. please check log for details."]);
-               // alert('failed get cities. please check log for details.');
-               
-            });
+                err => {
+                    this.msgBoxServ.showMessage("failed", ["failed get cities. please check log for details."]);
+                    // alert('failed get cities. please check log for details.');
+
+                });
 
 
     }
-   
+
 
 
 }

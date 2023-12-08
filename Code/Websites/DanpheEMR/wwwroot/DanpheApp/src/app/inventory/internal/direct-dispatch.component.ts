@@ -9,7 +9,7 @@ import { ActivateInventoryService } from '../../shared/activate-inventory/activa
 import { InventoryFieldCustomizationService } from '../../shared/inventory-field-customization.service';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { RouteFromService } from '../../shared/routefrom.service';
-import { ENUM_GRItemCategory } from '../../shared/shared-enums';
+import { ENUM_DanpheHTTPResponses, ENUM_GRItemCategory, ENUM_MessageBox_Status } from '../../shared/shared-enums';
 import { WardSupplyBLService } from '../../wardsupply/shared/wardsupply.bl.service';
 import { DispatchItems, IDispatchableAsset, MAP_Dispatch_FixedAsset } from '../shared/dispatch-items.model';
 import { Dispatch } from '../shared/dispatch.model';
@@ -42,6 +42,7 @@ export class DirectDispatchComponent implements OnDestroy {
   public DispatchItem: DispatchItems = new DispatchItems();
   showSpecification: boolean = false;
   showBarcode: boolean = false;
+  showDispatchDetailsPopup: boolean = false;
 
 
   constructor(
@@ -254,35 +255,35 @@ export class DirectDispatchComponent implements OnDestroy {
       this.dispatch.SourceStoreId = this.activeInventoryService.activeInventory.StoreId;
       this.dispatch.Remarks = this.dispatchForm.get('remarks').value;
       this.inventoryBLService.PostDirectDispatch(this.dispatch, this.fromRoute.RouteFrom).
+        finally(() => this.loading = false).
         subscribe(res => {
-          if (res.Status == 'OK') {
-            var result = res.Results;
-            this.messageBoxService.showMessage("success", ["Requisition is Generated and Saved"]);
+          if (res.Status === ENUM_DanpheHTTPResponses.OK) {
+            let result = res.Results;
+            this.messageBoxService.showMessage(ENUM_MessageBox_Status.Notice, ["Requisition is Generated and Saved"]);
             this.changeDetectorRef.detectChanges();
-            //route to dispatch
-
-            this.RouteToViewDetail(result.DispatchId, result.RequisitionId, this.activeInventoryService.activeInventory.Name);
-            this.loading = false;
             this.fromRoute.RouteFrom = null;
             this.inventoryService.GoodsReceiptId = 0;
+
+            this.inventoryService.DispatchId = result.DispatchId;
+            this.inventoryService.RequisitionId = result.RequisitionId;
+            this.inventoryService.StoreName = this.activeInventoryService.activeInventory.Name;
+            this.showDispatchDetailsPopup = true;
           }
           else {
-            this.messageBoxService.showMessage("failed", ['failed to add Requisition.. please check log for details.']);
+            this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ['failed to add Requisition.. please check log for details.']);
             console.log(res.ErrorMessage);
-            //route back to requisition list
             this.router.navigate(['/Inventory/InternalMain/Requisition/RequisitionList']);
           }
         }, err => {
-          this.messageBoxService.showMessage("failed", ['failed to add Requisition.. please check log for details.']);
+          this.messageBoxService.showMessage(ENUM_MessageBox_Status.Failed, ['failed to add Requisition.. please check log for details.']);
           console.log(err.ErrorMessage);
-          //route back to requisition list
           this.router.navigate(['/Inventory/InternalMain/Requisition/RequisitionList']);
         }, () => {
           this.loading = false;
         });
     }
     else {
-      this.messageBoxService.showMessage('Notice-Message', errorMessages);
+      this.messageBoxService.showMessage(ENUM_MessageBox_Status.Notice, errorMessages);
       this.loading = false;
     }
   }
@@ -290,7 +291,6 @@ export class DirectDispatchComponent implements OnDestroy {
     this.dispatch = new Dispatch();
     this.dispatch.DispatchItems = new Array<DispatchItems>();
     this.dispatchForm.reset();
-    //route back to requisition list
     this.router.navigate(['/Inventory/InternalMain/Requisition/RequisitionList']);
   }
   storeListFormatter(data: any): string {
@@ -304,13 +304,6 @@ export class DirectDispatchComponent implements OnDestroy {
     return html;
   }
 
-  RouteToViewDetail(dispatchId: number, requisitionId: number, storeName: string) {//sud:3Mar'20
-    //pass the Requisition Id to RequisitionView page for List of Details about requisition
-    this.inventoryService.DispatchId = dispatchId;
-    this.inventoryService.RequisitionId = requisitionId;
-    this.inventoryService.StoreName = storeName;
-    this.router.navigate(['/Inventory/InternalMain/Requisition/DispatchReceiptDetails']);
-  }
   onPressedEnterKeyInItemField(index: number) {
     if (this.dispatch.DispatchItems[index].ItemId == null) {
       this.deleteRow(index);
@@ -383,5 +376,10 @@ export class DirectDispatchComponent implements OnDestroy {
     let parameter = this.inventoryFieldCustomizationService.GetInventoryFieldCustomization();
     this.showSpecification = parameter.showSpecification;
     this.showBarcode = parameter.showBarcode;
+  }
+
+  CallBackDispatchDetailsPopUpClose() {
+    this.showDispatchDetailsPopup = false;
+    this.router.navigate(['/Inventory/InternalMain/Requisition/RequisitionList']);
   }
 }

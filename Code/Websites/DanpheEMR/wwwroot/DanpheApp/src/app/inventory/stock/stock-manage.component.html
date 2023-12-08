@@ -17,8 +17,7 @@
           <tr style="font-weight:bold;text-align:left">
             <td class="text-center">
               <label class="mt-checkbox mt-checkbox-outline">
-                <input type="checkbox" [(ngModel)]="selectAllItems" class="zoomcheckbox" (change)="SelectAllChkOnChange($event)" title="Select All"
-                       [ngModelOptions]="{standalone: true}" />
+                <input type="checkbox" [(ngModel)]="selectAllItems" class="zoomcheckbox" (change)="SelectAllChkOnChange($event)" title="Select All" [ngModelOptions]="{standalone: true}" />
                 <span></span> </label>
             </td>
             <td>GR No.</td>
@@ -52,20 +51,20 @@
         <tbody>
           <tr *ngFor="let row of stockDetails;  let i=index" style="text-align:left">
             <td class="text-center"><label class="mt-checkbox mt-checkbox-outline">
-                <input class="zoomcheckbox" [(ngModel)]="row.IsSelected" name="IsSelected" type="checkbox" [checked]="row.InOut==null ? false : true"
-                       (change)="SelectItemChkOnChange(row,i)" [ngModelOptions]="{standalone: true}" title="select item">
+                <input class="zoomcheckbox" [(ngModel)]="row.IsSelected" name="IsSelected" type="checkbox" [checked]="row.InOut==null ? false : true" (change)="SelectItemChkOnChange(row,i)" [ngModelOptions]="{standalone: true}" title="select item">
                 <span></span> </label>
             </td>
             <td>{{row.GoodsReceiptNo}}</td>
             <td>
               <ng-container *ngIf="row.GoodsReceiptDate">
+                <span *ngIf="showNepaliDate; else englishDate">{{row.GoodsReceiptDate| nepaliDate:'format':'YYYY-MM-DD'}} </span>
                 <ng-template #englishDate>{{row.GoodsReceiptDate | date : 'yyyy-MM-dd'}} AD</ng-template>
               </ng-container>
             </td>
             <td>{{row.BatchNo}}</td>
             <td>{{row.ExpiryDate | date : 'yyyy-MM-dd'}}</td>
             <!-- <td>
-              <span *ngIf="showExpiryNepaliDate; else englishDate">{{row.ExpiryDate| nepaliDate:'format':'YYYY-MM-DD'}} BS</span>
+              <span *ngIf="showExpiryNepaliDate; else englishDate">{{row.ExpiryDate| nepaliDate:'format':'YYYY-MM-DD'}} </span>
               <ng-template #englishDate>{{row.ExpiryDate | date : 'yyyy-MM-dd'}} AD</ng-template>
             </td> -->
             <td>{{row.Remarks}}</td>
@@ -86,8 +85,7 @@
                 <span class="error-msg" *ngIf="row.InOut==null && row.IsSelected"> adjustment-type is required</span>
               </form>
             </td>
-            <td><input [(ngModel)]="row.ModQuantity" (ngModelChange)="CalculationAll()" style="width:150px" class="table-input" name="ModQuantity"
-                     type="number" min="0" /></td>
+            <td><input [(ngModel)]="row.ModQuantity" (ngModelChange)="CalculationAll()" style="width:150px" class="table-input" name="ModQuantity" type="number" min="0" /></td>
             <td></td>
           </tr>
         </tbody>
@@ -103,8 +101,7 @@
               <td>Current Total Available : </td>
               <td>
                 <div class="form-group">
-                  <input [(ngModel)]="currQuantity" [ngModelOptions]="{standalone: true}" disabled class="form-control" name="currQuantity"
-                         type="number" />
+                  <input [(ngModel)]="currQuantity" [ngModelOptions]="{standalone: true}" disabled class="form-control" name="currQuantity" type="number" />
                 </div>
               </td>
             </tr>
@@ -112,8 +109,7 @@
               <td>Modified Total Available : </td>
               <td>
                 <div class="form-group">
-                  <input [(ngModel)]="moddQuantity" [ngModelOptions]="{standalone: true}" disabled class="form-control" name="moddQuantity"
-                         type="number" />
+                  <input [(ngModel)]="moddQuantity" [ngModelOptions]="{standalone: true}" disabled class="form-control" name="moddQuantity" type="number" />
                 </div>
               </td>
             </tr>

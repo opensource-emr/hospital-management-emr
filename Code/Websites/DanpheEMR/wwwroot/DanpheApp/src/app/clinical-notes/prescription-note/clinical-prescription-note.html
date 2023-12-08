@@ -77,12 +77,15 @@
     <div class="row form-group">
       <div class="col-md-4">Diagnosis({{IcdVersionDisplayName}} code)</div>
       <div class="col-md-8">
-        <input danphe-auto-complete [(ngModel)]="diagnosis" class="form-control cstm-field-ip" [source]="ICD10List" [list-formatter]="ICDListFormatter" min-chars="0" onclick="this.select();" display-property-name="ICD10Description" max-num-list="8" value-property-name="ICD10Id" (valueChanged)="SelectDiagnosis()">
+        <input danphe-auto-complete [(ngModel)]="diagnosis" class="form-control cstm-field-ip" [source]="ICD10List"
+               [list-formatter]="ICDListFormatter" min-chars="0" onclick="this.select();" display-property-name="ICD10Description" max-num-list="8"
+               value-property-name="ICD10Id" (valueChanged)="SelectDiagnosis()">
       </div>
       <div class="form-group">
         <ul class="select-list">
           <!-- <i class="fa fa-circle" aria-hidden="true"></i> -->
-          <li class="fa fa-circle" *ngFor="let diagnosis of prescriptionNotes.ICDList; let i=  index;"> &nbsp; {{diagnosis?.ICD10Description}} &nbsp; <i class="fa fa-times" style="color: #000 !important" (click)="RemoveDiagnosis(i)"></i>
+          <li class="fa fa-circle" *ngFor="let diagnosis of prescriptionNotes.ICDList; let i=  index;"> &nbsp; {{diagnosis?.ICD10Description}} &nbsp;
+            <i class="fa fa-times" style="color: #000 !important" (click)="RemoveDiagnosis(i)"></i>
             <br>
           </li>
         </ul>
@@ -94,7 +97,7 @@
         <input type="text" [(ngModel)]="prescriptionNotes.ICDRemarks" class="form-control" />
       </div>
 
-      <div class="row">
+      <!-- <div class="row">
         <div class="col-md-12 form-group">
           <h3>Lab and Orders</h3>
         </div>
@@ -175,7 +178,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </div>

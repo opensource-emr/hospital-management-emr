@@ -19,14 +19,14 @@
 
 <div class="col-md-12">
   <div id="insSticker" *ngIf="isStickerInfoLoaded && insStickerDetails !=null"
-    style="border: 1px dotted black;margin-top: 10% !important; width: 400px;">
+       style="border: 1px dotted black;margin-top: 10% !important; width: 400px;">
     <div id="opdprintpage" [ngClass]="'opdstkcontainer-' + hospitalCode"
-      style="width: 370px; margin: 0px;display: block;font-size: 11px;">
+         style="width: 370px; margin: 0px;display: block;font-size: 11px;">
       <div [ngClass]="'topsec-' + hospitalCode" class="stkrtopsection">
         <div>
           <div> <span> Date: {{insStickerDetails.VisitDate |
-              DanpheDateTime:'format':'YYYY-MM-DD'}}&nbsp;&nbsp; </span> <span
-              style="float:right;padding-right: 5px;"> Time: {{insStickerDetails.VisitTime}} </span> </div>
+              DanpheDateTime:'format':'YYYY-MM-DD'}}&nbsp;&nbsp;{{localDateTime}} </span> <span
+                  style="float:right;padding-right: 5px;"> Time: {{insStickerDetails.VisitTime}} </span> </div>
           <div>
             <div style="display:inline-block;width: 15%;vertical-align: top;"> Name&nbsp;:&nbsp; </div>
             <div style="display:inline-block;font-weight:bold;text-transform:uppercase">
@@ -38,16 +38,18 @@
             <span style="float:right;padding-right: 5px;"> Contact : {{insStickerDetails.PhoneNumber}} </span>
           </div>
 
-          <div> <span style="display:inline-block;"> NSHI Number : {{insStickerDetails.Ins_NshiNumber}} </span>
+          <div> <span style="display:inline-block;"> {{GeneralFieldLabel.NSHINo}} Number : {{insStickerDetails.Ins_NshiNumber}} </span>
             <span style="float:right;padding-right: 5px;"> Claim Code : {{insStickerDetails.ClaimCode}} </span>
           </div>
           <div>
             <div *ngIf="insStickerDetails.CountryName == 'Nepal'"><span>
-                Address&nbsp;:&nbsp;{{insStickerDetails.Address}} <span *ngIf="insStickerDetails.Address">,</span> {{insStickerDetails.District}} </span> <span
-                style="float:right;padding-right: 5px;" *ngIf="showRoomNumber"> {{roomNo}} :
+                Address&nbsp;:&nbsp;{{insStickerDetails.Address}} <span *ngIf="insStickerDetails.Address">,</span> {{insStickerDetails.District}}
+              </span> <span
+                    style="float:right;padding-right: 5px;" *ngIf="showRoomNumber"> {{roomNo}} :
                 {{insStickerDetails.DeptRoomNumber}} </span> </div>
             <div *ngIf="insStickerDetails.CountryName != 'Nepal'">
-              Address&nbsp;:&nbsp;{{insStickerDetails.Address}} <span *ngIf="insStickerDetails.Address">,</span> {{insStickerDetails.CountryName}} </div>
+              Address&nbsp;:&nbsp;{{insStickerDetails.Address}} <span *ngIf="insStickerDetails.Address">,</span> {{insStickerDetails.CountryName}}
+            </div>
           </div>
         </div>
         <hr style="border:0.5px solid black;margin:0px;" />
@@ -59,7 +61,7 @@
       </div>
       <div [ngClass]="'dptdescleft-' + hospitalCode" class="dptdesc-left">
         <div style="text-transform:capitalize "> Department : <b>{{insStickerDetails.Department}}</b> <span
-            style="padding-left:12px;" *ngIf="insStickerDetails.RoomNo">Room No : {{insStickerDetails.RoomNo}}
+                style="padding-left:12px;" *ngIf="insStickerDetails.RoomNo">Room No : {{insStickerDetails.RoomNo}}
           </span> </div>
         <div style="padding-top: 2px; display: flex;align-items: center;">
           <div style="flex: 3; flex-direction: column;">
@@ -92,7 +94,7 @@
   </div>
 
   <select-printer [group-name]="'reg-sticker'" [storage-key]="'ins-sticker'"
-    (on-printer-change)="OnPrinterChanged($event)">
+                  (on-printer-change)="OnPrinterChanged($event)">
   </select-printer>
 
 </div>

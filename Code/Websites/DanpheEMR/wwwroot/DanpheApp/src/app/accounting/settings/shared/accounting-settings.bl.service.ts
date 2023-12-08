@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
 import { MedicalCareType } from '../../../insurance/medicare/shared/medicare-member.model';
 import { BankReconciliationCategory } from '../../bank-reconciliation/reconcile-bank-transactions/bank-reconciliation.model';
+import { SubLedgerForMakePayment } from '../../transactions/shared/DTOs/sub-ledger-for-payment.dto';
 import { AccountingSettingsDLService } from '../shared/accounting-settings.dl.service';
 import { CostCenterItemModel } from "../shared/cost-center-item.model";
 import { FiscalYearModel } from "../shared/fiscalyear.model";
@@ -471,5 +472,10 @@ export class AccountingSettingsBLService {
             .map((res) => {
                 return res;
             });
+    }
+
+    public AddSubLedgers(subLedgers: Array<SubLedgerForMakePayment>) {
+        return this.accountingSettingsDLService.AddSubLedgers(subLedgers)
+            .map(res => { return res });
     }
 }

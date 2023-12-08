@@ -257,7 +257,7 @@
                                 <p class="tooltiptext tooltip-list-type ttptextdown no-print" *ngIf="ItemRateHistory.length;else noPriceHistoryMessage">
                                     <span class="tooltip-header">Rate History</span>
                                     <span *ngFor="let itemRate of ItemRateHistory">
-                                        {{coreService.currencyUnit}}{{itemRate.GRItemPrice}}-{{itemRate.SupplierName}}-{{itemRate.GoodReceiptDate | date: 'yyyy-M-d'}}
+                                        Rs.{{itemRate.GRItemPrice}}-{{itemRate.SupplierName}}-{{itemRate.GoodReceiptDate | date: 'yyyy-M-d'}}
                                     </span>
                                 </p>
                                 <ng-template #noPriceHistoryMessage>

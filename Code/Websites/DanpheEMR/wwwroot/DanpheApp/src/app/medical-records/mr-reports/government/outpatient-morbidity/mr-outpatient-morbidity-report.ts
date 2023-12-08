@@ -1,16 +1,15 @@
-import { Component } from '@angular/core'
-import { Router } from '@angular/router'
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 //Security Service for Loading Child Route from Security Service
-import { SecurityService } from "../../../../security/shared/security.service"
+import * as moment from 'moment';
+import { CoreService } from '../../../../core/shared/core.service';
+import { ReportingService } from '../../../../reporting/shared/reporting-service';
+import { SecurityService } from "../../../../security/shared/security.service";
+import { NepaliCalendarService } from '../../../../shared/calendar/np/nepali-calendar.service';
+import { CommonFunctions } from '../../../../shared/common.functions';
 import { DLService } from '../../../../shared/dl.service';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
-import { ReportingService } from '../../../../reporting/shared/reporting-service';
 import { MorbidityDiseaseGroupVM, MorbidityReportingGroupVM } from '../../../shared/MorbidityReportingGroupVM';
-import * as moment from 'moment';
-import { NepaliCalendarService } from '../../../../shared/calendar/np/nepali-calendar.service';
-import { CoreService } from '../../../../core/shared/core.service';
-import { CommonFunctions } from '../../../../shared/common.functions';
-import * as _ from 'lodash';
 
 @Component({
   templateUrl: "./mr-outpatient-morbidity-report.html"
@@ -22,8 +21,10 @@ export class OutpatientMorbidityReportComponent {
   public allDataList: any;
   public dlService: DLService = null;
   public ReportingGroupDiseaseList: Array<MorbidityReportingGroupVM> = new Array<MorbidityReportingGroupVM>();
-  public TotalNewOPDVisits: any;
-  public TotalOldOPDVisits: any;
+  public TotalNewMaleOPDVisits: number;
+  public TotalNewFemaleOPDVisits: number;
+  public TotalMaleOldOPDVisits: number;
+  public TotalFemaleOldOPDVisits: number;
   public showPrint: boolean;
   public Header: string;
   CurrentUser: string;
@@ -48,14 +49,13 @@ export class OutpatientMorbidityReportComponent {
       .subscribe(res => {
         if (res.Status == "OK") {
           this.allDataList = res.Results;
-
           this.filterByICD11 = false;
           let TotalVisitCount = JSON.parse(this.allDataList.TotalVisitCount);
-          this.TotalOldOPDVisits = TotalVisitCount[0].CountByAppType;
-          this.TotalNewOPDVisits = TotalVisitCount[1].CountByAppType;
-
+          this.TotalNewMaleOPDVisits = TotalVisitCount[0].TotalMaleNewOPDVisits;
+          this.TotalNewFemaleOPDVisits = TotalVisitCount[0].TotalFemaleNewOPDVisits;
+          this.TotalMaleOldOPDVisits = TotalVisitCount[0].TotalMaleOldOPDVisits;
+          this.TotalFemaleOldOPDVisits = TotalVisitCount[0].TotalFemaleOldOPDVisits;
           this.AssignReportingGroupData();
-
         }
       });
   }

@@ -17,5 +17,8 @@ namespace DanpheEMR.Services.LIS
         Task<List<MachineResultsFormatted>> GetMachineResults(int machineId, DateTime fromDate, DateTime toDate);
         IEnumerable<LISMachineMaster> GetAllMachines();
         Task<bool> AddLISDataToDanphe(List<MachineResultsVM> machineData);
+        Task<bool> AddMachineOrder(List<Int64> reqIds);
+        Task<object> GetMachineResultByBarcodeNumber(Int64 BarcodeNumber);
+        Task<bool> UpdateMachineResultSyncStatus(List<int> resultIds);
     }
 }

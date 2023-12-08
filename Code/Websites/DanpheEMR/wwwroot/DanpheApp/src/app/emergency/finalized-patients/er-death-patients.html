@@ -21,7 +21,8 @@
 <div *ngIf="showERPatRegistration" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px;">
   <div id="cstmSlideFromTop" class="cstm-slidefromtop">
     <div style="width: 100%; height: auto;">
-      <er-patient-registration (sendBackERPatientData)="ReturnFromPatRegistrationEdit($event)" [currentPatientToEdit]="selectedERPatientToEdit"></er-patient-registration>
+      <er-patient-registration (sendBackERPatientData)="ReturnFromPatRegistrationEdit($event)"
+                               [currentPatientToEdit]="selectedERPatientToEdit"></er-patient-registration>
     </div>
   </div>
 </div>

@@ -1,11 +1,11 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { Component } from "@angular/core";
 import * as moment from 'moment/moment';
-import { DanpheHTTPResponse } from "../../../shared/common-models";
+import { CoreService } from "../../../core/shared/core.service";
 import { SecurityService } from "../../../security/shared/security.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { VaccinationBLService } from "../../shared/vaccination.bl.service";
 import VaccinationGridColumnSettings from "../../shared/vaccination.grid.settings";
-import { PatientVaccineDetailModel } from "../../shared/patient-vaccine-detail.model";
 
 @Component({
     templateUrl: './patient-vaccine-report.html'
@@ -17,12 +17,15 @@ export class PatientVaccinationDetailReportComponent {
     public fromDate: string = null;
     public toDate: string = null;
     public gender: string = "All";
-   
+
     public reportData: Array<any> = new Array<any>();
     public vaccinationPatientReportGridColumns: any;
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
-    constructor(public securityService: SecurityService, public msgBoxService: MessageboxService, public vaccinationBlService: VaccinationBLService) {
+    constructor(public securityService: SecurityService, public msgBoxService: MessageboxService, public vaccinationBlService: VaccinationBLService, public coreservice: CoreService,) {
         this.vaccinationPatientReportGridColumns = VaccinationGridColumnSettings.vaccinationPatientReportGridColumns;
+        this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
+        this.vaccinationPatientReportGridColumns[8].headerName = `${this.GeneralFieldLabel.Caste}`;
     }
 
     onDateChange($event) {
@@ -91,5 +94,5 @@ export class PatientVaccinationDetailReportComponent {
     }
     gridExportOptions = {
         fileName: 'VaccineRport' + moment().format('YYYY-MM-DD') + '.xls',
-      };
+    };
 }

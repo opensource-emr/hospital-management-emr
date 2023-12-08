@@ -68,7 +68,7 @@
       <div class="col-md-12 col-xs-12">
         <table style="width:100% !important;" class="hidden-print">
           <tr>
-            <td style="text-align: left;"> Printed On: &nbsp; {{todayDate}} </td>
+            <td style="text-align: left;"> Printed On: &nbsp; {{todayDate}}  {{todayDate | nepaliDate:'format':'YYYY-MM-DD'}}  </td>
             <td style="text-align: right;"> For the period (AD): &nbsp; {{ fromDate }} To {{ toDate }}
             </td>
           </tr>

@@ -133,7 +133,7 @@
     <div class="clearfix"></div>
     <div class="col-md-12">
       <danphe-grid [grid-colDefaults]="PaymentReportGridColumns" [grid-data]="allReportData"
-                   (grid-actions)="PaymentReportGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings">
+        (grid-actions)="PaymentReportGridActions($event)" [NepaliDateInGridParams]="NepaliDateInGridSettings">
       </danphe-grid>
     </div>
   </div>
@@ -163,7 +163,10 @@
                             <td style="text-align:center;"> </td>
                             <td style="text-align:center;float:right;padding-right:10px;">
                               <b>Payment Date:</b>
-
+                              <span style="float:right">
+                                &nbsp;
+                                {{paymentDetails.PaymentDate | nepaliDate:'format':'YYYY-MM-DD'}} 
+                              </span><br />
                               <span style="float:right">
                                 &nbsp;
                                 {{paymentDetails.PaymentDate | DanpheDateTime:'format':'YYYY-MM-DD'}} AD
@@ -188,20 +191,20 @@
                             <td> {{paymentDetails.NetPayAmount | Currency}}</td>
                           </tr>
                         </table>
-                      </div>
+                      </div>                    
                       <div class="col-md-12">
                         <br> <br>
                         <table style="width:100%;border:0;">
                           <tr>
                             <td> In Words :</td>
-                            <td> <b> {{paymentDetails.NetPayAmount | Currency | NumberInWords | CapitalFirstLetter}}</b> <span>Only</span></td>
-                            <td> Adjust Amount : </td>
+                            <td> <b>  {{paymentDetails.NetPayAmount | Currency | NumberInWords | CapitalFirstLetter}}</b>  <span>Only</span></td>
+                            <td > Adjust Amount : </td>
                             <td> {{paymentDetails.AdjustedAmount | Currency}}</td>
                           </tr>
                           <tr>
                             <td> Narration:</td>
                             <td> <b> {{paymentDetails.Remarks}}</b></td>
-                            <td> Net (Voucher Amount) :</td>
+                            <td >  Net (Voucher Amount) :</td>
                             <td> {{paymentDetails.NetPayAmount | Currency}}</td>
                           </tr>
                         </table>
@@ -245,7 +248,7 @@
                     <div class="col-md-12" style="padding-bottom: 15px;">
                       <div class="form-actions">
                         <button style="float: right;" id="printbtn" class="btn btn-primary hidden-print" (click)="Print()" value="Print"
-                                title="print page">
+                          title="print page">
                           Print<i class="glyphicon glyphicon-print" style="margin-left:10px; "></i>
                         </button>
                       </div>

@@ -16,7 +16,8 @@
             </h3>
             <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
           </div>
-          <div class="row" style="padding: 15px;">
+          <div class="row" style="padding: 15px;"
+               *ngIf="(SchemePriCeCategory && SchemePriCeCategory.SchemeId && SchemePriCeCategory.PriceCategoryId) || DisplaySchemePriceCategorySelection">
             <scheme-pricecategory-select class="col-md-6" (on-change)="OnSchemePriceCategoryChanged($event)"
                                          [service-billing-context]="serviceBillingContext"
                                          [selected-scheme-priceCategory]="SchemePriCeCategory"

@@ -1,0 +1,23 @@
+export class InpatientOutstandingReport_DTO {
+    SchemeName: string = "";
+    PriceCategoryName: string = "";
+    PatientName: string = "";
+    IPNo: string = "";
+    PolicyNo: string = "";
+    HospitalNo: string = "";
+    ContactNo: string = "";
+    Address: string = "";
+    AgeSex: string = "";
+    WardBed: string = "";
+    AdmittedOn: string = "";
+    TotalDays: number = 0;
+    ProvisionalServiceAmount: number = 0;
+    CreditServiceAmount: number = 0;
+    PharmacyCreditAmount: number = 0;
+    PharmacyProvisionalAmount: number = 0;
+    DepositBalance: number = 0;
+    TotalAmount: number = 0;
+    TotalDueAmount: number = 0;
+    CarePersonName: string = "";
+    CarePersonContact: string = "";
+}

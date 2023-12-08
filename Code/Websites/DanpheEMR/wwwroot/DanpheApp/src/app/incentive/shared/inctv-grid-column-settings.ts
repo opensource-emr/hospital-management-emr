@@ -1,8 +1,6 @@
 import * as moment from 'moment/moment';
 import { CoreService } from '../../core/shared/core.service';
-import { CommonFunctions } from '../../shared/common.functions';
 import { SecurityService } from '../../security/shared/security.service';
-import { Permission } from '../../security/shared/permission.model';
 
 
 /*
@@ -92,9 +90,10 @@ export class INCTVGridColumnSettings {
   static EmployeeItemList = [
     { headerName: 'Department', field: 'DepartmentName', width: 100 },
     { headerName: 'ItemName', field: 'ItemName', width: 110 },
+    { headerName: 'PriceCategory', field: 'PriceCategoryName', width: 110 },
     { headerName: 'Performer %', field: 'PerformerPercent', width: 90 },
-    { headerName: 'Prescriber %', field:'PrescriberPercent', width: 90 },
-    { headerName: 'Referrer %', field:'ReferrerPercent', width: 90 },
+    { headerName: 'Prescriber %', field: 'PrescriberPercent', width: 90 },
+    { headerName: 'Referrer %', field: 'ReferrerPercent', width: 90 },
     {
       headerName: 'Group?', field: 'HasGroupDistribution', width: 70,
       cellRenderer: INCTVGridColumnSettings.GroupDistributionActionTemplate
@@ -114,6 +113,7 @@ export class INCTVGridColumnSettings {
   static EmployeeItemListWithOpdIpdSettingEnabled = [
     { headerName: 'Department', field: 'DepartmentName', width: 100 },
     { headerName: 'ItemName', field: 'ItemName', width: 120 },
+    { headerName: 'PriceCategory', field: 'PriceCategoryName', width: 120 },
     { headerName: 'Performer %', field: 'PerformerPercent', width: 90 },
     { headerName: 'Prescriber %', field: 'PrescriberPercent', width: 90 },
     { headerName: 'Referrer %', field: 'ReferrerPercent', width: 90 },
@@ -140,6 +140,7 @@ export class INCTVGridColumnSettings {
   static ProfilePreviewList = [
     { headerName: 'Department', field: 'DepartmentName', width: 100 },
     { headerName: 'ItemName', field: 'ItemName', width: 100 },
+    { headerName: 'PriceCategory', field: 'PriceCategoryName', width: 100 },
     { headerName: 'Performer %', field: 'PerformerPercent', width: 100 },
     { headerName: 'Prescriber %', field: 'PrescriberPercent', width: 100 },
     { headerName: 'Referrer %', field: 'ReferrerPercent', width: 100 },
@@ -149,6 +150,8 @@ export class INCTVGridColumnSettings {
   static ProfileBillItemGridColumns = [
     { headerName: 'Department', field: 'DepartmentName', width: 100 },
     { headerName: 'ItemName', field: 'ItemName', width: 100 },
+    { headerName: 'PriceCategory', field: 'PriceCategoryName', width: 100 },
+    { headerName: 'PriceCategory', field: 'PriceCategoryName', width: 100 },
     { headerName: 'Performer %', field: 'PerformerPercent', width: 100 },
     { headerName: 'Prescriber %', field: 'PrescriberPercent', width: 100 },
     { headerName: 'Referrer %', field: 'ReferrerPercent', width: 100 },
@@ -192,6 +195,7 @@ export class INCTVGridColumnSettings {
       width: 120,
     },
     { headerName: "Item Name", field: "ItemName", width: 120 },
+    { headerName: "PriceCategory", field: "PriceCategoryName", width: 120 },
     { headerName: "Prescriber", field: "ReferredByEmpName", width: 120 },
     { headerName: "Performer", field: "AssignedToEmpName", width: 120 },
     {

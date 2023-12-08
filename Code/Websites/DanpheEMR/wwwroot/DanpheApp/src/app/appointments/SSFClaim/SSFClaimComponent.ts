@@ -10,6 +10,7 @@ import { PatientWiseSSFClaimList, SSFBil_VM, SSFClaimList, SSF_InvoiceInfoVM, SS
 import { CoreService } from "../../core/shared/core.service";
 import { Category, ClaimBillablePeriod, ClaimCategory, ClaimCoding, ClaimDiagnosis, ClaimDiagnosisCodeableConcept, ClaimEnterer, ClaimExtension, ClaimFacility, ClaimItem, ClaimPatient, ClaimProductOrService, ClaimProvider, ClaimQuantity, ClaimRoot, ClaimSupportingInfo, ClaimTotal, ClaimType, ClaimUnitPrice, Coding, SSFClaimResponseInfo, SSFSchemeTypeSubProduct, ValueAttachement } from "../../insurance/ssf/shared/SSF-Models";
 import { PatientService } from "../../patients/shared/patient.service";
+import { GeneralFieldLabels } from "../../shared/DTOs/general-field-label.dto";
 import { NepaliCalendarService } from "../../shared/calendar/np/nepali-calendar.service";
 import { DanpheHTTPResponse } from "../../shared/common-models";
 import { CommonFunctions } from "../../shared/common.functions";
@@ -43,12 +44,12 @@ export class SSFClaimComponent {
   public QueueNoSetting = { "ShowInInvoice": false, "ShowInSticker": false };
 
   public InvoiceDisplaySettings: any = { ShowHeader: true, ShowQR: true, ShowHospLogo: true, ShowPriceCategory: false };
-  public InvoiceFooterNoteSettings: any = { ShowFooter: true, ShowEnglish: true, ShowNepali: false, EnglishText: "Please bring this invoice on your next visit." };
+  public InvoiceFooterNoteSettings: any = { ShowFooter: true, ShowEnglish: true, ShowNepali: false, EnglishText: "Please bring this invoice on your next visit.", NepaliText: "कृपया अर्को पटक आउँदा यो बिल अनिवार्य रुपमा लिएर आउनुहोला ।" };
   public hospitalCode: string = "";
   public isReceiptDetailLoaded: boolean = false;
   public defaultFocusADT: string = null;
   public defaultFocusVisit: string = null;
-  public headerDetail: { CustomerName, Address, Email, CustomerRegLabel, CustomerRegNo, Tel };
+  public headerDetail: { CustomerName, Address, Email, CustomerRegLabel, CustomerRegNo, Tel; };
 
   public closePopUpAfterInvoicePrintFromVisit: boolean = true;
   public closePopUpAfterInvoicePrintFromADT: boolean = true;
@@ -82,6 +83,9 @@ export class SSFClaimComponent {
   public claimExtensionArray = Array<ClaimExtension>();
   public TotalUploadedFiles: number = 0;
 
+  public EnableEnglishCalendarOnly: boolean = false;
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(
     public billingBLService: BillingBLService,
     public nepaliCalendarServ: NepaliCalendarService,
@@ -95,6 +99,7 @@ export class SSFClaimComponent {
     public routeFromService: RouteFromService,
     public changeDetector: ChangeDetectorRef,
     public visitBlService: VisitBLService) {
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     this.taxLabel = this.billingService.taxLabel;
     //this.currencyUnit = this.billingService.currencyUnit;
     this.SetInvoiceLabelNameFromParam();
@@ -129,6 +134,7 @@ export class SSFClaimComponent {
       this.SSFConfiguration = currParam;
     }
 
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
 
 
@@ -148,9 +154,15 @@ export class SSFClaimComponent {
 
 
   GetLocalDate(engDate: string): string {
-    let npDate = this.nepaliCalendarServ.ConvertEngToNepDateString(engDate);
-    return npDate + " BS";
+    if (this.EnableEnglishCalendarOnly) {
+      return null;
+    } else {
+      let npDate = this.nepaliCalendarServ.ConvertEngToNepDateString(engDate);
+      return npDate + " BS";
+      //return (${npDate} BS);
+    }
   }
+
 
   CheckPatientAllInvoice(patientInfo, ind) {
     let index = this.PatientWiseClaimList.findIndex(a => a.PatientId === patientInfo.PatientId && a.ClaimCode === patientInfo.ClaimCode);
@@ -179,7 +191,7 @@ export class SSFClaimComponent {
       this.SelectedInvoice.InvoiceInfo.forEach(a => {
         let items = this.InvoiceItemList.filter(items => items.BillingTransactionId === a.BillingTransactionId);
         this.SelectedInvoice.InvoiceItems.push(...items);
-      })
+      });
       this.SelectedInvoice.PhrmInvoices = this.invoice.PhrmInvoices.filter(pItems => pItems.PatientId === patientInfo.PatientId && pItems.ClaimCode === patientInfo.ClaimCode);
       this.selectedIndex = index;
     }
@@ -191,7 +203,7 @@ export class SSFClaimComponent {
     this.PatientWiseClaimList.forEach((a, ind) => {
       if (ind != outerIndex) {
         a.IsSelected = false;
-        a.InvoiceList.forEach(b => b.IsSelected = false)
+        a.InvoiceList.forEach(b => b.IsSelected = false);
       }
     });
     if (this.SelectedInvoice.InvoiceInfo.length > 0 && this.SelectedInvoice.InvoiceInfo.some(a => a.PatientId != data.PatientId)) {
@@ -399,7 +411,7 @@ export class SSFClaimComponent {
       let valueAttachment = new ValueAttachement();
       let coding = new Coding();
       coding.code = 'attachment';
-      coding.display = 'Attachment'
+      coding.display = 'Attachment';
       category.coding.push(coding);
       category.text = 'attachment';
 
@@ -429,7 +441,7 @@ export class SSFClaimComponent {
     const valueAttachment = new ValueAttachement();
     const coding = new Coding();
     coding.code = 'attachment';
-    coding.display = 'Attachment'
+    coding.display = 'Attachment';
     category.coding.push(coding);
     category.text = 'attachment';
 
@@ -508,7 +520,7 @@ export class SSFClaimComponent {
     let valueAttachment = new ValueAttachement();
     let coding = new Coding();
     coding.code = 'attachment';
-    coding.display = 'Attachment'
+    coding.display = 'Attachment';
     category.coding.push(coding);
     category.text = 'attachment';
 
@@ -620,7 +632,7 @@ export class SSFClaimComponent {
           this.CloseFileUploadPopUp();
           this.GetSSFInvoiceDetail();
         }
-      )
+      );
     } else {
       this.isSubmitClicked = false;
     }
@@ -743,7 +755,7 @@ export class SSFClaimComponent {
             }
           ]
         }
-      }
+      };
       diagnosisArray.push(diagnosis);
     }
     this.ClaimRoot.diagnosis = diagnosisArray;
@@ -774,8 +786,8 @@ export class SSFClaimComponent {
     }
 
     let existingSequenceCount = claimItemArray.length;
-    if (this.SelectedInvoice.PhrmInvoices && this.SelectedInvoice.PhrmInvoices.length) {
-      this.SelectedInvoice.PhrmInvoices.forEach((items, index) => {
+    if (this.SelectedInvoice.PhrmInvoiceItems && this.SelectedInvoice.PhrmInvoiceItems.length) {
+      this.SelectedInvoice.PhrmInvoiceItems.forEach((items, index) => {
         let claimItem = new ClaimItem();
         claimItem.sequence = existingSequenceCount + index + 1;
 
@@ -815,7 +827,7 @@ export class SSFClaimComponent {
 
     this.ClaimRoot.resourceType = ENUM_ClaimResourceType.ResourceType;
 
-    let claimResponseInfo = new SSFClaimResponseInfo()
+    let claimResponseInfo = new SSFClaimResponseInfo();
     claimResponseInfo.PatientId = this.SelectedInvoice.PatientInfo[0].PatientId;
     claimResponseInfo.PatientCode = this.SelectedInvoice.PatientInfo[0].PatientCode;
     claimResponseInfo.ClaimedDate = moment().format('YYYY-MM-DD hh:mm:ss');

@@ -6,6 +6,7 @@ import { VisitService } from '../../../appointments/shared/visit.service';
 import { CoreService } from '../../../core/shared/core.service';
 import { PatientService } from '../../../patients/shared/patient.service';
 import { SecurityService } from '../../../security/shared/security.service';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 import { CallbackService } from '../../../shared/callback.service';
 import { GridEmitModel } from '../../../shared/danphe-grid/grid-emit.model';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
@@ -40,6 +41,8 @@ export class GovINSVisitListComponent {
   public status: string = "";
   searchText: string = '';
   public enableServerSideSearch: boolean = false;
+  public GeneralFieldLabel = new GeneralFieldLabels();
+
   constructor(
     public insuranceService: GovInsuranceService,
     public insuranceBlService: GovInsuranceBlService,
@@ -67,6 +70,11 @@ export class GovINSVisitListComponent {
       this._searchService.status = this.status;
       this._searchService.maxdayslimit = this.maxLastVisitDays;
     }
+    //this.insVisitGridColumns = GovINSGridColumnSettings.InsurancePatientList;
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+    this.insVisitGridColumns[5].headerName = `${this.GeneralFieldLabel.NSHINo} No`;
+
+
 
   }
 

@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { CoreService } from "../../../core/shared/core.service";
 import { DispensaryService } from "../../../dispensary/shared/dispensary.service";
 import { PrinterSettingsModel } from "../../../settings-new/printers/printer-settings.model";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from "../../../shared/shared-enums";
@@ -34,6 +35,7 @@ export class ConsumptionReceiptComponent {
   public selectedPrinter: PrinterSettingsModel = new PrinterSettingsModel();
   public openBrowserPrintWindow: boolean = false;
   public browserPrintContentObj: any = { innerHTML: '' };
+  public GeneralFieldLabel = new GeneralFieldLabels();
   @Output("call-back-print") callBackPrint: EventEmitter<object> = new EventEmitter();
 
 
@@ -42,6 +44,7 @@ export class ConsumptionReceiptComponent {
     public messageBoxService: MessageboxService,
     public _dispensaryService: DispensaryService
   ) {
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
   }
 
   ngOnInit() {

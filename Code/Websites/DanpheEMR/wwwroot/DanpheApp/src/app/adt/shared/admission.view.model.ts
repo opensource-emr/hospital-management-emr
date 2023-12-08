@@ -37,7 +37,7 @@ export class AdmissionCancelVM {
 export class PatientBedInfoVM {
     public WardName: string = null;
     public BedNumber: number = null;
-    public BedCode: string= null;
+    public BedCode: string = null;
     public PatientBedInfoId: number = null;
     public PatientVisitId: number = null;
     public StartedOn: string = null;
@@ -52,6 +52,7 @@ export class AdmittingDocInfoVM {
     public Department: string = null;
     public DepartmentId: number = null;
     public EmployeeId: number = null;
-    public Name:string="";
-    public PatientCode:string="";
+    public Name: string = "";
+    public PatientCode: string = "";
+    DepartmentName: any;
 }

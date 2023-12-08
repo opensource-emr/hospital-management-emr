@@ -172,7 +172,7 @@ export class StickerComponent implements OnInit {
     finalDataToPrint += showQueueNo ? `${queueNoLabel}: ${queueNo}` : ``;
     finalDataToPrint += newline;
     finalDataToPrint += `User:${userName} `;
-    finalDataToPrint += `${visitDateLabel}: ${visitDate}(${localDate}) ${visitTime}`;
+    finalDataToPrint += `${visitDateLabel}: ${visitDate}${localDate} ${visitTime}`;
     return finalDataToPrint
   }
 }

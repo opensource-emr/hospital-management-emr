@@ -287,6 +287,7 @@ export class PHRMGoodsReceiptListComponent {
 
       CloseGoodReceiptItemAddEditPage() {
             this.showGoodReceiptAddEditPage = false;
+            this.getDateFilteredGoodsReceiptList();
       }
 }
 

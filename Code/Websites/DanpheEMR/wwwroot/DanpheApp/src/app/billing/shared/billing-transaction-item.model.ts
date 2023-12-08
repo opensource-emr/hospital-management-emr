@@ -165,6 +165,8 @@ export class BillingTransactionItem {
   public ProvisionalReturnItemId: number = null;
   public IsAutoBillingItem: boolean = false;
   public IsAutoCalculationStop: boolean = false;
+  public IsItemLevelDiscount: boolean = false;
+  public IsProvisionalDischarge: boolean = false;
   constructor() {
 
     this.CreatedOn = moment().format("YYYY-MM-DD HH:mm:ss");

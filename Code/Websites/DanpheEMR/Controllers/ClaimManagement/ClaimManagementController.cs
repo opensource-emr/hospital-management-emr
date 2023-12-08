@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 
 namespace DanpheEMR.Controllers.ClaimManagement
 {
@@ -146,6 +147,13 @@ namespace DanpheEMR.Controllers.ClaimManagement
             return InvokeHttpGetFunction<object>(func);
         }
 
+        [HttpGet]
+        [Route("ECHSPatientWithVisitInformation")]
+        public ActionResult ECHSPatientWithVisitInformation(string search)
+        {
+            Func<object> func = () => _IClaimManagementService.GetECHSPatientWithVisitInformation(search, _claimManagementgDbContext);
+            return InvokeHttpGetFunction<object>(func);
+        }
         #endregion
 
         #region Post APIs

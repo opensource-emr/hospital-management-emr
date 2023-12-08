@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, EventEmitter, Input, Output } from "@angular/core";
 import * as moment from 'moment/moment';
-import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
-import { DLService } from "../../../shared/dl.service";
 import { CoreService } from "../../../core/shared/core.service";
-import { IncentiveBLService } from "../../shared/incentive.bl.service";
 import { CommonFunctions } from "../../../shared/common.functions";
+import { DLService } from "../../../shared/dl.service";
+import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
+import { ENUM_DanpheHTTPResponses } from "../../../shared/shared-enums";
+import { IncentiveBLService } from "../../shared/incentive.bl.service";
 
 
 @Component({
@@ -21,9 +22,9 @@ export class INCTV_BIL_IncentiveItemGroupComponent {
 
   @Input("doctorName")
   public doctorName: string = "";
-  
+
   @Input("isReferralOnly")
-  public IsReferralOnly : boolean = false;
+  public IsReferralOnly: boolean = false;
 
   public showReport: boolean = false;
   public allReportData: Array<any> = [];
@@ -34,7 +35,7 @@ export class INCTV_BIL_IncentiveItemGroupComponent {
   };
   @Output("callback")
   callback: EventEmitter<Object> = new EventEmitter<Object>();
-   
+
 
   constructor(
     public msgBoxServ: MessageboxService,
@@ -56,10 +57,10 @@ export class INCTV_BIL_IncentiveItemGroupComponent {
 
   LoadDocDeptItemSummary() {
     //let srvDept = this.ServDeptName.replace(/&/g, '%26');//this is URL-Encoded value for character  '&'    --see: URL Encoding in Google for details.
-    this.dlService.Read("/BillingReports/INCTV_Doc_ItemGroupSummary?FromDate=" + this.FromDate + "&ToDate=" + this.ToDate + "&employeeId=" + this.employeeId +"&IsRefferalOnly="+ this.IsReferralOnly)
+    this.dlService.Read("/BillingReports/INCTV_Doc_ItemGroupSummary?FromDate=" + this.FromDate + "&ToDate=" + this.ToDate + "&employeeId=" + this.employeeId + "&IsRefferalOnly=" + this.IsReferralOnly)
       .map(res => res)
       .subscribe(res => {
-        if (res.Status == "OK") {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           let data = JSON.parse(res.Results.JsonData);
           if (data && data.Table1 && data.Table1[0]) {
             this.allReportData = data.Table1;
@@ -83,11 +84,11 @@ export class INCTV_BIL_IncentiveItemGroupComponent {
 
   ExportToExcel(tableId) {
     if (tableId) {
-      let workSheetName = this.IsReferralOnly ? 'Doctor Incentive Referral Summary Details':'Doctor Incentive Summary Details';
-      let Heading = this.IsReferralOnly ? 'Doctor Incentive Referral Summary Details':'Doctor Incentive Summary Details';
+      let workSheetName = this.IsReferralOnly ? 'Doctor Incentive Referral Summary Details' : 'Doctor Incentive Summary Details';
+      let Heading = this.IsReferralOnly ? 'Doctor Incentive Referral Summary Details' : 'Doctor Incentive Summary Details';
       let filename = this.IsReferralOnly ? 'doctorIncentiveReferralDetails' : 'doctorIncentiveDetails';
-      //NBB-send all parameters for now 
-      //need enhancement in this function 
+      //NBB-send all parameters for now
+      //need enhancement in this function
       //here from date and todate for show date range for excel sheet data
       CommonFunctions.ConvertHTMLTableToExcel(tableId, this.FromDate, this.ToDate, workSheetName,
         Heading, filename);

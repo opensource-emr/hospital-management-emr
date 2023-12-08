@@ -5,6 +5,7 @@ import { AccountingService } from "../../../../accounting/shared/accounting.serv
 import { SubLedger_DTO } from "../../../../accounting/transactions/shared/DTOs/subledger-dto";
 import { CoreService } from "../../../../core/shared/core.service";
 import { SecurityService } from "../../../../security/shared/security.service";
+import { GeneralFieldLabels } from "../../../../shared/DTOs/general-field-label.dto";
 import { MessageboxService } from "../../../../shared/messagebox/messagebox.service";
 import { ENUM_ACC_ADDLedgerLedgerType, ENUM_DanpheHTTPResponses, ENUM_Data_Type, ENUM_MessageBox_Status } from "../../../../shared/shared-enums";
 import { AccountingSettingsBLService } from "../../shared/accounting-settings.bl.service";
@@ -64,6 +65,7 @@ export class InventoryVendorLedgerMappingComponent {
     public subLedgerListForInventoryVendor: Array<SubLedger_DTO> = new Array<SubLedger_DTO>();
     public selectedSubLedger: Array<any> = [];
     public subLedgerMaster: Array<SubLedger_DTO> = new Array<SubLedger_DTO>();
+    public GeneralFieldLabel = new GeneralFieldLabels();
     public subLedgerAndCostCenterSetting = {
         "EnableSubLedger": false,
         "EnableCostCenter": false
@@ -92,6 +94,7 @@ export class InventoryVendorLedgerMappingComponent {
         this.GetLedgerMapping();
         this.getPrimaryGroupList();
         this.getCoaList();
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
     public getCoaList() {
         if (!!this.accountingService.accCacheData.COA && this.accountingService.accCacheData.COA.length > 0) { //mumbai-team-june2021-danphe-accounting-cache-change
@@ -110,7 +113,7 @@ export class InventoryVendorLedgerMappingComponent {
             let ledgers = this.coreService.Parameters.filter(p => p.ParameterGroupName == "Accounting" && p.ParameterName == "LedgerGroupMapping");
             if (ledgers.length > 0) {
                 this.ledgerTypeParamter = JSON.parse(ledgers[0].ParameterValue);
-                this.inventoryVendorLedgerParam = this.ledgerTypeParamter.find(a => a.LedgerType === ENUM_ACC_ADDLedgerLedgerType.PharmacySupplier);
+                this.inventoryVendorLedgerParam = this.ledgerTypeParamter.find(a => a.LedgerType === ENUM_ACC_ADDLedgerLedgerType.InventoryVendor);
             } else {
                 this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, ['Ledgers type not found.']);
             }
@@ -167,7 +170,7 @@ export class InventoryVendorLedgerMappingComponent {
                 else {
                     ledgerValidation = false;
                 }
-                if (ledger.SubLedgerName.trim() === "") {
+                if (this.subLedgerAndCostCenterSetting.EnableSubLedger && ledger.SubLedgerName.trim() === "") {
                     ledgerValidation = false;
                     this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Warning, [`Please Select SubLedger Or Give SubLedgerName.`]);
                     break;
@@ -446,20 +449,25 @@ export class InventoryVendorLedgerMappingComponent {
     SelectAllChkOnChange() {
         if (this.isSelectAll) {
             let ledgerObj = this.ledgerListAutoComplete.find(a => a.Name === this.inventoryVendorLedgerParam.LedgerName);
-            this.inventoryVendorList.forEach((a, index) => {
-                a.IsSelected = true;
-                a.IsActive = true;
-                if (a.IsSelected) {
-                    if (a.IsMapped == false) {
-                        a.LedgerName = this.subLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj ? ledgerObj.LedgerName : a.VendorName) : a.VendorName;
-                        a.Code = this.subLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj ? ledgerObj.Code : "") : "";
-                        a.LedgerId = this.subLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj ? ledgerObj.LedgerId : 0) : 0;
-                        a.SubLedgerName = a.VendorName;
-                        this.selectedSubLedger[index] = a.VendorName;
+            if (this.subLedgerAndCostCenterSetting.EnableSubLedger && !ledgerObj) {
+                this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, [`Please set default ledger in LedgerGroupMapping parameter for inventory vendor.`]);
+            }
+            else {
+                this.inventoryVendorList.forEach((a, index) => {
+                    a.IsSelected = true;
+                    a.IsActive = true;
+                    if (a.IsSelected) {
+                        if (a.IsMapped == false) {
+                            a.LedgerName = this.subLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj ? ledgerObj.LedgerName : a.VendorName) : a.VendorName;
+                            a.Code = this.subLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj ? ledgerObj.Code : "") : "";
+                            a.LedgerId = this.subLedgerAndCostCenterSetting.EnableSubLedger ? (ledgerObj ? ledgerObj.LedgerId : 0) : 0;
+                            a.SubLedgerName = a.VendorName;
+                            this.selectedSubLedger[index] = a.VendorName;
+                        }
                     }
-                }
-                a.LedgerValidator.get("LedgerName").enable();
-            });
+                    a.LedgerValidator.get("LedgerName").enable();
+                });
+            }
         }
         else {
             this.inventoryVendorList.forEach((a, index) => {
@@ -645,14 +653,16 @@ export class InventoryVendorLedgerMappingComponent {
             }
         }
         else {
-            if (this.selectedSubLedger[index].trim() === "") {
-                this.inventoryVendorList[index].LedgerId = 0;
-                this.inventoryVendorList[index].SubLedgerId = 0;
-                this.inventoryVendorList[index].LedgerName = "";
-                this.inventoryVendorList[index].SubLedgerName = "";
-            }
-            else {
-                this.inventoryVendorList[index].SubLedgerName = this.selectedSubLedger[index];
+            if (this.selectedSubLedger[index] === ENUM_Data_Type.String) {
+                if (this.selectedSubLedger[index].trim() === "") {
+                    this.inventoryVendorList[index].LedgerId = 0;
+                    this.inventoryVendorList[index].SubLedgerId = 0;
+                    this.inventoryVendorList[index].LedgerName = "";
+                    this.inventoryVendorList[index].SubLedgerName = "";
+                }
+                else {
+                    this.inventoryVendorList[index].SubLedgerName = this.selectedSubLedger[index];
+                }
             }
         }
     }

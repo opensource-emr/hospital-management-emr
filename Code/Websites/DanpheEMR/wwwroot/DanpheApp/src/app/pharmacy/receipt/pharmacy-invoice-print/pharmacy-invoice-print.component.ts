@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angu
 import { CoreService } from "../../../core/shared/core.service";
 import { DispensaryService } from "../../../dispensary/shared/dispensary.service";
 import { PrinterSettingsModel } from "../../../settings-new/printers/printer-settings.model";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
 import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from "../../../shared/shared-enums";
@@ -35,18 +36,22 @@ export class PharmacyInvoicePrintComponent {
     public openBrowserPrintWindow: boolean = false;
     public browserPrintContentObj: any = { innerHTML: '' };
     @Output("call-back-print") callBackPrint: EventEmitter<object> = new EventEmitter();
+    InvoiceLabel: string = 'INVOICE';
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
     constructor(public coreService: CoreService,
         public pharmacyBLService: PharmacyBLService,
         public messageBoxService: MessageboxService,
         public _dispensaryService: DispensaryService,
         private changeDetector: ChangeDetectorRef) {
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
     ngOnInit() {
         this.CheckSalesCustomization();
         this.GetPharmacyInvoiceFooterParameter();
         this.GetPharmacyBillingHeaderParameter();
         this.GetPharmacyItemNameDisplaySettings();
+        this.GetPharmacyInvoiceDisplayLabelParameter();
 
         if (this.InvoiceId) {
             this.GetInvoiceInfo(this.InvoiceId);
@@ -194,6 +199,13 @@ export class PharmacyInvoicePrintComponent {
             }
         });
         this.callBackPrint.emit();
+    }
+
+    GetPharmacyInvoiceDisplayLabelParameter() {
+        let pharmacyInvoiceDisplayLabelParams = this.coreService.Parameters.find(p => p.ParameterName == "PharmacyInvoiceDisplayLabel" && p.ParameterGroupName == "Pharmacy");
+        if (pharmacyInvoiceDisplayLabelParams != null) {
+            this.InvoiceLabel = pharmacyInvoiceDisplayLabelParams.ParameterValue;
+        }
     }
 
 }

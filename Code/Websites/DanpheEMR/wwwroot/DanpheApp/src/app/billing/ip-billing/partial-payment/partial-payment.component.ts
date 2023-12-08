@@ -1,16 +1,12 @@
-import { Component, Input, Output, EventEmitter, Renderer2 } from '@angular/core'
-import { BillingTransactionItem } from '../../shared/billing-transaction-item.model';
-import { BillingBLService } from '../../shared/billing.bl.service';
-import { DanpheHTTPResponse } from '../../../shared/common-models';
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { CommonFunctions } from '../../../shared/common.functions';
-import { CoreService } from '../../../core/shared/core.service';
-import { Patient } from '../../../patients/shared/patient.model';
-import { BillingService } from '../../shared/billing.service';
-import { RouteFromService } from '../../../shared/routefrom.service';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { ENUM_BillingType, ENUM_InvoiceType } from '../../../shared/shared-enums';
+import { CoreService } from '../../../core/shared/core.service';
 import { PatientService } from '../../../patients/shared/patient.service';
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { RouteFromService } from '../../../shared/routefrom.service';
+import { ENUM_BillingType, ENUM_InvoiceType } from '../../../shared/shared-enums';
+import { BillingTransactionItem } from '../../shared/billing-transaction-item.model';
+import { BillingService } from '../../shared/billing.service';
 
 @Component({
   selector: 'partial-payment',
@@ -83,7 +79,7 @@ export class PartialPaymentComponent {
       this.AssignTOGlobelVar();
 
       this.routeFromService.RouteFrom = "inpatient";
-      this.router.navigate(['/Billing/BillingTransactionItem']);
+      this.router.navigate(['/Billing/PayProvisional']);
     }
     else {
       this.msgBoxServ.showMessage("notice", ["Please select Item for Partial Payment"]);

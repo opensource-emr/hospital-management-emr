@@ -1,6 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { RouterOutlet, RouterModule, Router } from '@angular/router';
-
 import { RequisitionItems } from "../shared/requisition-items.model";
 import { InventoryBLService } from "../shared/inventory.bl.service";
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
@@ -15,6 +14,7 @@ import { CommonFunctions } from '../../shared/common.functions';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { VerificationActor } from '../../verification/inventory/requisition-details/inventory-requisition-details.component';
 import { InventoryFieldCustomizationService } from '../../shared/inventory-field-customization.service';
+import { GeneralFieldLabels } from '../../shared/DTOs/general-field-label.dto';
 @Component({
   animations: [
     trigger(
@@ -30,6 +30,7 @@ import { InventoryFieldCustomizationService } from '../../shared/inventory-field
     ]
     )
   ],
+  selector: 'requisition-details',
   templateUrl: "./requisition-details.html"
 })
 export class RequisitionDetailsComponent implements OnInit {
@@ -40,6 +41,7 @@ export class RequisitionDetailsComponent implements OnInit {
   public requisitionDate: string = null;
   public requisitionNo: number = null;
   public issueNo: number = null;
+  public dispatchNo: number = null;
   public ShowOutput: number = 0;
   public header: any = null;
   public createdby: string = "";
@@ -60,8 +62,9 @@ export class RequisitionDetailsComponent implements OnInit {
   public printDetaiils: HTMLElement;
   public showPrint: boolean;
   showSpecification: boolean = false;
+  @Output('call-back-requisition-details-popup-close') callBackPopupClose: EventEmitter<Object> = new EventEmitter<Object>();
 
-
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(
     public InventoryBLService: InventoryBLService,
@@ -77,8 +80,8 @@ export class RequisitionDetailsComponent implements OnInit {
     //set properties to requisition variable from service.// These should mandatorily be assigned from earlier page.
     this.requisition.RequisitionId = this.inventoryService.RequisitionId;
     this.requisition.RequestFromStoreId = this.inventoryService.StoreId;
-
     this.GetInventoryBillingHeaderParameter();;
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
   }
   ngOnInit() {
     //check for english or nepali receipt style
@@ -88,7 +91,6 @@ export class RequisitionDetailsComponent implements OnInit {
     if (this.showNepaliReceipt == false) {
       this.LoadRequisitionDetails(this.inventoryService.RequisitionId);//sud:3Mar'20
     }
-    document.getElementById('printButton').focus();
 
 
   }
@@ -99,6 +101,7 @@ export class RequisitionDetailsComponent implements OnInit {
         .subscribe(res => {
           this.ShowRequisitionDetails(res);
           this.SetValueForQR();
+          document.getElementById('printButton').focus();
         }
         );
     }
@@ -121,12 +124,13 @@ export class RequisitionDetailsComponent implements OnInit {
       this.reqItemsDetail = res.Results;
       if (this.reqItemsDetail && this.reqItemsDetail.RequisitionItemsInfo && this.reqItemsDetail.RequisitionItemsInfo.length > 0) {
         this.reqItemsDetail.RequisitionItemsInfo.forEach(itm => {
-          itm.CreatedOn = moment(itm.CreatedOn).format('YYYY-MM-DD');
+          itm.CreatedOn = moment(itm.CreatedOn).format('YYYY-MM-DD HH:mm:ss');
         });
 
         this.requisitionDate = this.reqItemsDetail.RequisitionItemsInfo[0].CreatedOn;
         this.requisitionNo = this.reqItemsDetail.RequisitionItemsInfo[0].RequisitionNo;
         this.issueNo = this.reqItemsDetail.RequisitionItemsInfo[0].IssueNo;
+        this.dispatchNo = this.reqItemsDetail.RequisitionItemsInfo[0].DispatchNo;
         this.createdby = this.reqItemsDetail.RequisitionItemsInfo[0].CreatedByName;
         this.mainRemarks = this.reqItemsDetail.RequisitionItemsInfo[0].Remarks;
         this.receivedby = null;
@@ -239,6 +243,10 @@ export class RequisitionDetailsComponent implements OnInit {
   GetInventoryFieldCustomization(): void {
     let parameter = this.inventoryFieldCustomizationService.GetInventoryFieldCustomization();
     this.showSpecification = parameter.showSpecification;
+  }
+
+  Close() {
+    this.callBackPopupClose.emit();
   }
 
 }

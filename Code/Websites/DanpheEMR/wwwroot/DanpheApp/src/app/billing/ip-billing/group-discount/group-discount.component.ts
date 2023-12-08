@@ -1,15 +1,13 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core'
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import { BillingTransactionItem } from '../../shared/billing-transaction-item.model';
-import { CommonFunctions } from '../../../shared/common.functions';
-import { BillingBLService } from '../../shared/billing.bl.service';
-import { MembershipType } from '../../../patients/shared/membership-type.model';
-import { BillingService } from '../../shared/billing.service';
-import { BillItemPriceVM } from '../../shared/billing-view-models';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CoreService } from '../../../core/shared/core.service';
-import { Membership } from "../../../settings-new/shared/membership.model";
+import { MembershipType } from '../../../patients/shared/membership-type.model';
 import { SecurityService } from '../../../security/shared/security.service';
-import { FormControl, FormGroup } from '@angular/forms';
+import { Membership } from "../../../settings-new/shared/membership.model";
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+import { BillingMasterBlService } from '../../shared/billing-master.bl.service';
+import { BillingTransactionItem } from '../../shared/billing-transaction-item.model';
+import { BillingBLService } from '../../shared/billing.bl.service';
+import { BillingService } from '../../shared/billing.service';
 
 @Component({
   selector: "group-discount",
@@ -38,12 +36,12 @@ export class GroupDiscountComponent {
   public admissionInfo: any = null;
 
   @Input("enable-discount-amount")
-  public EnableDiscountAmountField:boolean = false;
+  public EnableDiscountAmountField: boolean = false;
 
-  public allBillItmsList: Array<BillItemPriceVM> = null;
+  public allBillItmsList: Array<any> = null;
   public itemFocusJumpSequencesArray = [];
 
-  public model:any = {
+  public model: any = {
     "Subtotal": 0,
     "DiscountAmount": 0,
     "TotalAmount": 0
@@ -52,15 +50,17 @@ export class GroupDiscountComponent {
 
   constructor(public msgBoxServ: MessageboxService,
     public billingBLService: BillingBLService,
-    public billingService: BillingService, public coreService: CoreService, public securityService: SecurityService) {
+    public billingService: BillingService, public coreService: CoreService, public securityService: SecurityService,
+    private _billingMasterBlService: BillingMasterBlService) {
 
     this.LoadDiscountOptions();
     this.LoadMembershipSettings();
   }
 
   ngOnInit() {
-    //assign allbillitemlist from billing service.. 
-    this.allBillItmsList = this.billingService.allBillItemsPriceList;
+    //assign allbillitemlist from billing service..
+    // this.allBillItmsList = this.billingService.allBillItemsPriceList;
+    this.allBillItmsList = this._billingMasterBlService.ServiceItemsForIp;
 
     //need to individually map the objects to avoid Reference-Type issue
     //otherwise ipItemListToUpdate and groupDiscountItems will point to same object and will change below without saving..
@@ -82,15 +82,15 @@ export class GroupDiscountComponent {
         itm.OldDiscountPercent = itm.DiscountPercent;//sud:6Sept'19--this will be needed in case of Un-Check items.
 
 
-        let currItmPriceObj = this.allBillItmsList.find(a => a.ServiceDepartmentId == itm.ServiceDepartmentId && a.ItemId == itm.ItemId);
+        let currItmPriceObj = this.allBillItmsList.find(a => a.ServiceDepartmentId == itm.ServiceDepartmentId && a.ServiceItemId == itm.ServiceItemId);
         if (currItmPriceObj) {
-          itm.DiscountApplicable = currItmPriceObj.DiscountApplicable;
+          itm.DiscountApplicable = currItmPriceObj.IsDiscountApplicable;
         }
       });
     }
     this.itemFocusJumpSequencesArray = []; //reset jump sequence array..
-    for(let i = 0; i< this.groupDiscountItems.length; i++){
-      if(this.groupDiscountItems[i].DiscountApplicable == true){
+    for (let i = 0; i < this.groupDiscountItems.length; i++) {
+      if (this.groupDiscountItems[i].DiscountApplicable == true) {
         this.itemFocusJumpSequencesArray.push(i);
       }
       this.groupDiscountItems[i].IsValidIPItemLevelDisocunt = true;
@@ -103,7 +103,7 @@ export class GroupDiscountComponent {
 
 
   //yubraj: 28th Nov '18
-  OnChangeItemSelect(itm: BillingTransactionItem,showMessage:boolean) {
+  OnChangeItemSelect(itm: BillingTransactionItem, showMessage: boolean) {
     /* let discPercent = this.discTypeToUse == "group" ? this.groupDiscountPercent : this.currMemDiscountPercent;
 
     itm.DiscountPercent = itm.IsSelected ? discPercent : itm.OldDiscountPercent;
@@ -148,7 +148,7 @@ export class GroupDiscountComponent {
     if (!this.isAllItemsSelected) {
       this.msgBoxServ.showMessage("Warning!", ["Please select Item to give Group Discount."]);
     }
-   this.GroupDiscountOnChange();
+    this.GroupDiscountOnChange();
   }
 
   GroupDiscountOnChange() {
@@ -160,7 +160,7 @@ export class GroupDiscountComponent {
     this.showMessage = false;
     this.groupDiscountItems.forEach(item => {
 
-      this.OnChangeItemSelect(item,false);
+      this.OnChangeItemSelect(item, false);
 
     });
   }
@@ -186,7 +186,7 @@ export class GroupDiscountComponent {
             //temporary solution for now, need to get the data from server and then use that same ID ..
             if (itemsToUpdate && itemsToUpdate.length > 0) {
               itemsToUpdate.forEach(itm => {
-                //we have to update in source object.. otherwise it won't be updated.. so.. 
+                //we have to update in source object.. otherwise it won't be updated.. so..
                 let srcObject = this.groupDiscountItems.find(a => a.BillingTransactionItemId == itm.BillingTransactionItemId);
                 if (srcObject) {
                   srcObject.ModifiedBy = this.securityService.loggedInUser.EmployeeId;
@@ -202,7 +202,7 @@ export class GroupDiscountComponent {
             this.loading = false;
           });
 
-    }else{
+    } else {
       this.loading = false;
     }
 
@@ -241,9 +241,9 @@ export class GroupDiscountComponent {
     }
 
     let itemsHavingInvalidDiscount = this.groupDiscountItems.filter(a => a.DiscountPercent < 0 || a.DiscountPercent > 100);
-    if(itemsHavingInvalidDiscount.length > 0){
+    if (itemsHavingInvalidDiscount.length > 0) {
       retVal = false;
-      this.msgBoxServ.showMessage('warning',["Some Items have invalid discounts."]);
+      this.msgBoxServ.showMessage('warning', ["Some Items have invalid discounts."]);
     }
 
 
@@ -363,13 +363,13 @@ export class GroupDiscountComponent {
     }
   }
 
-  public DiscountPercentChanged(index:number){
+  public DiscountPercentChanged(index: number) {
 
     let currentItem = this.groupDiscountItems[index];
 
-    //if disocunt %  is zero or empty then just remove the selection. 
+    //if disocunt %  is zero or empty then just remove the selection.
     if (currentItem.DiscountPercent == null) {
-      currentItem.IsSelected = false; 
+      currentItem.IsSelected = false;
     }
     else if (currentItem.DiscountPercent < 0 || currentItem.DiscountPercent > 100) {
       currentItem.IsSelected = false;
@@ -383,18 +383,18 @@ export class GroupDiscountComponent {
     this.RecalculateAmounts();
   }
 
-  public FocusNextItemRow(index:number){
-    if(!this.EnableDiscountAmountField){
+  public FocusNextItemRow(index: number) {
+    if (!this.EnableDiscountAmountField) {
       if (index == -1) {
         //currIndex is minus(1) for First Load, this time, go directly to 0th index
         let itemIndex = this.itemFocusJumpSequencesArray[0];
         this.coreService.FocusInputById('id_discPercent_' + itemIndex, 300);
-       
+
       }
       else {
         //first find the array index of current item's index. then find out itemIndex.
         let arrayIndex = this.itemFocusJumpSequencesArray.indexOf(index) + 1;
-        
+
         //continue finding next item's index using and jump. Else jump to Remarks textbox.
         if (this.itemFocusJumpSequencesArray.length > arrayIndex) {
           let nextItemIndex = this.itemFocusJumpSequencesArray[arrayIndex];
@@ -404,17 +404,17 @@ export class GroupDiscountComponent {
           this.coreService.FocusInputById("id_saveItems");
         }
       }
-    }else{
+    } else {
       if (index == -1) {
         //currIndex is minus(1) for First Load, this time, go directly to 0th index
         let itemIndex = this.itemFocusJumpSequencesArray[0];
         this.coreService.FocusInputById('id_discAmount_' + itemIndex, 300);
-       
+
       }
       else {
         //first find the array index of current item's index. then find out itemIndex.
         let arrayIndex = this.itemFocusJumpSequencesArray.indexOf(index) + 1;
-        
+
         //continue finding next item's index using and jump. Else jump to Remarks textbox.
         if (this.itemFocusJumpSequencesArray.length > arrayIndex) {
           let nextItemIndex = this.itemFocusJumpSequencesArray[arrayIndex];
@@ -425,12 +425,12 @@ export class GroupDiscountComponent {
         }
       }
     }
-    
+
     //this.RecalculateAmounts();
 
   }
 
-  public RecalculateAmounts(){
+  public RecalculateAmounts() {
     this.groupDiscountItems.forEach(itm => {
 
       let itemDiscount = Number((itm.SubTotal * (itm.DiscountPercent / 100)).toFixed(4));
@@ -441,13 +441,13 @@ export class GroupDiscountComponent {
     });
     this.model.DiscountAmount = 0;
     this.model.TotalAmount = 0;
-    this.groupDiscountItems.forEach(a =>{
+    this.groupDiscountItems.forEach(a => {
       this.model.DiscountAmount += a.DiscountAmount;
       this.model.TotalAmount += a.TotalAmount;
     })
-    
+
   }
-  public Calculations(){
+  public Calculations() {
     this.groupDiscountItems.forEach(a => {
       this.model.Subtotal += a.SubTotal;
       this.model.DiscountAmount += a.DiscountAmount;
@@ -455,12 +455,12 @@ export class GroupDiscountComponent {
     })
   }
 
-  ItemLevelDiscountAmountChanged(index:number){
+  ItemLevelDiscountAmountChanged(index: number) {
     let currentItem = this.groupDiscountItems[index];
 
-    //if disocunt %  is zero or empty then just remove the selection. 
+    //if disocunt %  is zero or empty then just remove the selection.
     if (currentItem.DiscountAmount == null) {
-      currentItem.IsSelected = false; 
+      currentItem.IsSelected = false;
     }
     else if (currentItem.DiscountAmount < 0 || currentItem.DiscountAmount > currentItem.SubTotal) {
       currentItem.IsSelected = false;
@@ -474,25 +474,25 @@ export class GroupDiscountComponent {
     this.ReCalculationsForDiscountAmounts();
   }
 
-  public ReCalculationsForDiscountAmounts(){
+  public ReCalculationsForDiscountAmounts() {
     this.groupDiscountItems.forEach(itm => {
 
       // let itemDiscountPercent = (itm.DiscountAmount / itm.SubTotal)*100;
-      let itemDiscountPercent = (itm.DiscountAmount * 100) / itm.SubTotal;  
+      let itemDiscountPercent = (itm.DiscountAmount * 100) / itm.SubTotal;
       itm.TotalAmount = itm.SubTotal - itm.DiscountAmount;
       itm.DiscountPercent = itemDiscountPercent;
 
     });
     this.model.DiscountAmount = 0;
     this.model.TotalAmount = 0;
-    this.groupDiscountItems.forEach(a =>{
+    this.groupDiscountItems.forEach(a => {
       this.model.DiscountAmount += a.DiscountAmount;
       this.model.TotalAmount += a.TotalAmount;
     })
-    
+
   }
 
-  AssignDiscountPercent(index:number, $event){
+  AssignDiscountPercent(index: number, $event) {
     this.groupDiscountItems[index].DiscountPercent = +$event.target.value;
   }
 }

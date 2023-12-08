@@ -83,14 +83,13 @@
                                 <div class="col-md-12">
                                     <div class="row" style="margin-bottom: 10px;">
                                         <div class="logo" style="width: 18%;padding:0px 15px 0px 15px; float: left;">
-                                            <img class="img-responsive" style="max-height:70px;"
-                                                 src="../../../themes/theme-default/images/hospital-logo.PNG" />
+                                            <img class="img-responsive" style="max-height:70px;" src="../../../themes/theme-default/images/hospital-logo.PNG" />
                                         </div>
                                         <div style="width: 64%;float: left;padding-bottom:  0px;">
                                             <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
                                                 <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                                                 <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                                                <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel:
+                                                <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel:
                                                     {{ headerDetail.tel}}</span><br />
                                                 <span style="font-size:15px;"><strong> Inventory Unit
                                                     </strong></span><br />
@@ -114,8 +113,10 @@
                                         <p>Vendor Contact:<b> {{goodsreceiptDetails.VendorNo}}</b></p>
                                     </div>
                                     <div class="right" style="text-align:right;">
-                                        <p>Goods Receipt Date:<b> {{goodsreceiptDetails.GoodsReceiptDate}}</b></p>
-                                        <p>Vendor Bill Date:<b> {{goodsreceiptDetails.VendorBillDate | date:'yyyy-MM-dd'}}</b></p>
+                                        <p>Goods Receipt Date:<b> {{goodsreceiptDetails.GoodsReceiptDate}}
+                                                {{goodsreceiptDetails.GoodsReceiptDate | nepaliDate }}</b></p>
+                                        <p>Vendor Bill Date:<b> {{goodsreceiptDetails.VendorBillDate | date:'yyyy-MM-dd'}}
+                                                {{goodsreceiptDetails.VendorBillDate | nepaliDate }}</b></p>
                                         <p>Bill No:<b> {{goodsreceiptDetails.BillNo}}</b></p>
                                         <p>Credit Period<b> {{goodsreceiptDetails.CreditPeriod}} Days</b></p>
                                     </div>
@@ -128,8 +129,7 @@
                                     <div class="table-responsive">
                                         <!-- <div [ngClass]="{'receipt-watermark': goodsreceiptDetails.IsCancel ? false : true}"> -->
                                         <div>
-                                            <table class="table table-striped table-hover table-bordered"
-                                                   style="background-color:initial;margin-top:10px">
+                                            <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
                                                 <thead>
                                                     <tr style="font-weight: bold;text-align:center">
                                                         <td>S.N</td>
@@ -148,8 +148,7 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <ng-container style="text-align:center"
-                                                                  *ngFor="let row of goodsreceiptItemsDetails ; let  i = index ">
+                                                    <ng-container style="text-align:center" *ngFor="let row of goodsreceiptItemsDetails ; let  i = index ">
                                                         <tr>
                                                             <td><b>{{i + 1}}</b></td>
                                                             <td><b>{{row.ItemCode}}</b></td>
@@ -181,8 +180,7 @@
                                             <div class="cancelStamp"> Cancelled </div>
                                         </div>
                                         <div class="right" style="text-align:right;">
-                                            <table class="table table-striped table-hover table-bordered"
-                                                   style="background-color:initial;margin-top:10px">
+                                            <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px">
                                                 <tr>
                                                     <td><b>Sub total:</b></td>
                                                     <td>{{goodsreceiptDetails.SubTotal | number: "1.2-2"}}</td>
@@ -245,8 +243,7 @@
                                             </table>
                                         </div> -->
                                         <div class="right" style="text-align:right;">
-                                            <table class="table table-striped table-hover table-bordered"
-                                                   style="background-color:initial;margin-top:10px" *ngIf="goodsreceiptDetails.GRCharges.length !=0">
+                                            <table class="table table-striped table-hover table-bordered" style="background-color:initial;margin-top:10px" *ngIf="goodsreceiptDetails.GRCharges.length !=0">
                                                 <tr>
                                                     <th colspan="2" class="text-center">
                                                         <strong>Other Charges</strong>

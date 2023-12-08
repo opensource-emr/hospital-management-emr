@@ -1,26 +1,23 @@
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { CommonModule, HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { HashLocationStrategy, LocationStrategy } from "@angular/common";
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { AgGridModule } from 'ag-grid-angular/main';
 
-import { SettingsRoutingModule } from './settings-routing.module';
 import { SettingsMainComponent } from './settings-main.component';
+import { SettingsRoutingModule } from './settings-routing.module';
 
-import { SettingsDLService } from './shared/settings.dl.service';
 import { BillingDLService } from '../billing/shared/billing.dl.service';
-import { SettingsBLService } from './shared/settings.bl.service';
 import { SettingsService } from "./shared/settings-service";
+import { SettingsBLService } from './shared/settings.bl.service';
+import { SettingsDLService } from './shared/settings.dl.service';
 
 import { TaxManageComponent } from "./tax/tax-manage.component";
 //import { Ng2AutoCompleteModule } from 'ng2-auto-complete';
+import { DynTemplateModule } from '../core/dyn-templates/dyn-templates.module';
 import { DanpheAutoCompleteModule } from '../shared/danphe-autocomplete/danphe-auto-complete.module';
 import { SharedModule } from "../shared/shared.module";
-import { DynTemplateModule } from '../core/dyn-templates/dyn-templates.module';
-import { ListPrinterSettingsComponent } from './printers/list/list-printer-settings.component';
+import { DynamicTemplateModule } from './dynamic-templates/dynamic-template.module';
 
 
 //Credit Organization
@@ -40,9 +37,10 @@ import { ListPrinterSettingsComponent } from './printers/list/list-printer-setti
     FormsModule,
     HttpClientModule,
     SettingsRoutingModule,
-    DanpheAutoCompleteModule, 
+    DanpheAutoCompleteModule,
     SharedModule,
-    DynTemplateModule
+    DynTemplateModule,
+    DynamicTemplateModule
   ],
   declarations: [
     SettingsMainComponent,

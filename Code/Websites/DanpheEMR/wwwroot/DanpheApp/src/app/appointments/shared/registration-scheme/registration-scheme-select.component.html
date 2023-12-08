@@ -25,7 +25,7 @@
           </div>
           <div class="col-md-4">
             <div *ngIf="currentSchemeParams.SelectEmployer">
-              Employer:
+              Employer<b>:</b>
               <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}" [(ngModel)]="SelectedSsfEmployer"
                      [list-formatter]="SFFEmployerListFormatter" [source]="SsfEmployer" placeholder="Select Employer"
                      display-property-name="name"
@@ -38,7 +38,7 @@
           <div class="col-md-7">
             <div *ngIf="currentSchemeParams.ShowMemberNo">
               <label>
-                {{currentSchemeParams.MemberNoLabelName}} :
+                {{currentSchemeParams.MemberNoLabelName}} <sup *ngIf="this.currentRegSchemeDto.IsMemberNumberCompulsory"> *</sup> <b>:</b>
               </label>
               <input *ngIf="currentSchemeParams.EnterMemberNumber; else memberNoValueLabel"
                      id="txtMembershipNo" [(ngModel)]="currentRegSchemeDto.MemberNo"
@@ -46,7 +46,8 @@
                      (keyup.enter)="OnMemberNumberChange();GoToNextElementFromMemberNoElement()" (focusout)="CheckAndProceedToEmit()" />
               <ng-template #memberNoValueLabel> <label>{{currentRegSchemeDto.MemberNo}}</label> </ng-template>
 
-              <button *ngIf="currentSchemeParams.ShowMembershipLoadButton && IsClaimSuccessful" style="margin-left:10px;"
+              <button *ngIf="currentSchemeParams.ShowMembershipLoadButton && (IsClaimSuccessful || DisplayMembershipLoadButton)"
+                      style="margin-left:10px;"
                       id="id_load_memberInfo" class="btn green btn-success" [disabled]="loading"
                       (click)="loadFromSSFServer = true;LoadMemberInformationClicked()">
                 {{currentSchemeParams.MembershipLoadButtonDisplayName}}
@@ -55,9 +56,10 @@
               <span *ngIf="(!IsSsfEmployerAssigned && SsfEmployer && SsfEmployer.length > 0 && currentSchemeParams.SchemeParameterName === 'SSF')"
                     style="color:rgb(241, 20, 20)">
                 Please choose Employer for this SSF Patient.</span>
-              <span *ngIf="FetchSsfDetailLocally" style="color:rgb(241, 20, 20)"> Please Wait Fetching Details... </span>
+              <span *ngIf="FetchSsfDetailLocally && !DisplayMembershipLoadButton" style="color:rgb(241, 20, 20)"> Please Wait Fetching Details...
+              </span>
               <span *ngIf="currentSchemeParams.EnterClaimCode" style="margin-left:10px;">
-                <label>Claim Code:</label>
+                <label>Claim Code<b>:</b></label>
                 <input *ngIf="currentSchemeParams.EnterClaimCode"
                        id="id_txt_claimCode" [(ngModel)]="currentRegSchemeDto.ClaimCode"
                        placeholder="Enter Claim Code" type="number"
@@ -69,11 +71,12 @@
             </div>
           </div>
           <div class="col-md-4">
-            <div *ngIf="currentSchemeParams.ShowOpIpBalance">
+            <div *ngIf="currentSchemeParams.ShowOpIpBalance && !currentRegSchemeDto.IsGeneralCreditLimited">
               <label> OPD Balance: {{currentRegSchemeDto.CreditLimitObj.OpCreditLimit}}</label>
               <label style="margin-left:10px;"> IPD Balance: {{currentRegSchemeDto.CreditLimitObj.IpCreditLimit}}</label>
             </div>
-            <div *ngIf="currentSchemeParams.ShowGeneralBalance">
+            <div
+                 *ngIf="currentSchemeParams.ShowGeneralBalance && currentRegSchemeDto.IsGeneralCreditLimited">
               <label> General Balance: {{currentRegSchemeDto.CreditLimitObj.GeneralCreditLimit}}</label>
             </div>
 

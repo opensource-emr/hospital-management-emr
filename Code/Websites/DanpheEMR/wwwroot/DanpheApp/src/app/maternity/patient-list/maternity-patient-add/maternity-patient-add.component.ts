@@ -1,14 +1,15 @@
-import { Component, EventEmitter, Input, Output, HostListener } from '@angular/core';
-import { CountrySubdivision } from '../../../settings-new/shared/country-subdivision.model';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CoreService } from '../../../core/shared/core.service';
 import { Patient } from '../../../patients/shared/patient.model';
+import { CountrySubdivision } from '../../../settings-new/shared/country-subdivision.model';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
+import { DanpheCache, MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { MaternityBLService } from '../../shared/maternity.bl.service';
-import { MaternityPatient, MaternityPatientVM } from '../../shared/maternity.model';
+import { MaternityPatientVM } from '../../shared/maternity.model';
 import { MaternityService } from '../../shared/maternity.service';
 import { PatientInfoVM } from './patient-detailsVM';
-import { DanpheCache } from '../../../shared/danphe-cache-service-utility/cache-services';
-import { MasterType } from '../../../shared/danphe-cache-service-utility/cache-services';
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
+
 
 
 @Component({
@@ -33,12 +34,14 @@ export class MaternityPatientAddComponent {
     public callBackAddClose: EventEmitter<Object> = new EventEmitter<Object>();
     public olderAddressList: Array<any> = [];
     public isUpdate: boolean = false;
+    public GeneralFieldLabel = new GeneralFieldLabels();
 
     constructor(public maternityBlService: MaternityBLService,
         public maternityServ: MaternityService,
         public coreService: CoreService,
         public msgBoxServ: MessageboxService) {
         this.Initialize();
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
 
     ngOnInit() {

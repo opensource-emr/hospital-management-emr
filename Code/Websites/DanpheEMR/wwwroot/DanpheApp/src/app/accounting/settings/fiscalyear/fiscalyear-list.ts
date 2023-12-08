@@ -1,15 +1,15 @@
 
-import { Component, ChangeDetectorRef } from "@angular/core";
+import { ChangeDetectorRef, Component } from "@angular/core";
 
-import { FiscalYearModel } from '../shared/fiscalyear.model';
 import { AccountingSettingsBLService } from '../shared/accounting-settings.bl.service';
+import { FiscalYearModel } from '../shared/fiscalyear.model';
 
+import * as moment from 'moment/moment';
+import { CoreService } from '../../../core/shared/core.service';
+import { SecurityService } from "../../../security/shared/security.service";
 import GridColumnSettings from '../../../shared/danphe-grid/grid-column-settings.constant';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
-import * as moment from 'moment/moment';
-import { CoreService } from '../../../core/shared/core.service'
-import { SecurityService } from "../../../security/shared/security.service";
 import { AccountingService } from "../../shared/accounting.service";
 @Component({
     selector: 'fiscalyear-list',
@@ -17,21 +17,32 @@ import { AccountingService } from "../../shared/accounting.service";
 })
 export class FiscalYearListComponent {
     public fiscalYearList: Array<FiscalYearModel> = new Array<FiscalYearModel>();
+    public EnableEnglishCalendarOnly: boolean = false;
+
     public showFiscalYearList: boolean = true;
     public fiscalYearGridColumns: Array<any> = null;
     public showAddPage: boolean = false;
     public selectedFiscalYear: FiscalYearModel;
     public index: number;
-    public showpopup:boolean=false;
-    public showerror:boolean=false;
-    public Remark:string= "";
+    public showpopup: boolean = false;
+    public showerror: boolean = false;
+    public Remark: string = "";
     constructor(
         public accountingSettingsBLService: AccountingSettingsBLService,
         public msgBox: MessageboxService,
-        public changeDetector: ChangeDetectorRef, private coreService: CoreService,public securityService:SecurityService,public accountingService:AccountingService) {
+        public changeDetector: ChangeDetectorRef, private coreService: CoreService, public securityService: SecurityService, public accountingService: AccountingService) {
+        this.GetCalendarParameter();
         this.getFiscalYearList();
     }
-    ngOnInit(){
+
+    GetCalendarParameter(): void {
+        const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+        if (param && param.ParameterValue) {
+            const paramValue = JSON.parse(param.ParameterValue);
+            this.EnableEnglishCalendarOnly = paramValue;
+        }
+    }
+    ngOnInit() {
         this.getFiscalYearList();
     }
     public getFiscalYearList() {
@@ -74,7 +85,7 @@ export class FiscalYearListComponent {
             }
             case "edit": {
                 this.selectedFiscalYear = $event.Data;
-                this.showpopup =true;
+                this.showpopup = true;
             }
             default:
                 break;
@@ -136,61 +147,61 @@ export class FiscalYearListComponent {
         console.log(err);
     }
 
-    ReopenFiscalYear(){
+    ReopenFiscalYear() {
         if (this.selectedFiscalYear != null) {
-            if(this.Remark !=""){
+            if (this.Remark != "") {
                 this.showerror = false;
                 this.selectedFiscalYear.Remark = this.Remark;
                 this.accountingSettingsBLService.PutReopenFiscalYear(this.selectedFiscalYear)
-                .subscribe(
-                    res => {
-                        if (res.Status == "OK") {
-                            // get updated Fiscal Year list
-                            this.coreService.GetFiscalYearList().subscribe(res => {
-                                this.coreService.SetFiscalYearList(res);
-                                this.fiscalYearList = res.Results;
-                                for (var i = 0; i < this.fiscalYearList.length; i++) {
-                                    this.fiscalYearList[i].StartDate = moment(this.fiscalYearList[i].StartDate).format("YYYY-MM-DD");
-                                    this.fiscalYearList[i].EndDate = moment(this.fiscalYearList[i].EndDate).format("YYYY-MM-DD");
-                                  
-                                }
-                                for (var i = 0; i < this.fiscalYearList.length; i++) {
-                                    this.fiscalYearList[i].showreopen = (this.fiscalYearList[i].IsClosed == true) ? true : false;
-                                }
-                                this.accountingService.accCacheData.FiscalYearList.forEach(fy =>{
-                                let fiscalyear = this.fiscalYearList.filter(f => f.FiscalYearId == fy.FiscalYearId);
-                                fy.IsClosed = (fiscalyear.length > 0) ? fiscalyear[0].IsClosed : true;
-                                fy.showreopen = fy.IsClosed;
+                    .subscribe(
+                        res => {
+                            if (res.Status == "OK") {
+                                // get updated Fiscal Year list
+                                this.coreService.GetFiscalYearList().subscribe(res => {
+                                    this.coreService.SetFiscalYearList(res);
+                                    this.fiscalYearList = res.Results;
+                                    for (var i = 0; i < this.fiscalYearList.length; i++) {
+                                        this.fiscalYearList[i].StartDate = moment(this.fiscalYearList[i].StartDate).format("YYYY-MM-DD");
+                                        this.fiscalYearList[i].EndDate = moment(this.fiscalYearList[i].EndDate).format("YYYY-MM-DD");
+
+                                    }
+                                    for (var i = 0; i < this.fiscalYearList.length; i++) {
+                                        this.fiscalYearList[i].showreopen = (this.fiscalYearList[i].IsClosed == true) ? true : false;
+                                    }
+                                    this.accountingService.accCacheData.FiscalYearList.forEach(fy => {
+                                        let fiscalyear = this.fiscalYearList.filter(f => f.FiscalYearId == fy.FiscalYearId);
+                                        fy.IsClosed = (fiscalyear.length > 0) ? fiscalyear[0].IsClosed : true;
+                                        fy.showreopen = fy.IsClosed;
+                                    });
                                 });
-                            });
-                            this.securityService.AccHospitalInfo.FiscalYearList.forEach(fy=>{
-                                if(fy.FiscalYearId==this.selectedFiscalYear.FiscalYearId){
-                                    fy.IsClosed=false;
-                                    fy.showreopen=false;
+                                this.securityService.AccHospitalInfo.FiscalYearList.forEach(fy => {
+                                    if (fy.FiscalYearId == this.selectedFiscalYear.FiscalYearId) {
+                                        fy.IsClosed = false;
+                                        fy.showreopen = false;
+                                    }
+                                });
+                                if (this.securityService.AccHospitalInfo.CurrFiscalYear.FiscalYearId == this.selectedFiscalYear.FiscalYearId) {
+                                    this.securityService.AccHospitalInfo.CurrFiscalYear.IsClosed = false;
+                                    this.securityService.AccHospitalInfo.CurrFiscalYear.showreopen = false;
                                 }
-                            });
-                            if(this.securityService.AccHospitalInfo.CurrFiscalYear.FiscalYearId==this.selectedFiscalYear.FiscalYearId){
-                                this.securityService.AccHospitalInfo.CurrFiscalYear.IsClosed=false;
-                                this.securityService.AccHospitalInfo.CurrFiscalYear.showreopen = false;
+                                this.msgBox.showMessage("Success", [this.selectedFiscalYear.FiscalYearName + ' open now.']);
+                                this.closepopup();
+
                             }
-                            this.msgBox.showMessage("Success", [this.selectedFiscalYear.FiscalYearName + ' open now.']);
-                            this.closepopup();
-                           
-                        }
-                        else {
-                            this.msgBox.showMessage("Error", ['Something wrong' + res.ErrorMessage]);
-                        }
-                    },
-                    err => {
-                        this.logError(err);
-                    });
+                            else {
+                                this.msgBox.showMessage("Error", ['Something wrong' + res.ErrorMessage]);
+                            }
+                        },
+                        err => {
+                            this.logError(err);
+                        });
             }
-            else{
+            else {
                 this.showerror = true;
             }
         }
     }
-    closepopup(){
-        this.showpopup =false;
+    closepopup() {
+        this.showpopup = false;
     }
 }

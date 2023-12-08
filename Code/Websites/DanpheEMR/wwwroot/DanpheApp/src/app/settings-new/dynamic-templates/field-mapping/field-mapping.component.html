@@ -1,0 +1,103 @@
+<style>
+  /* Add proper spacing and styling */
+  .popup-container {
+    width: 70%;
+    max-height: 80vh;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: auto;
+  }
+
+  .table-container {
+    margin-top: 20px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+  }
+
+  .table-container th,
+  .table-container td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: center;
+  }
+
+  /* Style for input fields within the table */
+  .table-input {
+    width: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+  }
+</style>
+
+<div class="popup-static portlet box portlet-fullscreen custom_modal">
+  <div class="portlet-body form">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="modelbox-div clearfix">
+          <div class="caption custom-caption">
+            <h3 style="text-align: center;">Manage Field Mapping of: <b [style.color]="'rgb(0, 0, 255)'">{{TemplateName}}</b></h3>
+            <a class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
+          </div>
+          <div>
+            <table class="table-container">
+              <thead style="position: sticky; background-color: #ffffff;">
+                <tr>
+                  <th></th>
+                  <th>S.N</th>
+                  <th>Field Name</th>
+                  <th>Display Label</th>
+                  <th>Mandatory?</th>
+                  <th>Sequence</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let field of TemplateFieldMappings; let i = index">
+                  <td>
+                    <input type="checkbox" id="{{'id_input_field_mapping_isActive'+i}}" style="width: 20px; height: 20px;"
+                           [(ngModel)]="field.IsActive" (click)="OnCheckMapping(field)" [disabled]="field.IsCompulsoryField">
+                  </td>
+                  <td>{{ i + 1 }}</td>
+                  <td>
+                    <input type="text" id="{{'id_input_field_mapping_fieldName'+i}}" class="table-input" [(ngModel)]="field.FieldName"
+                           disabled>
+                  </td>
+                  <td>
+                    <input type="text" id="{{'id_input_field_mapping_displayLabel'+i}}" class="table-input" [(ngModel)]="field.DisplayLabel"
+                           [disabled]="!field.IsActive">
+                  </td>
+                  <td>
+                    <input type="checkbox" id="{{'id_input_field_mapping_IsMandatory'+i}}" style="width: 20px; height: 20px;"
+                           [(ngModel)]="field.IsMandatory"
+                           (click)="IsMandatory(field)" [disabled]="field.IsCompulsoryField || !field.IsActive">
+                  </td>
+                  <td>
+                    <input type="number" id="id_input_field_mapping_enterSequence" [placeholder]="'EnterSequence'" [(ngModel)]="field.EnterSequence"
+                           [disabled]="!field.IsActive"
+                           (ngModelChange)="ValidateSequenceNumber(field)" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                    <div class="color-red font-sm" *ngIf="enterSequenceValidationMessage  && field.IsSelected"> {{ enterSequenceValidationMessage }}
+                    </div>
+                  </td>
+
+                </tr>
+                <!-- Show a message if no data is available -->
+                <tr *ngIf="TemplateFieldMappings.length === 0">
+                  <td colspan="6" style="text-align: center;">No data available.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel-footer" style="display: flex; justify-content: flex-end;margin-right: 20px;">
+            <button type="button" id="id_btn_field_mapping_save" class="btn green btn-success margin-7-hr" style="margin-right: 20px;"
+                    (click)="Save()">Save</button>
+            <button type="button" id="id_btn_field_mapping_discard" class="btn btn-warning margin-7-hr" (click)="Discard()">Discard</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

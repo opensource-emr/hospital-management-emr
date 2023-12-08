@@ -26,6 +26,8 @@ import { RPT_BIL_SalesDaybookComponent } from "./billing/sales-daybook/sales-day
 import { RPT_BIL_TotalItemsBillComponent } from "./billing/total-items-bill/total-items-bill-report.component";
 import { RPT_BIL_UserCollectionReportComponent } from "./billing/user-collection/user-collection-report.component";
 
+import { VisitBLService } from "../appointments/shared/visit.bl.service";
+import { VisitService } from "../appointments/shared/visit.service";
 import { RPTADTAdmissionAndDischargeListComponent } from './adt/admission-and-discharge-report/rpt-adt-admission-and-discharge-list/rpt-adt-admission-and-discharge-list.component';
 import { RPT_ADT_TotalAdmittedPatientComponent } from "./adt/admission/total-admitted-patient.component";
 import { RPT_ADT_ADTReportsMainComponent } from "./adt/adt-reports-main.component";
@@ -33,6 +35,7 @@ import { RPT_ADT_DiagnosisWisePatientReportComponent } from "./adt/diagnosis/dia
 import { RPT_ADT_DischargeBillBreakupComponent } from "./adt/discharge/discharge-bill-breakup.component";
 import { RPT_ADT_DischargedPatientComponent } from "./adt/discharge/discharged-patient.component";
 import { RPT_ADT_InpatientCensusComponent } from "./adt/inpatient-census/inpatient-census.component";
+import { RPT_ADT_InPatientOutstandingReport } from "./adt/inpatient-outstanding-report/inpatient-outstanding-report.component";
 import { RankMembershipwiseAdmittedPatientReportComponent } from "./adt/rank-membershipwise-admitted-patient-report/rpt-adt-rank-membershipwise-admitted-patient-list/rpt-adt-rank-membershipwise-admitted-patient-list.component";
 import { RankWiseDischargeListComponent } from './adt/rank-wise-discharge-list/rank-wise-discharge-list.component';
 import { RPT_ADT_TransferredPatientsComponent } from "./adt/transfer/transferred-patient.component";
@@ -44,6 +47,7 @@ import { RPT_APPT_DepartmentwiseStatReportComponent } from "./appointment/depart
 import { RPT_APPT_DeptWiseAppointmentReportComponent } from "./appointment/dept-wise/deptwise-appointment-report.component";
 import { RPT_APPT_DistrictWiseAppointmentReportComponent } from "./appointment/district-wise/districtwise-appointment-report.component";
 import { RPT_APPT_DoctorwiseOutPatientReportComponent } from "./appointment/doctor-wise/doctorwise-outpatient-report.component";
+import { RPT_APPT_DoctortwiseStatisticsReportComponent } from "./appointment/doctorwise-statistic-report/doctorwise-stat-report.component";
 import { RPT_ADT_GeographicalStatReportComponent } from './appointment/geographical-stat-report/geographical-stat-report.component';
 import { RPT_APPT_PhoneBookAppointmentReportComponent } from "./appointment/phonebook-appointment/phonebook-appointment-report.component";
 import { RPT_APPT_RankwiseDailyAppointmentReportComponent } from "./appointment/rank-wise-appointment/rank-wise-daily-appointment-report.component";
@@ -118,6 +122,8 @@ import { RPT_RAD_TotalRevenueFromRadiologyComponent } from "./radiology/revenue/
     BillingBLService,
     AppointmentDLService,
     ADT_DLService,
+    VisitService,
+    VisitBLService,
   ],
   imports: [
     ReportingRoutingModule,
@@ -223,6 +229,8 @@ import { RPT_RAD_TotalRevenueFromRadiologyComponent } from "./radiology/revenue/
     RPT_APPT_DepartmentwiseStatReportComponent,
     RPT_APPT_AgeClassifiedOPStatsReportComponent,
     RPT_ADT_GeographicalStatReportComponent,
+    RPT_APPT_DoctortwiseStatisticsReportComponent,
+    RPT_ADT_InPatientOutstandingReport
   ],
   bootstrap: [RPT_ReportingMainComponent],
 })

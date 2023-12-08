@@ -29,6 +29,9 @@ using System.Data.Common;
 using DanpheEMR.ServerModel.SSFModels;
 using DanpheEMR.Services.Dispensary.DTOs.PharmacyConsumption;
 using DanpheEMR.ServerModel.MedicareModels;
+using DanpheEMR.CommonTypes;
+using DanpheEMR.Controllers.Billing;
+using DanpheEMR.Services.SSF.DTO;
 
 namespace DanpheEMR.Controllers.Pharmacy
 {
@@ -41,7 +44,7 @@ namespace DanpheEMR.Controllers.Pharmacy
         private readonly AdmissionDbContext _admissionDbContext;
         private readonly CoreDbContext _coreDbContext;
         private readonly bool _realTimeRemoteSyncEnabled;
-        private readonly BillingDbContext _billingDbContext;
+        private readonly bool _realTimeSSFClaimBooking;
         public PharmacySalesController(IOptions<MyConfiguration> _config) : base(_config)
         {
             _pharmacyDbContext = new PharmacyDbContext(connString);
@@ -49,8 +52,8 @@ namespace DanpheEMR.Controllers.Pharmacy
             _masterDbContext = new MasterDbContext(connString);
             _admissionDbContext = new AdmissionDbContext(connString);
             _coreDbContext = new CoreDbContext(connString);
-            _billingDbContext = new BillingDbContext(connString);
             _realTimeRemoteSyncEnabled = _config.Value.RealTimeRemoteSyncEnabled;
+            _realTimeSSFClaimBooking = _config.Value.RealTimeSSFClaimBooking;
         }
 
         [HttpGet]
@@ -844,10 +847,37 @@ namespace DanpheEMR.Controllers.Pharmacy
                 }
                 if (finalInvoiceData.IsReturn)
                 {
+
                     //Sud:24Dec'18--making parallel thread call (asynchronous) to post to IRD. so that it won't stop the normal execution of logic.
                     Task.Run(() => PharmacyBL.SyncPHRMBillInvoiceToRemoteServer(finalInvoiceData, "phrm-invoice", _pharmacyDbContext));
                 }
             }
+
+            //Send to SSF Server for Real time ClaimBooking.
+            var itemSchemeId = invoiceDataFromClient.InvoiceItems[0].SchemeId;
+            var patientSchemes = _pharmacyDbContext.PatientSchemeMaps.Where(a => a.SchemeId == itemSchemeId && a.PatientId == finalInvoiceData.PatientId).FirstOrDefault();
+            if (patientSchemes != null)
+            {
+                var billingDbContext = new BillingDbContext(connString);
+                int priceCategoryId = (int)invoiceDataFromClient.InvoiceItems[0].PriceCategoryId;
+                var priceCategory = billingDbContext.PriceCategoryModels.Where(a => a.PriceCategoryId == priceCategoryId).FirstOrDefault();
+                if (priceCategory != null && priceCategory.PriceCategoryName.ToLower() == "ssf" && _realTimeSSFClaimBooking)
+                {
+                    //making parallel thread call (asynchronous) to post to SSF Server. so that it won't stop the normal BillingFlow.
+                    SSFDbContext ssfDbContext = new SSFDbContext(connString);
+                    var billObj = new SSF_ClaimBookingBillDetail_DTO()
+                    {
+                        InvoiceNoFormatted = $"PH{finalInvoiceData.InvoicePrintId}",
+                        TotalAmount = (decimal)finalInvoiceData.TotalAmount,
+                        ClaimCode = (long)finalInvoiceData.ClaimCode
+                    };
+
+                    SSF_ClaimBookingService_DTO claimBooking = SSF_ClaimBookingService_DTO.GetMappedToBookClaim(billObj, patientSchemes);
+
+                    Task.Run(() => BillingBL.SyncToSSFServer(claimBooking, "pharmacy", ssfDbContext, patientSchemes, currentUser));
+                }
+            }
+
             return finalInvoiceData.InvoiceId;
         }
         private object GetProvisionalDrugRequisitionsByStatus(string status)
@@ -1633,7 +1663,7 @@ namespace DanpheEMR.Controllers.Pharmacy
                     var patientCreditLimitData = phrmdbcontext.PatientSchemeMaps.Where(p => p.PatientId == invoiceDataFromClient.PatientId && p.SchemeId == SchemeId && p.LatestPatientVisitId == PatientVisitId).FirstOrDefault();
                     if (patientCreditLimitData != null)
                     {
-                        if (invoiceDataFromClient.VisitType ==ENUM_VisitType.inpatient)
+                        if (invoiceDataFromClient.VisitType == ENUM_VisitType.inpatient)
                         {
                             //If credit limit is greater than 0 then the credit amount shoud be reduce in PatientMapPriceCategory
                             if (patientCreditLimitData.IpCreditLimit > 0 && patientCreditLimitData.IpCreditLimit >= invoiceDataFromClient.TotalAmount)
@@ -2303,6 +2333,69 @@ namespace DanpheEMR.Controllers.Pharmacy
             DataTable stockItemsDataTable = DALFunctions.GetDataTableFromStoredProc("SP_PHRM_GetDispensaryAvailableStock", paramList, pharmacyDbContext);
             List<DispensaryAvailableStockDetail_DTO> stockItems = DataTableToList.ConvertToList<DispensaryAvailableStockDetail_DTO>(stockItemsDataTable);
             return stockItems;
+        }
+
+        [HttpGet]
+        [Route("PrescriptionItems")]
+        public IActionResult PrescriptionItems(int patientId, int prescriberId,int prescriptionId)
+        {
+            Func<object> func = () => GetPrescriptionItems(patientId, prescriberId, prescriptionId);
+            return InvokeHttpGetFunction(func);
+
+        }
+
+        private object GetPrescriptionItems(int PatientId, int PrescriberId,int PrescriptionId)
+        {
+            var presItems = (from pres in _pharmacyDbContext.PHRMPrescriptionItems
+                             where pres.PatientId == PatientId && pres.CreatedBy == PrescriberId && pres.OrderStatus != "final" && pres.PrescriptionId == PrescriptionId
+                             select pres).ToList().OrderByDescending(a => a.CreatedOn);
+            foreach (var presItm in presItems)
+            {
+                presItm.IsAvailable = _pharmacyDbContext.StoreStocks.Any(stk => stk.ItemId == presItm.ItemId && stk.AvailableQuantity > 0);
+                presItm.ItemName = _pharmacyDbContext.PHRMItemMaster.Find(presItm.ItemId).ItemName;
+            }
+            return presItems;
+        }
+
+
+
+        [HttpPut]
+        [Route("UpdatePrescriptionOrderStatus")]
+        public IActionResult UpdatePrescriptionOrderStatus(int patientId)
+        {
+            var currentUser = HttpContext.Session.Get<RbacUser>("currentuser");
+            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
+
+            try
+            {
+                var prescriptionItems = _pharmacyDbContext.PHRMPrescriptionItems
+                    .Where(pres => pres.PatientId == patientId && pres.OrderStatus != "final")
+                    .ToList();
+
+                if (prescriptionItems.Count > 0)
+                {
+                    foreach (var prescriptionItem in prescriptionItems)
+                    {
+                        prescriptionItem.OrderStatus = "final";
+                        prescriptionItem.ModifiedOn = DateTime.Now;
+                        prescriptionItem.ModifiedBy = currentUser.EmployeeId;
+                    }
+
+                    _pharmacyDbContext.SaveChanges();
+                    responseData.Status = ENUM_Danphe_HTTP_ResponseStatus.OK;
+                }
+                else
+                {
+                    responseData.Status = ENUM_Danphe_HTTP_ResponseStatus.Failed;
+                    responseData.Results = "No prescription details found to update";
+                }
+            }
+            catch (Exception ex)
+            {
+                responseData.Status = ENUM_Danphe_HTTP_ResponseStatus.Failed;
+                responseData.Results = ex.ToString();
+            }
+            return Ok(responseData);
         }
     }
 }

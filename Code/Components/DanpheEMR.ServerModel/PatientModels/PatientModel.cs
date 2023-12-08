@@ -80,7 +80,6 @@ namespace DanpheEMR.ServerModel
         public bool IsDobVerified { get; set; }
 
         public string Address { get; set; }
-
         public List<AddressModel> Addresses { get; set; }
         public List<AllergyModel> Allergies { get; set; }
         public List<InsuranceModel> Insurances { get; set; }
@@ -131,6 +130,8 @@ namespace DanpheEMR.ServerModel
         public string WardName { get; set; }
         [NotMapped]
         public string BedNo { get; set; }
+        [NotMapped]
+        public int? BedId { get; set; }
         public string PatientNameLocal { get; set; }
 
         [NotMapped]

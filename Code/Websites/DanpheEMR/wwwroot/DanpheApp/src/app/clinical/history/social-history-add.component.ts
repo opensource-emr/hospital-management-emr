@@ -1,8 +1,8 @@
-﻿import { Input, Output, EventEmitter, Component, ChangeDetectorRef } from "@angular/core";
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
 import { PatientService } from "../../patients/shared/patient.service";
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { HistoryBLService } from '../shared/history.bl.service';
 import { SocialHistory } from "../shared/social-history.model";
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 @Component({
     selector: "social-history-add",
     templateUrl: "./social-history-add.html"

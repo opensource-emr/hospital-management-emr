@@ -1,15 +1,18 @@
-import { Injectable, Directive } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { CommonFunctions } from "../../shared/common.functions";
-import { LabReportVM } from '../reports/lab-report-vm';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs-compat';
-import { LoginToTelemed } from './labMasterData.model';
 import { DanpheHTTPResponse } from '../../shared/common-models';
+import { ExternalLabStatus_DTO } from './DTOs/external-lab-sample-satatus.dto';
+import { LoginToTelemed } from './labMasterData.model';
 
 @Injectable()
 export class LabsDLService {
   public options = {
     headers: new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' })
+  };
+
+  public optionsJson = {
+    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };
   constructor(public http: HttpClient) {
   }
@@ -184,8 +187,8 @@ export class LabsDLService {
   public GetAllPatientList() {
     return this.http.get<any>("/api/Patient", this.options);
   }
-  public GetAllTestsForExternalLabs() {
-    return this.http.get<any>("/api/Lab/ExternalLabApplicableRequisitions", this.options);
+  public GetAllTestsForExternalLabs(labTestCSV: string, fromDate: string, toDate: string, patientName: string, hospitalNo: string, vendorId: number, externalLabStatus: string) {
+    return this.http.get<any>(`/api/Lab/RequisitionsForExternalLab?LabTestCSV=${labTestCSV}&FromDate=${fromDate}&ToDate=${toDate}&PatientName=${patientName}&HospitalNo=${hospitalNo}&VendorId=${vendorId}&ExternalLabStatus=${externalLabStatus}`, this.options);
   }
   public GetAllTestsSendToExternalVendors() {
     return this.http.get<any>("/api/Lab/RequisitionsSentToExternalLab", this.options);
@@ -465,5 +468,26 @@ export class LabsDLService {
   }
   public GetLabNormalAbnormalDetails(labTestId: number) {
     return this.http.get("/Reporting/LabDashboardNormalAbnormalDetails?labTestId=" + labTestId);
+  }
+
+  public GetOutsourceApplicableTests() {
+    return this.http.get<DanpheHTTPResponse>(`/api/LabSetting/OutsourceApplicableLabTests`, this.options);
+  }
+
+  public AddMachineOrder(data): Promise<any> {
+    return this.http.post<any>("/api/LIS/MachineOrder", data, this.optionsJson).toPromise();
+  }
+
+  public GetAllMachineResultByBarcodeNumber(barcodeNumber: number) {
+    return this.http.get<DanpheHTTPResponse>(`/api/LIS/GetResultByBarcodeNumber?BarcodeNumber=${barcodeNumber}`, this.options);
+  }
+
+  public UpdateMachineDataSyncStatus(resultIds: Array<number>) {
+    return this.http.put<DanpheHTTPResponse>(`/api/LIS/MachineResultSync`, resultIds, this.optionsJson);
+  }
+
+
+  public UpdateExternalLabStatus(externalLabDataStatus: ExternalLabStatus_DTO) {
+    return this.http.put<DanpheHTTPResponse>(`/api/lab/ExternalLabStatus`, externalLabDataStatus, this.optionsJson);
   }
 }

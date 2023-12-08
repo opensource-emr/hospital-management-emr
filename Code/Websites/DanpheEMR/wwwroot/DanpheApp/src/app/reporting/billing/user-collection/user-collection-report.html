@@ -59,7 +59,7 @@
                 <label class="control-label col-md-3">Counter<b style="float:right;">:</b></label>
                 <div class="col-md-6">
                   <select id="ddlCounter" [(ngModel)]="currentdailysales.CounterId" class="form-control"
-                    [ngModelOptions]="{standalone: true}">
+                          [ngModelOptions]="{standalone: true}">
                     <option value="">All</option>
                     <option *ngFor="let counter of counterlist" value="{{counter.CounterId}}">
                       {{counter.CounterName}}
@@ -74,9 +74,9 @@
                 <div class="col-md-7">
 
                   <input danphe-auto-complete class="form-control" [(ngModel)]="selectedUser"
-                    [source]="userList" [list-formatter]="UserListFormatter" placeholder="Enter User Name"
-                    display-property-name="EmployeeName" value-property-name="EmployeeId" onclick="this.select();"
-                    [ngModelOptions]="{standalone: true}" (focusout) = "userChanged()" />
+                         [source]="userList" [list-formatter]="UserListFormatter" placeholder="Enter User Name"
+                         display-property-name="EmployeeName" value-property-name="EmployeeId" onclick="this.select();"
+                         [ngModelOptions]="{standalone: true}" (focusout)="userChanged()" />
                 </div>
               </div>
             </div>
@@ -95,9 +95,9 @@
   <div class="row" *ngIf="!IsSummaryViewMode">
     <div class="col-lg-12 col-sm-12" *ngIf="isReportDataLoaded">
       <danphe-grid [grid-colDefaults]="DailySalesReportColumns" [grid-data]="DailySalesReportData"
-        [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
-        [NepaliDateInGridParams]="NepaliDateInGridSettings" [report-for]="'billing'" [grid-date-range]="dateRange"
-        [grid-footer-content]="footerContent"> </danphe-grid>
+                   [grid-exportOptions]="gridExportOptions" [grid-showExport]="true"
+                   [NepaliDateInGridParams]="NepaliDateInGridSettings" [report-for]="'billing'" [grid-date-range]="dateRange"
+                   [grid-footer-content]="footerContent"> </danphe-grid>
     </div>
   </div>
   <div class="row" *ngIf="!IsSummaryViewMode">
@@ -157,7 +157,7 @@
                   <td>Less Cash Discount</td>
                   <td> {{total_DetailedView.CashDiscount | number : "1.2-2"}}</td>
                 </tr>
-                <tr *ngIf ="showOtherPayment" >
+                <tr *ngIf="showOtherPayment">
                   <td>{{ otherPaymentsLabelSettingsValue.LabelName }}</td>
                   <td> {{total_DetailedView.OtherPayments | number : "1.2-2"}}</td>
                 </tr>
@@ -231,7 +231,7 @@
               <td style="font-weight:bold;text-align:right;">Deposit Refund</td>
               <td style="font-weight:bold;text-align:right;">Collection From Receivables</td>
               <td style="font-weight:bold;text-align:right;">Settlement Discount</td>
-              <td *ngIf ="showOtherPayment" style="font-weight:bold;text-align:right;">{{ otherPaymentsLabelSettingsValue.LabelName }}</td>
+              <td *ngIf="showOtherPayment" style="font-weight:bold;text-align:right;">{{ otherPaymentsLabelSettingsValue.LabelName }}</td>
               <td style="font-weight:bold;text-align:right;">CoPay Cash</td>
               <td style="font-weight:bold;text-align:right;">Cash Collection</td>
             </tr>
@@ -244,7 +244,7 @@
               <td style="text-align:right">{{row.Deposit_Refund | ParseAmount}}</td>
               <td style="text-align:right">{{row.CollectionFromReceivables | ParseAmount}}</td>
               <td style="text-align:right">{{row.Sett_CashDiscount | ParseAmount}}</td>
-              <td *ngIf ="showOtherPayment" style="text-align:right">{{row.OtherPaymentsGiven | ParseAmount}}</td>
+              <td *ngIf="showOtherPayment" style="text-align:right">{{row.OtherPaymentsGiven | ParseAmount}}</td>
               <td style="text-align:right">{{row.CoPaymentCashAmount | ParseAmount}}</td>
               <td style="text-align:right">{{row.NetCollection | ParseAmount}}</td>
             </tr>
@@ -259,7 +259,7 @@
               <td style="font-weight:bold;text-align:right;">{{total_SummaryView.CollectionFromReceivables |
                 ParseAmount}}</td>
               <td style="font-weight:bold;text-align:right;">{{total_SummaryView.Sett_CashDiscount | ParseAmount}}</td>
-              <td *ngIf ="showOtherPayment" style="font-weight:bold;text-align:right;">{{total_SummaryView.OtherPaymentsGiven | ParseAmount}}</td>
+              <td *ngIf="showOtherPayment" style="font-weight:bold;text-align:right;">{{total_SummaryView.OtherPaymentsGiven | ParseAmount}}</td>
               <td style="font-weight:bold;text-align:right;">{{total_SummaryView.CoPaymentCashAmount | ParseAmount}}</td>
               <td style="font-weight:bold;text-align:right;">{{total_SummaryView.NetCollection | ParseAmount}}</td>
             </tr>

@@ -1,10 +1,10 @@
 import { Component } from "@angular/core";
 import * as moment from "moment";
-import { CountrySubdivision } from "../../../settings-new/shared/country-subdivision.model";
 import { CoreService } from "../../../../app/core/shared/core.service";
-import { NepaliDateInGridParams } from "../../../../app/shared/danphe-grid/NepaliColGridSettingsModel";
 import { DLService } from "../../../../app/shared/dl.service";
 import { MessageboxService } from "../../../../app/shared/messagebox/messagebox.service";
+import { CountrySubdivision } from "../../../settings-new/shared/country-subdivision.model";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { ReportingService } from "../../shared/reporting-service";
 
 @Component({
@@ -26,7 +26,8 @@ export class RPT_CovidTestsSummaryReport {
   public fromDate: any;
   public toDate: any;
   public footer = '';
-  public dateRange:string = "";
+  public dateRange: string = "";
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   public summaryFormatted = {
     TotalNewPositiveCase: 0,
@@ -41,6 +42,7 @@ export class RPT_CovidTestsSummaryReport {
     public reportServ: ReportingService,
     public coreService: CoreService) {
     this.GetCountrySubDivision();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     this.covidCaseSummaryReportColumns = this.reportServ.reportGridCols.CovidTestsSummary;
     var name = this.coreService.Parameters.find(a => a.ParameterGroupName.toLowerCase() == 'common' && a.ParameterName == 'CovidTestName');
     if (name) {
@@ -89,7 +91,7 @@ export class RPT_CovidTestsSummaryReport {
     fileName: 'CovidTestSummaryReport' + moment().format('YYYY-MM-DD') + '.xls',
   };
 
-  
+
 
   districtListFormatter(data: any): string {
     let html = data["CountrySubDivisionName"];
@@ -126,9 +128,9 @@ export class RPT_CovidTestsSummaryReport {
       this.summaryFormatted.TotalCase += (a.NewPositiveCases + a.NewNegativeCases + a.FollowupPositiveCases + a.FollowupNegativeCases);
     });
   }
-    OnFromToDateChange($event) {
-        this.fromDate = $event.fromDate;
-        this.toDate = $event.toDate;
-        this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
-    }
+  OnFromToDateChange($event) {
+    this.fromDate = $event.fromDate;
+    this.toDate = $event.toDate;
+    this.dateRange = "<b>Date:</b>&nbsp;" + this.fromDate + "&nbsp;<b>To</b>&nbsp;" + this.toDate;
+  }
 }

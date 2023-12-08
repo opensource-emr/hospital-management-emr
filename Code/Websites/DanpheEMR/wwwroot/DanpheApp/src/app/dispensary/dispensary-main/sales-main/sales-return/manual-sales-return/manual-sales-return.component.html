@@ -117,7 +117,8 @@
             </div>
             <div class="row" *ngIf="isCurrentDispensaryInsurance">
               <div class="col-sm-2">
-                <label for="NSHINumber">NSHI Number:<span>{{searchedPatient.Ins_NshiNumber}}</span></label>
+                <label for="NSHINumber">{{GeneralFieldLabel.NSHINo}}
+                  Number:<span>{{searchedPatient.Ins_NshiNumber}}</span></label>
               </div>
               <div class="col-sm-3">
                 <label for="LatestClaimCode">Claim Code:<span>{{searchedPatient.ClaimCode}}</span></label>

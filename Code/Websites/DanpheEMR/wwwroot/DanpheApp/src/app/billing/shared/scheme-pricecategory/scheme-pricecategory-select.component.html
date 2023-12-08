@@ -5,7 +5,7 @@
                    [service-billing-context]="ServiceBillingContext">
     </scheme-select>
   </div>
-  <div class="col-md-4">
+  <div class="col-md-4" *ngIf="ShowPriceCategorySelection">
     <price-category-select class="price-select" [selected-priceCategoryId]="selectedSchemePriceCategory.PriceCategoryId"
                            (on-category-change)="OnPriceCategoryChange($event)" [disable]="disableSelection">
     </price-category-select>

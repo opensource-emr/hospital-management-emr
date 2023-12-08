@@ -200,6 +200,12 @@ export class AccountingService {
             this.paramExportToExcelData = this.exportToExcelSettingParameter[ENUM_ACC_ReportStaticName.SubLedgerReport];
           break;
         }
+        case ENUM_ACC_ReportName.AccountHeadDetailReport: {
+          if (!!printSettingParameter) this.paramData = printSettingParameter[ENUM_ACC_ReportStaticName.AccountHeadDetailReport];
+          if (this.exportToExcelSettingParameter)
+            this.paramExportToExcelData = this.exportToExcelSettingParameter[ENUM_ACC_ReportStaticName.AccountHeadDetailReport];
+          break;
+        }
       }
 
     }

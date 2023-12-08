@@ -5,6 +5,7 @@ import { InsuranceVM } from '../../../billing/shared/patient-billing-context-vm'
 import { CoreService } from '../../../core/shared/core.service';
 import { Patient } from '../../../patients/shared/patient.model';
 import { PatientService } from '../../../patients/shared/patient.service';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { GovInsuranceBalanceAmountHistory } from '../shared/ins-insurance-balance-amount-history.model';
 import { GovInsuranceService } from '../shared/ins-service';
@@ -24,6 +25,7 @@ export class GovINSPatientListComponent {
 
   public showInpatientMessage: boolean = false;
   public wardBedInfo: string = null;
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(
     public insuranceBlService: GovInsuranceBlService,
@@ -37,6 +39,10 @@ export class GovINSPatientListComponent {
     this.patListGridCols = (new GovINSGridColumnSettings(this.coreService)).InsurancePatientList;
     this.patientService.CreateNewGlobal();
     this.LoadInsurancePatientList();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+    this.patListGridCols[2].headerName = `${this.GeneralFieldLabel.NSHINo} Code`;
+
+
 
   }
 
@@ -213,7 +219,7 @@ export class GovINSPatientListComponent {
   }
   KeysPressed(event) {
     if (event.altKey && event.keyCode == 78) { //if alt key and N is pressed
-      this.AddPatient()
+      this.AddPatient();
     }
   }
 }

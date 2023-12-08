@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { ProvisionalBillingComponent } from './bill-provisional/provisional-billing.component';
-import { BillingTransactionItemComponent } from './bill-transaction/billing-transaction-item.component';
+import { OutpatientProvisionalBillingComponent } from './bill-provisional/outpatient-er-list/outpatient-provisional-billing.component';
+import { BillingPayProvisionalComponent } from './bill-provisional/pay-provisional/billing-pay-provisional.component';
 import { BillingMainComponent } from './billing-main.component';
 import { BillingSearchPatientNewComponent } from './search-patient/billing-search-patient-new.component';
 //import { InsuranceProvisionalBillingComponent } from './bill-provisional/insurance-provisional-billing.component';
@@ -22,6 +22,8 @@ import { BillingDenominationSummaryReportComponent } from './bill-denomination/R
 import { TransferHandoverReportComponent } from './bill-denomination/Reports/transfer-handover-report/transfer-handover-report';
 import { BillingDenominationMainComponent } from './bill-denomination/bill-denomination-main.component';
 import { BillingDepositComponent } from './bill-deposit/billing-deposit.component';
+import { BIL_ProvisionalClearance_MainComponent } from './bill-provisional/bil-provisional-clearance-main.component';
+import { BilProvisionalDischargeListComponent } from './bill-provisional/provisional-discharge-list/bil-provisional-discharge-list.component';
 import { BillOrderRequestComponent } from './bill-request/bill-order-request.component';
 import { BILL_CreditNoteComponent } from './bill-return/bill-credit-note.component';
 import { BillSettlementsComponent } from './bill-settlements/bill-settlements.component';
@@ -51,8 +53,18 @@ import { BillingSelectPatientCanActivateGuard } from './shared/billing-select-pa
           { path: 'SearchPatient', component: BillingSearchPatientNewComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
           // { path: 'BillingTransaction', component: BillingTransactionComponent, canActivate: [AuthGuardService, BillingSelectPatientCanActivateGuard] },
           { path: 'BillingTransaction', component: BillingTransactionComponent_New, canActivate: [AuthGuardService, BillingSelectPatientCanActivateGuard] },
-          { path: 'BillingTransactionItem', component: BillingTransactionItemComponent, canActivate: [AuthGuardService] },
-          { path: 'UnpaidBills', component: ProvisionalBillingComponent, canActivate: [AuthGuardService] },//ResetPatientcontextGuard
+          { path: 'PayProvisional', component: BillingPayProvisionalComponent, canActivate: [AuthGuardService] },
+          {
+            path: 'ProvisionalClearance', component: BIL_ProvisionalClearance_MainComponent,
+            children: [
+              { path: '', redirectTo: 'Outpatient-Er', pathMatch: 'full' },
+              { path: 'Outpatient-Er', component: OutpatientProvisionalBillingComponent },
+              { path: 'ProvisionalDischargeList', component: BilProvisionalDischargeListComponent },
+              { path: "**", component: PageNotFound }
+            ],
+            canActivate: [AuthGuardService, ResetPatientcontextGuard, ActivateBillingCounterGuardService]
+          },
+          // { path: 'ProvisionalClearance', component: ProvisionalBillingComponent, canActivate: [AuthGuardService] },//ResetPatientcontextGuard
           //don't remove below until finalized from hospitals using old version.
           //{ path: 'InsuranceProvisional', component: InsuranceProvisionalBillingComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },
           { path: 'BillOrderRequest', component: BillOrderRequestComponent, canActivate: [AuthGuardService, ResetPatientcontextGuard] },

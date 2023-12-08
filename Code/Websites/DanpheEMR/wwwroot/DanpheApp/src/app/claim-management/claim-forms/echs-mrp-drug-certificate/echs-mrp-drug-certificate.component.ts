@@ -35,7 +35,7 @@ export class EchsMrpDrugCertificateComponent implements OnInit {
   }
 
   public AllPatientSearchAsync = (keyword: any): Observable<any[]> => {
-    return this.claimManagementBLService.GetPatientsWithVisitsInfo(keyword);
+    return this.claimManagementBLService.GetECHSPatientWithVisitInformation(keyword);
   }
 
   public PatientInfoChanged(): void {

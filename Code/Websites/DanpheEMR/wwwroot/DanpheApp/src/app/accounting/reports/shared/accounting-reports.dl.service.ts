@@ -65,8 +65,8 @@ export class AccountingReportsDLService {
     // public GetFiscalYearsList() {
     //     return this.http.get<any>("/api/Accounting?reqType=fiscalYearList");
     // }
-    public GetDailyTxnReport(frmDt: string, toDt: string, fiscalYearId) {
-        return this.http.get<any>("/api/AccountingReport/DailyTransactionReport?FromDate=" + frmDt + "&ToDate=" + toDt + "&FiscalYearId=" + fiscalYearId);
+    public GetDailyTxnReport(frmDt: string, toDt: string) {
+        return this.http.get<any>("/api/AccountingReport/DailyTransactionReport?FromDate=" + frmDt + "&ToDate=" + toDt);
     }
     public GetTxnOriginDetails(txnId) {
         return this.http.get<any>("/api/AccountingReport/TransactionOriginDetail?transactionIds=" + txnId);
@@ -117,5 +117,8 @@ export class AccountingReportsDLService {
 
     public GetVoucherForVerification(fromDate: string, toDate: string, sectionId) {
         return this.http.get<response>(`/api/AccountingReport/VoucherVerification?FromDate=${fromDate}&ToDate=${toDate}&sectionId=${sectionId}`);
+    }
+    public GetAccountHeadDetailReport() {
+        return this.http.get<response>(`/api/AccountingReport/AccountHeadDetailReport`, this.options);
     }
 }

@@ -21,6 +21,7 @@ export class OPDTriageComponent {
   public emitter: EventEmitter<Object> = new EventEmitter<Object>();
 
   @Input("currentPatInfo") public currentPatInfo: any;
+  @Input("patientInformation") public patientInformation: any;
 
   @Input("isEditMode") public isEdit: boolean = false;
 
@@ -33,7 +34,6 @@ export class OPDTriageComponent {
 
   public patId: number;
   public patVisitId: number;
-
   constructor(
     public notetemplateBLService: NoteTemplateBLService, public patientService: PatientService,
     public visitService: VisitService,
@@ -44,10 +44,12 @@ export class OPDTriageComponent {
     this.patVisitId = this.visitService.globalVisit.PatientVisitId;
     this.comments.PatientId = this.patId;
     this.comments.PatientVisitId = this.patVisitId;
-
   }
 
   ngOnInit() {
+    if (this.patientInformation && this.patientInformation.PatientId) {
+      this.currentPatInfo = this.patientInformation;
+    }
     if (this.isEdit) {
       this.nursingBlService.GetComplaints(this.patVisitId)
         .subscribe(res => {

@@ -77,13 +77,13 @@ export class EmergencyDLService {
     return this.http.put<any>("/api/Emergency/ERDischargeSummary", data, this.options);
   }
   public UpdateERPatient(data) {
-    return this.http.put<any>("/api/Emergency?reqType=updateERPatient", data, this.options);
+    return this.http.put<any>("/api/Emergency/Patient", data, this.options);
   }
   public UpdateAssignedToDoctor(data) {
     return this.http.put<any>("/api/Emergency/PerformerDetail", data, this.options);
   }
   public PutTriageCode(data) {
-    return this.http.put<any>("/api/Emergency?reqType=TriageCode", data, this.options);
+    return this.http.put<any>("/api/Emergency/TriagedCode", data, this.options);
   }
   public UpdateLamaOfERPatient(data, action: string) {
     return this.http.put<any>("/api/Emergency/LeaveAgainstMedicalAdvice?actionString=" + action, data, this.options);

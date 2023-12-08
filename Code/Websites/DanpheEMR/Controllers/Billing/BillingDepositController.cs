@@ -179,6 +179,34 @@ namespace DanpheEMR.Controllers
         }
 
         [HttpGet]
+        [Route("AllDepositHeads")]
+        public IActionResult AllDepositHeads()
+        {
+            Func<object> func = () => GetAllDepositHeads();
+            return InvokeHttpGetFunction(func);
+        }
+        private object GetAllDepositHeads()
+        {
+            var DepositHeadList = (from depositHead in _billingDbContext.DepositHeadModel
+                                   select new DepositHead_DTO
+                                   {
+                                       DepositHeadId = depositHead.DepositHeadId,
+                                       DepositHeadCode = depositHead.DepositHeadCode,
+                                       DepositHeadName = depositHead.DepositHeadName,
+                                       Description = depositHead.Description,
+                                       IsDefault = depositHead.IsDefault,
+                                       IsActive = depositHead.IsActive,
+                                   }).Where(r => r.DepositHeadName != null && r.DepositHeadName != "")
+                                   .OrderByDescending(d => d.DepositHeadId).ToList();
+
+            if (DepositHeadList == null || DepositHeadList.Count() == 0)
+            {
+                throw new Exception("DepositHeads Not Found.");
+            }
+            return DepositHeadList;
+        }
+
+        [HttpGet]
         [Route("OrganizationDeposits")]
         public IActionResult GetOrganizationDeposits()
         {

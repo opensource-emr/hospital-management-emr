@@ -1,19 +1,17 @@
-import { Component, Input, Output, ChangeDetectorRef, EventEmitter } from "@angular/core";
-import { RouterOutlet, RouterModule, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { IOAllergyVitalsBLService } from "../../clinical/shared/io-allergy-vitals.bl.service";
-import { SecurityService } from "../../security/shared/security.service";
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
+import { Router } from '@angular/router';
 import { VisitService } from "../../appointments/shared/visit.service";
-import { MessageboxService } from "../../shared/messagebox/messagebox.service";
-import { PatientService } from "../../patients/shared/patient.service";
-import { ProblemsBLService } from "../../clinical/shared/problems.bl.service";
-import { OrderService } from "../shared/order.service";
-import { RouteFromService } from "../../shared/routefrom.service";
-import { DoctorsBLService } from "../../doctors/shared/doctors.bl.service";
-import { DanpheHTTPResponse } from "../../shared/common-models";
-import { OrderItemsVM } from "../shared/orders-vms";
-import { CommonFunctions } from "../../shared/common.functions";
 import { PatientOrderListModel } from "../../clinical/shared/order-list.model";
+import { DoctorsBLService } from "../../doctors/shared/doctors.bl.service";
+import { PatientService } from "../../patients/shared/patient.service";
+import { SecurityService } from "../../security/shared/security.service";
+import { DanpheHTTPResponse } from "../../shared/common-models";
+import { CommonFunctions } from "../../shared/common.functions";
+import { MessageboxService } from "../../shared/messagebox/messagebox.service";
+import { RouteFromService } from "../../shared/routefrom.service";
+import { OrderService } from "../shared/order.service";
+import { OrderItemsVM } from "../shared/orders-vms";
 
 @Component({
   selector: "order-select",

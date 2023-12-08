@@ -38,7 +38,10 @@ export class SsfService {
 
           if (this.isClaimSuccessful || loadFromSSFServer) {
             const eligibility = res[1].Results;
-            ssfData.patientEligibility = eligibility;
+            const eligiblePolicies = eligibility.filter(e => e.Inforce === true);
+            if (eligiblePolicies && eligiblePolicies.length) {
+              ssfData.patientEligibility = eligiblePolicies;
+            }
             this.ssfSubject.next(ssfData);
           } else {
             this.SsfDataLocally.ssfPatientDetail.img = ssfData.ssfPatientDetail.img;
@@ -59,9 +62,12 @@ export class SsfService {
         const ssfEligibilityLocally = new SSFEligibility();
         ssfEligibilityLocally.OpdBalance = patientScheme.OpCreditLimit;
         ssfEligibilityLocally.IPBalance = patientScheme.IpCreditLimit;
+        ssfEligibilityLocally.AccidentBalance = patientScheme.GeneralCreditLimit;
         ssfEligibilityLocally.SsfEligibilityType = patientScheme.RegistrationCase;
         this.SsfDataLocally.patientEligibility.push(ssfEligibilityLocally);
         this.LoadSSFEmployer(patientScheme.PolicyHolderUID);
+      } else {
+        this.ssfSubject.next(this.SsfDataLocally);
       }
     });
   }
@@ -73,7 +79,7 @@ export class SsfService {
         this.SsfDataLocally.isPatientInformationLoaded = true;
         this.SsfDataLocally.isPatientEligibilityLoaded = true;
         this.SsfDataLocally.isEmployerListLoaded = true;
-        this.isClaimed(this.PatientSchemeMap.LatestClaimCode, this.PatientSchemeMap.PatientId, this.PatientSchemeMap.PolicyNo);
+        this.isClaimed(this.PatientSchemeMap.LatestClaimCode, this.PatientSchemeMap.PatientId);
       }
     },
       err => {
@@ -81,19 +87,22 @@ export class SsfService {
       })
   }
 
-  isClaimed(LatestClaimCode: number, PatientId: number, policyNo: string): void {
+  isClaimed(LatestClaimCode: number, PatientId: number): void {
     this.visitBlService.IsClaimed(LatestClaimCode, PatientId)
       .subscribe((res: DanpheHTTPResponse) => {
         if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           // if(res.Results === true){
           this.isClaimSuccessful = res.Results;
           this.SsfDataLocally.IsClaimSuccessful = this.isClaimSuccessful;
-          if (!this.isClaimSuccessful) {
-            this.SsfDataLocally.MemberNo = this.PatientSchemeMap.PolicyNo;
-            this.SsfDataLocally.LatestClaimCode = this.PatientSchemeMap.LatestClaimCode;
-            const loadFromServer = false;
-            this.GetSsfPatientDetailAndEligibilityFromSsfServer(this.PatientSchemeMap.PolicyNo, loadFromServer);
-          }
+          this.ssfSubject.next(this.SsfDataLocally);
+          // if (this.isClaimSuccessful) {
+          //   this.SsfDataLocally.MemberNo = this.PatientSchemeMap.PolicyNo;
+          //   this.SsfDataLocally.LatestClaimCode = this.PatientSchemeMap.LatestClaimCode;
+          //   const loadFromServer = false;
+          //   this.GetSsfPatientDetailAndEligibilityFromSsfServer(this.PatientSchemeMap.PolicyNo, loadFromServer);
+          // } else {
+          //   this.ssfSubject.next(this.SsfDataLocally);
+          // }
         }
       },
         (err: DanpheHTTPResponse) => {
@@ -146,6 +155,7 @@ export class SsfDataStatus_DTO {
   public IsClaimSuccessful: boolean = false;
   public MemberNo: string = "";
   public LatestClaimCode: number = null;
+  public RegistrationCase: string = "";
 
 }
 

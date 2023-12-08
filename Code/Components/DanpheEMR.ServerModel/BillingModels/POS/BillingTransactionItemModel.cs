@@ -149,6 +149,7 @@ namespace DanpheEMR.ServerModel
         public decimal CoPaymentCreditPercent { get; set; }
         [NotMapped]
         public int? ProvisionalReturnItemId { get; set; } //Krishna, 9thJuly'23, This added just to return the Property to client.
+        public bool IsProvisionalDischarge { get; set; } //Krishna, 29thAug'23, This will track Provisional Discharge
 
         public BillingTransactionItemModel()
         {

@@ -73,6 +73,7 @@ namespace DanpheEMR.ServerModel
         public int? CheckedBy { get; set; } // Krishna, 17th,May'22, Fishtail Specific Changes
         public string ClinicalFindings { get; set; } //Rusha, 30th June'22, added for BIH specific changes
         public string PastHistory { get; set; } //Rusha, 24th Nov 2022, add past history for charak
+        public int? DischargeSummaryTemplateId { get; set; } //Bikesh, 26th sept  2023 for dynamic discharge summary
 
     }
 

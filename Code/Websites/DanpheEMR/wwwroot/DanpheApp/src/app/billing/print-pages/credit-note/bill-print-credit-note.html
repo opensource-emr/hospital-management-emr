@@ -125,7 +125,11 @@
                 <td colspan="4" style="text-align: left;">
                   <p class="c_paragraphs" style="margin-bottom: 0px;">Ref. Invoice No: <strong>{{ReturnInvoice.FiscalYear}} -
                       {{ReturnInvoice.InvoiceCode}}{{ ReturnInvoice.RefInvoiceNum}}</strong></p>
-
+                </td>
+                <td colspan="4" style="text-align: right;">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;"> {{ReturnInvoice.CreatedOn |
+                    nepaliDate:'format':'YYYY-MM-DD'}}</p>
+                </td>
               </tr>
               <tr>
                 <td colspan="4" style="text-align: left;">
@@ -140,7 +144,10 @@
                 <td colspan="4" style="text-align: left;">
                   <p class="c_paragraphs" style="margin-bottom: 0px;">Patient's Name: &nbsp;<strong>{{Patient.ShortName}}</strong></p>
                 </td>
-
+                <td colspan="4" style="text-align: right;">
+                  <p class="c_paragraphs" style="margin-bottom: 0px;">{{ReturnInvoice.CreatedOn |
+                    nepaliDate:'format':'YYYY-MM-DD'}}</p>
+                </td>
               </tr>
               <tr>
                 <td colspan="4" style="text-align: left;">

@@ -1,19 +1,19 @@
-import { Component, ChangeDetectorRef, ElementRef, ViewChild, Input, Output } from "@angular/core";
+import { ChangeDetectorRef, Component } from "@angular/core";
 
 import { PatientService } from '../../../patients/shared/patient.service';
 import { LabsBLService } from '../../shared/labs.bl.service';
 
-import LabGridColumnSettings from '../../shared/lab-gridcol-settings';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
+import LabGridColumnSettings from '../../shared/lab-gridcol-settings';
 
-import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import * as moment from 'moment/moment';
-import { LabPendingResultVM } from "../../shared/lab-view.models";
-import { LabSticker } from '../../shared/lab-sticker.model';
-import { CommonFunctions } from "../../../shared/common.functions";
 import { CoreService } from "../../../core/shared/core.service";
 import { SecurityService } from "../../../security/shared/security.service";
+import { CommonFunctions } from "../../../shared/common.functions";
+import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { LabCategoryModel } from "../../shared/lab-category.model";
+import { LabSticker } from '../../shared/lab-sticker.model';
+import { LabPendingResultVM } from "../../shared/lab-view.models";
 
 @Component({
   selector: "danphe-lab-pending-results",
@@ -50,6 +50,7 @@ export class LabTestsPendingResultsComponent {
   public enableResultEdit: boolean = true;
 
   public loading: boolean = false;
+  public selectedBarCodeNumber: number = 0;
 
   constructor(public patientService: PatientService, public coreService: CoreService,
     public msgBoxServ: MessageboxService,
@@ -66,7 +67,7 @@ export class LabTestsPendingResultsComponent {
     document.getElementById('quickFilterInput') && document.getElementById('quickFilterInput').focus();
   }
 
- 
+
   OnDateRangeChange($event) {
     if ($event) {
       this.fromDate = $event.fromDate;
@@ -159,6 +160,7 @@ export class LabTestsPendingResultsComponent {
 
           this.verificationRequired = this.coreService.EnableVerificationStep();
           this.showGrid = false;
+          this.selectedBarCodeNumber = $event.Data.BarCodeNumber;
           this.showAddEditResult = true;
           this.showReport = false;
         }
@@ -354,7 +356,7 @@ export class LabTestsPendingResultsComponent {
       this.timeId = null;
     }
     this.timeId = window.setTimeout(() => {
-      if(this.isInitialLoad){
+      if (this.isInitialLoad) {
         this.GetTestListFilterByCategories();
         this.isInitialLoad = false;
       }

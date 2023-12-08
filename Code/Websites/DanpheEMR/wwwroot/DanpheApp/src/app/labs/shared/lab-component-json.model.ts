@@ -11,7 +11,7 @@ export class LabComponentModel {
     public ComponentId: number = 0;
     public ComponentName: string = null;
     public Unit: string = null;
-    public ValueType: string = null;
+    public ValueType: string = "string";
     public ControlType: string = null;
     public Range: string = null;
     public RangeDescription: string = null;

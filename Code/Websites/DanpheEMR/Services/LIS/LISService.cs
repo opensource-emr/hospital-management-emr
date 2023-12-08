@@ -2,12 +2,14 @@
 using DanpheEMR.DalLayer;
 using DanpheEMR.Enums;
 using DanpheEMR.ServerModel;
+using DanpheEMR.Services.LIS.DTOs;
 using DanpheEMR.Utilities;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net.Http;
@@ -103,21 +105,20 @@ namespace DanpheEMR.Services.LIS
 
         public IEnumerable<ComponentMasterToMap> GetAllNotMappedDataByMachineId(int id, int? slectedMapId)
         {
-            int selMapId = slectedMapId.HasValue ? slectedMapId.Value : 0;
-            var compList = lisDbContext.LabTestComponents.AsNoTracking().AsEnumerable(); // components master table
-            var mappedCompList = lisDbContext.LISComponentMap.AsNoTracking().AsEnumerable();
-            var dataTemp = (from comp in compList
-                            join mappedComp in mappedCompList on comp.ComponentId equals mappedComp.ComponentId
-                            where mappedComp.IsActive && (mappedComp.MachineId == id) && ((mappedComp.LISComponentMapId != selMapId))
-                            select comp.ComponentId).ToList();
-            var dataToReturn = (from comp in compList
-                                where !dataTemp.Contains(comp.ComponentId)
-                                select new ComponentMasterToMap
+            //int selMapId = slectedMapId.HasValue ? slectedMapId.Value : 0;
+            //var compList = lisDbContext.LabTestComponents.AsNoTracking().AsEnumerable(); // components master table
+            //var mappedCompList = lisDbContext.LISComponentMap.AsNoTracking().AsEnumerable();
+            //var dataTemp = (from comp in compList
+            //                join mappedComp in mappedCompList on comp.ComponentId equals mappedComp.ComponentId
+            //                where mappedComp.IsActive && (mappedComp.MachineId == id) && ((mappedComp.LISComponentMapId != selMapId))
+            //                select comp.ComponentId).ToList();
+            var dataToReturn = lisDbContext.LabTestComponents.AsNoTracking().Select(comp => 
+                                new ComponentMasterToMap
                                 {
                                     ComponentId = comp.ComponentId,
                                     ComponentName = comp.ComponentName,
                                     DisplayName = comp.DisplayName
-                                }).AsEnumerable();
+                                }).ToList();
             return dataToReturn;
         }
 
@@ -251,6 +252,37 @@ namespace DanpheEMR.Services.LIS
                                }).ToList();
 
             return groupedData;
+        }
+
+        public async Task<object> GetMachineResultByBarcodeNumber(Int64 BarcodeNumber)
+        {
+            List<MachineResults> lisResultData = new List<MachineResults>();
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(LISComputerServerURL);
+                var responseTask = client.GetAsync("GetMachineResultsByBarcodeNumber?BarcodeNumber=" + BarcodeNumber.ToString());
+                responseTask.Wait();
+
+                var result = responseTask.Result;
+                if (result.IsSuccessStatusCode)
+                {
+                    string labData = await result.Content.ReadAsStringAsync();
+                    lisResultData = DanpheJSONConvert.DeserializeObject<List<MachineResults>>(labData);
+                }
+
+            }
+            var finalResult = (from lisCompMap in lisDbContext.LISComponentMap.AsEnumerable()
+                               join lisResult in lisResultData on new { lisCompMap.MachineId, lisCompMap.LISComponentId } equals new { lisResult.MachineId, lisResult.LISComponentId }
+                               where (lisCompMap.IsActive == true)
+                               select new
+                               {
+                                   LisResultId = lisResult.LISComponentResultId,
+                                   ComponentId = lisCompMap.ComponentId,
+                                   ConversionFactor = lisCompMap.ConversionFactor,
+                                   Value = lisResult.Value,
+                               }).ToList();
+
+            return finalResult;
         }
 
         public IEnumerable<LISMachineMaster> GetAllMachines()
@@ -424,6 +456,86 @@ namespace DanpheEMR.Services.LIS
                 return false;
             }
 
+        }
+
+        public async Task<bool> AddMachineOrder(List<Int64> reqIds)
+        {
+            // Fetch allLISMasterData asynchronously
+            var allLISMasterDataTask = GetAllLisMasterComponentAsync();
+
+            // Perform other database-related queries asynchronously
+            var orderToInsertTask = (from requisition in lisDbContext.Requisitions
+                                     join reqId in reqIds on requisition.RequisitionId equals reqId
+                                     join patient in lisDbContext.Patients on requisition.PatientId equals patient.PatientId
+                                     join componentMap in lisDbContext.LabTestComponentMap on requisition.LabTestId equals componentMap.LabTestId
+                                     join lisComponentMap in lisDbContext.LISComponentMap on componentMap.ComponentId equals lisComponentMap.ComponentId
+                                     select new
+                                     {
+                                         requisition,
+                                         patient,
+                                         lisComponentMap
+                                     }).ToListAsync();
+
+            // Wait for both tasks to complete
+            await Task.WhenAll(allLISMasterDataTask, orderToInsertTask);
+
+            var allLISMasterData = await allLISMasterDataTask;
+            var orderToInsertData = await orderToInsertTask;
+
+            // Join allLISMasterData with the other data
+            var orderToInsert = (from data in orderToInsertData
+                                 join lisMaster in allLISMasterData on data.lisComponentMap.LISComponentId equals lisMaster.LISComponentMasterId
+                                 select new LIS_Machine_Order_DTO
+                                 {
+                                     BarCodeNumber = data.requisition.BarCodeNumber.ToString(),
+                                     MachineComponentName = lisMaster.ComponentDisplayName,
+                                     PatientCode = data.patient.PatientCode,
+                                     PatientName = data.patient.ShortName,
+                                     Gender = data.patient.Gender,
+                                     SpecimenType = data.requisition.LabTestSpecimen,
+                                     MachineId = lisMaster.MachineId,
+                                     MachineName = lisMaster.MachineName,
+                                     CreatedOn = DateTime.Now
+                                 }).ToList();
+            if (orderToInsert.Count > 0)
+            {
+                var payload = DanpheJSONConvert.SerializeObject(orderToInsert);
+
+                using (var client = new HttpClient())
+                {
+                    var uri = LISComputerServerURL + "MachineOrder";
+                    HttpContent c = new StringContent(payload, Encoding.UTF8, "application/json");
+                    HttpResponseMessage result = await client.PostAsync(uri, c);
+                    if (!result.IsSuccessStatusCode)
+                    {
+                        throw new Exception("Server Error Cannot save data");
+                    }
+                }
+            }
+            return true;
+        }
+
+        public async Task<bool> UpdateMachineResultSyncStatus(List<int> resultIds)
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var payload = DanpheJSONConvert.SerializeObject(resultIds);
+                    var uri = LISComputerServerURL + "SetResultSyncStatus";
+                    HttpContent c = new StringContent(payload, Encoding.UTF8, "application/json");
+                    HttpResponseMessage result = await client.PostAsync(uri, c);
+                    if (!result.IsSuccessStatusCode)
+                    {
+                        throw new Exception("Server Error Cannot save data");
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private Boolean IsValidForAddResult(List<MachineResultsVM> labComponentFromClient, LISDbContext labDbContext)

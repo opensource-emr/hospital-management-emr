@@ -5,6 +5,7 @@ import { InventoryBLService } from "../../shared/inventory.bl.service";
 import { PurchaseOrder } from "../../shared/purchase-order.model";
 import { PurchaseOrderItems } from "../../shared/purchase-order-items.model";
 import * as moment from "moment/moment";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 @Component({
   selector: "po-view",
   templateUrl: "./po-view.component.html",
@@ -23,12 +24,16 @@ export class POViewComponent {
   private POId: number = 0;
   @Output('close-po-popup')
   public closePOPopup: EventEmitter<Object> = new EventEmitter<Object>();
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(
     public changeDetect: ChangeDetectorRef,
     public coreService: CoreService,
     public messageBoxService: MessageboxService,
     private inventoryBLService: InventoryBLService
-  ) { }
+  ) { 
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+  }
 
   @Input("POId")
   public set getPOId(val) {

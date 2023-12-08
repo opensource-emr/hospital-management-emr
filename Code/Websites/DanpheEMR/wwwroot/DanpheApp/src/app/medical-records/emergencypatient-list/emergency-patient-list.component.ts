@@ -1,16 +1,16 @@
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { Router } from '@angular/router';
 import * as moment from 'moment';
 import { ADT_DLService } from '../../adt/shared/adt.dl.service';
 import { CoreService } from '../../core/shared/core.service';
 import { SecurityService } from '../../security/shared/security.service';
-import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
 import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { GridEmitModel } from '../../shared/danphe-grid/grid-emit.model';
 import { MessageboxService } from '../../shared/messagebox/messagebox.service';
+import MRGridColumnSettings from '../shared/Mr-gridcol.settings';
 import { ICDEmergencyDiseaseGroup, ICDEmergencyReportingGroup } from '../shared/emer-disease-and-reporting-group-VM';
 import { MedicalRecordService } from '../shared/medical-record.service';
-import MRGridColumnSettings from '../shared/Mr-gridcol.settings';
 import { MR_BLService } from '../shared/mr.bl.service';
 
 @Component({
@@ -267,7 +267,7 @@ export class EmergencyPatientListComponent {
             if (oplist.FinalDiagnosis && oplist.FinalDiagnosis.length > 0) {
               oplist.FinalDiagnosis.forEach(fd => {
 
-                if (fd.ICD10Code == this.selectedDiagnosisICDCode.ICD10Code) {
+                if (fd.ICDCode === this.selectedDiagnosisICDCode.ICDCode) {
                   hasCode = true;
                 }
 

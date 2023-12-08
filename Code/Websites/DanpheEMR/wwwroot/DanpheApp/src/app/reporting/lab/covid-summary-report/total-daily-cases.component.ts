@@ -1,12 +1,12 @@
 import { Component } from "@angular/core";
 import * as moment from "moment";
-import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from "../../../../app/shared/danphe-grid/NepaliColGridSettingsModel";
 import { CoreService } from "../../../../app/core/shared/core.service";
+import { CountrySubdivision } from "../../../../app/settings-new/shared/country-subdivision.model";
+import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from "../../../../app/shared/danphe-grid/NepaliColGridSettingsModel";
 import { DLService } from "../../../../app/shared/dl.service";
 import { MessageboxService } from "../../../../app/shared/messagebox/messagebox.service";
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 import { ReportingService } from "../../shared/reporting-service";
-import { CountrySubdivision } from "../../../../app/settings-new/shared/country-subdivision.model";
-import { filter } from "rxjs/operators";
 
 @Component({
   selector: 'daily-total-covid-cases',
@@ -31,6 +31,7 @@ export class RPT_TotalDailyCovidCasesReport {
   public componentName: string = null;
   public dateRange: string = "";
   public footer = '';
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   public summaryFormatted = {
     TotalPositiveCase: 0,
@@ -45,7 +46,7 @@ export class RPT_TotalDailyCovidCasesReport {
     public coreService: CoreService
   ) {
     this.GetCountrySubDivision();
-
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     this.totalDailyCovidCasesReportColumns = this.reportServ.reportGridCols.TotalCovidCasesDetailReport;
     var name = this.coreService.Parameters.find(a => a.ParameterGroupName.toLowerCase() == 'common' && a.ParameterName == 'CovidTestName');
     if (name) {

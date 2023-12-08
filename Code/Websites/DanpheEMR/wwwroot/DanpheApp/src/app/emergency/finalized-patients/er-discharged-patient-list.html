@@ -5,7 +5,8 @@
 <div *ngIf="showOrderPopUp" (click)="ParentOfPopUpClicked($event)" class="triaged-patient-orders cstm-popup-holder" style="padding: 55px;">
     <div class="cstm-slidefromtop">
         <div style="width: 100%; height: auto;">
-            <er-ward-billing (sendBackERPatientOrderData)="ReturnFromOrderAction($event)" [selectedPatient]="selectedEmergencyPatient"></er-ward-billing>
+            <er-ward-billing (sendBackERPatientOrderData)="ReturnFromOrderAction($event)"
+                             [selectedPatient]="selectedEmergencyPatient"></er-ward-billing>
         </div>
     </div>
 </div>
@@ -21,7 +22,8 @@
 <div *ngIf="showERPatRegistration" (click)="ParentOfPopUpClicked($event)" class="cstm-popup-holder" style="padding: 55px;">
     <div id="cstmSlideFromTop" class="cstm-slidefromtop">
         <div style="width: 100%; height: auto;">
-            <er-patient-registration (sendBackERPatientData)="ReturnFromPatRegistrationEdit($event)" [currentPatientToEdit]="selectedERPatientToEdit"></er-patient-registration>
+            <er-patient-registration (sendBackERPatientData)="ReturnFromPatRegistrationEdit($event)"
+                                     [currentPatientToEdit]="selectedERPatientToEdit"></er-patient-registration>
         </div>
     </div>
 </div>

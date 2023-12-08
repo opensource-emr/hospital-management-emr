@@ -4,4 +4,5 @@ export class PatLabInfoVM {
     TestName: string = null;
     VendorName: string = null;
     IsSelected: boolean = false;
- }
+    ExternalLabSampleStatus: string = "";
+}

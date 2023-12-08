@@ -47,7 +47,7 @@
                         <div class="icheck-inline" ngDefaultControl *ngIf="!IsPrint"
                              style="display: inline-block;">
                               This is to certify that a live {{CurrentBaby.Sex}} (Male/Female/Other) baby was born on
-
+                              <u><b>{{CurrentBaby.BirthDate | nepaliDate}}</b></u>
                               (<u><b><i>{{CurrentBaby.BirthDate}}AD</i></b></u>, YYYY/MM/DD) at
                               <u><b>{{CurrentBaby.BirthTime}}</b></u>(24 hours)
                               with baby weight <u><b>{{CurrentBaby.WeightOfBaby}}</b></u> grams. The type of birth was
@@ -61,7 +61,7 @@
                               <u><b>{{CurrentBaby.MotherName}}</b></u> and father is Mr
                               <u><b>{{CurrentBaby.FathersName}}</b></u>
                               resident of country <u><b>{{PatientAddress.Country}} </b></u>district
-                              <u><b>{{PatientAddress.CountryDivision}}</b></u> village/municipality
+                              <u><b>{{PatientAddress.CountryDivision}}</b></u> village/{{GeneralFieldLabel.Municipality}}
                               <u><b>{{PatientAddress.Street}}</b></u> tole <u><b>{{PatientAddress.Zip}}</b></u>.
                         </div>
                         <div *ngIf="IsPrint" class="icheck-inline" ngDefaultControl
@@ -75,7 +75,7 @@
                               <u><b>{{CurrentBaby.MotherName}}</b></u> and father is Mr
                               <u><b>{{CurrentBaby.FathersName}}</b></u>
                               resident of country <u><b>{{PatientAddress.Country}} </b></u>district
-                              <u><b>{{PatientAddress.CountryDivision}}</b></u> village/municipality
+                              <u><b>{{PatientAddress.CountryDivision}}</b></u> village/{{GeneralFieldLabel.Municipality}}
                               <u><b>{{PatientAddress.Street}}</b></u> tole <u><b>{{PatientAddress.Zip}}</b></u>.
                         </div>
                         <div style="padding-top:50px;">

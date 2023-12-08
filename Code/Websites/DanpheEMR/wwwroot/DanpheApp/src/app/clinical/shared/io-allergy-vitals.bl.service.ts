@@ -1,12 +1,13 @@
-﻿import { Injectable, Directive } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { ClinicalDLService } from './clinical.dl.service';
 
-import { Vitals } from './vitals.model';
 import { Allergy } from './allergy.model';
 import { InputOutput } from './input-output.model';
+import { Vitals } from './vitals.model';
 //import { NotesModel } from '../notes/shared/notes.model';
 import * as _ from 'lodash';
 import * as moment from 'moment/moment';
+import { BloodSugarMonitoring } from './blood-sugar-monitoring.model';
 @Injectable()
 export class IOAllergyVitalsBLService {
 
@@ -27,8 +28,8 @@ export class IOAllergyVitalsBLService {
     }
     //input-output
     //get list of IO using PatientId
-    public GetPatientInputOutputList(patientVisitId: number) {
-        return this.clinicalDLService.GetPatientInputOutputList(patientVisitId)
+    public GetPatientInputOutputList(patientVisitId: number, fromDate: string, toDate: string) {
+        return this.clinicalDLService.GetPatientInputOutputList(patientVisitId, fromDate, toDate)
             .map(res => res);
     }
     //vitals
@@ -173,6 +174,24 @@ export class IOAllergyVitalsBLService {
         // let reqType = 'inputoutput';
         return this.clinicalDLService.PutClinicalInputOutput(data)
             .map(res => res);
+    }
+    public PostBloodSugar(currentInputOutput: BloodSugarMonitoring) {
+        let temp = _.omit(currentInputOutput, ['BloodSugarValidator', 'PatientInfo', 'EnteredBy']);
+        return this.clinicalDLService.PostBloodSugar(temp)
+            .map(res => res);
+    }
+
+    public GetPatientAdmissionInfo(patientVisitId: number) {
+        return this.clinicalDLService.GetPatientAdmissionInfo(patientVisitId)
+            .map(res => res);
+    }
+    public GetPatientBloodSugarList(patientVisitId: number) {
+        return this.clinicalDLService.GetPatientBloodSugarList(patientVisitId)
+            .map(res => res);
+    }
+    public GetClinicalIntakeOutputParameterList() {
+        return this.clinicalDLService.GetClinicalIntakeOutputParameterList()
+            .map(res => { return res });
     }
     //notes
     //update notes

@@ -127,7 +127,7 @@ namespace DanpheEMR.ViewModel.Pharmacy
 
                     //Increase Stock in Dispensary
                     //Find if the stock is available in dispensary
-                    var dispensaryStock = await db.StoreStocks.FirstOrDefaultAsync(s => s.StockId == stock.StockId && s.StoreId == dispatchItem.SourceStoreId && s.IsActive == true);
+                    var dispensaryStock = await db.StoreStocks.FirstOrDefaultAsync(s => s.StockId == stock.StockId && s.StoreId == dispatchItem.TargetStoreId && s.IsActive == true);
                     // check if receive feature is enabled, to decide whether to increase in stock or increase unconfirmed quantity
                     var isReceiveFeatureEnabled = db.CFGParameters
                                                     .Where(param => param.ParameterGroupName == "Pharmacy" && param.ParameterName == "EnableReceiveItemsInDispensary")
@@ -144,6 +144,7 @@ namespace DanpheEMR.ViewModel.Pharmacy
                             salePrice: stock.SalePrice
                             );
                         db.StoreStocks.Add(dispensaryStock);
+                        db.SaveChanges();
                     }
                     //Add Txn in PHRMStockTransactionModel table
                     var dispensaryStockTxn = new PHRMStockTransactionModel(
@@ -192,7 +193,6 @@ namespace DanpheEMR.ViewModel.Pharmacy
 
                     db.StockTransactions.Add(stockTxn);
                     db.StockTransactions.Add(dispensaryStockTxn);
-
                     if (totalRemainingQty == 0)
                     {
                         break; //it takes out of the foreach loop. line : foreach (var stock in stockList)

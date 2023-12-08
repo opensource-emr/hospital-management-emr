@@ -3,7 +3,7 @@
     <form [formGroup]="patient.PatientValidator" class="form-horizontal hm-form">
       <div>
         <div class="form-group">
-          <label class="control-label col-md-3" style="font-size: 20px !important;"> NSHI <b>:</b> </label>
+          <label class="control-label col-md-3" style="font-size: 20px !important;"> {{GeneralFieldLabel.NSHINo}}<b>:</b> </label>
           <label class="control-label col-md-3" style="font-size: 20px !important;color: darkgreen !important;"> {{patient.NSHI}} </label>
           <!-- <div class="col-md-3 pr-0">
             <input #firstname id="NSHI" disabled class="form-control" type="text" [(ngModel)]="patient.NSHI"
@@ -160,12 +160,12 @@
         <div *ngIf="patient.CountryId == 1" class="col-md-3 pr-0">
           <input id="ddlCountrySubdivision" class="form-control" danphe-auto-complete
                  formControlName="CountrySubDivisionId" [(ngModel)]="countrySubDivision"
-                 [list-formatter]="districtListFormatter" [source]="countrySubDivisions" placeholder="District"
+                 [list-formatter]="districtListFormatter" [source]="countrySubDivisions" placeholder="{{GeneralFieldLabel.DistrictState}}"
                  display-property-name="CountrySubDivisionName" value-property-name=null
                  (valueChanged)="AssignSelectedDistrict()" onClick="this.select();" max-num-list="10"
                  (keyup.enter)="SetFocusById('txtAddress')" />
           <span class="color-red font-sm" *ngIf="patient.IsDirty('CountrySubDivisionId') && patient.CountryId == 1"
-                [hidden]="patient.IsValidCheck('CountrySubDivisionId','required')"> District/State is required.</span>
+                [hidden]="patient.IsValidCheck('CountrySubDivisionId','required')"> {{GeneralFieldLabel.DistrictState}} is required.</span>
         </div>
         <div class="col-md-3">
           <input danphe-auto-complete class="form-control" [ngModelOptions]="{standalone: true}"

@@ -15,8 +15,7 @@
                             <customer-header [header-title]="transaction.VoucherType + '('+transaction.FiscalYear+')'"></customer-header>
                             <div class="col-md-12 col-xs-12">
                                 <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
-                                <a style="float:right;  margin-top:-50px;margin-right:30px" class="btn btn-danger hidden-print" (click)="Close()"
-                                   title="Cancel">X</a>
+                                <a style="float:right;  margin-top:-50px;margin-right:30px" class="btn btn-danger hidden-print" (click)="Close()" title="Cancel">X</a>
                                 <div class="col-md-12" id="excelTransactionView">
                                     <div class="col-md-12 patient-hdr-label">
                                         <table style="width:100%;" align="center">
@@ -29,9 +28,11 @@
                                                 </td>
                                                 <td style="text-align:center;float:right;padding-right:10px;">
                                                     <b>Transaction Date:</b>
-
                                                     <span style="float:right">
-                                                        &nbsp; {{transaction.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} AD
+                                                        &nbsp;   {{transaction.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                                                    </span><br />
+                                                    <span style="float:right">
+                                                        &nbsp;   {{transaction.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} AD
                                                     </span>
                                                 </td>
                                             </tr>
@@ -63,18 +64,17 @@
                                                 </td>
                                                 <td>
                                                     {{txnItm.LedgerName}} <b>{{txnItm.Code}} </b>
-                                                    <span *ngFor="let det of txnItm.Details"
-                                                          style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
+                                                    <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
                                                         <br />
                                                         <span>{{det.Name}}</span>
-                                                        <span>
+                                                    <span>
                                                             <span *ngIf="det.Dr > 0">
                                                                 Dr: {{det.Dr | Currency:'4'}}
                                                             </span>
-                                                            <span *ngIf="det.Cr > 0">
+                                                    <span *ngIf="det.Cr > 0">
                                                                 Cr: {{det.Cr | Currency:'4'}}
                                                             </span>
-                                                        </span>
+                                                    </span>
                                                     </span>
                                                 </td>
                                                 <td>
@@ -102,8 +102,7 @@
                                         </table>
                                     </div>
                                     <div>
-                                        <b> In Words :</b>&nbsp; {{crTotal | Currency:'4' | NumberInWords | CapitalFirstLetter}} <span
-                                              *ngIf="crTotal !=0">Only</span>
+                                        <b> In Words :</b>&nbsp; {{crTotal | Currency:'4' | NumberInWords | CapitalFirstLetter}} <span *ngIf="crTotal !=0">Only</span>
                                     </div>
                                     <div>
                                         <b>Narration:</b>&nbsp;{{transaction.Remarks}}
@@ -136,11 +135,8 @@
                                 <br />
                                 <div class="col-md-12" style="padding-bottom: 15px;">
                                     <div class="form-actions">
-                                        <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i
-                                               class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
-                                        <button *ngIf="showExportbtn" class="btn btn-primary hidden-print"
-                                                (click)="ExportToExcel('excelTransactionView')" value="" title="export to excel">Export<i
-                                               class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+                                        <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+                                        <button *ngIf="showExportbtn" class="btn btn-primary hidden-print" (click)="ExportToExcel('excelTransactionView')" value="" title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -165,8 +161,7 @@
                             <customer-header [header-title]="transaction.VoucherType + '('+transaction.FiscalYear+')'"></customer-header>
                             <div class="col-md-12 col-xs-12">
                                 <hr style="border:1px solid black;margin-top: 0px;margin-bottom: 5px;" />
-                                <a style="float:right;  margin-top:-50px;margin-right:30px" class="btn btn-danger hidden-print" (click)="Close()"
-                                   title="Cancel">X</a>
+                                <a style="float:right;  margin-top:-50px;margin-right:30px" class="btn btn-danger hidden-print" (click)="Close()" title="Cancel">X</a>
                                 <div class="col-md-12" id="excelTransactionView">
                                     <div class="col-md-12 patient-hdr-label">
                                         <table style="width:100%;" align="center">
@@ -180,10 +175,10 @@
                                                 <td style="text-align:center;float:right;padding-right:10px;">
                                                     <b>Transaction Date:</b>
                                                     <span style="float:right">
-                                                        &nbsp; {{transaction.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                                                        &nbsp;   {{transaction.TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}}
                                                     </span><br />
                                                     <span style="float:right">
-                                                        &nbsp; {{transaction.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} AD
+                                                        &nbsp;   {{transaction.TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} AD
                                                     </span>
                                                 </td>
                                             </tr>
@@ -215,25 +210,23 @@
                                                 </td>
                                                 <td *ngIf="txnItm.Name == 'ACA_CASH_IN_HAND_CASH'">
                                                     {{txnItm.LedgerName}} <b>{{txnItm.Code}} </b>
-                                                    <span *ngFor="let row of userCashCollection"
-                                                          style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
+                                                    <span *ngFor="let row of userCashCollection" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
                                                         <span style="width:30%;"><br />{{row.UserName}} : {{row.Total | Currency:'4'}}</span>
                                                     </span>
                                                 </td>
                                                 <td *ngIf="txnItm.Name != 'ACA_CASH_IN_HAND_CASH'">
                                                     {{txnItm.LedgerName}} <b>{{txnItm.Code}} </b>
-                                                    <span *ngFor="let det of txnItm.Details"
-                                                          style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
+                                                    <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
                                                         <br />
                                                         <span>{{det.Name}}</span>
-                                                        <span>
+                                                    <span>
                                                             <span *ngIf="det.Dr > 0">
                                                                 Dr: {{det.Dr | Currency:'4'}}
                                                             </span>
-                                                            <span *ngIf="det.Cr > 0">
+                                                    <span *ngIf="det.Cr > 0">
                                                                 Cr: {{det.Cr | Currency:'4'}}
                                                             </span>
-                                                        </span>
+                                                    </span>
                                                     </span>
                                                 </td>
                                                 <td>
@@ -254,18 +247,17 @@
                                                 </td>
                                                 <td>
                                                     {{txnItm.LedgerName}} <b>{{txnItm.Code}} </b>
-                                                    <span *ngFor="let det of txnItm.Details"
-                                                          style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
+                                                    <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
                                                         <br />
                                                         <span>{{det.Name}}</span>
-                                                        <span>
+                                                    <span>
                                                             <span *ngIf="det.Dr > 0">
                                                                 Dr: {{det.Dr | Currency:'4'}}
                                                             </span>
-                                                            <span *ngIf="det.Cr > 0">
+                                                    <span *ngIf="det.Cr > 0">
                                                                 Cr: {{det.Cr | Currency:'4'}}
                                                             </span>
-                                                        </span>
+                                                    </span>
                                                     </span>
                                                 </td>
                                                 <td>
@@ -285,18 +277,17 @@
                                                 </td>
                                                 <td>
                                                     {{txnItm.LedgerName}} <b>{{txnItm.Code}} </b>
-                                                    <span *ngFor="let det of txnItm.Details"
-                                                          style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
+                                                    <span *ngFor="let det of txnItm.Details" style="font-size:12px;color:green;padding-left:50px;font-style:italic;">
                                                         <br />
                                                         <span>{{det.Name}}</span>
-                                                        <span>
+                                                    <span>
                                                             <span *ngIf="det.Dr > 0">
                                                                 Dr: {{det.Dr | Currency:'4'}}
                                                             </span>
-                                                            <span *ngIf="det.Cr > 0">
+                                                    <span *ngIf="det.Cr > 0">
                                                                 Cr: {{det.Cr | Currency:'4'}}
                                                             </span>
-                                                        </span>
+                                                    </span>
                                                     </span>
                                                 </td>
                                                 <td>
@@ -435,8 +426,7 @@
                                         </table>
                                     </div>
                                     <div>
-                                        <b> In Words :</b>&nbsp; {{totalAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}} <span
-                                              *ngIf="totalAmount !=0">Only</span>
+                                        <b> In Words :</b>&nbsp; {{totalAmount | Currency:'4' | NumberInWords | CapitalFirstLetter}} <span *ngIf="totalAmount !=0">Only</span>
                                     </div>
                                     <div>
                                         <b>Narration:</b>&nbsp;{{transaction.Remarks}}
@@ -469,11 +459,8 @@
                                 <br />
                                 <div class="col-md-12" style="padding-bottom: 15px;">
                                     <div class="form-actions">
-                                        <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i
-                                               class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
-                                        <button *ngIf="showExportbtn" class="btn btn-primary hidden-print"
-                                                (click)="ExportToExcel('excelTransactionView')" value="" title="export to excel">Export<i
-                                               class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
+                                        <button class="btn btn-primary hidden-print" (click)="Print()" value="Print" title="print page">Print<i class="glyphicon glyphicon-print" style="margin-left:10px;"></i></button>
+                                        <button *ngIf="showExportbtn" class="btn btn-primary hidden-print" (click)="ExportToExcel('excelTransactionView')" value="" title="export to excel">Export<i class="fa fa-file-excel-o" style="margin-left:10px;"></i></button>
                                     </div>
                                 </div>
                             </div>

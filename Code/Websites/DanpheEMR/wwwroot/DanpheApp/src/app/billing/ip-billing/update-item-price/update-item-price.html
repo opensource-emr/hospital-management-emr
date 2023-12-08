@@ -8,6 +8,20 @@
             <a class="btn btn-danger btn-round" (click)="CloseGroupDiscountPopUp()"
                style="padding: 0 !important; display: block;">X</a>
           </div>
+          <div class="row" style="margin-top: 10px;">
+            <div class="col-md-12" *ngIf="UpdatePriceConfigurations.EnableInIpBilling && PriceCategories && PriceCategories.length">
+              <div class="col-md-5"></div>
+              <div class="col-md-3" style="text-align: right;">
+                <strong style="vertical-align: sub;">Update Price With:</strong>
+              </div>
+              <div class="col-md-4">
+                <select name="priceCategorySelection" id="id_select_priceCategory_to_update_price" (change)="OnPriceCategoryChanged($event)">
+                  <option value="">--select PriceCategory--</option>
+                  <option *ngFor="let priceCat of PriceCategories" value="{{priceCat.PriceCategoryId}}">{{priceCat.PriceCategoryName}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
           <div class="p1">
             <div *ngIf="patientDetails">
               <div class="tbl-primary">

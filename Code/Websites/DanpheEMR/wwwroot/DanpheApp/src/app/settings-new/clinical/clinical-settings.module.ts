@@ -1,16 +1,16 @@
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { CommonModule, HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { HashLocationStrategy, LocationStrategy } from "@angular/common";
-import { AgGridModule } from 'ag-grid-angular/main';
-import { ClinicalSettingsMainComponent } from './clinical-settings-main.component';
-import { SharedModule } from '../../shared/shared.module';
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { DanpheAutoCompleteModule } from '../../shared/danphe-autocomplete';
+import { SharedModule } from '../../shared/shared.module';
+import { ClinicalSettingsMainComponent } from './clinical-settings-main.component';
+import { ICD10GroupListComponent } from './icd10-groups/icd10-group-list.component';
+import { IntakeOutputAddComponent } from './intakeoutput/intake-output-add.component';
+import { IntakeOutputTypeListComponent } from './intakeoutput/intake-output-type.component';
 import { ReactionAddComponent } from './reactions/reaction-add.component';
 import { ReactionListComponent } from './reactions/reaction-list.component';
-import { ICD10GroupListComponent } from './icd10-groups/icd10-group-list.component';
 
 export const clnSettingsRoutes =
   [
@@ -35,7 +35,9 @@ export const clnSettingsRoutes =
     ClinicalSettingsMainComponent,
     ReactionAddComponent,
     ReactionListComponent,
-    ICD10GroupListComponent
+    ICD10GroupListComponent,
+    IntakeOutputTypeListComponent,
+    IntakeOutputAddComponent
   ],
   bootstrap: []
 })

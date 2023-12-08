@@ -1,19 +1,17 @@
-import { Component, ChangeDetectorRef } from "@angular/core";
-import { RouterOutlet, RouterModule, Router } from "@angular/router";
-import { Injectable } from "@angular/core";
-import { Observable } from "rxjs/Rx";
+import { ChangeDetectorRef, Component } from "@angular/core";
+import { Router } from "@angular/router";
 
-import { Patient } from "../../patients/shared/patient.model";
-import { ActiveMedical } from "../../clinical/shared/active-medical.model";
-import { PatientService } from "../../patients/shared/patient.service";
-import { CallbackService } from "../../shared/callback.service";
-import { VisitService } from "../../appointments/shared/visit.service";
-import { MessageboxService } from "../../shared/messagebox/messagebox.service";
-import { DoctorsBLService } from "../shared/doctors.bl.service";
-import { RouteFromService } from "../../shared/routefrom.service";
 import { Chart } from "chart.js";
-import { SecurityService } from "../../security/shared/security.service";
+import { VisitService } from "../../appointments/shared/visit.service";
+import { ActiveMedical } from "../../clinical/shared/active-medical.model";
 import { ComplaintsModel } from "../../nursing/opd-triage/opd-triage.component";
+import { Patient } from "../../patients/shared/patient.model";
+import { PatientService } from "../../patients/shared/patient.service";
+import { SecurityService } from "../../security/shared/security.service";
+import { CallbackService } from "../../shared/callback.service";
+import { MessageboxService } from "../../shared/messagebox/messagebox.service";
+import { RouteFromService } from "../../shared/routefrom.service";
+import { DoctorsBLService } from "../shared/doctors.bl.service";
 
 @Component({
   templateUrl: "./patient-overview.html",
@@ -152,7 +150,7 @@ export class PatientOverviewComponent {
     if (this.complainLoading) {
       this.doctorsBLService.UpdateComplaint(complaint)
         .subscribe(res => {
-          if (res.Status == "OK") {            
+          if (res.Status == "OK") {
             this.GetChiefComplaints();
             this.complainLoading = false;
             if (res.Results.IsActive) {
@@ -261,7 +259,7 @@ export class PatientOverviewComponent {
     if (this.securityService.currentModule == "nursing" || this.securityService.currentModule == "emergency") {
       this.enableAddOrders = false;
       //this.routeFromService.RouteFrom = null;
-    } 
+    }
   }
 
   ShowPatientPreview() {
@@ -294,7 +292,12 @@ export class PatientOverviewComponent {
       pat.Allergies = retPatient.Allergies;
       pat.BedNo = retPatient.BedNo;
       pat.WardName = retPatient.WardName;
-
+      // if (this.patientVisitId && retPatient.Visits.length > 0) {
+      //   let visit = retPatient.Visits.find(v => v.PatientVisitId == this.patientVisitId);
+      //   if (visit) {
+      //     pat.PatientCode = visit.VisitCode;
+      //   }
+      // }
       if (retPatient.Vitals && retPatient.Vitals.length > 0) {
         retPatient.Vitals.forEach((v, i) => {
 

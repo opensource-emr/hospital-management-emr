@@ -106,8 +106,8 @@ export class AccountingReportsBLService {
             throw exception;
         }
     }
-    public GetDailyTxnReport(frmDt: string, toDt: string, fiscalYearId) {
-        return this.accountReportDlService.GetDailyTxnReport(frmDt, toDt, fiscalYearId).map(res => {
+    public GetDailyTxnReport(frmDt: string, toDt: string) {
+        return this.accountReportDlService.GetDailyTxnReport(frmDt, toDt).map(res => {
             return res
         });
     }
@@ -190,5 +190,8 @@ export class AccountingReportsBLService {
                 return responseData;
             });
     }
-
+    public GetAccountHeadDetailReport() {
+        return this.accountReportDlService.GetAccountHeadDetailReport()
+            .map(res => { return res });
+    }
 }

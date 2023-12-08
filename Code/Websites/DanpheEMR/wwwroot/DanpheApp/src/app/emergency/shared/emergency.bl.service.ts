@@ -1,11 +1,11 @@
-import { Injectable, Directive } from '@angular/core';
-import { EmergencyDLService } from './emergency.dl.service';
-import { EmergencyPatientModel } from './emergency-patient.model';
+import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
 import { BillingTransactionItem } from '../../billing/shared/billing-transaction-item.model';
 import { InPatientLabTest } from '../../labs/shared/InpatientLabTest';
-import { EmergencyDischargeSummary } from './emergency-discharge-summary.model';
 import { PatientsDLService } from '../../patients/shared/patients.dl.service';
+import { EmergencyDischargeSummary } from './emergency-discharge-summary.model';
+import { EmergencyPatientModel } from './emergency-patient.model';
+import { EmergencyDLService } from './emergency.dl.service';
 import { UploadCosentFormModel } from './upload-consent-form.Model';
 
 @Injectable()
@@ -92,7 +92,7 @@ export class EmergencyBLService {
 
 
   PostERPatient(ERPatient: EmergencyPatientModel, existingPatient: boolean) {
-    let patient = _.omit(ERPatient, ['ERPatientValidator']);
+    let patient = _.omit(ERPatient, ['ERPatientValidator', 'PatientScheme.PatientSchemeValidator']);
     return this.emergencyDLService.PostERPatient(patient, existingPatient)
       .map(res => { return res });
   }
@@ -110,6 +110,9 @@ export class EmergencyBLService {
 
   UpdateERPatient(ERPatient: EmergencyPatientModel) {
     let patient = _.omit(ERPatient, ['ERPatientValidator']);
+    let pat = patient.PatientScheme
+    pat = _.omit(patient.PatientScheme, ['PatientSchemeValidator']);
+    patient.PatientScheme = pat;
     let data = JSON.stringify(patient);
     return this.emergencyDLService.UpdateERPatient(patient)
       .map(res => { return res });
@@ -117,20 +120,25 @@ export class EmergencyBLService {
 
   PutTriageCode(ERPatient: EmergencyPatientModel) {
     let patient = _.omit(ERPatient, ['ERPatientValidator']);
+    let pat = patient.PatientScheme
+    pat = _.omit(patient.PatientScheme, ['PatientSchemeValidator']);
+    patient.PatientScheme = pat;
     let data = JSON.stringify(patient);
     return this.emergencyDLService.PutTriageCode(patient)
       .map(res => { return res });
   }
   UpdateAssignedToDoctor(ERPatient: EmergencyPatientModel) {
     let patient = _.omit(ERPatient, ['ERPatientValidator']);
+    patient.PatientScheme = _.omit(patient.PatientScheme, ['PatientSchemeValidator']);
     let data = JSON.stringify(patient);
     return this.emergencyDLService.UpdateAssignedToDoctor(patient)
       .map(res => { return res });
   }
   PutLamaOfERPatient(ERPatient: EmergencyPatientModel, action: string) {
     let patient = _.omit(ERPatient, ['ERPatientValidator']);
+    patient.PatientScheme = _.omit(patient.PatientScheme, ['PatientSchemeValidator']);
     let data = JSON.stringify(patient);
-    return this.emergencyDLService.UpdateLamaOfERPatient(patient, action)
+    return this.emergencyDLService.UpdateLamaOfERPatient(data, action)
       .map(res => { return res });
   }
   UndoTriageOfERPatient(ERPatient: EmergencyPatientModel) {
@@ -157,7 +165,7 @@ export class EmergencyBLService {
   }
 
   //cancel ER items ordered
-  public CancelItemRequest(item: BillingTransactionItem){
+  public CancelItemRequest(item: BillingTransactionItem) {
     var temp = _.omit(item, ['ItemList', 'BillingTransactionItemValidator', 'Patient']);
     let data = JSON.stringify(temp);
     return this.emergencyDLService.CancelItemRequest(data)
@@ -179,25 +187,25 @@ export class EmergencyBLService {
     });
   }
   public UploadConsentForm(filesToUpload, patFile: UploadCosentFormModel) {
-    try{
-    let formToPost = new FormData();
-    var fileName: string;
-    var omited = _.omit(patFile, ['FileUploadValidator']);
+    try {
+      let formToPost = new FormData();
+      var fileName: string;
+      var omited = _.omit(patFile, ['FileUploadValidator']);
 
-    var reportDetails = JSON.stringify(omited);//encodeURIComponent();
+      var reportDetails = JSON.stringify(omited);//encodeURIComponent();
 
-    for (let i = 0; i < filesToUpload.length; i++) {
-      formToPost.append('files', filesToUpload[i],fileName);
+      for (let i = 0; i < filesToUpload.length; i++) {
+        formToPost.append('files', filesToUpload[i], fileName);
+      }
+      formToPost.append("reportDetails", reportDetails);
+      return this.emergencyDLService.PostConsentForm(formToPost).map((res) => {
+        return res;
+      });
     }
-    formToPost.append("reportDetails", reportDetails);
-    return this.emergencyDLService.PostConsentForm(formToPost).map((res) => {
-      return res;
-    });
-  }
     catch (exception) {
       throw exception;
     }
-  
+
   }
   public DeleteFile(id: number) {
     return this.emergencyDLService.DeleteFile(id).map((res) => {

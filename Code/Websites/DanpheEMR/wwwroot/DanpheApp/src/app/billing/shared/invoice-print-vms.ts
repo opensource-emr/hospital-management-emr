@@ -25,6 +25,8 @@ export class SSFBil_VM {
   PhrmInvoiceItems = new Array<SSF_PhrmInvoiceItems>();
   LabReportInfo = new Array<SSF_LabReportInfo>();
   RadiologyReportInfo = new Array<SSF_RadiologyReportInfo>();
+  BillingInvoiceReturns = new Array<SSFInvoiceReturnsList>();
+  PharmacyInvoiceReturns = new Array<SSFInvoiceReturnsList>();
 }
 
 export class SSF_LabReportInfo {
@@ -119,14 +121,26 @@ export class SSF_BillingInvoiceInfoVM {
   public InvoiceDate: number = null;
 }
 
+// export class SSF_PhrmInvoices {
+//   public UnitPrice: number = 0;
+//   public ServiceCode: string = "ADJ02" //* This is hardcoded and not used anywhere else.
+//   public PatientId: number = 0;
+//   public Quantity: number = 0;
+//   public ClaimCode: number = 0;
+//   public InvoiceId: number = null;
+//   public InvoiceNo: number = 0;
+//   public InvoiceDate: string = "";
+// }
+
 export class SSF_PhrmInvoices {
-  public UnitPrice: number = 0;
-  public ServiceCode: string = "ADJ02" //* This is hardcoded and not used anywhere else.
-  public PatientId: number = 0;
-  public Quantity: number = 0;
+  public InvoiceNumber: number = 0;
+  public InvoiceNoFormatted: string = "";
+  public TotalAmount: number = 0;
+  public ReceivedAmount: number = 0;
+  public BalanceAmount: number = 0;
   public ClaimCode: number = 0;
+  public PatientId: number = 0;
   public InvoiceId: number = null;
-  public InvoiceNo: number = 0;
   public InvoiceDate: string = "";
 }
 
@@ -180,6 +194,8 @@ export class SSFClaimList {
   public Status: boolean;
   public BillingTransactionId: number;
   public InvoiceNoFormatted: string = "";
+  public BookingStatus: string = "";
+  public ModuleName: string = "";
 }
 
 export class PatientWiseSSFClaimList {
@@ -191,6 +207,8 @@ export class PatientWiseSSFClaimList {
   public PatientId: number = 0;
   public ClaimCode: number = 0;
   public InvoiceList: Array<SSFClaimList> = new Array<SSFClaimList>();
+  public InvoiceReturnsList = new Array<SSFInvoiceReturnsList>();
+  public SchemeType: number = null;
 }
 
 export class SSF_InvoiceItems {
@@ -402,3 +420,12 @@ export class BilPrintPharmacySummaryVM {
   public TotalAmount: number;
 }
 
+export class SSFInvoiceReturnsList {
+  public PatientId: number = null;
+  public ReturnId: number = null;
+  public CreditNoteNumber: number = null;
+  public CreditNoteNumberFormatted: string = "";
+  public ClaimCode: number = null;
+  public TotalAmount: number = 0;
+  public ModuleName: string = "";
+}

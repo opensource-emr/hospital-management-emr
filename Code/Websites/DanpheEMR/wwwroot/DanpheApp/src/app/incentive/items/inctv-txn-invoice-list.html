@@ -58,7 +58,8 @@
           <div class="col-md-6 margin-8-bt">
             <div class="margin-8-bt"> <b> InvoiceNo: </b><span *ngIf="selInvoiceInfo">{{selInvoiceInfo.InvoiceNo}}</span> </div>
             <div class="margin-8-bt"> <b>Date: </b> <span *ngIf="selInvoiceInfo"> {{selInvoiceInfo.TransactionDate |
-                DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}}</span></div>
+                DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} <i>{{selInvoiceInfo.TransactionDate | nepaliDate:'format':'YYYY-MM-DD HH:mm'}} </i>
+              </span> </div>
           </div>
           <div class="col-md-6 text-right">
             <div class="margin-8-bt"> <b>Patient: </b> <span *ngIf="selInvoiceInfo"> {{selInvoiceInfo.PatientName}} </span> </div>
@@ -71,6 +72,7 @@
             <thead>
               <tr>
                 <th>Service Name</th>
+                <th>PriceCategory</th>
                 <th>Qty</th>
                 <th>Rate</th>
                 <th>Discount</th>
@@ -83,6 +85,7 @@
                 <tr (click)="TransactionItemOnClick(i,itm)" *ngFor="let itm of allTxnInvoiceItemList;let i = index"
                     [ngClass]="{'itm-selected':itm.IsSelected}">
                   <td>{{itm.ItemName}}</td>
+                  <td>{{itm.PriceCategoryName}}</td>
                   <td>{{itm.Quantity}}</td>
                   <td>{{itm.Price}}</td>
                   <td>{{itm.DiscountAmount}}</td>

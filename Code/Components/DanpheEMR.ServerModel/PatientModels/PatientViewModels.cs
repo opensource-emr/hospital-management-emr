@@ -112,7 +112,7 @@ namespace DanpheEMR.ServerModel
         public string CountrySubDivisionName { get; set; }
         public string Age { get; set; }
         public string Address { get; set; }
-
+        public Int16? WardNumber { get; set; }
         public string Email { get; set; }
 
         //public int MembershipTypeId { get; set; }

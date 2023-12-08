@@ -532,7 +532,9 @@ namespace DanpheEMR.Services
 
                     //    db.SaveChanges();
                     //}
-                    GoodsReceipt.OtherChargesList = null;    //To avoid referential integrity constraint violation. --Rohit
+                    GoodsReceipt.OtherChargesList = null;
+                    GoodsReceipt.VerifierIds = (GoodsReceipt.IsVerificationEnabled) ? InventoryBL.SerializeProcurementVerifiers(GoodsReceipt.VerifierList) : "";
+                    //To avoid referential integrity constraint violation. --Rohit
                     db.GoodsReceipts.Attach(GoodsReceipt);
 
                     //sud:20Sept'21--Attaching the Object coming from client and Making the Entity.Modified will update all properties of the object.. 
@@ -547,6 +549,7 @@ namespace DanpheEMR.Services
                     db.Entry(GoodsReceipt).Property(a => a.Remarks).IsModified = true;
                     db.Entry(GoodsReceipt).Property(a => a.ModifiedBy).IsModified = true;
                     db.Entry(GoodsReceipt).Property(a => a.ModifiedOn).IsModified = true;
+                    db.Entry(GoodsReceipt).Property(a => a.VerifierIds).IsModified = true;
                     db.SaveChanges();
                     dbTransaction.Commit();
                 }

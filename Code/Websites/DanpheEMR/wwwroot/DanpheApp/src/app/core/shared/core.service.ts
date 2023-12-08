@@ -14,6 +14,7 @@ import { NepaliCalendarService } from "../../shared/calendar/np/nepali-calendar.
 import { CodeDetailsModel } from "../../shared/code-details.model";
 import { CommonMaster } from "../../shared/common-masters.model";
 import { DanpheAppSettings, DanpheHTTPResponse } from "../../shared/common-models";
+import { GeneralFieldLabels } from "../../shared/DTOs/general-field-label.dto";
 import { MessageboxService } from "../../shared/messagebox/messagebox.service";
 import { ENUM_DanpheHTTPResponses } from "../../shared/shared-enums";
 import { CoreBLService } from "./core.bl.service";
@@ -21,7 +22,11 @@ import { CoreBLService } from "./core.bl.service";
 
 @Injectable()
 export class CoreService {
+  static GetFieldLabelParameter(): GeneralFieldLabels {
+    throw new Error("Method not implemented.");
+  }
   //the value of below property is getting assigned in the appcomponent (i.e: the first loaded component).
+
   public Parameters: Array<CFGParameterModel> = null; //sud:26Sept'19--Changed from parametermodel to CFGPrameterModel since it's a duplicate.
   public Masters: CommonMaster = new CommonMaster();
   public LookUps: Array<LookupsModel> = new Array<LookupsModel>();
@@ -39,7 +44,7 @@ export class CoreService {
   public currencyUnit: string = "";
   public currSelectedSecRoute: DanpheRoute = null;
   accountingSettingsBLService: any;
-  public DatePreference: string = "en";
+  public DatePreference: string = "np";
   public labTypes: Array<LabTypesModel>;
   public QzTrayObject: any;
   public billingDotMatrixPrinters: Array<any>;
@@ -1790,7 +1795,7 @@ export class CoreService {
   public SetCalenderDatePreference(res) {
     if (res.Status == "OK") {
       let data = res.Results;
-      this.DatePreference = data != null ? data.PreferenceValue : "en"; //sud:8Aug'20--hardcoded for temporary purpose.. pls correct this later..
+      this.DatePreference = data != null ? data.PreferenceValue : "np"; //sud:8Aug'20--hardcoded for temporary purpose.. pls correct this later..
       //sud:29May'20-Re-writing the logic and adding null check on this.Parameters.
       //sometimes this.parameters is not yet loaded when this funciton is called..
       if (
@@ -2030,7 +2035,7 @@ export class CoreService {
       if (res.Results.length == 1) {
         this.singleLabType = true;
       }
-      //our permission name is in format: 'lab-type-erlab' 'lab-type-oplab'... 
+      //our permission name is in format: 'lab-type-erlab' 'lab-type-oplab'...
       this.labTypes.forEach(W => {
         W.PermName = W.LabTypeName.replace('-', '');
         i++;
@@ -2423,7 +2428,30 @@ export class CoreService {
     }
   }
 
+  public GetFieldLabelParameter(): GeneralFieldLabels {
+    if (this.Parameters) {
+      const param = this.Parameters.find(a => a.ParameterGroupName === 'Employeelabel' && a.ParameterName === 'FieldLabels');
+      if (param) {
+        const paramValue = JSON.parse(param.ParameterValue);
+        let obj = new GeneralFieldLabels();
+        obj.NMCNo = paramValue.NMCNo;
+        obj.NNCNo = paramValue.NNCNo;
+        obj.NHPCNo = paramValue.NHPCNo;
+        obj.PANNo = paramValue.PANNo;
+        obj.TDS = paramValue.TDS;
+        obj.NSHINo = paramValue.NSHINo;
+        obj.Municipality = paramValue.Municipality;
+        obj.showNam_Thar = paramValue.showNam_Thar;
+        obj.DistrictState = paramValue.DistrictState;
+        obj.NTSCNo = paramValue.NTSCNo;
+        obj.NSSINo = paramValue.NSSINo;
+        obj.IMISCode = paramValue.IMISCode;
+        obj.Caste = paramValue.Caste;
+        return obj;
+      }
 
+    }
+  }
   //public AllMembershipTypes: Array<Membership> = [];
   public AllMembershipTypes = [];// /*Manipal-RevisionNeeded*/ sud:29Mar'23--Need to change the type to Array<BillingScheme>
   public SetAllMembershipTypes(results) {

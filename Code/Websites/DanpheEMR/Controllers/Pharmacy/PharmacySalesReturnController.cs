@@ -1,10 +1,12 @@
-﻿using DanpheEMR.Core.Configuration;
+﻿using DanpheEMR.Controllers.Billing;
+using DanpheEMR.Core.Configuration;
 using DanpheEMR.DalLayer;
 using DanpheEMR.Enums;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel;
 using DanpheEMR.ServerModel.PharmacyModels;
 using DanpheEMR.Services.Dispensary.DTOs.PharmacyInvoiceReceipt;
+using DanpheEMR.Services.SSF.DTO;
 using DanpheEMR.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -28,9 +30,11 @@ namespace DanpheEMR.Controllers.Pharmacy
         private readonly BillingDbContext _billingDbContext;
         private readonly MasterDbContext _masterDbContext;
         bool realTimeRemoteSyncEnabled = false;
+        bool RealTimeSSFClaimBooking = false;
         public PharmacySalesReturnController(IOptions<MyConfiguration> _config) : base(_config)
         {
             realTimeRemoteSyncEnabled = _config.Value.RealTimeRemoteSyncEnabled;
+            RealTimeSSFClaimBooking = _config.Value.RealTimeSSFClaimBooking;
             _pharmacyDbContext = new PharmacyDbContext(connString);
             _billingDbContext = new BillingDbContext(connString);
             _masterDbContext = new MasterDbContext(connString);
@@ -226,6 +230,30 @@ namespace DanpheEMR.Controllers.Pharmacy
                             //Sud:24Dec'18--making parallel thread call (asynchronous) to post to IRD. so that it won't stop the normal execution of logic.
                             ///PharmacyBL.SyncPHRMBillInvoiceToRemoteServer(invoiceReturn, "phrm-invoice-return", phrmdbcontext);
                             Task.Run(() => PharmacyBL.SyncPHRMBillInvoiceToRemoteServer(invoiceReturn, "phrm-invoice-return", _pharmacyDbContext));
+                        }
+                    }
+
+                    //Send to SSF Server for Real time ClaimBooking.
+                    int schemeId = (int)retCustModel.SchemeId;
+                    var patientSchemes = _pharmacyDbContext.PatientSchemeMaps.Where(a => a.SchemeId == schemeId && a.PatientId == retCustModel.PatientId).FirstOrDefault();
+                    if (patientSchemes != null)
+                    {
+                        int priceCategoryId = retCustModel.InvoiceReturnItems[0].PriceCategoryId;
+                        var priceCategory = _pharmacyDbContext.PriceCategories.Where(a => a.PriceCategoryId == priceCategoryId).FirstOrDefault();
+                        if (priceCategory != null && priceCategory.PriceCategoryName.ToLower() == "ssf" && RealTimeSSFClaimBooking)
+                        {
+                            //making parallel thread call (asynchronous) to post to SSF Server. so that it won't stop the normal BillingFlow.
+                            SSFDbContext ssfDbContext = new SSFDbContext(connString);
+                            var billObj = new SSF_ClaimBookingBillDetail_DTO()
+                            {
+                                InvoiceNoFormatted = $"CR-PH{retCustModel.CreditNoteId}",
+                                TotalAmount = -(decimal)retCustModel.TotalAmount,//Keep it negative here, SSF takes return as negative values so that they can subtract later with TotalAmount
+                                ClaimCode = (long)patientSchemes.LatestClaimCode
+                            };
+
+                            SSF_ClaimBookingService_DTO claimBooking = SSF_ClaimBookingService_DTO.GetMappedToBookClaim(billObj, patientSchemes);
+
+                            Task.Run(() => BillingBL.SyncToSSFServer(claimBooking, "pharmacy", ssfDbContext, patientSchemes, currentUser));
                         }
                     }
 

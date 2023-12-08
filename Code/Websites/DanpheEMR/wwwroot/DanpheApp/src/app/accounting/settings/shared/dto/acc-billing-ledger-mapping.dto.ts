@@ -1,19 +1,19 @@
 export class AccBillingLedgerMapping_DTO {
-    public LedgerId: number = null;
-    public LedgerGroupId: number = null;
-    public BillLedgerMappingId: number = null;
-    public LedgerName: string = null;
-    public Name: string = null; //this is different than LedgerName
-    public LedgerType: string = null;
-    public LedgerCode: string = null;
-    public ServiceDepartmentId: number = null;
-    public ServiceDepartmentName: string = null;
+    public LedgerId: number = 0;
+    public LedgerGroupId: number = 0;
+    public BillLedgerMappingId: number = 0;
+    public LedgerName: string = "";
+    public Name: string = ""; //this is different than LedgerName
+    public LedgerType: string = "";
+    public LedgerCode: string = "";
+    public ServiceDepartmentId: number = 0;
+    public ServiceDepartmentName: string = "";
     public IsMapped: boolean = false;
-    public ItemId: number = null;
-    public ItemName: string = null;
-    public ItemCode: string = null;
-    public SubLedgerId: number = null;
-    public SubLedgerName: string = null;
+    public ItemId: number = 0;
+    public ItemName: string = "";
+    public ItemCode: string = "";
+    public SubLedgerId: number = 0;
+    public SubLedgerName: string = "";
     public IsActive: boolean = true;
     public BillingType: string = "";
 }

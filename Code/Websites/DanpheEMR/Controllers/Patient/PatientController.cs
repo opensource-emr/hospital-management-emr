@@ -1,34 +1,28 @@
-﻿using System;
+﻿using DanpheEMR.CommonTypes;
+using DanpheEMR.Core;
+using DanpheEMR.Core.Configuration;
+using DanpheEMR.DalLayer;
+using DanpheEMR.Enums;
+using DanpheEMR.Security;
+using DanpheEMR.ServerModel;
+using DanpheEMR.Services.Appointment.DTO;
+using DanpheEMR.Utilities;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using RefactorThis.GraphDiff;//for entity-update.
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using DanpheEMR.Core.Configuration;
-using DanpheEMR.ServerModel;
-using DanpheEMR.DalLayer;
-using System.Data.Entity;
-using System.Data.SqlClient;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
-using DanpheEMR.Utilities;
-using Newtonsoft.Json;
-using Microsoft.AspNetCore.Mvc.Filters;
-using DanpheEMR.CommonTypes;
-using RefactorThis.GraphDiff;//for entity-update.
-using System.Data.Entity.Core.Objects;
-using DanpheEMR.Core;
-using DanpheEMR.Core.Parameters;
-using System.IO;
-using DanpheEMR.Security;
-using DanpheEMR.Enums;
-using System.Data;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.StaticFiles;
 using System.Transactions;
-using System.Data.Entity.Infrastructure;
-using Org.BouncyCastle.Asn1.Ocsp;
-using System.Web.UI.WebControls;
-using DanpheEMR.Services.Appointment.DTO;
 
 
 
@@ -127,26 +121,19 @@ namespace DanpheEMR.Controllers
 
         [Route("GetPatientCurrentSchemeMap")]
         [HttpGet]
-        public async Task<string> GetPatientCurrentPriceCategory(int patientId, int patientVisitId)
+        public async Task<object> GetPatientCurrentPriceCategory(int patientId, int patientVisitId)
         {
-            DanpheHTTPResponse<object> responseData = new DanpheHTTPResponse<object>();
-            try
-            {
-                BillingDbContext billingDbContext = new BillingDbContext(connString);
-                var currentScheme = await billingDbContext.Visit.Where(vis => vis.PatientVisitId == patientVisitId && vis.IsActive == true).Select(a => a.SchemeId).FirstOrDefaultAsync();
+            Func<Task<object>> func = () => GetPatientSchemeMap(patientId, patientVisitId);
+            return await InvokeHttpGetFunctionAsync(func);
 
-                var patientCurrentSchemeMap = await billingDbContext.PatientSchemeMaps.Where(a => a.SchemeId == currentScheme && a.PatientId == patientId && a.IsActive == true && a.LatestPatientVisitId == patientVisitId).FirstOrDefaultAsync();
+        }
 
-                responseData.Status = "OK";
-                responseData.Results = patientCurrentSchemeMap;
-            }
-            catch (Exception ex)
-            {
-                responseData.ErrorMessage = ex.Message;
-                responseData.Status = "Failed";
-            }
+        private async Task<object> GetPatientSchemeMap(int patientId, int patientVisitId)
+        {
+            var currentScheme = await _billingDbContext.Visit.Where(vis => vis.PatientVisitId == patientVisitId && vis.IsActive == true).Select(a => a.SchemeId).FirstOrDefaultAsync();
 
-            return DanpheJSONConvert.SerializeObject(responseData, true);
+            var patientCurrentSchemeMap = await _billingDbContext.PatientSchemeMaps.Where(a => a.SchemeId == currentScheme && a.PatientId == patientId && a.IsActive == true).FirstOrDefaultAsync();
+            return patientCurrentSchemeMap;
 
         }
 

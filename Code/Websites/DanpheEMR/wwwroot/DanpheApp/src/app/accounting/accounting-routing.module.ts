@@ -10,6 +10,7 @@ import { BankReconciliationComponent } from './bank-reconciliation/reconcile-ban
 import { SuspenseAccountReconciliationComponent } from './bank-reconciliation/reconcile-suspense-account/suspense-reconciliation.component';
 import { CashFlowReportComponent } from './reports/Cash-Flow/cash-flow-report.component';
 import { DayBookReportComponent } from './reports/Day-Book-Report/day-book-report.component';
+import { AccountHeadDetailReportComponent } from './reports/account-head-detail-report/account-head-detail-report.component';
 import { AccountingReportsComponent } from './reports/accounting-reports.component';
 import { BalanceSheetReportComponent } from './reports/balance-sheet/balance-sheet-report.component';
 import { CashBankBookReportComponent } from './reports/cash-bank-book-report/cash-bank-book-report.component';
@@ -72,6 +73,7 @@ import { VoucherVerificationComponent } from './voucher-verification/voucher-ver
                     { path: 'Reports/Cash-BankBookReport', component: CashBankBookReportComponent, canActivate: [AuthGuardService] },
                     { path: 'Reports/DayBookReport', component: DayBookReportComponent, canActivate: [AuthGuardService] },
                     { path: 'Reports/SubLedgerReport', component: SubLedgerReportComponent, canActivate: [AuthGuardService] },
+                    { path: 'Reports/AccountHeadDetailReport', component: AccountHeadDetailReportComponent, canActivate: [AuthGuardService] },
                     // {
                     //     path: 'Insurance', component: InsuranceMainComponent, canActivate: [AuthGuardService],
                     //     children: [

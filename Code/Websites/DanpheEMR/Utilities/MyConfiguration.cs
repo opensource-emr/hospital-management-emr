@@ -20,6 +20,7 @@ namespace DanpheEMR.Core.Configuration
         public string LISDataBaseUrl { get; set; }
         public GoogleDriveConfiguration GoogleDriveFileUpload { get; set; }
         public JWTTokenConfiguration JwtTokenConfig { get; set; }
+        public bool RealTimeSSFClaimBooking { get; set; }
     }
     public class GoogleDriveConfiguration
     {

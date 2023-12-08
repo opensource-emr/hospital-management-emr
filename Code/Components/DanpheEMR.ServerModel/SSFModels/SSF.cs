@@ -199,4 +199,14 @@ namespace DanpheEMR.ServerModel.SSFModels
         public string reference { get; set; }
         public string type { get; set; }
     }
+
+    public class ClaimBooking
+    {
+        public float bookedAmount { get; set; }
+        public string Patient { get; set; }
+        public string scheme { get; set; }
+        public int? subProduct { get; set; }
+        public string client_claim_id { get; set; }
+        public string client_invoice_no { get; set; }
+    }
 }

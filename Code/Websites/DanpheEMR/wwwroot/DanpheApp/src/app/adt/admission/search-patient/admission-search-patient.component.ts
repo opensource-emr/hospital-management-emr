@@ -12,6 +12,7 @@ import { BillingService } from '../../../billing/shared/billing.service';
 import { CoreService } from '../../../core/shared/core.service';
 import { PatientsBLService } from '../../../patients/shared/patients.bl.service';
 import { SecurityService } from '../../../security/shared/security.service';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 import { DanpheHTTPResponse } from '../../../shared/common-models';
 import { GridEmitModel } from "../../../shared/danphe-grid/grid-emit.model";
 import { APIsByType } from '../../../shared/search.service';
@@ -39,7 +40,8 @@ export class AdmissionSearchPatient {
   public patientVisitId: number = null;
   public showIsInsurancePatient: boolean = false;
   public allPatientList = [];
-  public filteredPatientList = []
+  public filteredPatientList = [];
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(
     public patientService: PatientService,
@@ -54,6 +56,8 @@ export class AdmissionSearchPatient {
     this.adtGriColumns = new ADTGridColumnSettings(this.coreService, this.securityService);
     this.patientGridColumns = this.adtGriColumns.AdmissionSearchPatient;
     this.GetOrganizationList();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+    this.patientGridColumns[5].headerName = `${this.GeneralFieldLabel.NSHINo} NO`;
   }
 
   ngAfterViewChecked() {
@@ -127,7 +131,7 @@ export class AdmissionSearchPatient {
 
   public AdmitPatient(data) {
     if (data) {
-      //ramavtar: 06Nov'18 IsPatientAdmittedScenario is already covered, 
+      //ramavtar: 06Nov'18 IsPatientAdmittedScenario is already covered,
       //calling here api for checking if any provisional amt is pending on patient or not
       //this.admissionBLService.CheckPatProvisionalInfo(data.PatientId)
       //    .subscribe(res => {
@@ -150,6 +154,7 @@ export class AdmissionSearchPatient {
       globalPatient.Ins_NshiNumber = data.Ins_NshiNumber;
       globalPatient.Ins_InsuranceBalance = data.Ins_InsuranceBalance;
       globalPatient.SSFPolicyNo = data.SSFPolicyNo;
+      globalPatient.PolicyNo = data.PolicyNo;
       globalPatient.CareTakerName = data.CareTakerName;
       globalPatient.CareTakerContact = data.CareTakerContact;
       globalPatient.RelationWithCareTaker = data.RelationWithCareTaker;

@@ -12,6 +12,9 @@ import { BillingTransactionItem } from "../../billing/shared/billing-transaction
 import { LabTestRequisition } from "../../labs/shared/lab-requisition.model";
 import { ImagingItemRequisition } from "../../radiology/shared/imaging-item-requisition.model";
 import { BillItemRequisition } from '../../billing/shared/bill-item-requisition.model';
+import { OrdersDLService } from './orders.dl.service';
+import { PHRMPrescriptionItem } from '../../pharmacy/shared/phrm-prescription-item.model';
+import { PHRMPrescription } from '../../pharmacy/shared/phrm-prescription.model';
 
 
 @Injectable()
@@ -21,12 +24,17 @@ export class OrdersBLService {
         public imagingDLService: ImagingDLService,
         public billingDLService: BillingDLService,
         public labsDLService: LabsDLService,
-        public securityService: SecurityService) {
+        public securityService: SecurityService,
+        public ordersDLService: OrdersDLService) {
     }
 
     public PostItemsToBilling(res: Array<BillItemRequisition>){
         return this.billingDLService.PostBillingItemRequisition(res)
             .map(res => res);
+    }
+
+    public PostPharmacyPrescription(prescription: PHRMPrescription) {
+        return this.ordersDLService.PostPharmacyPrescription(prescription).map(res => res);
     }
 
     ////This method Post all dept related BillingOrders

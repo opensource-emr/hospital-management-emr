@@ -635,9 +635,9 @@ export class PharmacyBLService {
     }
   }
   //GET: Prescription Items list by PatientId && ProviderId for sale purpose
-  public GetPrescriptionItems(PatientId: number, PrescriberId: number) {
+  public GetPrescriptionItems(PatientId: number, PrescriberId: number, PrescriptionId: number) {
     try {
-      return this.pharmacyDLService.GetPrescriptionItems(PatientId, PrescriberId)
+      return this.pharmacyDLService.GetPrescriptionItems(PatientId, PrescriberId, PrescriptionId)
         .map(res => res);
     }
     catch (ex) {
@@ -2215,6 +2215,14 @@ export class PharmacyBLService {
   public GetProvisionalReturns(FromDate: string, ToDate: string, StoreId: number) {
     return this.pharmacyDLService.GetProvisionalReturns(FromDate, ToDate, StoreId).map(res => { return res });
   }
-
+  public UpdatePrescriptionItemStatus(PatientId: number) {
+    try {
+      return this.pharmacyDLService.UpdatePrescriptionItemStatus(PatientId)
+        .map(res => res);
+    }
+    catch (ex) {
+      throw ex;
+    }
+  }
 
 }

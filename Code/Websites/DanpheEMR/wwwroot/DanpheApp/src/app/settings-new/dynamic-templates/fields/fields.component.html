@@ -1,0 +1,14 @@
+<div style="display: flex; justify-content: flex-end; margin-right: 20px;">
+  <label for="templateType" style="margin-right: 5px;">Select Template Type :</label>
+  <select id="id_select_fields-templateType" (change)="onTemplateTypeChange($event)">
+    <option value="">--All--</option>
+    <option value="{{option.TemplateTypeId}}" *ngFor="let option of templateTypeList">{{option.TemplateTypeName}}</option>
+  </select>
+</div>
+<div *ngIf="showGrid" class="row">
+  <div class="col-md-12 col-xs-12 col-sm-12">
+    <danphe-grid [grid-colDefaults]="fieldMasterGridColumns" [grid-data]="fieldMasterList "
+                 [show-print-button]="false">
+    </danphe-grid>
+  </div>
+</div>

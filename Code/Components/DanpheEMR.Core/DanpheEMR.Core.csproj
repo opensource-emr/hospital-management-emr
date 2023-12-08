@@ -333,6 +333,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Caching.cs" />
+    <Compile Include="DynamicTemplate\FieldMasterModel.cs" />
+    <Compile Include="DynamicTemplate\TemplateFieldMappingModel.cs" />
+    <Compile Include="DynamicTemplate\TemplateModel.cs" />
+    <Compile Include="DynamicTemplate\TemplateTypeModel.cs" />
     <Compile Include="DynTemplates\Option.cs" />
     <Compile Include="DynTemplates\Question.cs" />
     <Compile Include="DynTemplates\Questionnaire.cs" />
@@ -360,6 +364,7 @@
       <Name>DanpheEMR.ServerModel</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

@@ -1,14 +1,15 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import * as moment from 'moment';
 import { Observable } from 'rxjs';
+import { CoreService } from '../../../../core/shared/core.service';
 import { DispensaryService } from '../../../../dispensary/shared/dispensary.service';
 import { SettingsBLService } from '../../../../settings-new/shared/settings.bl.service';
+import { GeneralFieldLabels } from '../../../../shared/DTOs/general-field-label.dto';
 import { CommonFunctions } from '../../../../shared/common.functions';
 import { DanpheCache, MasterType } from '../../../../shared/danphe-cache-service-utility/cache-services';
-import { NepaliDateInGridParams, NepaliDateInGridColumnDetail } from '../../../../shared/danphe-grid/NepaliColGridSettingsModel';
+import { NepaliDateInGridColumnDetail, NepaliDateInGridParams } from '../../../../shared/danphe-grid/NepaliColGridSettingsModel';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
 import { PharmacyBLService } from '../../../shared/pharmacy.bl.service';
-import PHRMReportsGridColumns from '../../../shared/phrm-reports-grid-columns';
 
 @Component({
   selector: 'app-patient-sales-detail',
@@ -41,14 +42,20 @@ export class PHRMPatientSalesDetailComponent implements OnInit {
   selectedStore: any = null;
   storeDetails: any;
   public loading: boolean = false;
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
-  constructor(private _dispensaryService: DispensaryService, public pharmacyBLService: PharmacyBLService, public msgBoxServ: MessageboxService, public settingBLService: SettingsBLService, public ref: ChangeDetectorRef, public changeDetector: ChangeDetectorRef) {
+
+
+  constructor(private _dispensaryService: DispensaryService, public pharmacyBLService: PharmacyBLService, public msgBoxServ: MessageboxService, public settingBLService: SettingsBLService, public ref: ChangeDetectorRef, public changeDetector: ChangeDetectorRef,
+    public coreService: CoreService,) {
     this.NepaliDateInGridSettings.NepaliDateColumnList.push(new NepaliDateInGridColumnDetail('Date', false));
     this.LoadCounter();
     this.LoadUser();
     this.GetActiveDispensarylist();
     this.AssignGridColDefaults();
     this.CreateDynamicColumnList();
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+    this.dynamicQtyColumList[4].headerName = `${this.GeneralFieldLabel.NSHINo}`;
   }
 
   ngOnInit() {

@@ -17,6 +17,7 @@ export class BillingMasterBlService {
   public ServiceItemsForIp = new Array<ServiceItemDetails_DTO>();
   public AdditionalServiceItems = new Array<BillingAdditionalServiceItem_DTO>();
   public Currencies = new Array<Currency_DTO>();
+  public ServiceItemsForProvisionalClearance = new Array<ServiceItemDetails_DTO>();
   constructor(private billingMasterDlService: BillingMasterDlService) {
 
   }
@@ -71,4 +72,10 @@ export class BillingMasterBlService {
       return res;
     });
   }
+  GetServiceItemsByPriceCategoryId(priceCategoryId: number) {
+    return this.billingMasterDlService.GetServiceItemsByPriceCategoryId(priceCategoryId).map(res => {
+      return res;
+    });
+  }
+
 }

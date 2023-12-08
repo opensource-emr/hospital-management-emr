@@ -1,9 +1,9 @@
-import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
-import { Component, OnInit, Pipe, PipeTransform } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import * as moment from 'moment';
 import { CoreService } from '../../../core/shared/core.service';
 import { InventoryService } from '../../../inventory/shared/inventory.service';
+import { GeneralFieldLabels } from '../../../shared/DTOs/general-field-label.dto';
 import { InventoryFieldCustomizationService } from '../../../shared/inventory-field-customization.service';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { ProcurementBLService } from '../../shared/procurement.bl.service';
@@ -31,6 +31,7 @@ export class GoodsReceiptViewComponent implements OnInit {
   showPrint: boolean;
   verifierDetails: any[] = [];
   showSpecification: boolean = false;
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(
     public procBLService: ProcurementBLService,
@@ -38,6 +39,7 @@ export class GoodsReceiptViewComponent implements OnInit {
     public messageBoxService: MessageboxService,
     public router: Router,
     public coreservice: CoreService, public inventoryFieldCustomizationService: InventoryFieldCustomizationService) {
+    this.GeneralFieldLabel = coreservice.GetFieldLabelParameter();
     this.LoadGoodsReceiptDetails(this.inventoryService.GoodsReceiptId);
     this.header = JSON.parse(this.coreservice.Parameters[1].ParameterValue);
     this.GetInventoryBillingHeaderParameter();

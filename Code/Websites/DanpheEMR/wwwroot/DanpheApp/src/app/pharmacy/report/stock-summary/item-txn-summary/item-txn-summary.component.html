@@ -1,6 +1,6 @@
 <div>
     Transaction Report for Item : <b>{{ItemName}}</b> from <b>{{FromDate}}</b> to <b>{{ToDate}}</b>
-    <span *ngIf="FromDate">&nbsp;({{FromDate | nepaliDate }}</span> to <span *ngIf="ToDate">{{ToDate | nepaliDate }})</span>
+    <span *ngIf="FromDate">&nbsp;{{FromDate | nepaliDate }}</span> to <span *ngIf="ToDate">{{ToDate | nepaliDate }}</span>
 </div>
 <danphe-grid [grid-colDefaults]="ItemTxnSummaryReportColumns" [grid-data]="ItemTxnSummaryReportData" [grid-showExport]="true" [grid-exportOptions]="gridExportOptions" [report-for]="pharmacy" [NepaliDateInGridParams]="NepaliDateInGridSettings" (grid-actions)="ItemTxnSummaryGridAction($event)">
 </danphe-grid>

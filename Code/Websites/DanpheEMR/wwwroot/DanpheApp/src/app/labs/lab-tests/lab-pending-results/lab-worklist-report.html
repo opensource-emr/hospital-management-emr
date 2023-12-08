@@ -49,10 +49,11 @@
   <table class="table table-bordered lab-worklist-table">
     <thead *ngIf="workListHeader">
       <tr>
-        <th colspan="8" style="text-align: center;" class="worklistHeader">
+        <th colspan="9" style="text-align: center;" class="worklistHeader">
           <div class="row">
             <div class="col-md-3 headerDate">
-              <span class="text-left">To: {{toDate}} 
+              <span class="text-left">From: {{fromDate | nepaliDate:'format':'YYYY-MM-DD'}} {{fromDate}}
+              </span><span class="text-left">To: {{toDate | nepaliDate:'format':'YYYY-MM-DD'}} {{toDate}}
               </span>
             </div>
             <div class="col-md-6 headerHospName" style="width: 50%;">
@@ -73,6 +74,7 @@
         <th style="width:50px;">S.N.</th>
         <th style="width:100px;">Collected On</th>
         <th style="width:100px;">Run No.</th>
+        <th style="width:80px;">BarCode No.</th>
         <th style="width:150px;">Patient Name</th>
         <th style="width:100px;">Hospital No</th>
         <th style="width:80px;">Age/Sex</th>
@@ -90,6 +92,7 @@
             <date-lbl [value]="res.SampleCollectedOn" [show-time]="true"></date-lbl>
           </td>
           <td>{{res.SampleCodeFormatted}}</td>
+          <td>{{ res.Barcode }}</td>
           <td><span>{{res.PatientName}}</span></td>
           <td><span>{{res.PatientCode}}</span></td>
           <td><span> {{res.AgeSex}} </span></td>

@@ -24,22 +24,21 @@
  -------------------------------------------------------------------
  */
 
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
-import { LabsBLService } from '../shared/labs.bl.service';
-import { MessageboxService } from '../../shared/messagebox/messagebox.service';
-import { DanpheHTTPResponse } from '../../shared/common-models';
-import { LabReportVM } from '../reports/lab-report-vm';
-import { LabReport } from "../shared/lab-report";
-import { CommonFunctions } from '../../shared/common.functions';
-import { CoreService } from '../../core/shared/core.service';
-import { LabComponentModel } from '../shared/lab-component-json.model';
-import * as _ from 'lodash';
-import { SecurityService } from '../../security/shared/security.service';
-import * as jsPDF from 'jspdf';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import html2canvas from 'html2canvas';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { LoginToTelemed } from '../shared/labMasterData.model';
+import * as jsPDF from 'jspdf';
+import * as _ from 'lodash';
+import { CoreService } from '../../core/shared/core.service';
+import { SecurityService } from '../../security/shared/security.service';
+import { DanpheHTTPResponse } from '../../shared/common-models';
+import { CommonFunctions } from '../../shared/common.functions';
+import { MessageboxService } from '../../shared/messagebox/messagebox.service';
 import { RouteFromService } from '../../shared/routefrom.service';
+import { LabReportVM } from '../reports/lab-report-vm';
+import { LabComponentModel } from '../shared/lab-component-json.model';
+import { LoginToTelemed } from '../shared/labMasterData.model';
+import { LabsBLService } from '../shared/labs.bl.service';
 
 
 @Component({
@@ -76,17 +75,19 @@ export class LabTestsResults {
   public enableResultEdit: boolean = false;
 
   @Input("TeleMedicineUploadForm")
-  public TMForm : any;
+  public TMForm: any;
 
   @Input("showUplaodToTeleMedicine")
-  public showUplaodToTeleMedicine : boolean;
+  public showUplaodToTeleMedicine: boolean;
 
+  @Input("barcodeNumber")
+  public barcodeNumber: number = 0;
   public LabHeader: any = null;
 
   @Output("callbackAddUpdate") callbackAddUpdate: EventEmitter<object> = new EventEmitter<object>();
   @Output("callback-cancel") callbackCancel: EventEmitter<object> = new EventEmitter<object>();
-  @Output("callbackUpdateUploadStatus") callbackUpdateUploadStatus : EventEmitter<any> = new EventEmitter<any>();
-  @Output("callbackUpdatePrintStatus") callbackUpdatePrintStatus : EventEmitter<any> = new EventEmitter<any>();
+  @Output("callbackUpdateUploadStatus") callbackUpdateUploadStatus: EventEmitter<any> = new EventEmitter<any>();
+  @Output("callbackUpdatePrintStatus") callbackUpdatePrintStatus: EventEmitter<any> = new EventEmitter<any>();
 
   public templateReportToEdit: LabReportVM = null;
 
@@ -100,24 +101,24 @@ export class LabTestsResults {
   public labReportFormat: string = 'format1';
   public allowOpWithProvToPrintReport: boolean = false;
   public resEditParam: boolean = false;
-  public showReUploadPopup : boolean = false;
+  public showReUploadPopup: boolean = false;
   TeleMedicineUploadForm: FormGroup = new FormGroup(
     {
-      phoneNumber: new FormControl("",Validators.minLength(10)),
-      firstName: new FormControl("",Validators.required),
-      lastName: new FormControl("",Validators.required),
+      phoneNumber: new FormControl("", Validators.minLength(10)),
+      firstName: new FormControl("", Validators.required),
+      lastName: new FormControl("", Validators.required),
       email: new FormControl("")
     }
   )
   public Login = new LoginToTelemed();
-  public TeleMedicineConfiguration : any;
-  public IsTeleMedicineEnabled : boolean = false;
-  public loading : boolean = false;
-  public LabHeaderSetting : any;
-  public IsFileUploaded : boolean = false;
-  public interval : any;
+  public TeleMedicineConfiguration: any;
+  public IsTeleMedicineEnabled: boolean = false;
+  public loading: boolean = false;
+  public LabHeaderSetting: any;
+  public IsFileUploaded: boolean = false;
+  public interval: any;
   constructor(public labBLService: LabsBLService, public changeDetector: ChangeDetectorRef,
-    public msgBoxServ: MessageboxService, public coreService: CoreService,public securityService : SecurityService,
+    public msgBoxServ: MessageboxService, public coreService: CoreService, public securityService: SecurityService,
     public routeFromService: RouteFromService) {
     this.showRangeInRangeDescription = this.coreService.EnableRangeInRangeDescriptionStep();
     this.allowOpWithProvToPrintReport = this.coreService.AllowOutpatientWithProvisional();
@@ -125,17 +126,17 @@ export class LabTestsResults {
     this.labReportFormat = this.coreService.GetLabReportFormat();
     this.resEditParam = this.coreService.ShowEditResultButtonInLabFinalReport();
     this.LabHeaderSetting = this.coreService.GetLabReportHeaderSetting();
-    let TeleMedicineConfig = this.coreService.Parameters.find(p =>p.ParameterGroupName == "TeleMedicine" && p.ParameterName == "DanpheConfigurationForTeleMedicine").ParameterValue;
+    let TeleMedicineConfig = this.coreService.Parameters.find(p => p.ParameterGroupName == "TeleMedicine" && p.ParameterName == "DanpheConfigurationForTeleMedicine").ParameterValue;
     this.TeleMedicineConfiguration = JSON.parse(TeleMedicineConfig);
     this.Login.PhoneNumber = this.TeleMedicineConfiguration.PhoneNumber;
     this.Login.Password = this.TeleMedicineConfiguration.Password;
     this.IsTeleMedicineEnabled = JSON.parse(this.TeleMedicineConfiguration.IsTeleMedicineEnabled);
-    if(this.IsTeleMedicineEnabled && this.routeFromService.RouteFrom == "finalReport"){
+    if (this.IsTeleMedicineEnabled && this.routeFromService.RouteFrom == "finalReport") {
       this.routeFromService.RouteFrom = "";
       this.TeleMedLogin();
-      this.interval = setInterval(()=>{
+      this.interval = setInterval(() => {
         this.TeleMedLogin();
-      },this.TeleMedicineConfiguration.TokenExpiryTimeInMS)
+      }, this.TeleMedicineConfiguration.TokenExpiryTimeInMS)
     }
   }
 
@@ -143,7 +144,7 @@ export class LabTestsResults {
     this.LabHeader = this.coreService.GetLabReportHeaderSetting();
     this.showHeader = this.LabHeader.showLabReportHeader;
     //this.verificationRequired = this.coreService.EnableVerificationStep();
-    if(this.TMForm){
+    if (this.TMForm) {
       this.TeleMedicineUploadForm.controls["firstName"].setValue(this.TMForm.firstName);
       this.TeleMedicineUploadForm.controls["lastName"].setValue(this.TMForm.lastName);
       this.TeleMedicineUploadForm.controls["phoneNumber"].setValue(this.TMForm.phoneNumber);
@@ -151,9 +152,9 @@ export class LabTestsResults {
     }
   }
 
-  ngOnDestroy(){
-    if(this.interval)
-    clearInterval(this.interval);
+  ngOnDestroy() {
+    if (this.interval)
+      clearInterval(this.interval);
   }
 
   @Input("requisitionIdList")
@@ -362,121 +363,118 @@ export class LabTestsResults {
     }
   }
 
-  public TeleMedLogin(){
-    this.labBLService.TeleMedLogin(this.TeleMedicineConfiguration.TeleMedicineBaseUrl,this.Login).subscribe(res=>{
+  public TeleMedLogin() {
+    this.labBLService.TeleMedLogin(this.TeleMedicineConfiguration.TeleMedicineBaseUrl, this.Login).subscribe(res => {
       var token = res.token;
       sessionStorage.removeItem('TELEMED_Token');
       sessionStorage.setItem('TELEMED_Token', token);
     },
-    err=>{
-      console.log(err.ErrorMessage);
-    }
+      err => {
+        console.log(err.ErrorMessage);
+      }
     );
   }
   public exportToPdf() {
     this.coreService.loading = true;
-   if(this.templateReport.IsFileUploadedToTeleMedicine || this.IsFileUploaded){
-     this.showReUploadPopup = true;
-   }
-   else{
-     this.UploadLabReportToTeleMedicine();
-   }
- }
+    if (this.templateReport.IsFileUploadedToTeleMedicine || this.IsFileUploaded) {
+      this.showReUploadPopup = true;
+    }
+    else {
+      this.UploadLabReportToTeleMedicine();
+    }
+  }
 
- public UploadLabReportToTeleMedicine(){
-   this.showReUploadPopup = false;
-  if(this.TeleMedicineUploadForm.controls["phoneNumber"].value && this.TeleMedicineUploadForm.controls["phoneNumber"].value.length >=10){
-    const formData = new FormData();
-    var dom = document.getElementById("lab-report-main");
-    dom.style.border = "none";
-    var domWidth = dom.style.width;
-    dom.style.width = "1020px";
-    html2canvas(dom, {
-     useCORS: true,
-     allowTaint: true,
-      scrollY: 0 
-     }).then((canvas) => 
-     {
-      const image = { type: 'jpeg', quality: 2 };
-      const margin = [0.5, 0.5]; 
-      var imgWidth = 8.5;
-      var pageHeight : number;
-      pageHeight = this.LabHeaderSetting.showLabReportHeader? 11 : 9;
-      var innerPageWidth = imgWidth - margin[0] * 2; 
-      var innerPageHeight = pageHeight - margin[1] * 2; 
-      var pxFullHeight = canvas.height; 
-      var pxPageHeight = Math.floor(canvas.width * (pageHeight / imgWidth)); 
-      var nPages = Math.ceil(pxFullHeight / pxPageHeight); 
-      var pageHeight = innerPageHeight; 
-      var pageCanvas = document.createElement('canvas'); 
-      var pageCtx = pageCanvas.getContext('2d');
-       pageCanvas.width = canvas.width; 
-       pageCanvas.height = pxPageHeight; 
-       var pdf = new jsPDF('p', 'in', 'a4'); 
-       for (var page = 0; page < nPages; page++)
-        { 
-           if (page === nPages - 1 && pxFullHeight % pxPageHeight !== 0) 
-           {
-              pageCanvas.height = pxFullHeight % pxPageHeight;
-              pageHeight = (pageCanvas.height * innerPageWidth) / pageCanvas.width;
-           }
-              var w = pageCanvas.width; 
-              var h = pageCanvas.height;
-               pageCtx.fillStyle = 'white';
-                pageCtx.fillRect(0, 0, w, h); 
-                pageCtx.drawImage(canvas, 5, page * pxPageHeight, w, h, 0, 0, w, h);
-               if (page > 0) 
-               pdf.addPage();
-                var imgData = pageCanvas.toDataURL('image/' + image.type, image.quality); 
-                if(this.LabHeaderSetting.showLabReportHeader)
-                pdf.addImage(imgData, image.type, margin[1], margin[0], innerPageWidth, pageHeight);
-                else
-                pdf.addImage(imgData, image.type, margin[1],1.8, innerPageWidth, pageHeight);
-         } 
-         dom.style.width = domWidth;
-             window.setTimeout(() => {
-             var binary = pdf.output();
-             const byteNumber = new Array(binary.length);
-             for(let i=0;i<byteNumber.length;i++){
-                 byteNumber[i]= binary.charCodeAt(i);
-             }
-             const byteArray = new Uint8Array(byteNumber);
-             const blob = new Blob([byteArray],{type: 'application/pdf'});
-             var fileName = this.TeleMedicineUploadForm.controls["firstName"].value+"_"+this.TeleMedicineUploadForm.controls["lastName"].value+"_"+"Lab_Report.pdf";
-             const file = new File([blob],fileName,{type: 'application/pdf'});
-             formData.append("Files",file, file.name);
-             this.labBLService.uploadFile(this.TeleMedicineConfiguration.TeleMedicineBaseUrl,this.TeleMedicineUploadForm.value,formData).subscribe((res) => {
-               if (res) {
-                 this.msgBoxServ.showMessage('success', ['Lab Report is Successfully Uploaded.']);
-                 this.labBLService.UpdateFileUploadStatus(this.requisitionIdList).subscribe((res)=>{
-  
-                 });
-                 this.callbackUpdateUploadStatus.emit({requisition:this.requisitionIdList});
-                 this.coreService.loading = false;
-               }
-             }, err => {
-                 this.coreService.loading = false;
-                 this.msgBoxServ.showMessage('error',['Something went wrong. Unable to uplaod lab report !!!.']);
-                 this.IsFileUploaded = false;
-               console.log(err);
-             });
-         }, 500)
-              
-     });
+  public UploadLabReportToTeleMedicine() {
+    this.showReUploadPopup = false;
+    if (this.TeleMedicineUploadForm.controls["phoneNumber"].value && this.TeleMedicineUploadForm.controls["phoneNumber"].value.length >= 10) {
+      const formData = new FormData();
+      var dom = document.getElementById("lab-report-main");
+      dom.style.border = "none";
+      var domWidth = dom.style.width;
+      dom.style.width = "1020px";
+      html2canvas(dom, {
+        useCORS: true,
+        allowTaint: true,
+        scrollY: 0
+      }).then((canvas) => {
+        const image = { type: 'jpeg', quality: 2 };
+        const margin = [0.5, 0.5];
+        var imgWidth = 8.5;
+        var pageHeight: number;
+        pageHeight = this.LabHeaderSetting.showLabReportHeader ? 11 : 9;
+        var innerPageWidth = imgWidth - margin[0] * 2;
+        var innerPageHeight = pageHeight - margin[1] * 2;
+        var pxFullHeight = canvas.height;
+        var pxPageHeight = Math.floor(canvas.width * (pageHeight / imgWidth));
+        var nPages = Math.ceil(pxFullHeight / pxPageHeight);
+        var pageHeight = innerPageHeight;
+        var pageCanvas = document.createElement('canvas');
+        var pageCtx = pageCanvas.getContext('2d');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = pxPageHeight;
+        var pdf = new jsPDF('p', 'in', 'a4');
+        for (var page = 0; page < nPages; page++) {
+          if (page === nPages - 1 && pxFullHeight % pxPageHeight !== 0) {
+            pageCanvas.height = pxFullHeight % pxPageHeight;
+            pageHeight = (pageCanvas.height * innerPageWidth) / pageCanvas.width;
+          }
+          var w = pageCanvas.width;
+          var h = pageCanvas.height;
+          pageCtx.fillStyle = 'white';
+          pageCtx.fillRect(0, 0, w, h);
+          pageCtx.drawImage(canvas, 5, page * pxPageHeight, w, h, 0, 0, w, h);
+          if (page > 0)
+            pdf.addPage();
+          var imgData = pageCanvas.toDataURL('image/' + image.type, image.quality);
+          if (this.LabHeaderSetting.showLabReportHeader)
+            pdf.addImage(imgData, image.type, margin[1], margin[0], innerPageWidth, pageHeight);
+          else
+            pdf.addImage(imgData, image.type, margin[1], 1.8, innerPageWidth, pageHeight);
+        }
+        dom.style.width = domWidth;
+        window.setTimeout(() => {
+          var binary = pdf.output();
+          const byteNumber = new Array(binary.length);
+          for (let i = 0; i < byteNumber.length; i++) {
+            byteNumber[i] = binary.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumber);
+          const blob = new Blob([byteArray], { type: 'application/pdf' });
+          var fileName = this.TeleMedicineUploadForm.controls["firstName"].value + "_" + this.TeleMedicineUploadForm.controls["lastName"].value + "_" + "Lab_Report.pdf";
+          const file = new File([blob], fileName, { type: 'application/pdf' });
+          formData.append("Files", file, file.name);
+          this.labBLService.uploadFile(this.TeleMedicineConfiguration.TeleMedicineBaseUrl, this.TeleMedicineUploadForm.value, formData).subscribe((res) => {
+            if (res) {
+              this.msgBoxServ.showMessage('success', ['Lab Report is Successfully Uploaded.']);
+              this.labBLService.UpdateFileUploadStatus(this.requisitionIdList).subscribe((res) => {
+
+              });
+              this.callbackUpdateUploadStatus.emit({ requisition: this.requisitionIdList });
+              this.coreService.loading = false;
+            }
+          }, err => {
+            this.coreService.loading = false;
+            this.msgBoxServ.showMessage('error', ['Something went wrong. Unable to uplaod lab report !!!.']);
+            this.IsFileUploaded = false;
+            console.log(err);
+          });
+        }, 500)
+
+      });
       this.IsFileUploaded = true;
-   }
-   else{
-     this.coreService.loading = false;
-     this.msgBoxServ.showMessage("warning",["Please Provide valid Phone Number to this patient."]);
-   }
- }
+    }
+    else {
+      this.coreService.loading = false;
+      this.msgBoxServ.showMessage("warning", ["Please Provide valid Phone Number to this patient."]);
+    }
+  }
 
- public closeConfirmationPopUp(){
-   this.showReUploadPopup = false;
-   this.coreService.loading = false;
- }
+  public closeConfirmationPopUp() {
+    this.showReUploadPopup = false;
+    this.coreService.loading = false;
+  }
 
- public updatePrintStatus($event){
-   this.callbackUpdatePrintStatus.emit($event);
- }
+  public updatePrintStatus($event) {
+    this.callbackUpdatePrintStatus.emit($event);
+  }
 }

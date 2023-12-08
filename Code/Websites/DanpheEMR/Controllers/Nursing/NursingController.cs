@@ -731,6 +731,22 @@ namespace DanpheEMR.Controllers
             }
             return DanpheJSONConvert.SerializeObject(responseData, true);
         }
+        [HttpGet]
+        [Route("InvestigationResults")]
+        public IActionResult InvestigationResults(int patientId, int patientVisitId, DateTime fromDate, DateTime toDate)
+        {
+
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                        new SqlParameter("@FromDate", fromDate),
+                        new SqlParameter("@ToDate", toDate),
+                        new SqlParameter("@PatientId", patientId),
+                        new SqlParameter("@PatientVisitId", patientVisitId)
+                    };
+            DataTable investigationResults = DALFunctions.GetDataTableFromStoredProc("SP_CLN_GetPatientInvestigationResults", paramList, _clinicalDbContext);
+            Func<object> func = () => investigationResults;
+            return InvokeHttpPutFunction(func);
+        }
+
         private object AddFavouritePatient(string patVisitId, string preferenceType, string wardId, RbacUser currentUser)
         {
 
@@ -1044,21 +1060,21 @@ namespace DanpheEMR.Controllers
                     exchangedDoctorDepartment.DepartmentId = nursingExchangedDoctorDepartment_DTO.ExchangedDepartmentId;
                     exchangedDoctorDepartment.Remarks = nursingExchangedDoctorDepartment_DTO.ExchangedRemarks ?? null;
 
-                     var matchedVisit = _clinicalDbContext.Visit.Where(v => v.PatientVisitId == nursingExchangedDoctorDepartment_DTO.PatientVisitId).FirstOrDefault();
+                    var matchedVisit = _clinicalDbContext.Visit.Where(v => v.PatientVisitId == nursingExchangedDoctorDepartment_DTO.PatientVisitId).FirstOrDefault();
 
-                     //ExchangedDoctorDepartment
-                     matchedVisit.PerformerId = exchangedDoctorDepartment.PerformerId;
-                     matchedVisit.PerformerName = exchangedDoctorDepartment.PerformerName;
-                     matchedVisit.DepartmentId = exchangedDoctorDepartment.DepartmentId;
-                     matchedVisit.Remarks = exchangedDoctorDepartment.Remarks;
-                     matchedVisit.ModifiedOn = DateTime.Now;
-                     matchedVisit.ModifiedBy = currentUser.EmployeeId;
-                     _clinicalDbContext.Entry(matchedVisit).State = EntityState.Modified;
-                     _clinicalDbContext.SaveChanges();
+                    //ExchangedDoctorDepartment
+                    matchedVisit.PerformerId = exchangedDoctorDepartment.PerformerId;
+                    matchedVisit.PerformerName = exchangedDoctorDepartment.PerformerName;
+                    matchedVisit.DepartmentId = exchangedDoctorDepartment.DepartmentId;
+                    matchedVisit.Remarks = exchangedDoctorDepartment.Remarks;
+                    matchedVisit.ModifiedOn = DateTime.Now;
+                    matchedVisit.ModifiedBy = currentUser.EmployeeId;
+                    _clinicalDbContext.Entry(matchedVisit).State = EntityState.Modified;
+                    _clinicalDbContext.SaveChanges();
 
-                     //UpdatedDiagnosis
-                     if (nursingExchangedDoctorDepartment_DTO.DiagnosisList.Count > 0)
-                     {
+                    //UpdatedDiagnosis
+                    if (nursingExchangedDoctorDepartment_DTO.DiagnosisList.Count > 0)
+                    {
                         var ExistingDiagnosisList = _clinicalDbContext.FinalDiagnosis.Where(d => d.PatientVisitId == nursingExchangedDoctorDepartment_DTO.PatientVisitId).ToList();
 
                         var MatchingDiagnosisList = ExistingDiagnosisList.Where(ExistingDiagnosis => nursingExchangedDoctorDepartment_DTO.DiagnosisList
@@ -1067,11 +1083,11 @@ namespace DanpheEMR.Controllers
 
                         if (MatchingDiagnosisList.Count > 0)
                         {
-                            foreach (var item in MatchingDiagnosisList )
+                            foreach (var item in MatchingDiagnosisList)
                             {
                                 if (item.IsActive == false)
                                 {
-                                    var Diagnosis = MatchingDiagnosisList.Where(m => m.ICD10ID ==  item.ICD10ID).FirstOrDefault();
+                                    var Diagnosis = MatchingDiagnosisList.Where(m => m.ICD10ID == item.ICD10ID).FirstOrDefault();
                                     Diagnosis.IsActive = true;
                                 }
                             }
@@ -1362,7 +1378,7 @@ namespace DanpheEMR.Controllers
                                               Gender = pat.Gender,
                                               PhoneNumber = pat.PhoneNumber,
                                               Reason = patVis.Remarks,
-                                             
+
                                           }
                         ).FirstOrDefault();
 

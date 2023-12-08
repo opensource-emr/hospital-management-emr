@@ -162,7 +162,7 @@
                                                 <p class="c_paragraphs" style="text-align: center;">Ph No: {{ headerDetail.tel }}</p>
                                             </td>
                                             <td colspan="3" width="25%" style="text-align: right; vertical-align: top;">
-                                                <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;"><strong>PAN No.
+                                                <p class="c_paragraphs" style="text-align: right; margin-top: 10px; margin: 0;"><strong>{{GeneralFieldLabel.PANNo}}
                                                         : {{ headerDetail.PANno }} </strong> </p>
                                             </td>
                                         </tr>
@@ -185,9 +185,9 @@
                                                         <td colspan="6" style="text-align: right;">
                                                             <p class="c_paragraphs">Dispatch Date :<strong> {{innerDispatchdetails.DispatchedDate |
                                                                     date:"yyyy-MM-dd"}} &nbsp;
-                                                                    <i *ngIf="innerDispatchdetails.DispatchedDate">({{innerDispatchdetails.DispatchedDate
+                                                                    <i *ngIf="innerDispatchdetails.DispatchedDate">{{innerDispatchdetails.DispatchedDate
                                                                         |
-                                                                        nepaliDate:'format':'YYYY-MM-DD'}} BS )</i></strong>
+                                                                        nepaliDate:'format':'YYYY-MM-DD'}} </i></strong>
                                                             </p>
                                                         </td>
                                                     </tr>
@@ -198,9 +198,10 @@
                                                             </p>
                                                         </td>
                                                         <td colspan="6" style="text-align: right;">
-                                                            <p class="c_paragraphs">Requisition Date :<strong>{{requisitionDate |
-                                                                    date:"yyyy-MM-dd"}}</strong>
-                                                            </p>
+                                                            <p class="c_paragraphs">Requisition Date :<strong>{{requisitionDate | date:"yyyy-MM-dd"}}
+                                                                    &nbsp;
+                                                                    <i *ngIf="requisitionDate">{{requisitionDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                                                                        </i></strong></p>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -327,15 +328,15 @@
                                 </div>
                                 <div class="right" style="text-align:right;">
                                     <p *ngIf="requisitionId > 0">Dispatch Date:<b> {{innerDispatchdetails.CreatedOn | date}}</b>&nbsp;
-                                        <i *ngIf="innerDispatchdetails.CreatedOn">({{innerDispatchdetails.CreatedOn |
-                                            nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+                                        <i *ngIf="innerDispatchdetails.CreatedOn">{{innerDispatchdetails.CreatedOn |
+                                            nepaliDate:'format':'YYYY-MM-DD'}} </i>
                                     </p>
                                     <p *ngIf="!requisitionId">Dispatch Date:<b> {{currentDate | date}}</b>&nbsp;
-                                        <i *ngIf="currentDate">({{currentDate |
-                                            nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+                                        <i *ngIf="currentDate">{{currentDate |
+                                            nepaliDate:'format':'YYYY-MM-DD'}} </i>
                                     </p>
                                     <p>Requisition Date:<b> {{requisitionDate | date}}</b>&nbsp;
-                                        <i *ngIf="requisitionDate">({{requisitionDate | nepaliDate:'format':'YYYY-MM-DD'}} BS )</i>
+                                        <i *ngIf="requisitionDate">{{requisitionDate | nepaliDate:'format':'YYYY-MM-DD'}} </i>
                                     </p>
                                 </div>
                                 <div class="clear"></div>

@@ -95,7 +95,7 @@
                   <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
                     <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                     <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{
+                    <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{
                       headerDetail.tel}}</span><br />
                     <span style="font-size:15px;"><strong> Procurement Unit </strong></span><br />
                   </div>
@@ -103,8 +103,7 @@
               </div>
               <div class="col-md-3">
                 <div style="text-align: right;">
-                  <div class="qr-code"
-                       style="width: 100%;position: static;height: 90px;justify-content: center;flex-direction: column;display: flex;">
+                  <div class="qr-code" style="width: 100%;position: static;height: 90px;justify-content: center;flex-direction: column;display: flex;">
                     <qr-code [size]="75" [backgroundAlpha]="0" style="display: block; width: 100%; text-align: right;">
                     </qr-code>
                   </div>
@@ -123,7 +122,9 @@
           <div class="right" style="text-align:right;">
             <div>
               Requested Date:<b> {{PurchaseRequestVM.PurchaseRequest.RequestDate | date : 'yyyy-MM-dd'}}</b>&nbsp;&nbsp;
-
+              <i *ngIf="PurchaseRequestVM.PurchaseRequest.RequestDate">{{PurchaseRequestVM.PurchaseRequest.RequestDate
+                | nepaliDate:'format':'YYYY-MM-DD'}}
+                </i>
             </div>
           </div>
 

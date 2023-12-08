@@ -9,7 +9,7 @@ import { VerificationBLService } from "../../shared/verification.bl.service";
 import { VerificationService } from "../../shared/verification.service";
 import { PharmacyPurchaseOrderItem_DTO } from "../shared/pharmacy-purchase-order-item.dto";
 import { PharmacyPurchaseOrder_DTO } from "../shared/pharmacy-purchase-order.dto";
-
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
 
 @Component({
     selector: 'pharmacy-verification-purchase-order',
@@ -27,11 +27,13 @@ export class PharmacyVerificationPurchaseOrderComponent {
     @Input('max-verification-level') MaxVerificationLevel: number = 0;
     @Output('call-back-popup-close') callBackPopupClose: EventEmitter<Object> = new EventEmitter<Object>();
     CopyOfPurchaseOrderItems: PharmacyPurchaseOrderItem_DTO[] = [];
+
+    public GeneralFieldLabel = new GeneralFieldLabels();
     constructor(public coreService: CoreService, public verificationBLService: VerificationBLService,
         public messageBoxService: MessageboxService, public verificationService: VerificationService,
         public changeDetectorRef: ChangeDetectorRef,
     ) {
-
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
 
     ngOnInit() {

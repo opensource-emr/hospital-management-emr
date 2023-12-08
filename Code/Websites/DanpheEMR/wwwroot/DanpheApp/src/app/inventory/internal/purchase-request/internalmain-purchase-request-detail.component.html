@@ -91,7 +91,7 @@
                   <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;">
                     <span style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                     <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                    <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                    <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
                     <span style="font-size:15px;"><strong> Inventory Unit </strong></span><br />
                   </div>
                 </div>
@@ -115,6 +115,8 @@
             <div class="right" style="text-align:right;">
               <div>
                 PRF Date:<b> {{PurchaseRequestVM.PurchaseRequest.RequestDate | date : 'yyyy-MM-dd'}}</b>&nbsp;&nbsp;
+                <i *ngIf="PurchaseRequestVM.PurchaseRequest.RequestDate">{{PurchaseRequestVM.PurchaseRequest.RequestDate | nepaliDate:'format':'YYYY-MM-DD'}}
+                  </i>
               </div>
             </div>
 
@@ -123,8 +125,7 @@
             <div class="clear"></div>
             <div class="clear footer"></div>
             <div *ngIf="PurchaseRequestVM.PurchaseRequest != null">
-              <table border="1" rules="all" class="table table-striped table-hover req_table"
-                     style="background-color:initial;margin-top:10px;width:100%">
+              <table border="1" rules="all" class="table table-striped table-hover req_table" style="background-color:initial;margin-top:10px;width:100%">
                 <thead>
                   <tr style="font-weight: bold;text-align:center">
                     <td>Item Category</td>
@@ -151,7 +152,7 @@
                     <!-- <td>{{PurchaseRequestVM.PurchaseRequest.VendorName}}</td> -->
                     <td>{{reqItm.UOMName}}</td>
                     <td>{{reqItm.Code}}</td>
-
+                
                     <td>
                       <span [hidden]="reqItm.IsEdited">{{reqItm.RequestedQuantity}}</span>
                     </td>
@@ -254,14 +255,12 @@
             <b>Withdraw Remarks<i style="color:red">*</i><span class="right">:</span></b>
           </div>
           <div class="col-md-8">
-            <textarea style="height:7em;width:100%;" type="text" name="cancelRemarks"
-                      [(ngModel)]="PurchaseRequestVM.PurchaseRequest.CancelRemarks"></textarea>
+            <textarea style="height:7em;width:100%;" type="text" name="cancelRemarks" [(ngModel)]="PurchaseRequestVM.PurchaseRequest.CancelRemarks"></textarea>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default btn btn-danger" data-dismiss="modal"
-                [disabled]="PurchaseRequestVM.PurchaseRequest.CancelRemarks == ''" (click)="WithdrawPurchaseRequest()">Yes</button>
+        <button type="button" class="btn btn-default btn btn-danger" data-dismiss="modal" [disabled]="PurchaseRequestVM.PurchaseRequest.CancelRemarks == ''" (click)="WithdrawPurchaseRequest()">Yes</button>
         <button type="button" class="btn btn-default btn btn-success" data-dismiss="modal">No</button>
       </div>
     </div>

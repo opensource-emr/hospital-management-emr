@@ -8,7 +8,8 @@ import { SecurityService } from '../../../security/shared/security.service';
 import * as moment from 'moment/moment';
 import { MessageboxService } from '../../../shared/messagebox/messagebox.service';
 import { AccountingService } from "../../shared/accounting.service"
-
+import { GeneralFieldLabels } from "../../../shared/DTOs/general-field-label.dto";
+import { CoreService } from "../../../core/shared/core.service";
 @Component({
   selector: 'ledger-edit',
   templateUrl: './ledger-edit.html'
@@ -45,12 +46,19 @@ export class LedgersEditComponent {
   public phrmSupplierList: any;
   public ledgerMappingList: any;
   public ledgerCode:any;
+
+  public GeneralFieldLabel = new GeneralFieldLabels();
   constructor(public accountingSettingsBLService: AccountingSettingsBLService,
     public securityService: SecurityService,
+
+    public coreService: CoreService,
     public changeDetector: ChangeDetectorRef,
     public msgBoxServ: MessageboxService,
     public accountingBLService: AccountingBLService,
     public accountingService: AccountingService) {
+      
+      this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+
     this.GetLedgerGroup();
     this.getLedgerList();
   }

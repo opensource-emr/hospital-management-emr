@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Http.Features;
 using DanpheEMR.CommonTypes;
 using DanpheEMR.Core.Caching;
+using DanpheEMR.Core.Caching;
 using System.Xml;
 using DanpheEMR.Security;
 using DanpheEMR.ServerModel.LabModels;
@@ -27,7 +28,6 @@ using System.Net;
 using System.IO;
 using DanpheEMR.Services;
 using System.Web;
-
 namespace DanpheEMR.Controllers
 {
 
@@ -396,34 +396,21 @@ namespace DanpheEMR.Controllers
         }
 
         [HttpGet]
-        [Route("ExternalLabApplicableRequisitions")]
-        public ActionResult GetExternalLabApplicableRequisitions()
+        [Route("RequisitionsForExternalLab")]
+        public ActionResult GetReqiusitionsForExternalLab(string LabTestCSV, DateTime FromDate, DateTime ToDate,string PatientName, string HospitalNo, int VendorId, string ExternalLabStatus)
         {
             //else if (reqType == "allTestListForExternalLabs")
             //{
-            Func<object> func = () =>
-            {
-                var defaultVendorId = (from vendor in _labDbContext.LabVendors
-                                       where vendor.IsDefault == true
-                                       select vendor.LabVendorId).FirstOrDefault();
-                DateTime dtThirtyDays = DateTime.Now.AddDays(-30);
-                List<LabTestListWithVendor> allRequisitionsWithVendors = (from req in _labDbContext.Requisitions
-                                                                          join vendor in _labDbContext.LabVendors on req.ResultingVendorId equals vendor.LabVendorId
-                                                                          join pat in _labDbContext.Patients on req.PatientId equals pat.PatientId
-                                                                          join test in _labDbContext.LabTests on req.LabTestId equals test.LabTestId
-                                                                          where (req.OrderDateTime > dtThirtyDays)
-                                                                          && req.OrderStatus == ENUM_LabOrderStatus.Pending //"pending" 
-
-                                                                           && req.ResultingVendorId == defaultVendorId
-                                                                          select new LabTestListWithVendor
-                                                                          {
-                                                                              PatientName = pat.FirstName + " " + (string.IsNullOrEmpty(pat.MiddleName) ? "" : pat.MiddleName + " ") + pat.LastName,
-                                                                              RequisitionId = req.RequisitionId,
-                                                                              VendorName = vendor.VendorName,
-                                                                              TestName = test.LabTestName
-                                                                          }).ToList();
-                return allRequisitionsWithVendors;
-            };
+            List<SqlParameter> paramList = new List<SqlParameter>() {
+                        new SqlParameter("@PatientName",PatientName),
+                        new SqlParameter("@HospitalCode",HospitalNo),
+                        new SqlParameter("@FromDate", FromDate),
+                        new SqlParameter("@ToDate", ToDate),
+                        new SqlParameter("@LabTestIdCSV", LabTestCSV),
+                        new SqlParameter("@VendorId",VendorId),
+                        new SqlParameter("@ExternalLabStatus",ExternalLabStatus)
+                };
+            Func<object> func = () => DALFunctions.GetDataTableFromStoredProc("SP_LAB_GetAllLabRequisitionForExternalLab", paramList, _labDbContext);
             return InvokeHttpGetFunction<object>(func);
         }
 
@@ -1004,10 +991,32 @@ namespace DanpheEMR.Controllers
             return InvokeHttpPutFunction<object>(func);
         }
 
+
+        [HttpPut]
+        [Route("ExternalLabStatus")]
+        public IActionResult UpdateExternalLabStatus([FromBody] ExternalLabStatusUpdate_DTO externalLabStatus)
+        {
+            Func<object> func = () =>
+            {
+                foreach (int requisitionId in externalLabStatus.RequisitionIds)
+                {
+                    LabRequisitionModel requisition = _labDbContext.Requisitions.FirstOrDefault(r => r.RequisitionId == requisitionId);
+
+                    if (requisition != null)
+                    {
+                        requisition.ExternalLabSampleStatus = externalLabStatus.SelectedExternalLabStatusType;
+                    }
+                    
+                }
+                _labDbContext.SaveChanges();
+                return Ok(ENUM_Danphe_HTTP_ResponseStatus.OK);
+            };
+             return InvokeHttpPutFunction<object>(func);
+        }
         #endregion
 
-        
-       
+
+
 
         private LabSMSModel GetSmsMessageAndNumberOfPatientByReqId(LabDbContext labDbContext, long reqId)
         {
@@ -2394,6 +2403,9 @@ namespace DanpheEMR.Controllers
 
                     string formattedSampleCode = GetSampleCodeFormatted(sampleNum, labTests[0].SampleCreatedOn ?? default(DateTime), visitType, RunNumberType,labType);
                     var sampleCollectedDateTime = System.DateTime.Now;
+                    DataTable storedProcdureParam = new DataTable();
+                    storedProcdureParam.Columns.Add("RequisitionId", typeof(long));
+                    storedProcdureParam.Columns.Add("OrderStatus", typeof(string));
                     foreach (var test in labTests)
                     {
                         LabRequisitionModel dbRequisition = allRequisitionsFromDb.Where(r => r.RequisitionId == test.RequisitionId).FirstOrDefault();
@@ -2407,18 +2419,24 @@ namespace DanpheEMR.Controllers
                             dbRequisition.SampleCreatedBy = currentUser.EmployeeId;
                             dbRequisition.BarCodeNumber = existingBarCodeNum != null ? existingBarCodeNum : newBarCodeNumber;
                             dbRequisition.SampleCollectedOnDateTime = sampleCollectedDateTime;
+                            if(test.ExternalLabSampleStatus.Length > 0)
+                            {
+                                dbRequisition.ExternalLabSampleStatus = test.ExternalLabSampleStatus;
+                            }
                         }
                         dbRequisition.LabTestSpecimen = test.Specimen;
-                        dbRequisition.OrderStatus = ENUM_LabOrderStatus.Pending;
+                        dbRequisition.ResultingVendorId = (int)((bool) test.IsOutsourceTest ? test.DefaultOutsourceVendorId : dbRequisition.ResultingVendorId);
+                        dbRequisition.OrderStatus = (bool) test.IsOutsourceTest ? ENUM_LabOrderStatus.ReportGenerated : ENUM_LabOrderStatus.Pending;
+                        storedProcdureParam.Rows.Add(dbRequisition.RequisitionId, dbRequisition.OrderStatus);
                     }
                     LabBarCodeNum = existingBarCodeNum != null ? existingBarCodeNum : newBarCodeNumber;
 
                     labDbContext.SaveChanges();
 
                     reqIdList = reqIdList.Substring(0, (reqIdList.Length - 1));
+
                     List<SqlParameter> billingParamList = new List<SqlParameter>(){
-                                                    new SqlParameter("@allReqIds", reqIdList),
-                                                    new SqlParameter("@status", ENUM_BillingOrderStatus.Pending)
+                                                    new SqlParameter("@RequisitionId_OrderStatus", storedProcdureParam)
                                                 };
                     DataTable statusUpdated = DALFunctions.GetDataTableFromStoredProc("SP_Bill_OrderStatusUpdate", billingParamList, labDbContext);
                     trans.Complete();
@@ -2800,7 +2818,8 @@ namespace DanpheEMR.Controllers
                               RunNumberType = req.RunNumberType,
                               PrescriberName = req.PrescriberName,
                               HasInsurance = req.HasInsurance,//sud:16Jul'19--to show insurance flag in sample collection and other pages.
-                              IsOutsourceTest = labTest.IsOutsourceTest//Sud:22Aug'23--To show If Test is outsource or not in Collect-Sample page.
+                              IsOutsourceTest = labTest.IsOutsourceTest,//Sud:22Aug'23--To show If Test is outsource or not in Collect-Sample page.
+                              DefaultOutsourceVendorId = labTest.DefaultOutsourceVendorId,
                           }).ToList();
             }
             else
@@ -3592,7 +3611,9 @@ namespace DanpheEMR.Controllers
                         //once the results are saved, put the status of 
                         List<Int64> distinctRequisitions = labComponentFromClient.Select(a => a.RequisitionId).Distinct().ToList();
                         string allReqIdListStr = "";
-
+                        DataTable storedProcdureParam = new DataTable();
+                        storedProcdureParam.Columns.Add("RequisitionId", typeof(long));
+                        storedProcdureParam.Columns.Add("OrderStatus", typeof(string));
                         foreach (Int64 requisitionId in distinctRequisitions)
                         {
                             allReqIdListStr = allReqIdListStr + requisitionId + ",";
@@ -3610,6 +3631,7 @@ namespace DanpheEMR.Controllers
                                 _labDbContext.Entry(dbRequisition).Property(a => a.ResultAddedOn).IsModified = true;
 
                             }
+                            storedProcdureParam.Rows.Add(dbRequisition.RequisitionId, dbRequisition.OrderStatus);
                         }
 
                         _labDbContext.SaveChanges();
@@ -3635,8 +3657,7 @@ namespace DanpheEMR.Controllers
                         allReqIdListStr = allReqIdListStr.Substring(0, (allReqIdListStr.Length - 1));
 
                         List<SqlParameter> paramList = new List<SqlParameter>(){
-                                                    new SqlParameter("@allReqIds", allReqIdListStr),
-                                                    new SqlParameter("@status", ENUM_BillingOrderStatus.Final)
+                                                    new SqlParameter("@RequisitionId_OrderStatus", storedProcdureParam),
                                                 };
                         DataTable statusUpdated = DALFunctions.GetDataTableFromStoredProc("SP_Bill_OrderStatusUpdate", paramList, _labDbContext);
                         trans.Complete();
@@ -4766,6 +4787,9 @@ namespace DanpheEMR.Controllers
                 using (var trans = new TransactionScope())
                 {
                     //int newPrintId = printid + 1;
+                    DataTable storedProcdureParam = new DataTable();
+                    storedProcdureParam.Columns.Add("RequisitionId", typeof(long));
+                    storedProcdureParam.Columns.Add("OrderStatus", typeof(string));
                     foreach (Int64 reqId in RequisitionIds)
                     {
                         List<LabRequisitionModel> listTestReq = _labDbContext.Requisitions
@@ -4795,15 +4819,16 @@ namespace DanpheEMR.Controllers
                                 _labDbContext.Entry(reqResult).Property(a => a.LabTestSpecimenSource).IsModified = true;
                                 _labDbContext.Entry(reqResult).Property(a => a.BarCodeNumber).IsModified = true;
 
+                                storedProcdureParam.Rows.Add(reqResult.RequisitionId, reqResult.OrderStatus);
                             }
                         }
+
                     }
                     _labDbContext.SaveChanges();
 
                     string reqIdList = string.Join(",", RequisitionIds);
                     List<SqlParameter> paramList = new List<SqlParameter>(){
-                                                    new SqlParameter("@allReqIds", reqIdList),
-                                                    new SqlParameter("@status", ENUM_BillingOrderStatus.Active)
+                                                    new SqlParameter("@RequisitionId_OrderStatus", storedProcdureParam),
                                                 };
                     DataTable statusUpdated = DALFunctions.GetDataTableFromStoredProc("SP_Bill_OrderStatusUpdate", paramList, _labDbContext);
 

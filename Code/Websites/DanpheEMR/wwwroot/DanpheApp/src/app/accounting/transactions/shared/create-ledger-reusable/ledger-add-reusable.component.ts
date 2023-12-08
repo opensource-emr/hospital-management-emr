@@ -9,7 +9,8 @@ import * as moment from 'moment/moment';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
 import { AccountingService } from "../../../../accounting/shared/accounting.service";
 import * as _ from 'lodash';
-
+import { CoreService } from "../../../../core/shared/core.service";
+import { GeneralFieldLabels } from "../../../../shared/DTOs/general-field-label.dto";
 @Component({
     selector: 'ledger-add-reusable',
     templateUrl: './ledger-add-reusable.html'
@@ -40,6 +41,8 @@ export class LedgersAddReusableComponent {
     public typeledger: any = true;
     public typesupplier: any = false;
     public typevendor: any = false;
+
+    public GeneralFieldLabel = new GeneralFieldLabels();
     
     public phrmSupplierList: any;
     public ledgerMappingList: any;
@@ -47,9 +50,11 @@ export class LedgersAddReusableComponent {
     constructor(public accountingSettingsBLService: AccountingSettingsBLService,
         public securityService: SecurityService,
         public changeDetector: ChangeDetectorRef,
+        public coreService: CoreService,
         public msgBoxServ: MessageboxService,
         public accountingBLService: AccountingBLService,
         public accountingService: AccountingService) {
+         this.GeneralFieldLabel = coreService.GetFieldLabelParameter();  
 
     }
 

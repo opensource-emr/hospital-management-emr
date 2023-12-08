@@ -37,6 +37,7 @@ export class BillingOpPatientVM {
   public ModifiedBy: number = null;
   public IsActive: boolean = true;
   public MunicipalityId: number = null;
+  public WardNumber: number = null;
   public EthnicGroup: string = "";
 
   public OutPatientValidator: FormGroup = null;
@@ -51,6 +52,7 @@ export class BillingOpPatientVM {
       'Gender': ['', Validators.required],
       'CountrySubDivisionId': ['', Validators.required],
       'PhoneNumber': ['', Validators.compose([Validators.required, Validators.pattern('^[0-9]{1,10}$')])],
+      'WardNumber': ['', Validators.compose([Validators.pattern('^[0-9]{0,2}$')])],
       'CountryId': ['', Validators.required],
       'Email': ['', Validators.pattern('^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}$')],
     });

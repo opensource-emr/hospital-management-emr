@@ -80,7 +80,7 @@
           <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span
                   style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
             <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-            <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+            <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
             <span style="font-size:15px;"><strong> Inventory Unit </strong></span><br />
           </div>
         </div>
@@ -100,8 +100,10 @@
         <p>Vendor Contact:<b> {{goodsreceiptDetails.VendorNo}}</b></p>
       </div>
       <div class="right" style="text-align:right;">
-        <p>Entry Date:<b> {{goodsreceiptDetails.CreatedOn}}</b></p>
-        <p>Bill Date:<b> {{goodsreceiptDetails.GoodsReceiptDate}}</b></p>
+        <p>Entry Date:<b> {{goodsreceiptDetails.CreatedOn}}
+            {{goodsreceiptDetails.CreatedOn | nepaliDate }}</b></p>
+        <p>Bill Date:<b> {{goodsreceiptDetails.GoodsReceiptDate}}
+            {{goodsreceiptDetails.GoodsReceiptDate | nepaliDate }}</b></p>
         <p>Bill No:<b> {{goodsreceiptDetails.BillNo}}</b></p>
         <p>Credit Period<b> {{goodsreceiptDetails.CreditPeriod}} Days</b></p>
       </div>

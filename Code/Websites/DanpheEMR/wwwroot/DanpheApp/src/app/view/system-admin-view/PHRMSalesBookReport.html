@@ -22,19 +22,20 @@
                     <div class="form-group">
                         <div class="col-md-5">
                             <div class="row">
-                                <label class="control-label">From Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                                <label class="control-label">From Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
 
                             </div>
                         </div>
                         <div class="col-md-7">
-                            <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="calType" [ngModelOptions]="{standalone: true}">
+                            <danphe-date-picker [(ngModel)]="fromDate" ngDefaultControl [CalendarTypes]="calType"
+                                                [ngModelOptions]="{standalone: true}">
                             </danphe-date-picker>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-5 col-xs-12">
                     <div class="form-group">
-                        <label class="control-label col-md-4">To Date<b class="color-red">  *</b><b style="float:right;">:</b></label>
+                        <label class="control-label col-md-4">To Date<b class="color-red"> *</b><b style="float:right;">:</b></label>
                         <div class="col-md-8">
                             <danphe-date-picker [(ngModel)]="toDate" ngDefaultControl [CalendarTypes]="calType" [ngModelOptions]="{standalone: true}">
                             </danphe-date-picker>
@@ -82,7 +83,7 @@
                             <td class="Selected" width="50px"><b>Date (BS)</b></td>
                             <td class="Selected" width="50px"><b>Bill No.</b></td>
                             <td class="Selected" width="100px"><b>Patient's Name</b></td>
-                            <td class="Selected" width="70px"><b>Patient's PAN Number</b></td>
+                            <td class="Selected" width="70px"><b>Patient's {{GeneralFieldLabel.PANNo}}</b></td>
                             <td class="Selected" width="80px"><b>Amount</b></td>
                             <td class="Selected" width="80px"><b>TAX({{coreService.currencyUnit}})</b></td>
                         </tr>

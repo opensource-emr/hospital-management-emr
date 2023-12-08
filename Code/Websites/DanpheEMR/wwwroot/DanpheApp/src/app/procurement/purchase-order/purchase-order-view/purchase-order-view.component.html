@@ -98,7 +98,7 @@
                             <div class="text-center bill-head" style=" text-align: center; font-family: sans-serif; margin-top: 10px;">
                                 <span style="font-size: 20px"><strong>{{ headerDetail.hospitalName }}</strong></span><br />
                                 <span style="font-size: 18px">{{ headerDetail.address }}</span><br />
-                                <span style="font-size: 16px">PAN no: {{ headerDetail.PANno }} , Tel:
+                                <span style="font-size: 16px">{{GeneralFieldLabel.PANNo}}: {{ headerDetail.PANno }} , Tel:
                                     {{ headerDetail.tel }}</span><br />
                                 <span style="font-size: 16px"><strong> Procurement Unit </strong></span><br />
                             </div>
@@ -126,7 +126,8 @@
                             <td style="padding: 0 5px;"><b>PO No. :</b></td>
                             <td style="padding: 0 5px;"><b>{{purchaseorderDetails.PurchaseOrderNo}}</b></td>
                             <td style="padding: 0 5px;"><b>PO Date :</b></td>
-                            <td style="padding: 0 5px;"><b>{{purchaseorderDetails.PoDate | date : 'yyyy-MM-dd'}} &nbsp;</b></td>
+                            <td style="padding: 0 5px;"><b>{{purchaseorderDetails.PoDate | date : 'yyyy-MM-dd'}} &nbsp; {{purchaseorderDetails.PoDate
+                                    | nepaliDate:'format':'YYYY-MM-DD'}} </b></td>
                         </tr>
                         <tr>
                             <td style="padding: 0 5px;"><b>Vendor's Name :</b></td>
@@ -134,7 +135,7 @@
 
                         </tr>
                         <tr>
-                            <td style="padding: 0 5px;"><b>PAN No. :</b></td>
+                            <td style="padding: 0 5px;"><b>{{GeneralFieldLabel.PANNo}}. :</b></td>
                             <td style="padding: 0 5px;" colspan="1">{{purchaseorderDetails.VendorPANNumber}}</td>
 
                         </tr>

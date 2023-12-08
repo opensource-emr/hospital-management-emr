@@ -255,8 +255,8 @@
                         <label class="control-label lbl-text">Inpateint Date</label>
                       </div>
                       <div class="col-md-7">
-                        <label for="inpatientDate" class="cstm-field-ip">{{patientDetail.AdmittedDate |
-                          DanpheDateTime:'format':'YYYY-MM-DD'}}AD</label>
+                        <label for="inpatientDate" class="cstm-field-ip">{{patientDetail.AdmittedDate | nepaliDate}}
+                          &nbsp;&nbsp;({{patientDetail.AdmittedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}AD)</label>
 
                       </div>
                     </div>
@@ -265,8 +265,9 @@
                         <label class="control-label lbl-text">Discharged Date</label>
                       </div>
                       <div class="col-md-7">
-                        <label class="cstm-field-ip">{{patientDetail.DischargedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
-                          &nbsp;AD</label>
+                        <label class="cstm-field-ip">{{patientDetail.DischargedDate | nepaliDate}}
+                          &nbsp;&nbsp;({{patientDetail.DischargedDate | DanpheDateTime:'format':'YYYY-MM-DD'}}
+                          &nbsp;AD)</label>
                       </div>
                     </div>
                     <div class="row margin-8-tp">
@@ -274,8 +275,7 @@
                         <label class="control-label lbl-text">Case<b class="color-red"> *</b><b style="float:right;"></b></label>
                       </div>
                       <div class="col-md-7">
-                        <select class="form-control" #allCase [(ngModel)]="RecordSummary.CaseMain" [ngModelOptions]="{standalone: true}"
-                                (ngModelChange)="AssignSubCase()">
+                        <select class="form-control" #allCase [(ngModel)]="RecordSummary.CaseMain" [ngModelOptions]="{standalone: true}" (ngModelChange)="AssignSubCase()">
                           <option [value]="'General'" [selected]>General</option>
                           <option *ngFor="let case of mainCases" value="{{case.Name}}">{{case.Name}}</option>
                         </select>
@@ -300,12 +300,9 @@
                         <label class="control-label lbl-text">Discharge Type<b class="color-red"> *</b><b style="float:right;"></b></label>
                       </div>
                       <div class="col-md-7">
-                        <select *ngIf="allMasterDataForMR && allMasterDataForMR.AllDischargeType" class="cstm-field-sel"
-                                [attr.disabled]="(IsPatDead && !IsDeadOnDifferentVisit )?true:null" (change)="DischargeTypeChanged()"
-                                [(ngModel)]="RecordSummary.DischargeTypeId">
+                        <select *ngIf="allMasterDataForMR && allMasterDataForMR.AllDischargeType" class="cstm-field-sel" [attr.disabled]="(IsPatDead && !IsDeadOnDifferentVisit )?true:null" (change)="DischargeTypeChanged()" [(ngModel)]="RecordSummary.DischargeTypeId">
                           <option [ngValue]="0">--Please Select--</option>
-                          <option *ngFor="let discharge of allMasterDataForMR.AllDischargeType" [value]="discharge.DischargeTypeId">
-                            {{discharge.DischargeTypeName}}</option>
+                          <option *ngFor="let discharge of allMasterDataForMR.AllDischargeType" [value]="discharge.DischargeTypeId">{{discharge.DischargeTypeName}}</option>
                         </select>
                       </div>
                     </div>
@@ -314,8 +311,7 @@
                         <label class="control-label lbl-text">Referred Date <b style="float:right;"></b></label>
                       </div>
                       <div class="col-md-7">
-                        <danphe-date-picker [ngModelOptions]="{standalone:true}" [(ngModel)]="RecordSummary.ReferredDate" ngDefaultControl
-                                            [CalendarTypes]="'en,np'">
+                        <danphe-date-picker [ngModelOptions]="{standalone:true}" [(ngModel)]="RecordSummary.ReferredDate" ngDefaultControl [CalendarTypes]="'en,np'">
                         </danphe-date-picker>
                       </div>
                     </div>
@@ -324,8 +320,7 @@
                       <div class="col-md-5"><label for="dTime" class="control-label lbl-text">Referred
                           Time </label></div>
                       <div class="col-md-7">
-                        <input id="dTime" type="time" [ngModelOptions]="{standalone:true}" [(ngModel)]="RecordSummary.ReferredTime"
-                               class="cstm-field-ip" />
+                        <input id="dTime" type="time" [ngModelOptions]="{standalone:true}" [(ngModel)]="RecordSummary.ReferredTime" class="cstm-field-ip" />
                       </div>
                     </div>
                     <div class="row margin-8-tp" *ngIf="RecordSummary?.CurrentDischargeType?.DischargeConditionTypes?.length>0">
@@ -336,8 +331,7 @@
                       <div class="col-md-7">
                         <select [(ngModel)]="RecordSummary.DischargeConditionId" (change)="DischargeConditionChanged()" class="cstm-field-sel">
                           <option [ngValue]="undefined">--Please Select--</option>
-                          <option *ngFor="let condition of RecordSummary.CurrentDischargeType.DischargeConditionTypes"
-                                  [value]="condition.DischargeConditionId">{{condition.Condition}}</option>
+                          <option *ngFor="let condition of RecordSummary.CurrentDischargeType.DischargeConditionTypes" [value]="condition.DischargeConditionId">{{condition.Condition}}</option>
                         </select>
                       </div>
                     </div>
@@ -348,8 +342,7 @@
                       <div class="col-md-7">
                         <select [(ngModel)]="RecordSummary.DeliveryTypeId" (change)="OnDeliveryTypeChange()" class="cstm-field-sel">
                           <option [ngValue]="undefined">--Please Select--</option>
-                          <option *ngFor="let del of RecordSummary.DischargeConditionTypes.CurrentConditionTypes" [value]="del.DeliveryTypeId">
-                            {{del.DeliveryTypeName}}</option>
+                          <option *ngFor="let del of RecordSummary.DischargeConditionTypes.CurrentConditionTypes" [value]="del.DeliveryTypeId">{{del.DeliveryTypeName}}</option>
                         </select>
                       </div>
                     </div>
@@ -359,8 +352,7 @@
                         <label class="control-label lbl-text">Number of Babies </label>
                       </div>
                       <div class="col-md-7">
-                        <input id="noOfBabies" type="number" name="noOfBabies" [(ngModel)]="RecordSummary.NumberOfBabies"
-                               (change)="OnNoOfBabiesChange()" />
+                        <input id="noOfBabies" type="number" name="noOfBabies" [(ngModel)]="RecordSummary.NumberOfBabies" (change)="OnNoOfBabiesChange()" />
 
                       </div>
                     </div>
@@ -372,8 +364,7 @@
                       <div class="col-md-7">
                         <select [(ngModel)]="RecordSummary.DeathPeriodTypeId" class="cstm-field-sel">
                           <option [ngValue]="undefined">--Please Select--</option>
-                          <option *ngFor="let detpr of RecordSummary.CurrentDischargeType.DeathTypes" [value]="detpr.DeathTypeId">{{detpr.DeathType}}
-                          </option>
+                          <option *ngFor="let detpr of RecordSummary.CurrentDischargeType.DeathTypes" [value]="detpr.DeathTypeId">{{detpr.DeathType}}</option>
                         </select>
                       </div>
                     </div>
@@ -404,17 +395,13 @@
                             </div>
                             <div class="col-md-4">
                               Weeks:
-                              <input id="gstWeek" class="cstm-field-ip" type="number" onClick="this.select();" style="width:60px;"
-                                     [(ngModel)]="RecordSummary.GestationalWeek" (ngModelChange)="CheckGestationaryWeek()"
-                                     (keyup.enter)="coreService.FocusInputById('gstDay')" />
+                              <input id="gstWeek" class="cstm-field-ip" type="number" onClick="this.select();" style="width:60px;" [(ngModel)]="RecordSummary.GestationalWeek" (ngModelChange)="CheckGestationaryWeek()" (keyup.enter)="coreService.FocusInputById('gstDay')" />
                             </div>
 
                             <div class="col-md-4">
                               <div>
                                 <span [ngClass]="{'invalid-input':!ValidGestationalDay}"> Days:<br /></span>
-                                <input id="gstDay" class="cstm-field-ip" type="number" onClick="this.select();" style="width: 60px;"
-                                       [(ngModel)]="RecordSummary.GestationalDay" (ngModelChange)="CheckGestationaryDay()"
-                                       (keyup.enter)="coreService.FocusInputById('bloodLost')" />
+                                <input id="gstDay" class="cstm-field-ip" type="number" onClick="this.select();" style="width: 60px;" [(ngModel)]="RecordSummary.GestationalDay" (ngModelChange)="CheckGestationaryDay()" (keyup.enter)="coreService.FocusInputById('bloodLost')" />
                               </div>
                             </div>
                           </div>
@@ -435,8 +422,7 @@
                               <label for="bloodLost" class="control-label lbl-text">Blood Lost</label>
                             </div>
                             <div class="col-md-5">
-                              <input id="bloodLost" class="cstm-field-ip" type="number" [(ngModel)]="RecordSummary.BloodLost"
-                                     (ngModelChange)="CheckBloodLostAmount()" />
+                              <input id="bloodLost" class="cstm-field-ip" type="number" [(ngModel)]="RecordSummary.BloodLost" (ngModelChange)="CheckBloodLostAmount()" />
                             </div>
                             <div class="col-md-3">
                               <select id="bloodLostUnit" class="cstm-field-ip" [(ngModel)]="RecordSummary.BloodLostUnit">
@@ -464,16 +450,14 @@
                     <div class="row margin-8-tp">
                       <div class="col-md-12">
                         <p class="margin-0-bt">
-                          <label class="control-label lbl-text"
-                                 *ngIf="allInvestigationsLoaded && RecordSummary.AllTestList && RecordSummary.AllTestList.length > 0">
+                          <label class="control-label lbl-text" *ngIf="allInvestigationsLoaded && RecordSummary.AllTestList && RecordSummary.AllTestList.length > 0">
                             Investigations</label>
                         </p>
                       </div>
                       <div class="col-md-12" *ngIf="!allInvestigationsLoaded">
                         <div class="board padding-8-all" style="border: 1px solid #bfbdbd;">
                           <div class="flex-container justify-center">
-                            <img style="max-width: 75px" class="img-responsive" src="../../../../../themes/theme-default/images/loading-child.gif"
-                                 alt="Alternate Text" />
+                            <img style="max-width: 75px" class="img-responsive" src="../../../../../themes/theme-default/images/loading-child.gif" alt="Alternate Text" />
                           </div>
                         </div>
                       </div>
@@ -504,16 +488,10 @@
                       </div>
                       <div class="col-md-12">
                         <div>
-                          <div class="margin-8-bt"
-                               *ngIf="allMasterDataForMR && allMasterDataForMR.AllICDCodes && allMasterDataForMR.AllICDCodes.length > 0"
-                               style="width: 100%;">
-                            <input class="cstm-field-ip" danphe-auto-complete [(ngModel)]="icdCode" [list-formatter]="myICDListFormatter"
-                                   [source]="allMasterDataForMR.AllICDCodes" placeholder="{{IcdVersionDisplayName}} Codes"
-                                   display-property-name="ICD10Description" value-property-name=null id="icd10code" max-num-list="50"
-                                   match-formatted="true" (valueChanged)="ShowValueChangedData()" onClick="this.select();" />
+                          <div class="margin-8-bt" *ngIf="allMasterDataForMR && allMasterDataForMR.AllICDCodes && allMasterDataForMR.AllICDCodes.length > 0" style="width: 100%;">
+                            <input class="cstm-field-ip" danphe-auto-complete [(ngModel)]="icdCode" [list-formatter]="myICDListFormatter" [source]="allMasterDataForMR.AllICDCodes" placeholder="{{IcdVersionDisplayName}} Codes" display-property-name="ICD10Description" value-property-name=null id="icd10code" max-num-list="50" match-formatted="true" (valueChanged)="ShowValueChangedData()" onClick="this.select();" />
                           </div>
-                          <div *ngIf="RecordSummary.ICDCodeList && RecordSummary.ICDCodeList.length > 0" class="board padding-8-all"
-                               style="border: 1px solid #bfbdbd; max-height: 205px; overflow-y: auto;">
+                          <div *ngIf="RecordSummary.ICDCodeList && RecordSummary.ICDCodeList.length > 0" class="board padding-8-all" style="border: 1px solid #bfbdbd; max-height: 205px; overflow-y: auto;">
                             <div class="flex-container" *ngFor="let icd of RecordSummary.ICDCodeList; let i=index;">
                               <div style="border-bottom: 1px solid #c1c1c1;" class="pos-rel bg-light padding-7-hr margin-8-tp">
                                 <label class="control-label lbl-text-data" for="icdSel{{i}}">({{icd.ICD10Code}})&nbsp;{{icd.ICD10Description}}</label>
@@ -527,8 +505,7 @@
                     <div class="row margin-8-tp">
                       <div class="col-md-12">
                         <div style="width: 100%;">
-                          <input style="margin-top: 9px;" id="operationConducted" type="checkbox" name="isOperationConducted"
-                                 [(ngModel)]="RecordSummary.IsOperationConducted" (change)="ShowHideOperationInfo()" />
+                          <input style="margin-top: 9px;" id="operationConducted" type="checkbox" name="isOperationConducted" [(ngModel)]="RecordSummary.IsOperationConducted" (change)="ShowHideOperationInfo()" />
                           <label class="control-label lbl-text" for="operationConducted"> Is Operation Conducted</label>
                         </div>
                       </div>
@@ -550,9 +527,7 @@
                         <label class="control-label lbl-text">Operation Doc.</label>
                       </div>
                       <div class="col-md-7">
-                        <input class="cstm-field-ip" danphe-auto-complete [(ngModel)]="RecordSummary.OperatedDoctor"
-                               [list-formatter]="myListFormatter" [source]="AllDoctors" placeholder="Doctor Name" display-property-name="FullName"
-                               value-property-name=null id="operatingDoc" max-num-list="10" onClick="this.select();" />
+                        <input class="cstm-field-ip" danphe-auto-complete [(ngModel)]="RecordSummary.OperatedDoctor" [list-formatter]="myListFormatter" [source]="AllDoctors" placeholder="Doctor Name" display-property-name="FullName" value-property-name=null id="operatingDoc" max-num-list="10" onClick="this.select();" />
                       </div>
                     </div>
                     <div *ngIf="RecordSummary.IsOperationConducted" class="row margin-8-tp">
@@ -578,8 +553,7 @@
                 <div class="row margin-8-tp" *ngIf="IsDeliveryCase">
                   <div class="col-md-12">
                     <div style="width: 100%; display: flex;">
-                      <input style="margin-top: 9px;" id="saveBirthDetailsLater" type="checkbox" name="SaveBirthDetailsLater"
-                             [(ngModel)]="RecordSummary.SaveBirthDetailsLater" [value]="true" (change)="SaveBirthDetailsLater()" [attr.disabled]="(RecordSummary.BabyBirthDetails && RecordSummary.BabyBirthDetails.length > 0 && 
+                      <input style="margin-top: 9px;" id="saveBirthDetailsLater" type="checkbox" name="SaveBirthDetailsLater" [(ngModel)]="RecordSummary.SaveBirthDetailsLater" [value]="true" (change)="SaveBirthDetailsLater()" [attr.disabled]="(RecordSummary.BabyBirthDetails && RecordSummary.BabyBirthDetails.length > 0 && 
                         RecordSummary.BabyBirthDetails[0].BabyBirthDetailsId>0)?true:null" />
                       <label class="control-label lbl-text" for="saveBirthDetailsLater"> &nbsp;&nbsp; Save Birth Details
                         Later?</label>
@@ -596,8 +570,7 @@
                     <div class="birth-cert-form-holder">
                       <div class="row">
                         <div class="col-md-12">
-                          <add-birth-details-shared #sendToChild [NoOfBabies]="RecordSummary.NumberOfBabies" [MotherPatientId]="patientId"
-                                                    (on-submit)="OnBabyBirthDetailSaved($event)">
+                          <add-birth-details-shared #sendToChild [NoOfBabies]="RecordSummary.NumberOfBabies" [MotherPatientId]="patientId" (on-submit)="OnBabyBirthDetailSaved($event)">
 
                           </add-birth-details-shared>
                         </div>
@@ -611,8 +584,7 @@
                 <div class="row margin-8-tp" *ngIf="IsDeathCase && !IsPatDead">
                   <div class="col-md-12">
                     <div style="width: 100%; display: flex;">
-                      <input style="margin-top: 9px;" id="saveDeathDetailsLater" type="checkbox" name="SaveDeathDetailsLater"
-                             [(ngModel)]="RecordSummary.SaveDeathDetailsLater" [value]="true" (change)="SaveDeathDetailsLater()" />
+                      <input style="margin-top: 9px;" id="saveDeathDetailsLater" type="checkbox" name="SaveDeathDetailsLater" [(ngModel)]="RecordSummary.SaveDeathDetailsLater" [value]="true" (change)="SaveDeathDetailsLater()" />
                       <label class="control-label lbl-text" for="saveDeathDetailsLater"> Save Death Details
                         Later?</label>
                     </div>
@@ -626,8 +598,7 @@
                     <div class="birth-cert-form-holder">
                       <div class="row">
                         <div class="col-md-12">
-                          <add-death-details-shared [PatientId]="patientId"
-                                                    (death-details-emitter)="callBackForDeathDetails($event)"></add-death-details-shared>
+                          <add-death-details-shared [PatientId]="patientId" (death-details-emitter)="callBackForDeathDetails($event)"></add-death-details-shared>
                         </div>
                       </div>
                     </div>
@@ -640,10 +611,8 @@
 
         <div class="modelbox-footer">
           <div class="all-buttons text-right">
-            <button *ngIf="!isEditMode" type="button" class="btn green btn-success margin-7-hr" (click)="ValidateAndAddNewMedicalRecords()"
-                    [attr.disabled]="loading?true:null">Add Record</button>
-            <button *ngIf="isEditMode" type="button" class="btn green btn-success margin-7-hr" (click)="ValidateAndUpdateMedicalRecords()">Update
-              Record</button>
+            <button *ngIf="!isEditMode" type="button" class="btn green btn-success margin-7-hr" (click)="ValidateAndAddNewMedicalRecords()" [attr.disabled]="loading?true:null">Add Record</button>
+            <button *ngIf="isEditMode" type="button" class="btn green btn-success margin-7-hr" (click)="ValidateAndUpdateMedicalRecords()">Update Record</button>
             <button type="button" class="btn btn-cancel margin-7-hr" (click)="CloseMRAddPupUp()">Cancel</button>
           </div>
         </div>

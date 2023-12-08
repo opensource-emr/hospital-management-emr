@@ -76,7 +76,8 @@ export class Visit {
   IsTriaged: number;
   public ENUM_BillingStatus: any;
   public MaxInternalReferralDays: number = 0;
-
+  public IsFreeVisit: boolean = false;
+  public AdmissionDate: string = '';
   public IsDirty(fieldname): boolean {
     if (fieldname == undefined) {
       return this.VisitValidator.dirty;

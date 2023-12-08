@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
 import { Guarantor } from "../shared/guarantor.model";
 import { Patient } from "./patient.model";
 
@@ -10,20 +9,22 @@ import { NepaliCalendarService } from '../../shared/calendar/np/nepali-calendar.
 export class PatientService {
 
   public Insurance: InsuranceVM;
-  constructor(public router: Router,
-    public npCalendarService: NepaliCalendarService) { }
-
-  globalPatient: Patient = new Patient();
+  public globalPatient = new Patient();
   public Telmed_Payment_Status: string;
-  public CreateNewGlobal(): Patient {
+
+  constructor(
+    private _npCalendarService: NepaliCalendarService) { }
+
+  CreateNewGlobal(): Patient {
     this.globalPatient = new Patient();
     return this.globalPatient;
   }
-  public getGlobal(): Patient {
+  getGlobal(): Patient {
     return this.globalPatient;
   }
+
   //sud: 3sept: we've to calculate dob even when age is zero.
-  public CalculateDOB(age: number, ageUnit: string) {
+  CalculateDOB(age: number, ageUnit: string) {
     var curDate = new Date();
     if ((age || age == 0) && ageUnit) {
       if (ageUnit == 'Y') {
@@ -47,8 +48,7 @@ export class PatientService {
   }
 
   setGlobal(currPatient: Patient) {
-
-    var pat = this.getGlobal();
+    let pat = this.getGlobal();
     // var pat = this.patientService.getGlobal();
     pat.ShortName = currPatient.ShortName;
     pat.PatientId = currPatient.PatientId;
@@ -62,6 +62,7 @@ export class PatientService {
     pat.CountrySubDivisionName = currPatient.CountrySubDivisionName;
     pat.WardName = currPatient.WardName;
     pat.BedNo = currPatient.BedNo;
+    pat.BedId = currPatient.BedId;
     pat.Gender = currPatient.Gender;
     pat.CountryName = currPatient.CountryName;
     pat.PreviousLastName = currPatient.PreviousLastName;
@@ -90,7 +91,7 @@ export class PatientService {
     pat.Addresses = currPatient.Addresses;
     pat.Insurances = currPatient.Insurances;
     pat.KinEmergencyContacts = currPatient.KinEmergencyContacts;
-
+    pat.WardNumber = currPatient.WardNumber;
     pat.Address = currPatient.Address;
     pat.PANNumber = currPatient.PANNumber;
     pat.Admissions = currPatient.Admissions;
@@ -118,7 +119,7 @@ export class PatientService {
 
   }
   //ashim: 22Aug2018
-  public SeperateAgeAndUnit(age: string): { Age: string, Unit: string } {
+  SeperateAgeAndUnit(age: string): { Age: string, Unit: string } {
     if (age) {
       var length: number = age.length;
       if (length >= 0) {
@@ -128,23 +129,26 @@ export class PatientService {
       }
     }
   }
+
   //ashim: 22Aug2018
   GetEnglishFromNepaliDate(nepaliDate) {
     if (nepaliDate) {
-      let engDate = this.npCalendarService.ConvertNepToEngDate(nepaliDate);
+      let engDate = this._npCalendarService.ConvertNepToEngDate(nepaliDate);
       return moment(engDate).format("YYYY-MM-DD");;
     }
 
   }
+
   //ashim: 22Aug2018
   GetNepaliFromEngDate(engDate) {
     if (engDate) {
-      return this.npCalendarService.ConvertEngToNepDate(engDate);
+      return this._npCalendarService.ConvertEngToNepDate(engDate);
     }
   }
+
   //ashim: 22Aug2018
   GetDefaultNepaliDOB() {
-    return this.npCalendarService.GetTodaysNepDate();
+    return this._npCalendarService.GetTodaysNepDate();
   }
 
 }

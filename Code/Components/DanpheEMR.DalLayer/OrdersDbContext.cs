@@ -20,7 +20,7 @@ namespace DanpheEMR.DalLayer
         public DbSet<EmployeePreferences> EmployeePreferences { get; set; }
         public DbSet<PHRMGenericDosageNFreqMap> GenericDosageMaps { get; set; }//sud: 15Jul'18
 
-        public DbSet<BillServiceItemModel> BillItemPrice { get; set; }
+        public DbSet<BillServiceItemModel> BillServiceItems { get; set; }
         public DbSet<ServiceDepartmentModel> ServiceDepartment { get; set; }
         public DbSet<DepartmentModel> Departments { get; set; }
         public DbSet<BillingTransactionModel> BillingTransactionModels { get; set; }
@@ -42,7 +42,7 @@ namespace DanpheEMR.DalLayer
             modelBuilder.Entity<LabTestModel>().ToTable("LAB_LabTests");
 
             modelBuilder.Entity<PHRMItemMasterModel>().ToTable("PHRM_MST_Item");
-            modelBuilder.Entity<PHRMStoreStockModel>().ToTable("PHRM_TXN_Stock");
+            modelBuilder.Entity<PHRMStoreStockModel>().ToTable("PHRM_TXN_StoreStock");
             modelBuilder.Entity<PHRMGenericModel>().ToTable("PHRM_MST_Generic");
 
             modelBuilder.Entity<EmployeePreferences>().ToTable("EMP_EmployeePreferences");

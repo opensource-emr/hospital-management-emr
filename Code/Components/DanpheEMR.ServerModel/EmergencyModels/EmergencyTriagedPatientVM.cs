@@ -48,6 +48,8 @@ namespace DanpheEMR.ServerModel.EmergencyModels
         public string TriagedByName { get; set; }
         public string ProviderName { get; set; }
         public int? ProviderId { get; set; }
+        public int? SchemeId { get; set; }
+        public int? PriceCategoryId { get; set; }
 
         [NotMapped]
         public EmergencyPatientCases PatientCases { get; set; }

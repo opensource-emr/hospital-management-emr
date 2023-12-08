@@ -1,0 +1,92 @@
+<div *ngIf="CurrentBloodSugar && CurrentBloodSugar.BloodSugarValidator">
+    <form [formGroup]="CurrentBloodSugar.BloodSugarValidator" class="form-horizontal">
+        <div *ngIf="showBloodSugarAddBox" class="prob-entry" style="padding: 5px 0px 15px 0px; background: #006687;">
+            <div class="cstm-close" (click)="Close()">
+                <a><i class="fa fa-close"></i> </a>
+            </div>
+            <div class="row" style="padding:0px">
+                <label>
+                    <b>Blood Sugar New Entry</b>
+                </label>
+            </div>
+            <hr style="margin: 15px 0px 15px 0px;">
+            <div class="row" style="box-shadow:0 5px 5px rgba(0,0,0,0.2);">
+                <div class="col-md-12" style="display: flex; justify-content: space-between; padding:0px">
+                    <label class="col-md-4" style="padding: 0px 0px 0px 5px; text-align: left;">
+                        <b>Hospital No : {{PatientInfo.HospitalNo}}</b>
+                    </label>
+                    <label class="col-md-5" style="padding: 0px 5px 0px 5px; text-align: center;">
+                        <b>Patient : {{PatientInfo.PatientName}}</b>
+                    </label>
+                    <label class="col-md-3" style="padding: 0px 5px 0px 0px; text-align: right;">
+                        <b>Age/Sex : {{PatientInfo.AgeSex}}</b>
+                    </label>
+                </div>
+                <div class="col-md-9" style="display: flex; justify-content: space-between; padding:0px">
+                    <!-- <label class="col-md-4" style="padding: 0px 0px 0px 5px; text-align: left;">
+                        <b>Rank : {{PatientInfo.Rank}}</b>
+                    </label> -->
+                    <label class="col-md-6" style="padding: 0px 5px 0px 5px; text-align: center;">
+                        <b>DOA : {{PatientInfo.DOA | DanpheDateTime:'format':'YYYY-MM-DD hh:mm A'}}</b>
+                    </label>
+                    <label class="col-md-3" style="padding: 0px 5px 0px 0px; text-align: right;">
+                        <b>Bed No : {{PatientInfo.BedNo}}</b>
+                    </label>
+                </div>
+            </div>
+            <hr style="margin: 15px 0px 10px 0px;">
+            <div class="row" style="padding: 0px;">
+                <div class="col-md-12" style="padding: 0px;">
+                    <div class="col-md-12" style="padding: 0px; margin: 5px 0px 5px 0px;">
+                        <div class="col-md-4" style="display: flex; justify-content: space-between; padding: 0px;">
+                            <label><b>RBS</b><b class="color-red">*</b><b style="float:right;"></b></label><span><b>:</b></span>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="number" class="form-control cstm-form-control" placeholder="RBS" formControlName="RbsValue"
+                                   [(ngModel)]="CurrentBloodSugar.RbsValue" (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                            <span class="error-msg" *ngIf="CurrentBloodSugar.IsDirty('RbsValue')"
+                                  [hidden]="CurrentBloodSugar.IsValidCheck('RbsValue','required')">Enter RBS</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12" style="padding: 0px;">
+                    <div class="col-md-12" style="padding: 0px;  margin: 5px 0px 5px 0px;">
+                        <div class="col-md-4" style="display: flex; justify-content: space-between; padding: 0px;">
+                            <label><b>Insulin</b><b class="color-red">*</b><b style="float:right;"></b></label><span><b>:</b></span>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="number" class="form-control cstm-form-control" placeholder="Insulin"
+                                   formControlName="Insulin" [(ngModel)]="CurrentBloodSugar.Insulin"
+                                   (wheel)="coreService.PreventNumberChangeOnScroll($event)">
+                            <span class="error-msg" *ngIf="CurrentBloodSugar.IsDirty('Insulin')"
+                                  [hidden]="CurrentBloodSugar.IsValidCheck('Insulin','required')">Enter RBS</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12" style="padding: 0px;">
+                    <div class="col-md-12" style="padding: 0px; margin: 5px 0px 5px 0px;">
+                        <div class="col-md-4" style="display: flex; justify-content: space-between; padding: 0px;">
+                            <label><b>Remarks</b></label><span><b>:</b></span>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control cstm-form-control" placeholder="Remarks" formControlName="Remarks"
+                                   [(ngModel)]="CurrentBloodSugar.Remarks">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12"></div>
+            </div>
+            <hr style="margin: 5px 0px 5px 0px;">
+            <div class="row" style="padding: 0px; margin: 0px">
+                <div>
+                    <button class="btn btn-primary" style="margin: 15px 0px 0px 15px; float: right;"
+                            (click)="SubmitForm()">Save</button>
+                </div>
+                <div>
+                    <button class="btn btn-primary" style="margin: 15px 0px 0px 15px; float: right;"
+                            (click)="Discard()">Discard</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

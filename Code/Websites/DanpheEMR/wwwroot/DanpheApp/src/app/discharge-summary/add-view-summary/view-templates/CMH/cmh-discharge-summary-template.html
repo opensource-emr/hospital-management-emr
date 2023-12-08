@@ -25,10 +25,12 @@
                         </p>
                         <p class="patient-hdr-label"><strong> Contact Number </strong>: {{dsVM?.selectedADT?.PhoneNumber}} </p>
                         <p class="patient-hdr-label right"><strong>Admission Date</strong>: {{dsVM?.selectedADT?.AdmittedDate |
-                            DanpheDateTime:'format':'YYYY-MM-DD HH:mm' }} &nbsp; </p>
+                            DanpheDateTime:'format':'YYYY-MM-DD HH:mm' }} AD &nbsp; <strong>{{dsVM?.selectedADT?.AdmittedDate |
+                                nepaliDate}}</strong> </p>
                         <p class="patient-hdr-label"><strong>Address</strong>: {{dsVM?.Address}}</p>
                         <p class="patient-hdr-label right"><strong>Discharge Date</strong>: {{dsVM?.selectedADT?.DischargedDate |
-                            DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} &nbsp; </p>
+                            DanpheDateTime:'format':'YYYY-MM-DD HH:mm'}} AD &nbsp; <strong>{{dsVM?.selectedADT?.DischargedDate |
+                                nepaliDate}}</strong> </p>
                     </div>
                 </div>
             </div>

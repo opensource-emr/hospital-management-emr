@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from "@angular/core";
+import { Component, EventEmitter, Input, Output } from "@angular/core";
 import * as moment from 'moment/moment';
-import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
-import { DLService } from "../../../shared/dl.service";
 import { CoreService } from "../../../core/shared/core.service";
-import { IncentiveBLService } from "../../shared/incentive.bl.service";
 import { CommonFunctions } from "../../../shared/common.functions";
+import { DLService } from "../../../shared/dl.service";
+import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
+import { ENUM_DanpheHTTPResponses } from "../../../shared/shared-enums";
+import { IncentiveBLService } from "../../shared/incentive.bl.service";
 
 
 @Component({
@@ -19,7 +20,7 @@ export class INCTV_BIL_IncentiveItemComponent {
   @Input("employeeId")
   public employeeId: number = null;
   @Input("isReferralOnly")
-  public IsReferralOnly : boolean = false;
+  public IsReferralOnly: boolean = false;
   //@Input("servDeptName")
   //public ServDeptName: string = "";
   public showReport: boolean = false;
@@ -58,10 +59,10 @@ export class INCTV_BIL_IncentiveItemComponent {
 
   LoadDocDeptItemSummary() {
     //let srvDept = this.ServDeptName.replace(/&/g, '%26');//this is URL-Encoded value for character  '&'    --see: URL Encoding in Google for details.
-    this.dlService.Read("/BillingReports/INCTV_DocterItemSummary?FromDate=" + this.FromDate + "&ToDate=" + this.ToDate + "&employeeId=" + this.employeeId +"&IsRefferalOnly="+ this.IsReferralOnly)
+    this.dlService.Read("/BillingReports/INCTV_DocterItemSummary?FromDate=" + this.FromDate + "&ToDate=" + this.ToDate + "&employeeId=" + this.employeeId + "&IsRefferalOnly=" + this.IsReferralOnly)
       //.map(res => res)
       .subscribe(res => {
-        if (res.Status == "OK") {
+        if (res.Status === ENUM_DanpheHTTPResponses.OK) {
           let data = JSON.parse(res.Results.JsonData);
           if (data && data.Table1 && data.Table1[0]) {
             this.reportData = data.Table1;
@@ -83,13 +84,13 @@ export class INCTV_BIL_IncentiveItemComponent {
             let referralData = this.reportData.filter(a => a.IncomeType == "referral");
             let performerData = this.reportData.filter(a => a.IncomeType == "performer");
             let prescriberData = this.reportData.filter(a => a.IncomeType == "prescriber");
-            CommonFunctions.SortArrayOfObjects(referralData,'TransactionDate');
-            CommonFunctions.SortArrayOfObjects(performerData,'TransactionDate');
-            CommonFunctions.SortArrayOfObjects(prescriberData,'TransactionDate');
+            CommonFunctions.SortArrayOfObjects(referralData, 'TransactionDate');
+            CommonFunctions.SortArrayOfObjects(performerData, 'TransactionDate');
+            CommonFunctions.SortArrayOfObjects(prescriberData, 'TransactionDate');
 
             this.allReportData.push({ 'IncomeType': "performer", 'reportData': performerData, description: "(Services/Tests Performed by this Doctor himself/herself.)" });
             this.allReportData.push({ 'IncomeType': "referral", 'reportData': referralData, description: "(Services/Tests Referred by this doctor.)" });
-            this.allReportData.push({'IncomeType':"prescriber",'reportData':prescriberData, description:"(Services/Tests Prescribed by this doctor.)"});
+            this.allReportData.push({ 'IncomeType': "prescriber", 'reportData': prescriberData, description: "(Services/Tests Prescribed by this doctor.)" });
             this.showItemSummary = true;
           }
           else {
@@ -104,11 +105,11 @@ export class INCTV_BIL_IncentiveItemComponent {
 
   ExportToExcel(tableId) {
     if (tableId) {
-      let workSheetName = this.IsReferralOnly ? 'Doctor Incentive Referral Summary Details':'Doctor Incentive Summary Details';
-      let Heading = this.IsReferralOnly ? 'Doctor Incentive Referral Summary Details':'Doctor Incentive Summary Details';
-      let filename = this.IsReferralOnly ? 'doctorIncentiveReferralDetails':'doctorIncentiveDetails';
-      //NBB-send all parameters for now 
-      //need enhancement in this function 
+      let workSheetName = this.IsReferralOnly ? 'Doctor Incentive Referral Summary Details' : 'Doctor Incentive Summary Details';
+      let Heading = this.IsReferralOnly ? 'Doctor Incentive Referral Summary Details' : 'Doctor Incentive Summary Details';
+      let filename = this.IsReferralOnly ? 'doctorIncentiveReferralDetails' : 'doctorIncentiveDetails';
+      //NBB-send all parameters for now
+      //need enhancement in this function
       //here from date and todate for show date range for excel sheet data
       CommonFunctions.ConvertHTMLTableToExcel(tableId, this.FromDate, this.ToDate, workSheetName,
         Heading, filename);
@@ -144,7 +145,7 @@ export class INCTV_BIL_IncentiveItemComponent {
         this.summary.tot_RefNetPayable += a.NetPayableAmt;
         this.allInctvFracIdToUpdate.push(a.InctvTxnItemId);
       }
-      else if(a.IncomeType == 'prescriber'){
+      else if (a.IncomeType == 'prescriber') {
         this.summary.tot_PrescBilAmt += a.TotalAmount;
         this.summary.tot_PrescInctvAmt += a.IncentiveAmount;
         this.summary.tot_PrescTDSAmt += a.TDSAmount;
@@ -175,6 +176,10 @@ export class INCTV_BIL_IncentiveItemComponent {
 
   ChangeDateFormate() {
     this.isDateFormatBS = !this.isDateFormatBS;
+  }
+
+  CallBackItemSummary(): void {
+
   }
 }
 

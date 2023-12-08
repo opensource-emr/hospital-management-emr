@@ -30,8 +30,10 @@ import { PatientService } from "../../../patients/shared/patient.service";
 import { DanpheHTTPResponse } from "../../../shared/common-models";
 import { CommonFunctions } from "../../../shared/common.functions";
 import { MessageboxService } from "../../../shared/messagebox/messagebox.service";
+import { ENUM_DanpheHTTPResponseText, ENUM_MessageBox_Status } from "../../../shared/shared-enums";
 import { LabReportVM, ReportLookup } from "../../reports/lab-report-vm";
 import { AutoCalculationConfig } from "../../shared/DTOs/auto-calculation-DTO";
+import { MachineResult_DTO } from "../../shared/DTOs/machine-result.dto";
 import { LabTestComponent } from "../../shared/lab-component.model";
 import { LabReportTemplateModel } from "../../shared/lab-report-template.model";
 import {
@@ -53,6 +55,10 @@ export class LabTestsAddResultComponent {
   public templateReport: LabReportVM;
   @Input("isEditResult")
   public isEditResult: boolean = false;
+
+  @Input("barcodeNumber")
+  public barcodeNumber: number = 0;
+
   public isReadOnly: boolean = false;
   @Output("callback-addupdate")
   callBackAddUpdate: EventEmitter<Object> = new EventEmitter<Object>();
@@ -101,6 +107,9 @@ export class LabTestsAddResultComponent {
   public allowRunNoChange: boolean = true;
   public allowUnitEdit: boolean;
   public AutoCalculationConfigList: AutoCalculationConfig[] = [];
+  public machineResult: Array<MachineResult_DTO> = [];
+  public showMachineResultLoadButton: boolean = false;
+  public lisResultIdList: Array<number> = [];
 
   constructor(
     public labBLService: LabsBLService,
@@ -122,6 +131,11 @@ export class LabTestsAddResultComponent {
   public set tempReport(_templateReport: LabReportVM) {
     if (_templateReport) {
       this.templateReport = _templateReport;
+      this.templateReport.Templates.forEach(template => {
+        if (template.Tests.some(test => test.IsLISApplicable === true)) {
+          this.showMachineResultLoadButton = true;
+        }
+      });
       this.LookUpDetail = this.templateReport.Lookups;
       this.changeReportTemplate = false;
       this.MapTestAndComponents();
@@ -129,6 +143,54 @@ export class LabTestsAddResultComponent {
       this.AutoCalculationTargetsArrayCalculate(this.templateReport.Templates);
       this.GetAllReportTemplates();
     }
+  }
+
+  ngOnInit() {
+  }
+
+  LoadMachineResult() {
+    if (this.barcodeNumber > 0) {
+      this.labBLService.GetAllMachineResultByBarcodeNumber(this.barcodeNumber)
+        .finally(() => { this.loading = false; })
+        .subscribe((res: DanpheHTTPResponse) => {
+          if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
+            if (res.Results && res.Results.length > 0) {
+              this.machineResult = res.Results;
+              this.MapMachineData();
+            }
+            else {
+              this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Notice, [`Currently, no test result is available from machine side for this patient...`]);
+            }
+
+          }
+        },
+          (err: DanpheHTTPResponse) => {
+            console.log(err.ErrorMessage);
+          });
+    }
+    else {
+      this.loading = false;
+    }
+  }
+
+  MapMachineData() {
+    this.lisResultIdList = [];
+    this.templateReport.Templates.forEach(template => {
+      template.Tests.forEach(test => {
+        test.Components.forEach(comp => {
+          if (this.machineResult) {
+            let component = this.machineResult.find(a => a.ComponentId === comp.ComponentId);
+            if (component) {
+              comp.Value = (+component.Value * +component.ConversionFactor).toString();
+              comp.MachineResultIndicator = "(M)";
+              comp.IsValueValid = true;
+              this.lisResultIdList.push(component.LisResultId);
+              this.CheckIfAbnormal(comp, test);
+            }
+          }
+        });
+      });
+    });
   }
 
 
@@ -915,8 +977,8 @@ export class LabTestsAddResultComponent {
         valueArray.forEach((v) => {
           sum += v;
         });
-
-        if (sum == 100) {
+        sum = +sum.toFixed(2);
+        if (sum === 100) {
           groupValidation.isGroupValid = true;
         } else {
           groupValidation.isGroupValid = false;
@@ -1164,12 +1226,19 @@ export class LabTestsAddResultComponent {
     this.labBLService
       .PostComponent(components, this.cultureSpecimen)
       .subscribe((res: DanpheHTTPResponse) => {
-        if (res.Status == "OK") {
+        if (res.Status === ENUM_DanpheHTTPResponseText.OK) {
           this.coreService.loading = this.loading = false;
           this.CallBackAddUpdate();
+          if (this.showMachineResultLoadButton && this.lisResultIdList.length > 0) {
+            this.labBLService.UpdateMachineDataSyncStatus(this.lisResultIdList)
+              .finally(() => { this.lisResultIdList = [] })
+              .subscribe((res: DanpheHTTPResponse) => {
+                console.log(`machine result sync status updated.`);
+              });
+          }
         } else {
           this.coreService.loading = this.loading = false;
-          this.msgBoxServ.showMessage("failed", [
+          this.msgBoxServ.showMessage(ENUM_MessageBox_Status.Error, [
             "failed to add result." + res.ErrorMessage,
           ]);
 

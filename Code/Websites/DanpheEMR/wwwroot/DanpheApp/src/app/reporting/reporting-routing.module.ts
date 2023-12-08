@@ -8,6 +8,7 @@ import { RPT_ADT_ADTReportsMainComponent } from "./adt/adt-reports-main.componen
 import { RPT_ADT_DiagnosisWisePatientReportComponent } from "./adt/diagnosis/diagnosis-wise-patient-report.component";
 import { RPT_ADT_DischargedPatientComponent } from "./adt/discharge/discharged-patient.component";
 import { RPT_ADT_InpatientCensusComponent } from "./adt/inpatient-census/inpatient-census.component";
+import { RPT_ADT_InPatientOutstandingReport } from "./adt/inpatient-outstanding-report/inpatient-outstanding-report.component";
 import { RankMembershipwiseAdmittedPatientReportComponent } from "./adt/rank-membershipwise-admitted-patient-report/rpt-adt-rank-membershipwise-admitted-patient-list/rpt-adt-rank-membershipwise-admitted-patient-list.component";
 import { RankWiseDischargeListComponent } from "./adt/rank-wise-discharge-list/rank-wise-discharge-list.component";
 import { RPT_ADT_TransferredPatientsComponent } from "./adt/transfer/transferred-patient.component";
@@ -19,6 +20,7 @@ import { RPT_APPT_DepartmentwiseStatReportComponent } from "./appointment/depart
 import { RPT_APPT_DeptWiseAppointmentReportComponent } from "./appointment/dept-wise/deptwise-appointment-report.component";
 import { RPT_APPT_DistrictWiseAppointmentReportComponent } from "./appointment/district-wise/districtwise-appointment-report.component";
 import { RPT_APPT_DoctorwiseOutPatientReportComponent } from "./appointment/doctor-wise/doctorwise-outpatient-report.component";
+import { RPT_APPT_DoctortwiseStatisticsReportComponent } from "./appointment/doctorwise-statistic-report/doctorwise-stat-report.component";
 import { RPT_ADT_GeographicalStatReportComponent } from "./appointment/geographical-stat-report/geographical-stat-report.component";
 import { RPT_APPT_PhoneBookAppointmentReportComponent } from "./appointment/phonebook-appointment/phonebook-appointment-report.component";
 import { RPT_APPT_RankwiseDailyAppointmentReportComponent } from "./appointment/rank-wise-appointment/rank-wise-daily-appointment-report.component";
@@ -99,6 +101,7 @@ import { RPT_ReportingMainComponent } from "./reporting-main.component";
             children: [
               {
                 path: "",
+                redirectTo: "InpatientCensusReport",
                 pathMatch: "full",
               },
               {
@@ -120,8 +123,7 @@ import { RPT_ReportingMainComponent } from "./reporting-main.component";
               {
                 path: "TransferredPatient",
                 component: RPT_ADT_TransferredPatientsComponent,
-                canActivate: [AuthGuardService],
-                redirectTo: "InpatientCensusReport",
+                canActivate: [AuthGuardService]
               },
               {
 
@@ -144,7 +146,11 @@ import { RPT_ReportingMainComponent } from "./reporting-main.component";
                 component: RankMembershipwiseAdmittedPatientReportComponent,
                 canActivate: [AuthGuardService],
               },
-
+              {
+                path: "InPatientOutstandingReport",
+                component: RPT_ADT_InPatientOutstandingReport,
+                canActivate: [AuthGuardService],
+              },
               { path: "**", component: PageNotFound },
             ],
           },
@@ -400,6 +406,11 @@ import { RPT_ReportingMainComponent } from "./reporting-main.component";
               {
                 path: "GeographicalStatReport",
                 component: RPT_ADT_GeographicalStatReportComponent,
+                canActivate: [AuthGuardService],
+              },
+              {
+                path: "DoctortWiseStatisticsReport",
+                component: RPT_APPT_DoctortwiseStatisticsReportComponent,
                 canActivate: [AuthGuardService],
               },
               { path: "**", component: PageNotFound },

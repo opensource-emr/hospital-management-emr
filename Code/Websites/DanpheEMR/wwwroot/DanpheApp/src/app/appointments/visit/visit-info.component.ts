@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from "@angular/core";
+import { ChangeDetectorRef, Component, Input, OnInit } from "@angular/core";
 import * as moment from "moment";
 import { Subscription } from "rxjs";
 import { RegistrationScheme_DTO } from "../../billing/shared/dto/registration-scheme.dto";
@@ -8,8 +8,9 @@ import { Department } from "../../settings-new/shared/department.model";
 import { SettingsBLService } from "../../settings-new/shared/settings.bl.service";
 import { MessageboxService } from "../../shared/messagebox/messagebox.service";
 import { RouteFromService } from "../../shared/routefrom.service";
-import { ENUM_VisitType } from "../../shared/shared-enums";
+import { ENUM_AppointmentType, ENUM_VisitType } from "../../shared/shared-enums";
 import { AppointmentService } from "../shared/appointment.service";
+import { FreeVisitSettings_DTO } from "../shared/dto/free-visit-settings.dto";
 import { VisitBLService } from "../shared/visit.bl.service";
 import { Visit } from "../shared/visit.model";
 import { VisitService } from "../shared/visit.service";
@@ -40,6 +41,9 @@ export class VisitInfoComponent implements OnInit {
   public ExtRefSettings = { EnableExternal: true, DefaultExternal: true };
   public SchemeChangedSubscription = new Subscription();
   public AppointmentApplicableDepartments: any;
+  public EnableFreeVisit: boolean = false;
+  public ShowEnableFreeVisitCheckbox: boolean = false;
+  public FreeVisitSettings = new FreeVisitSettings_DTO();
 
   constructor(public visitBLService: VisitBLService,
     public msgBoxServ: MessageboxService,
@@ -48,11 +52,13 @@ export class VisitInfoComponent implements OnInit {
     public visitService: VisitService,
     public settingsBlService: SettingsBLService,
     public patientService: PatientService,
-    public routeFromService: RouteFromService) {
+    public routeFromService: RouteFromService,
+    public changeDetector: ChangeDetectorRef) {
     this.GetVisitDoctors();
     this.GetDepartments();
     this.InitializeSubscription();
     this.LoadReferrerSettings();
+    this.LoadFreeVisitSettings();
 
     let paramValue = this.coreService.EnableDepartmentLevelAppointment();
     if (paramValue) {
@@ -63,6 +69,9 @@ export class VisitInfoComponent implements OnInit {
     else {
       this.enableDepartmentLevelAppointment = true;
       this.showDocMandatory = true;
+      this.FreeVisitSettings.EnableDoctorLevelAppointment = true;
+      this.FreeVisitSettings.EnableDepartmentLevelAppointment = false;
+      this.FreeVisitSettings.InitialSubscriptionFromVisitInfo = true;
     }
 
     this.visitTimeDiff = this.coreService.Parameters.find(p => p.ParameterGroupName == "Appointment" && p.ParameterName == "VisitTimeDifferenceMinutes").ParameterValue;
@@ -93,10 +102,12 @@ export class VisitInfoComponent implements OnInit {
   }
 
   ngOnDestroy() {
+    this.EnableFreeVisit = false;
     this.SchemeChangedSubscription.unsubscribe();
   }
 
   ngOnInit() {
+    this.visitService.TriggerFreeVisitCheckboxChangeEvent(this.FreeVisitSettings);
     if (this.visitService.appointmentType.toLowerCase() == "transfer") {
       this.visit.ParentVisitId = this.visitService.ParentVisitInfo.PatientVisitId;
       this.visit.PrescriberId = this.visitService.ParentVisitInfo.PerformerId;
@@ -341,13 +352,20 @@ export class VisitInfoComponent implements OnInit {
   }
 
   public LoadReferrerSettings() {
-    var currParam = this.coreService.Parameters.find(a => a.ParameterGroupName == "Appointment" && a.ParameterName == "ExternalReferralSettings");
+    let currParam = this.coreService.Parameters.find(a => a.ParameterGroupName == "Appointment" && a.ParameterName == "ExternalReferralSettings");
     if (currParam && currParam.ParameterValue) {
       this.ExtRefSettings = JSON.parse(currParam.ParameterValue);
     }
   }
 
   //end: Pratik: 12Sept'19--For External Referrals
+
+  LoadFreeVisitSettings() {
+    let currParam = this.coreService.Parameters.find(a => a.ParameterGroupName == "Appointment" && a.ParameterName == "AllowFreeVisit");
+    if (currParam && currParam.ParameterValue) {
+      this.ShowEnableFreeVisitCheckbox = JSON.parse(currParam.ParameterValue);
+    }
+  }
 
   SetFocusById(IdToBeFocused: string) {
     window.setTimeout(function () {
@@ -377,9 +395,36 @@ export class VisitInfoComponent implements OnInit {
   EnterKeyFromDoctor() {
     if (!this.visit.PatientId) {
       this.SetFocusById('aptPatFirstName');
+    } else if (this.visit.AppointmentType && this.visit.AppointmentType.toLowerCase() === ENUM_AppointmentType.referral.toLowerCase()) {
+      this.SetFocusById('id_billing_remarks');
     } else {
       this.SetFocusById('tender');
     }
   }
 
+  OnFreeVisitCheckboxChanged(): void {
+    if (this.enableDepartmentLevelAppointment) {
+      if (this.EnableFreeVisit) {
+        this.visit.VisitValidator.reset();
+      } else {
+        // this.visit.VisitValidator.get('Department').setValue(null);
+        this.visit.VisitValidator.reset();
+      }
+    } else {
+      if (this.EnableFreeVisit) {
+        this.showDocMandatory = false;
+      } else {
+        this.showDocMandatory = true;
+      }
+    }
+    // this.visit.VisitValidator.reset();
+    this.visit.IsFreeVisit = this.EnableFreeVisit;
+    this.FreeVisitSettings = new FreeVisitSettings_DTO();
+    this.FreeVisitSettings.EnableFreeVisit = this.EnableFreeVisit;
+    this.FreeVisitSettings.EnableDepartmentLevelAppointment = this.enableDepartmentLevelAppointment;
+    this.FreeVisitSettings.EnableDoctorLevelAppointment = !this.enableDepartmentLevelAppointment;
+    this.FreeVisitSettings.InitialSubscriptionFromVisitInfo = false;
+    this.visitService.TriggerFreeVisitCheckboxChangeEvent(this.FreeVisitSettings);
+    this.changeDetector.detectChanges();
+  }
 }

@@ -102,7 +102,7 @@ export class CoreDLService {
         return this.http.get<any>("/api/Billing/PaymentPages", this.options);
     }
     public GetPriceCategories() {
-        return this.http.get<DanpheHTTPResponse>("/api/Master/getPriceCategories", this.jsonOptions);
+        return this.http.get<DanpheHTTPResponse>("/api/Master/GetPriceCategories", this.jsonOptions);
     }
 
     public GetMembershipTypeVsPriceCategory() {

@@ -13,4 +13,5 @@ export class OpdServiceItemPrice_DTO {
     public IsTaxApplicable: boolean = false;
     public IsZeroPriceAllowed: boolean = false;
     public IsPriceChangeAllowed: boolean = false;
+    public IsDiscountApplicable: boolean = false;
 }

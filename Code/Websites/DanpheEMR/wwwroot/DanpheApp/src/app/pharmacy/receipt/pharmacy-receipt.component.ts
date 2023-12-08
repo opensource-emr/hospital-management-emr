@@ -18,6 +18,7 @@ import { PHRMInvoiceReturnItemsModel } from "../shared/phrm-invoice-return-items
 import { PHRMInvoiceReturnModel } from "../shared/phrm-invoice-return.model ";
 import { PHRMStoreModel } from "../shared/phrm-store.model";
 import { PharmacyInvoiceReceipt_DTO } from "./pharmacy-receipt.model";
+
 @Component({
   selector: "pharmacy-receipt",
   templateUrl: "./pharmacy-receipt.html"
@@ -54,6 +55,7 @@ export class PharmacyReceiptComponent {
   currentActiveDispensary: PHRMStoreModel;
   showExpiryDateInPrint: boolean = false;
   showRackNoInPrint: boolean = false;
+  
 
   @Input("BillGenerate") public set billgenerateindex(val: number) {
     this.BillGenerate = val ? val : 1;
@@ -93,6 +95,8 @@ export class PharmacyReceiptComponent {
     this.GetDotMatrixParameterSettings();
     this.IsCurrentDispensaryInsurace = this._dispensaryService.isInsuranceDispensarySelected;
     this.currentActiveDispensary = this._dispensaryService.activeDispensary;
+
+    
 
   }
 
@@ -592,7 +596,7 @@ export class PharmacyReceiptComponent {
       headerStr += CommonFunctions.GetTextCenterAligned_Sm('Phone: ' + this.headerDetail.tel, horizontalCols) + this.nline;
     }
     if (this.headerDetail.PANno !== '') {
-      headerStr += CommonFunctions.GetTextCenterAligned_Sm('PAN No. : ' + this.headerDetail.PANno, horizontalCols) + this.nline;
+      headerStr += CommonFunctions.GetTextCenterAligned_Sm('PAN No.: ' + this.headerDetail.PANno, horizontalCols) + this.nline;
     }
     if (this.headerDetail.DDA !== '') {
       headerStr += CommonFunctions.GetTextCenterAligned_Sm('DDA: ' + this.headerDetail.DDA, horizontalCols) + this.nline;
@@ -709,7 +713,7 @@ export class PharmacyReceiptComponent {
       summaryStr += this.getPaymentDetails(this.receipt.PaymentModeDetails).trim() + this.nline;
     }
     //Footer Code
-    let totAmtInWords =  (this.coreService.currencyUnit) + CommonFunctions.GetNumberInWords(this.receipt.TotalAmount);
+    let totAmtInWords = 'Rs. ' + CommonFunctions.GetNumberInWords(this.receipt.TotalAmount);
     var footerStr = '';
     footerStr += CommonFunctions.GetHorizontalLineOfLength(horizontalCols) + this.nline;
     footerStr += CommonFunctions.GetPHRMTextFIlledToALengthForParticulars(totAmtInWords, horizontalCols, 0) + this.nline;

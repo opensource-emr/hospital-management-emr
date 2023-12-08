@@ -48,7 +48,7 @@ namespace DanpheEMR.Controllers
                 if (reqType == "getSurveyTemplate")
                 {
 
-                    Template currTemplate = coreDbContext.Templates.Where(t => t.Code == templateCode)
+                    Template currTemplate = coreDbContext.Old_Templates.Where(t => t.Code == templateCode)
                         .Include("Qnairs.ChildQuestions.Options").FirstOrDefault();
                     //order the questionnaires by their display sequence.
                     if (currTemplate != null && currTemplate.Qnairs != null)

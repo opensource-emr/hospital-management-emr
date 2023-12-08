@@ -1,28 +1,23 @@
-import { Component, ChangeDetectorRef, Input } from "@angular/core";
-import { Patient } from "../../patients/shared/patient.model";
-import { ActiveMedical } from "../../clinical/shared/active-medical.model";
-import { PatientService } from "../../patients/shared/patient.service";
-import { CallbackService } from "../../shared/callback.service";
-import { VisitService } from "../../appointments/shared/visit.service";
-import { MessageboxService } from "../../shared/messagebox/messagebox.service";
-import { DoctorsBLService } from "../shared/doctors.bl.service";
-import { RouteFromService } from "../../shared/routefrom.service";
-import { RouterOutlet, RouterModule, Router, RouterLink, ActivatedRoute } from "@angular/router";
-import * as html2canvas from "html2canvas";
-import * as jspdf from "jspdf";
-import { InPatientVM } from "../../labs/shared/InPatientVM";
-import GridColumnSettings from "../../shared/danphe-grid/grid-column-settings.constant";
-import { ADT_DLService } from "../../adt/shared/adt.dl.service";
-import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
-import { Visit } from "../../appointments/shared/visit.model";
-import { Department } from "../../settings-new/shared/department.model";
-import { SecurityService } from "../../security/shared/security.service";
+import { animate, style, transition, trigger } from "@angular/animations";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { NotesModel } from "../../clinical-notes/shared/notes.model";
-import { NoteTemplateBLService } from "../../clinical-notes/shared/note-template.bl.service";
-import { trigger, transition, style, animate } from "@angular/animations";
+import { ChangeDetectorRef, Component } from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
 import { ADT_BLService } from "../../adt/shared/adt.bl.service";
-import { Route } from "../../security/shared/route.model";
+import { ADT_DLService } from "../../adt/shared/adt.dl.service";
+import { Visit } from "../../appointments/shared/visit.model";
+import { VisitService } from "../../appointments/shared/visit.service";
+import { NoteTemplateBLService } from "../../clinical-notes/shared/note-template.bl.service";
+import { NotesModel } from "../../clinical-notes/shared/notes.model";
+import { InPatientVM } from "../../labs/shared/InPatientVM";
+import { PatientService } from "../../patients/shared/patient.service";
+import { SecurityService } from "../../security/shared/security.service";
+import { Department } from "../../settings-new/shared/department.model";
+import { CallbackService } from "../../shared/callback.service";
+import GridColumnSettings from "../../shared/danphe-grid/grid-column-settings.constant";
+import { GridEmitModel } from "../../shared/danphe-grid/grid-emit.model";
+import { MessageboxService } from "../../shared/messagebox/messagebox.service";
+import { RouteFromService } from "../../shared/routefrom.service";
+import { DoctorsBLService } from "../shared/doctors.bl.service";
 
 @Component({
   selector: "ipd-main",
@@ -165,7 +160,7 @@ export class IPDMainComponent {
             }
           }
           this.IDPPatientGridData = this.IDPPatientGridData.slice();
-          this.changeDetector.detectChanges();
+          // this.changeDetector.detectChanges();
           this.FilteredIDPPatientGridData = this.IDPPatientGridData;
           if (this.securityService.loggedInUser.Employee.DepartmentId != null) {
             this.SelectedDepartmentId = this.securityService.loggedInUser.Employee.DepartmentId;
@@ -398,13 +393,14 @@ export class IPDMainComponent {
 
   FilterList(deptId: number) {
     var dept = this.DepartmentList.find(x => x.DepartmentId == deptId);
-    if (deptId == 0) {
+    if (deptId == 0 || !dept) {
       this.FilteredIDPPatientGridData = this.IDPPatientGridData;
     } else {
-      this.FilteredIDPPatientGridData = this.IDPPatientGridData.filter(
-        a => a.Department == dept.DepartmentName
-      );
-
+      if (dept) {
+        this.FilteredIDPPatientGridData = this.IDPPatientGridData.filter(
+          a => a.Department == dept.DepartmentName
+        );
+      }
     }
   }
 

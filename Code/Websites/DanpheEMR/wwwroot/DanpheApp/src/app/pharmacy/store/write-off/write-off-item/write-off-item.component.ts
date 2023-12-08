@@ -1,12 +1,13 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import * as moment from 'moment';
+import { SecurityService } from '../../../../security/shared/security.service';
+import { CommonFunctions } from '../../../../shared/common.functions';
+import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
 import { PharmacyBLService } from '../../../shared/pharmacy.bl.service';
 import { PHRMStoreModel } from '../../../shared/phrm-store.model';
 import { PHRMWriteOffItemModel } from '../../../shared/phrm-write-off-items.model';
 import { PHRMWriteOffModel } from '../../../shared/phrm-write-off.model';
-import { SecurityService } from '../../../../security/shared/security.service';
-import { CommonFunctions } from '../../../../shared/common.functions';
-import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
 
 
 @Component({
@@ -52,7 +53,7 @@ export class WriteOffItemComponent implements OnInit {
   public GetStockItemsListDetails(): void {
     this.loading = true;
     this.pharmacyBLService.GetMainStoreStock()
-    .finally(() => this.loading = false)
+      .finally(() => this.loading = false)
       .subscribe(res => {
         if (res.Status == 'OK') {
           this.stockDetailsList = res.Results;
@@ -68,7 +69,7 @@ export class WriteOffItemComponent implements OnInit {
       });
   }
   myItemListFormatter(data: any): string {
-    let html = data["ItemName"] + " |B.No.|" + data["BatchNo"] + " |M.R.P|" + data["SalePrice"];
+    let html = "|GenericName:|" + data["GenericName"] + "|ItemName|" + data["ItemName"] + "|Unit|" + data["UOMName"] + "|Expiry|" + moment(data["ExpiryDate"]).format('YYYY-MM-DD') + "|B.No.|" + data["BatchNo"] + "|Qty|" + data["AvailableQuantity"] + "|M.R.P|" + data["SalePrice"];
     return html;
   }
   onChangeItem($event, index) {

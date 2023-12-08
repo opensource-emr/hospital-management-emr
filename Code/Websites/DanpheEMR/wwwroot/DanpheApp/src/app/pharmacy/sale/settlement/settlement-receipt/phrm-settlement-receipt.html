@@ -39,7 +39,7 @@
                 <div class="right">
                     <p class="no-margin" style="text-align:right">
                         Date: {{settlementInfo.CreatedOn | DanpheDateTime:'format':'YYYY-MM-DD'}}
-                        
+                        {{localDate}}
                     </p>
                 </div>
             </div>
@@ -183,7 +183,7 @@
             <div class="clear"></div>
 
             <div class="col-md-12" style="text-align: left;"
-                *ngIf="settlementInfo.PaymentDetails !=null && settlementInfo.PaymentDetails!=''">
+                 *ngIf="settlementInfo.PaymentDetails !=null && settlementInfo.PaymentDetails!=''">
                 <span style="font-style:italic;">Payment Details: {{settlementInfo.PaymentDetails}}</span>
             </div>
             <div class="col-md-12" style="border-bottom: 1px dotted;padding-bottom: 4px;margin-bottom: 5px;">
@@ -207,7 +207,7 @@
         </div>
     </div>
     <select-printer [group-name]="'phrm-receipt'" [storage-key]="'phrm-settlement-invoice'"
-        (on-printer-change)="OnPrinterChanged($event)">
+                    (on-printer-change)="OnPrinterChanged($event)">
     </select-printer>
     <p style="text-align:center;">
         <button class="btn blue" (click)="print()">
@@ -218,5 +218,5 @@
 </div>
 
 <app-print-page *ngIf="openBrowserPrintWindow" [print-data]="browserPrintContentObj"
-  (print-sucess)="CloseReceipt()">
+                (print-sucess)="CloseReceipt()">
 </app-print-page>

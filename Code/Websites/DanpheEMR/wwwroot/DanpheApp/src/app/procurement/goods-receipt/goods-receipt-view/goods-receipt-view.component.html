@@ -129,7 +129,8 @@
                         <div class="text-center bill-head" style="text-align: center;font-family:sans-serif; margin-top: 10px;"> <span
                                   style="font-size:15px;"><strong>{{headerDetail.hospitalName}}</strong></span><br />
                             <span style="font-size:15px;">{{headerDetail.address}}</span><br />
-                            <span style="font-size:13px;">PAN no: {{headerDetail.PANno}} , Tel: {{ headerDetail.tel}}</span><br />
+                            <span style="font-size:13px;">{{GeneralFieldLabel.PANNo}}: {{headerDetail.PANno}} , Tel: {{
+                                headerDetail.tel}}</span><br />
                             <span style="font-size:15px;"><strong> Inventory Unit </strong></span><br />
                         </div>
                     </div>
@@ -146,13 +147,15 @@
                     <p>Goods Receipt No:<b>{{goodsreceiptDetails.CurrentFiscalYear}}-{{goodsreceiptDetails.GoodsArrivalNo}}</b></p>
                     <p>Purchase Order No:<b> {{goodsreceiptDetails.PONumber}}</b></p>
                     <p>Vendor Name:<b> {{goodsreceiptDetails.VendorName}}</b></p>
-                    <p>PAN No.:<b> {{goodsreceiptDetails.VendorPanNumber}}</b></p>
+                    <p>{{GeneralFieldLabel.PANNo}}.:<b> {{goodsreceiptDetails.VendorPanNumber}}</b></p>
                     <p>Vendor Contact:<b> {{goodsreceiptDetails.VendorNo}}</b></p>
                     <p>Vendor Address:<b> {{goodsreceiptDetails.ContactAddress}}</b></p>
                 </div>
                 <div class="right" style="text-align:right;">
-                    <p>Entry Date:<b> {{goodsreceiptDetails.CreatedOn}}</b></p>
-                    <p>Bill Date:<b> {{goodsreceiptDetails.GoodsArrivalDate}}</b></p>
+                    <p>Entry Date:<b> {{goodsreceiptDetails.CreatedOn}}
+                            {{goodsreceiptDetails.CreatedOn | nepaliDate }}</b></p>
+                    <p>Goods Arrival Date:<b> {{goodsreceiptDetails.GoodsArrivalDate}}
+                            {{goodsreceiptDetails.GoodsArrivalDate | nepaliDate }}</b></p>
                     <p>Bill No:<b> {{goodsreceiptDetails.BillNo}}</b></p>
                     <p>Credit Period<b> {{goodsreceiptDetails.CreditPeriod}} Days</b></p>
                 </div>

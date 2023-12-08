@@ -241,10 +241,10 @@ namespace DanpheEMR.Controllers
             try
             {
                 var id = employeeItemMap.EmployeeBillItemsMapId;
-                if (incentiveDb.EmployeeBillItemsMap.Any(e => e.EmployeeBillItemsMapId == id || (e.ServiceItemId == employeeItemMap.ServiceItemId && e.EmployeeId == employeeItemMap.EmployeeId )))
+                if (incentiveDb.EmployeeBillItemsMap.Any(e => e.EmployeeBillItemsMapId == id || (e.ServiceItemId == employeeItemMap.ServiceItemId && e.EmployeeId == employeeItemMap.EmployeeId && e.PriceCategoryId == employeeItemMap.PriceCategoryId)))
                 {
                     //incentiveDb.EmployeeBillItemsMap.Attach(employeeItemMap);
-                    var empBillItmMap = incentiveDb.EmployeeBillItemsMap.Where(a => a.EmployeeBillItemsMapId == employeeItemMap.EmployeeBillItemsMapId || (a.ServiceItemId == employeeItemMap.ServiceItemId && a.EmployeeId == employeeItemMap.EmployeeId)).FirstOrDefault();
+                    var empBillItmMap = incentiveDb.EmployeeBillItemsMap.Where(a => a.EmployeeBillItemsMapId == employeeItemMap.EmployeeBillItemsMapId || (a.ServiceItemId == employeeItemMap.ServiceItemId && a.EmployeeId == employeeItemMap.EmployeeId && a.PriceCategoryId == employeeItemMap.PriceCategoryId)).FirstOrDefault();
                     empBillItmMap.PerformerPercent = employeeItemMap.PerformerPercent;
                     empBillItmMap.PrescriberPercent = employeeItemMap.PrescriberPercent;
                     empBillItmMap.PriceCategoryId = employeeItemMap.PriceCategoryId;

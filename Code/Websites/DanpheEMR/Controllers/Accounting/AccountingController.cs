@@ -460,8 +460,8 @@ namespace DanpheEMR.Controllers
                                       LedgerId = lm.LedgerId,
                                       LedgerMappingId = lm.LedgerMappingId,
                                       LedgerType = lm.LedgerType,
-                                      ReferenceId = lm.ReferenceId
-
+                                      ReferenceId = lm.ReferenceId,
+                                      SubLedgerId = lm.SubLedgerId
                                   }).AsQueryable();
 
                 var NewEmpledgerList = (from payMod in _accountingDbContext.PaymentMode
@@ -469,31 +469,35 @@ namespace DanpheEMR.Controllers
                                         from ledM in lmp.DefaultIfEmpty()
                                         join ledger in _accountingDbContext.Ledgers on ledM.LedgerId equals ledger.LedgerId into ld
                                         from led in ld.DefaultIfEmpty()
+                                        join subLedger in _accountingDbContext.SubLedger on ledM.SubLedgerId equals subLedger.SubLedgerId into sl
+                                        from subLed in sl.DefaultIfEmpty()
                                         where payMod.ShowInMultiplePaymentMode == true
                                         select new
                                         {
-                                            LedgerId = (led.LedgerId > 0) ? led.LedgerId : 0,
-                                            LedgerGroupId = (int?)led.LedgerGroupId,
-                                            LedgerName = led.LedgerName,
-                                            LedgerReferenceId = led.LedgerReferenceId,
-                                            Description = led.Description,
-                                            IsActive = (bool?)led.IsActive,
-                                            IsCostCenterApplicable = led.IsCostCenterApplicable,
-                                            OpeningBalance = led.OpeningBalance,
-                                            DrCr = led.DrCr,
-                                            Name = led.Name,
-                                            LedgerType = ledM.LedgerType,
-                                            Code = led.Code,
-                                            PANNo = led.PANNo,
-                                            Address = led.Address,
-                                            MobileNo = led.MobileNo,
-                                            CreditPeriod = led.CreditPeriod,
-                                            TDSPercent = led.TDSPercent,
-                                            LandlineNo = led.LandlineNo,
+                                            LedgerId = led != null ? led.LedgerId > 0 ? led.LedgerId : 0 : 0,
+                                            LedgerGroupId = led != null ? (int?)led.LedgerGroupId : 0,
+                                            LedgerName = led != null ? led.LedgerName : "",
+                                            LedgerReferenceId = payMod.PaymentSubCategoryId,
+                                            Description = led != null ? led.Description : "",
+                                            IsActive = led != null ? (bool?)led.IsActive : false,
+                                            IsCostCenterApplicable = led != null ? led.IsCostCenterApplicable : false,
+                                            OpeningBalance = led != null ? led.OpeningBalance : 0,
+                                            DrCr = led != null ? led.DrCr : false,
+                                            Name = led != null ? led.Name : "",
+                                            LedgerType = ledM != null ? ledM.LedgerType : "",
+                                            Code = led != null ? led.Code : "",
+                                            PANNo = led != null ? led.PANNo : "",
+                                            Address = led != null ? led.Address : "",
+                                            MobileNo = led != null ? led.MobileNo : "",
+                                            CreditPeriod = led != null ? led.CreditPeriod : 0,
+                                            TDSPercent = led != null ? led.TDSPercent : 0,
+                                            LandlineNo = led != null ? led.LandlineNo : "",
                                             PaymentMode = payMod.PaymentSubCategoryName,
                                             PaymentSubCategoryId = payMod.PaymentSubCategoryId,
                                             IsSelected = false,
-                                            IsMapped = (led.LedgerId > 0) ? true : false
+                                            IsMapped = led != null ? ((led.LedgerId > 0) ? true : false) : false,
+                                            SubLedgerId = subLed != null ? subLed.SubLedgerId : 0,
+                                            SubLedgerName = subLed != null ? subLed.SubLedgerName : ""
                                         }).OrderByDescending(l => l.LedgerId).ToList();
                 responseData.Results = NewEmpledgerList;
                 responseData.Status = ENUM_DanpheHttpResponseText.OK;
@@ -2333,13 +2337,13 @@ namespace DanpheEMR.Controllers
         #region Post Make Payment
         [HttpPost]
         [Route("Payment")]
-        public IActionResult MakePayment()
+        public IActionResult MakePayment([FromBody] MakePayment_DTO makePayment_dto)
         {
             //else if (reqType == "post-payment")
-            string postStringContent = this.ReadPostData();
-            string transactionObject = this.ReadQueryStringData("transactionObj");
+            //string postStringContent = this.ReadPostData();
+            //string transactionObject = this.ReadQueryStringData("transactionObj");
             RbacUser currentUser = HttpContext.Session.Get<RbacUser>(ENUM_SessionVariables.CurrentUser);
-            Func<object> func = () => PostAccountingPayment(currentUser, postStringContent, transactionObject);
+            Func<object> func = () => PostAccountingPayment(makePayment_dto,currentUser);
             return InvokeHttpPostFunction<object>(func);
         }
         #endregion
@@ -3659,6 +3663,7 @@ namespace DanpheEMR.Controllers
                                    {
                                        VoucherNumber = txn.VoucherNumber,
                                        FiscalYear = fiscal.FiscalYearName,
+                                       FiscalYearId = txn.FiscalyearId,
                                        CostCenterName = "",// costCenter != null ? costCenter.CostCenterName : "--Not Applicable--",
                                        TransactionDate = txn.TransactionDate,
                                        VoucherType = voucher.VoucherName,
@@ -4592,43 +4597,49 @@ namespace DanpheEMR.Controllers
                               where lm.HospitalId == currentHospitalId
                               select new
                               {
-                                  LedgerId = (lm.LedgerType == ENUM_ACC_LedgerType.InventorySubCategory) ? lm.LedgerId : 0,
+                                  LedgerId = (lm.LedgerType == ENUM_ACC_LedgerType.InventoryConsumption) ? lm.LedgerId : 0,
                                   LedgerMappingId = lm.LedgerMappingId,
-                                  LedgerType = (lm.LedgerType == ENUM_ACC_LedgerType.InventorySubCategory) ? lm.LedgerType : "",
-                                  ReferenceId = (lm.LedgerType == ENUM_ACC_LedgerType.InventorySubCategory) ? lm.ReferenceId : 0,
+                                  LedgerType = (lm.LedgerType == ENUM_ACC_LedgerType.InventoryConsumption) ? lm.LedgerType : "",
+                                  ReferenceId = (lm.LedgerType == ENUM_ACC_LedgerType.InventoryConsumption) ? lm.ReferenceId : 0,
+                                  SubLedgerId = (lm.LedgerType == ENUM_ACC_LedgerType.InventoryConsumption) ? lm.SubLedgerId : 0,
                                   CostCenterId = lm.CostCenterId
 
                               }).AsQueryable();
-            var NewEmpledgerList = (from invSubcategory in _accountingDbContext.ItemSubCategoryMaster
-                                    join ledMp in ledMapLsit on invSubcategory.SubCategoryId equals ledMp.ReferenceId into lm
+            var NewEmpledgerList = (from invSubstore in _accountingDbContext.PHRMStore 
+                                    join ledMp in ledMapLsit on invSubstore.StoreId equals ledMp.ReferenceId into lm
                                     from ledM in lm.DefaultIfEmpty()
                                     join ledger in _accountingDbContext.Ledgers on ledM.LedgerId equals ledger.LedgerId into ld
                                     from led in ld.DefaultIfEmpty()
+                                    join subLedger in _accountingDbContext.SubLedger on ledM.SubLedgerId equals subLedger.SubLedgerId into sl
+                                    from subLed in sl.DefaultIfEmpty()
+                                    where invSubstore.Category == "substore"
                                     select new
                                     {
-                                        LedgerId = (led.LedgerId > 0) ? led.LedgerId : 0,
-                                        LedgerGroupId = (int?)led.LedgerGroupId,
-                                        LedgerName = led.LedgerName,
-                                        LedgerReferenceId = led.LedgerReferenceId,
-                                        Description = led.Description,
-                                        IsActive = (bool?)led.IsActive,
-                                        IsCostCenterApplicable = led.IsCostCenterApplicable,
-                                        OpeningBalance = led.OpeningBalance,
-                                        DrCr = led.DrCr,
-                                        Name = led.Name,
-                                        LedgerType = ledM.LedgerType,
-                                        Code = led.Code,
-                                        PANNo = led.PANNo,
-                                        Address = led.Address,
-                                        MobileNo = led.MobileNo,
-                                        CreditPeriod = led.CreditPeriod,
-                                        TDSPercent = led.TDSPercent,
-                                        LandlineNo = led.LandlineNo,
-                                        SubCategoryName = invSubcategory.SubCategoryName,
-                                        SubCategoryId = invSubcategory.SubCategoryId,
+                                        LedgerId = led != null ? led.LedgerId : 0,
+                                        LedgerGroupId = led != null ? led.LedgerGroupId : 0,
+                                        LedgerName = led != null ? led.LedgerName : "",
+                                        LedgerReferenceId = led != null ? led.LedgerReferenceId : null,
+                                        Description = led != null ? led.Description : "",
+                                        IsActive = led != null ? led.IsActive : false,
+                                        IsCostCenterApplicable = led != null ? led.IsCostCenterApplicable : false,
+                                        OpeningBalance = led != null ? led.OpeningBalance : 0,
+                                        DrCr = led != null ? led.DrCr : false,
+                                        Name = led != null ? led.Name : "",
+                                        LedgerType = ledM != null ? ledM.LedgerType : "",
+                                        Code = led != null ? led.Code : "",
+                                        PANNo = led != null ? led.PANNo : "",
+                                        Address = led != null ? led.Address : "",
+                                        MobileNo = led != null ? led.MobileNo : "",
+                                        CreditPeriod = led != null ? led.CreditPeriod : null,
+                                        TDSPercent = led != null ? led.TDSPercent : 0,
+                                        LandlineNo = led != null ? led.LandlineNo : "",
+                                        StoreName = invSubstore.Name,
+                                        StoreId = invSubstore.StoreId,
                                         IsSelected = false,
-                                        IsMapped = (led.LedgerId > 0) ? true : false,
-                                        CostCenterId = ledM != null ? ledM.CostCenterId : CostCenterNotApplicableCostCenterId
+                                        IsMapped = ((led != null ? led.LedgerId : -1) > 0) ? true : false,
+                                        CostCenterId = ledM != null ? ledM.CostCenterId : CostCenterNotApplicableCostCenterId,
+                                        SubLedgerId = subLed != null ? subLed.SubLedgerId : 0,
+                                        SubLedgerName = subLed != null ? subLed.SubLedgerName : ""
                                     }).OrderByDescending(l => l.LedgerId).ToList();
             return NewEmpledgerList;
         }
@@ -5647,10 +5658,10 @@ namespace DanpheEMR.Controllers
             return resFinal;
         }
 
-        private object PostAccountingPayment(RbacUser currentUser, string str, string transactionObject)
+        private object PostAccountingPayment(MakePayment_DTO makePayment_dto, RbacUser currentUser)
         {
-            AccountingPaymentModel payment = DanpheJSONConvert.DeserializeObject<AccountingPaymentModel>(str);
-            TransactionModel txnClient = DanpheJSONConvert.DeserializeObject<TransactionModel>(transactionObject);
+            AccountingPaymentModel payment = makePayment_dto.Payment;
+            TransactionModel txnClient = makePayment_dto.Transaction;
             int payInfoId = 0;
             using (var dbTransact = _accountingDbContext.Database.BeginTransaction())
             {
@@ -5660,6 +5671,8 @@ namespace DanpheEMR.Controllers
                     {
                         var isGroupbyData = _accountingDbContext.CFGParameters.Where(a => a.ParameterGroupName == "Accounting" && a.ParameterName == "IsAllowGroupby").FirstOrDefault().ParameterValue;
                         var EnableVoucherVerificationParam = _accountingDbContext.CFGParameters.Where(a => a.ParameterGroupName == "Accounting" && a.ParameterName == "EnableVoucherVerification").FirstOrDefault();
+                        var subLedgerParam = _accountingDbContext.CFGParameters.Where(a => a.ParameterGroupName == "Accounting" && a.ParameterName == "SubLedgerAndCostCenter").FirstOrDefault().ParameterValue;
+                        var parmValue = DanpheJSONConvert.DeserializeObject<SubLedgerAndCostCenterConfig_DTO>(subLedgerParam);
                         var IdGroupBy = (isGroupbyData != "") ? Convert.ToBoolean(isGroupbyData) : true;
                         txnClient.IsGroupTxn = (IdGroupBy) ? IdGroupBy : false;
 
@@ -5696,7 +5709,9 @@ namespace DanpheEMR.Controllers
                                 item.CostCenterId = defaultCostCenter.CostCenterId;
                             }
                         });
-                        _accountingDbContext.Transactions.Add(ProcessTransactions(txnClient, txnClient.HospitalId));
+
+                        var transaction = ProcessTransactions(txnClient, txnClient.HospitalId);
+                        _accountingDbContext.Transactions.Add(transaction);
                         _accountingDbContext.SaveChanges();
 
                         //var referenceIds = txnClient.TransactionLinks.Select(s => s.ReferenceId).ToArray();
@@ -5709,7 +5724,6 @@ namespace DanpheEMR.Controllers
                         payment.PaymentDate = System.DateTime.Now;
                         _accountingDbContext.AccountingPaymentModels.Add(payment);
                         _accountingDbContext.SaveChanges();
-
                         payInfoId = payment.PaymentId;
                         if (payment.IsPaymentDone == true)
                         {

@@ -6,6 +6,7 @@ import { BillInvoiceReturnModel } from '../../billing/shared/bill-invoice-return
 import { BillItemRequisition } from '../../billing/shared/bill-item-requisition.model';
 import { BillingTransaction } from '../../billing/shared/billing-transaction.model';
 import { BillingDLService } from '../../billing/shared/billing.dl.service';
+import { ClaimBookingRoot_DTO } from '../../claim-management/shared/SSF-Models';
 import { Employee } from '../../employee/shared/employee.model';
 import { ClaimRoot } from '../../insurance/ssf/shared/SSF-Models';
 import { PatientsDLService } from '../../patients/shared/patients.dl.service';
@@ -505,7 +506,16 @@ export class VisitBLService {
       return res;
     });
   }
-
+  public GetClaimBookingDetails(claimCode: number) {
+    return this.visitDLService.GetClaimBookingDetails(claimCode).map(res => {
+      return res;
+    });
+  }
+  public BookClaim(claimBookingObj: ClaimBookingRoot_DTO) {
+    return this.visitDLService.BookClaim(claimBookingObj).map(res => {
+      return res;
+    });
+  }
   public GetRank() {
     return this.visitDLService.GetRank().map(res => {
       return res;

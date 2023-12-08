@@ -219,7 +219,7 @@ export class LabTestsViewReportComponent {
     );
     var paramValue = JSON.parse(coreParam.ParameterValue);
     this.allowLabNoChange = paramValue.ShowChangeLabNumber;
-    this.allowReferredByChange = paramValue.ShowChangeRefferedBy;
+    this.allowReferredByChange = paramValue.ShowChangeReferredBy;
     if (this.labService.routeNameAfterverification) {
       if (
         this.labService.routeNameAfterverification.toLowerCase() == "addresult"

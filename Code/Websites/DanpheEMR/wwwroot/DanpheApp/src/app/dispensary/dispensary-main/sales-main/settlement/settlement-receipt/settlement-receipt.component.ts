@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { CoreService } from '../../../../../core/shared/core.service';
 import { PharmacyBLService } from '../../../../../pharmacy/shared/pharmacy.bl.service';
 import { PharmacyService } from '../../../../../pharmacy/shared/pharmacy.service';
 import { SecurityService } from '../../../../../security/shared/security.service';
@@ -42,16 +43,27 @@ export class SettlementReceiptComponent implements OnInit {
   public PaidAmount: number = 0;
   public PayableAmount: number = 0;
 
+  public EnableEnglishCalendarOnly: boolean = false;
+
   constructor(public msgBoxService: MessageboxService,
     public pharmacyBLService: PharmacyBLService,
     public nepaliCalendarServ: NepaliCalendarService,
     public pharmacyService: PharmacyService,
 
+    public coreService: CoreService,
 
     public securityService: SecurityService) {
+    this.GetCalendarParameter();
 
   }
 
+  GetCalendarParameter(): void {
+    const param = this.coreService.Parameters.find(p => p.ParameterGroupName === "Common" && p.ParameterName === "EnableEnglishCalendarOnly");
+    if (param && param.ParameterValue) {
+      const paramValue = JSON.parse(param.ParameterValue);
+      this.EnableEnglishCalendarOnly = paramValue;
+    }
+  }
   ngOnInit() {
     //this.currencyUnit = this.pharmacyService.currencyUnit;
     // if (this.settlementInfo) {
@@ -120,8 +132,13 @@ export class SettlementReceiptComponent implements OnInit {
     }
   }
   GetLocalDate(engDate: string): string {
-    let npDate = this.nepaliCalendarServ.ConvertEngToNepDateString(engDate);
-    return npDate + " BS";
+    if (this.EnableEnglishCalendarOnly) {
+      return null;
+    } else {
+      let npDate = this.nepaliCalendarServ.ConvertEngToNepDateString(engDate);
+      // return npDate + " BS";
+      return `(${npDate} BS)`;
+    }
   }
   print() {
     let popupWinindow;

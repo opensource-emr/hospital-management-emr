@@ -20,12 +20,12 @@
             <div class="col-md-12">
                 <div class="form-group">
                     <div class="col-md-12">
-                      <div class="row">
-                        <a class="btn blue bordered btn-sm cstm-pat-registration-hdr" name="Anonymous Patient">
-                          <!-- ag7_mig_fix:(click)="RegisterNewERPatient()" not exist in component -->
-                          <span style="display: inline-block; margin-left: 5px;">Assign Doctor</span>
-                        </a>
-                      </div>                        
+                        <div class="row">
+                            <a class="btn blue bordered btn-sm cstm-pat-registration-hdr" name="Anonymous Patient">
+                                <!-- ag7_mig_fix:(click)="RegisterNewERPatient()" not exist in component -->
+                                <span style="display: inline-block; margin-left: 5px;">Assign Doctor</span>
+                            </a>
+                        </div>
                     </div>
 
                     <div class="col-md-12">
@@ -55,8 +55,8 @@
                                 <label><strong>Select Doctor:</strong></label>
                                 <div style="color: #000;">
                                     <input style="color: #000;width: 30%;" class="form-control cstm-form-control" danphe-auto-complete
-                                           [(ngModel)]="doctorSelected"
-                                           [source]="allDoctorList"
+                                           [(ngModel)]="DoctorSelected"
+                                           [source]="AllDoctorList"
                                            [list-formatter]="AssignedToDocListFormatter"
                                            placeholder="Enter Doctor Name"
                                            display-property-name="FullName"
@@ -64,15 +64,17 @@
                                            match-formatted="true"
                                            onClick="this.select();"
                                            max-num-list="10" />
-                                    <a class="btn btn-primary" style="padding: 2px 15px; margin-top: 15px;" (click)="loading=true;AssignSelectedDoctor()">Ok</a>
-                                </div>                               
-                            </div>                           
+                                    <a class="btn btn-primary" style="padding: 2px 15px; margin-top: 15px;"
+                                       (click)="loading=true;AssignSelectedDoctor()">Ok</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                 </div>
             </div>
         </div>
-        <a (click)="Close()" style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;"><i class="fa fa-2x fa-close"></i></a>
+        <a (click)="CloseAssignDoctorPopUp()" style="background: #b51717;padding: 7px 6px 2px;position: absolute;right: 0;top: 0px; color: #fff;"><i
+               class="fa fa-2x fa-close"></i></a>
     </div>
 </div>

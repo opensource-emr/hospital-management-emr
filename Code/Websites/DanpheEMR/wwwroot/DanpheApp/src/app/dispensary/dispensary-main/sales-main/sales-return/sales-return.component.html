@@ -362,7 +362,8 @@
 
       </tr>
       <tr *ngIf="invoiceHeader.ClaimCode">
-        <td>NSHI Number:</td>
+        <td>{{GeneralFieldLabel.NSHINo}}
+          Number:</td>
         <td><b>{{invoiceHeader.NSHINo}}</b></td>
         <td>Claim Code:</td>
         <td><b>{{invoiceHeader.ClaimCode}}</b></td>

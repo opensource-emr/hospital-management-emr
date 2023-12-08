@@ -271,7 +271,7 @@
                              *ngIf="goodReceiptItem.ItemRateHistory.length;else noPriceHistoryMessage">
                             <span class="tooltip-header">Rate History</span>
                             <span *ngFor="let itemRate of goodReceiptItem.ItemRateHistory">
-                              {{coreService.currencyUnit}}{{itemRate.GRItemPrice}}-{{itemRate.SupplierName}}-{{itemRate.GoodReceiptDate | date: 'yyyy-M-d'}}
+                              Rs.{{itemRate.GRItemPrice}}-{{itemRate.SupplierName}}-{{itemRate.GoodReceiptDate | date: 'yyyy-M-d'}}
                             </span>
                           </p>
                           <ng-template #noPriceHistoryMessage>
@@ -332,7 +332,7 @@
                              *ngIf="goodReceiptItem.ItemMRPHistory.length;else noMRPHistoryMessage">
                             <span class="tooltip-header">SalePrice History</span>
                             <span *ngFor="let itemMRP of goodReceiptItem.ItemMRPHistory">
-                              {{coreService.currencyUnit}}{{itemMRP.SalePrice}}-{{itemMRP.SupplierName}}-{{itemMRP.GoodReceiptDate | date: 'yyyy-M-d'}}
+                              Rs.{{itemMRP.SalePrice}}-{{itemMRP.SupplierName}}-{{itemMRP.GoodReceiptDate | date: 'yyyy-M-d'}}
                             </span>
                           </p>
                           <ng-template #noMRPHistoryMessage>
@@ -391,7 +391,7 @@
                           CC Amt:
                         </label>
                         <div class="col-md-8">
-                          <input class="form-control" type="number" min="0" style="width: 100%;" [(ngModel)]="goodReceiptItem.FreeGoodsAmount"
+                          <input class="form-control" type="number" min="0" style="width: 100%;" [(ngModel)]="goodReceiptItem.CCAmount"
                                  disabled
                                  [ngModelOptions]="{standalone:true}" name="FreeGoodsAmount" placeholder="Enter re-order quantity" />
                         </div>

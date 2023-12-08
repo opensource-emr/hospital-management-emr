@@ -9,7 +9,7 @@ import { WardConsumptionModel } from './shared/ward-consumption.model';
 import { CommonFunctions } from '../shared/common.functions';
 import { ENUM_DanpheHTTPResponses, ENUM_MessageBox_Status } from '../shared/shared-enums';
 import { DanpheHTTPResponse } from '../shared/common-models';
-
+import { GeneralFieldLabels } from '../shared/DTOs/general-field-label.dto';
 @Component({
     selector: 'consumption-receipt',
     templateUrl: "./internal-consumption-details.html"
@@ -52,7 +52,7 @@ export class InternalConsumptionDetailsComponent {
     public showEditForInternal: boolean = false;
     public showEditForConsumption: boolean = false;
 
-
+    public GeneralFieldLabel = new GeneralFieldLabels();
     constructor(public wardSupplyBLService: WardSupplyBLService,
         public router: Router,
         public coreService: CoreService,
@@ -70,6 +70,8 @@ export class InternalConsumptionDetailsComponent {
         } catch (exception) {
             this.msgBoxService.showMessage("Error", [exception]);
         }
+
+        this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
     }
 
     LoadSubStoreSelectionPage() {

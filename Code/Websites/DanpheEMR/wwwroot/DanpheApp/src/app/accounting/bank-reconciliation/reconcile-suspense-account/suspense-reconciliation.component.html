@@ -48,7 +48,7 @@
 
                 <div class="col-md-3">
                     <div class="ac-check-wrapper">
-                        <div><b>Voucher Date:</b>
+                        <div><b>Voucher Date:</b> {{TransactionDate | nepaliDate:'format':'YYYY-MM-DD'}} <br />
                             {{TransactionDate | DanpheDateTime:'format':'YYYY-MM-DD'}} (AD)</div>
                     </div>
                 </div>
@@ -67,7 +67,7 @@
             <th style="width:25%" *ngIf=subLedgerAndCostCenterSetting.EnableSubLedger> Sub Ledger</th>
             <th style="width:5%"> Dr Amt. </th>
             <th style="width:5%"> Cr Amt. </th>
-            <th style="width:10%"> Cost Center </th>
+            <th style="width:10%" *ngIf=subLedgerAndCostCenterSetting.EnableCostCenter> Cost Center </th>
             <th style="width:15%">Description</th>
             <th style="width:1%"></th>
             <th style="width:1%"></th>
@@ -152,7 +152,7 @@
                          [hidden]="itm.IsValidCheck('Amount','invalidNumber')">Enter valid amount.</div>
                 </form>
             </td>
-            <td>
+            <td *ngIf=subLedgerAndCostCenterSetting.EnableCostCenter>
                 <form [formGroup]="itm.TransactionItemValidator">
                     <select [(ngModel)]="itm.CostCenterId" id="CostCenter_{{ i+1 }}" (keydown.enter)="ChangeFocus('Description_'+(i+1))"
                             formControlName="CostCenter">

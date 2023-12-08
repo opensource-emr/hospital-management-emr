@@ -4,8 +4,7 @@
     border-color: #000
   }
 </style>
-<app-donation-view-np *ngIf="showNepaliReceipt; else englishViewTemplate" [donationData]="DonationData"
-                      (call-back-close)="Close()"></app-donation-view-np>
+<app-donation-view-np *ngIf="showNepaliReceipt; else englishViewTemplate" [donationData]="DonationData" (call-back-close)="Close()"></app-donation-view-np>
 <ng-template #englishViewTemplate>
   <div class="popup-static portlet box portlet-fullscreen inv_modal" *ngIf="!editMode">
     <div class="portlet-body form">
@@ -44,10 +43,12 @@
 
                     <div style="float:left">
                       <div><b> Donation Reference No. :</b> {{DonationData.donationDetails.DonationReferenceNo}} </div>
+                      <div><b>Donation Reference Date:</b> {{DonationData.donationDetails.DonationReferenceDate | nepaliDate}} </div>
                       <div><b>Receiver Supplier Name:</b> {{DonationData.donationDetails.VendorName}} </div>
                     </div>
                   </div>
                   <div style="float:right;">
+                    <div><b>Donation Date:</b> {{DonationData.donationDetails.DonatedDate | nepaliDate}}</div>
                     <div><b>Donation No: </b>{{DonationData.donationDetails.DonationNo}} </div>
                   </div>
                 </div>
@@ -82,6 +83,7 @@
                       <td>{{donationItem.Unit}}</td>
                       <td>{{donationItem.DonationQuantity}}</td>
                       <td>{{donationItem.TotalAmount}}</td>
+                      <td>{{donationItem.GRDate | nepaliDate}}</td>
                       <td>{{donationItem.Remarks}}</td>
                     </tr>
                   </tbody>
@@ -141,11 +143,9 @@
               </div>
             </div>
             <p style="text-align:center;z-index: 4;position: relative;">
-              <button class="btn green btn-success" (click)="Print()" id="btnPrintRecipt"><span> <i
-                     class="glyphicon glyphicon-print">&nbsp;&nbsp;</i>Print</span></button>
+              <button class="btn green btn-success" (click)="Print()" id="btnPrintRecipt"><span> <i class="glyphicon glyphicon-print">&nbsp;&nbsp;</i>Print</span></button>
               <!-- <button id="editGR" (click)="Edit(DonationData.donationDetails.DonationId)" class="btn  btn-small btn-info"><span><i class="glyphicon glyphicon-edit">&nbsp;&nbsp;</i>Edit</span></button> -->
-              <button class="btn  btn-small btn-danger" (click)="Cancel()" title="Cancel Goods Receipt" data-toggle="modal"
-                      data-target="#CancelPopup"><span> <i class="fa fa-times">&nbsp;&nbsp;</i>Cancel Donation</span></button>
+              <button class="btn  btn-small btn-danger" (click)="Cancel()" title="Cancel Goods Receipt" data-toggle="modal" data-target="#CancelPopup"><span> <i class="fa fa-times">&nbsp;&nbsp;</i>Cancel Donation</span></button>
             </p>
 
           </div>
@@ -172,14 +172,12 @@
             <b>Cancel Remarks<i style="color:red">*</i><span class="right">:</span></b>
           </div>
           <div class="col-md-8">
-            <textarea style="height:7em;width:100%;" [(ngModel)]="Remarks" (ngModelChange)="LoadRemarks()" type="text"
-                      name="cancelRemarks"></textarea>
+            <textarea style="height:7em;width:100%;" [(ngModel)]="Remarks" (ngModelChange)="LoadRemarks()" type="text" name="cancelRemarks"></textarea>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default btn btn-danger" data-dismiss="modal"
-                (click)="CancelDonation(DonationData.donationDetails.DonationId)" [disabled]="disableButton">Yes</button>
+        <button type="button" class="btn btn-default btn btn-danger" data-dismiss="modal" (click)="CancelDonation(DonationData.donationDetails.DonationId)" [disabled]="disableButton">Yes</button>
         <button type="button" class="btn btn-default btn btn-success" data-dismiss="modal">No</button>
       </div>
     </div>

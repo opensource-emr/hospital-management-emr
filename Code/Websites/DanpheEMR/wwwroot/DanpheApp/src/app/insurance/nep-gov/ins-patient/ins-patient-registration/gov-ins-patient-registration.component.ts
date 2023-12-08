@@ -3,6 +3,7 @@ import { UnicodeService } from '../../../../common/unicode.service';
 import { CoreService } from '../../../../core/shared/core.service';
 import { PatientsBLService } from '../../../../patients/shared/patients.bl.service';
 import { CountrySubdivision } from '../../../../settings-new/shared/country-subdivision.model';
+import { GeneralFieldLabels } from '../../../../shared/DTOs/general-field-label.dto';
 import { DanpheHTTPResponse } from '../../../../shared/common-models';
 import { DanpheCache, MasterType } from '../../../../shared/danphe-cache-service-utility/cache-services';
 import { MessageboxService } from '../../../../shared/messagebox/messagebox.service';
@@ -10,6 +11,7 @@ import { ENUM_DanpheHTTPResponses } from '../../../../shared/shared-enums';
 import { GovInsurancePatientVM } from '../../shared/gov-ins-patient.view-model';
 import { GovInsuranceService } from '../../shared/ins-service';
 import { GovInsuranceBlService } from '../../shared/insurance.bl.service';
+
 
 @Component({
   selector: 'ins-patient-registration',
@@ -46,8 +48,13 @@ export class GovINSPatientRegistrationComponent {
   public isPhoneMandatory: boolean = true;
   public showMunicipality: boolean = false;
   public showLocalName: boolean = true;
+  public showNam_Thar: boolean = true;
+
+  // public Muncipalitylable: string = "";
+  public GeneralFieldLabel = new GeneralFieldLabels();
 
   constructor(public changeDetector: ChangeDetectorRef,
+
     public msgBoxServ: MessageboxService,
     public coreService: CoreService,
     public insuranceService: GovInsuranceService,
@@ -60,6 +67,8 @@ export class GovINSPatientRegistrationComponent {
     this.isPhoneMandatory = this.coreService.GetIsPhoneNumberMandatory();
     this.showMunicipality = this.coreService.ShowMunicipality().ShowMunicipality;
     this.showLocalName = this.coreService.showLocalNameFormControl;
+    this.GeneralFieldLabel = coreService.GetFieldLabelParameter();
+    this.showNam_Thar = this.GeneralFieldLabel.showNam_Thar;
   }
 
   Initialize() {
@@ -95,7 +104,7 @@ export class GovINSPatientRegistrationComponent {
       //  this.insPatient.CountrySubDivisionId = subDivision ? subDivision.CountrySubDivisionId : null;
       //this.selectedDistrict.CountrySubDivisionName =
       //  this.insPatient.CountrySubDivisionName = subDivision ? subDivision.CountrySubDivisionName : null;
-      this.insPatient = new GovInsurancePatientVM()
+      this.insPatient = new GovInsurancePatientVM();
       let country = this.coreService.GetDefaultCountry();
       let subDivision = this.coreService.GetDefaultCountrySubDivision();
       this.insPatient.CountryId = country ? country.CountryId : null;
@@ -142,7 +151,7 @@ export class GovINSPatientRegistrationComponent {
       this.insPatient.Ins_IsFamilyHead = false;
       this.insPatient.Ins_FamilyHeadNshi = '';
       this.insPatient.Ins_FamilyHeadName = '';
-      this.setFocusById('Ins_FamilyHeadNshi')
+      this.setFocusById('Ins_FamilyHeadNshi');
     }
 
   }
@@ -478,7 +487,7 @@ export class GovINSPatientRegistrationComponent {
   }
 
 
-  patientLastName: string = ""
+  patientLastName: string = "";
   onLastNameChanged($event) {
     if ($event) {
       const lastName = $event.target.value;
