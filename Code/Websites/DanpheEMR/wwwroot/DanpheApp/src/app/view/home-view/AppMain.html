@@ -92,7 +92,7 @@
           <b class="header-sm">
             <i class="fa fa-user"></i>{{PatService.globalPatient.ShortName}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <span *ngIf="PatService.globalPatient.PatientCode != null">
-              <i class="fa fa-h-square"></i>Hospital No : {{PatService.globalPatient.PatientCode}}
+              <i class="fa fa-h-square"></i>{{'Danphe.hospital_no' | translate}} : {{PatService.globalPatient.PatientCode}}
             </span>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           </b>
@@ -103,7 +103,7 @@
               </span> {{PatService.globalPatient.LastName}}
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
               <span *ngIf="PatService.globalPatient.DateOfBirth != null">
-                <i class="fa fa-male"></i>Age/Sex :
+                <i class="fa fa-male"></i>{{'Danphe.age_sex' | translate}} :
                 {{PatService.globalPatient.Age
                 }}{{PatService.globalPatient.AgeUnit}}/{{PatService.globalPatient.Gender}}
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -113,7 +113,7 @@
 
           <b class="header-sm">
             <span *ngIf="PatService.globalPatient.DateOfBirth != null && PatService.globalPatient.PatientCode != null">
-              <i class="fa fa-male"></i>Age/Sex : {{PatService.globalPatient.DateOfBirth | DanpheDateTime:'age' }}
+              <i class="fa fa-male"></i>{{'Danphe.age_sex' | translate}} : {{PatService.globalPatient.DateOfBirth | DanpheDateTime:'age' }}
             </span>
             <span *ngIf="PatService.globalPatient.DateOfBirth != null && PatService.globalPatient.PatientCode != null">
               /
@@ -125,7 +125,7 @@
             <span
                   *ngIf="PatService.globalPatient.MembershipTypeId != null && 'MembershipTypeDiscount' | booleanParameter : 'Billing'">
               <span>
-                <i class="fa fa-address-card-o"></i>Membership Type : {{PatService.globalPatient.MembershipTypeName}}
+                <i class="fa fa-address-card-o"></i>{{'Danphe.membership_type' | translate}} : {{PatService.globalPatient.MembershipTypeName}}
               </span>
               <span *ngIf="PatService.globalPatient.MembershipDiscountPercent != null">
                 /({{PatService.globalPatient.MembershipDiscountPercent}}%)
@@ -178,12 +178,12 @@
               <ul class="dropdown-menu dropdown-menu-default">
                 <li>
                   <a routerLink="Employee/ProfileMain">
-                    <i class="icon-user"></i> My Profile
+                    <i class="icon-user"></i> {{'Danphe.my_profile' | translate}}
                   </a>
                 </li>
                 <li (click)="openShowDatePreference()" *ngIf="!EnableEnglishCalendarOnly">
                   <a>
-                    <i class="fa fa-calendar"></i> Date :
+                    <i class="fa fa-calendar"></i> {{'Danphe.date' | translate}} :
                     <b> {{defaultCal}} </b> <i class="fa fa-edit"></i>
                   </a>
                 </li>
@@ -192,7 +192,7 @@
                     <i class="icon-key"></i> Log Out
                   </a>-->
                   <a (click)="LogoutFromAplication()">
-                    <i class="icon-key"></i> Log Out
+                    <i class="icon-key"></i> {{'Danphe.log_out' | translate}}
                   </a>
                 </li>
               </ul>
@@ -214,7 +214,7 @@
               <ul class="dropdown-menu dropdown-menu-default">
                 <li>
                   <a (click)="DownloadUserManual()">
-                    <i class="fa fa-download"></i>Download user manual
+                    <i class="fa fa-download"></i>{{'Danphe.download_user_manual' | translate}}
                   </a>
                 </li>
 
@@ -226,6 +226,9 @@
         </div>
         <!-- END TOP NAVIGATION MENU -->
       </div>
+      <select #langSelect (change)="translate.use(langSelect.value)">
+        <option *ngFor="let lang of translate.getLangs()" [value]="lang" [selected]="lang === translate.currentLang">{{ lang }}</option>
+      </select>
       <!-- END HEADER INNER -->
     </div>
     <!-- END HEADER -->
@@ -330,7 +333,7 @@
       <div class="col-md-5">
         <div class="col-md-10 modelbox-div">
           <div class="row">
-            <div class="caption" style="color:blue; margin-top: -25px;"> <span>Change Date Preference</span>
+            <div class="caption" style="color:blue; margin-top: -25px;"> <span>{{'Danphe.change_date_pref' | translate}}</span>
               <a style="float:right;margin-right: -10px;" class="btn btn-danger" (click)="Close()" title="Cancel">X</a>
               <hr />
             </div>
@@ -339,15 +342,15 @@
 
             <div class="input-group">
               <div class="icheck-inline">
-                <label> Current Selection :</label>
+                <label> {{'Danphe.current_selection' | translate}} :</label>
                 <label class="mt-checkbox mt-checkbox-outline">
                   <input id="AD" name="AD" type="checkbox" (click)="ChangeDatePreference($event)"
                          [(ngModel)]="empPre.en" />
-                  <span></span> English (AD) </label>
+                  <span></span> {{'Danphe.english_AD' | translate}} </label>
                 <label class="mt-checkbox mt-checkbox-outline">
                   <input id="BS" name="BS" type="checkbox" (click)="ChangeDatePreference($event)"
                          [(ngModel)]="empPre.np" />
-                  <span></span> Nepali (BS)</label>
+                  <span></span> {{'Danphe.nepali_AD' | translate}}</label>
               </div>
             </div>
             <div class="form-actions no-border no-padding">

@@ -23,6 +23,7 @@
     "@angular/platform-browser-dynamic": "7.1.0",
     "@angular/router": "7.1.0",
     "@types/jspdf": "1.1.31",
+    "@ngx-translate/core": "11.0.1",
     "ag-grid-angular": "20.0.0",
     "ag-grid-community": "20.0.0",
     "angular-draggable-droppable": "4.1.0",

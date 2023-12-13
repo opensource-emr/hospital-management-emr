@@ -8,6 +8,7 @@ import {
   Router,
   Event as RouterEvent
 } from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
 import { VisitService } from "./appointments/shared/visit.service";
 import { CoreService } from './core/shared/core.service';
 import { PatientService } from "./patients/shared/patient.service";
@@ -57,7 +58,14 @@ export class AppComponent {
     public dlService: DLService, public navService: NavigationService,
     public changeDetector: ChangeDetectorRef,
     public msgBoxServ: MessageboxService,
+    public translate: TranslateService,
     public elementRef: ElementRef) {
+      
+    translate.addLangs(['en', 'fr']);
+    translate.setDefaultLang('en');
+
+    const browserLang = translate.getBrowserLang();
+    translate.use(browserLang.match(/en|fr/) ? browserLang : 'en');
 
     this.SetLoginTokenToLocalStorage(); //* using this method to set loginToken to localStorage.
 

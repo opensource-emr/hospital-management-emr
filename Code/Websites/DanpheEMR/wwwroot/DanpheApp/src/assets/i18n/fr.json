@@ -1,0 +1,15 @@
+{
+    "Danphe":{
+        "hospital_no": "Hôpital Non",
+        "age_sex": "Âge/sexe",
+        "membership_type": "Type d'adhésion",
+        "my_profile": "Mon profil",
+        "date": "Date",
+        "log_out": "Se déconnecter",
+        "download_user_manual": "Télécharger le manuel d'utilisation",
+        "change_date_pref": "Modifier la préférence de date",
+        "current_selection": "Sélection actuelle",
+        "english_AD": "English (AD)",
+        "nepali_AD": "Népalaise (AD)"
+    }
+}

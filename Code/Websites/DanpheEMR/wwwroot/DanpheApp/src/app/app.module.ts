@@ -1,12 +1,14 @@
-import { HttpClientModule } from "@angular/common/http";
+import { HttpClient, HttpClientModule } from "@angular/common/http";
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { BrowserModule } from "@angular/platform-browser";
 import { RouterModule } from "@angular/router";
-import { DashboardHomeComponent } from "./dashboards/home/dashboard-home.component";
 
+import {TranslateModule, TranslateLoader} from '@ngx-translate/core';
+import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 import { HashLocationStrategy, LocationStrategy } from "@angular/common";
 
+import { DashboardHomeComponent } from "./dashboards/home/dashboard-home.component";
 import { UnicodeService } from "./common/unicode.service";
 import { PatientService } from "./patients/shared/patient.service";
 
@@ -51,6 +53,10 @@ import { NavigationService } from "./shared/navigation-service";
 import { ActivateBillingCounterGuardService } from "./utilities/shared/activate-billing-counter-guard-service";
 import { ActivateBillingCounterService } from "./utilities/shared/activate-billing-counter.service";
 
+export function HttpLoaderFactory(httpClient: HttpClient) {
+  return new TranslateHttpLoader(httpClient);
+}
+
 @NgModule({
   providers: [
     DLService,
@@ -93,6 +99,13 @@ import { ActivateBillingCounterService } from "./utilities/shared/activate-billi
     HttpClientModule,
     CoreModule,
     SecurityModule,
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient]
+      }
+    })
   ],
   declarations: [
     AppComponent,
