@@ -8,7 +8,7 @@ If you have any issues please send us mail at shiv_koirala@yahoo.com  more than 
 </a> 
 
  <br>
- If you wish to see demo <a href="http://202.51.74.168:175" target="_blank">
+ If you wish to see demo <a href="http://202.51.74.168:302" target="_blank">
  Click here
 </a> Username  : admin / Password  : pass123 <br>
 Also please do read down for more details of how to install and configure.
@@ -48,7 +48,7 @@ If you have any issues please sen us mail at shiv_koirala@yahoo.com
 
 Click on below demo link and check out live application
 
-<a href="http://202.51.74.168:175/" target="_blank">
+<a href="http://202.51.74.168:302/" target="_blank">
   Danphe EMR Live Application
 </a>
 
