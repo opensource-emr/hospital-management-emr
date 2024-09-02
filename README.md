@@ -6,7 +6,7 @@ We will be adding more videos in coming time.
 If you have any issues please send us mail at shiv_koirala@yahoo.com  more than happy to help you in understanding and installing. You can also <a href="https://www.ehospitalmanagementsystem.com/" target="_new">
  Chat with us here.
 </a> 
-<br>
+<br> <br> <br><br>
 Scripts and tools will be listed here <br>
 <a href="https://github.com/opensource-emr/cleanupDanpheDM">Clean up script to start from scratch</a> <br>
  <br>
