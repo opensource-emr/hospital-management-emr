@@ -18,6 +18,9 @@ using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
 using System.Security.Claims;
 using System.Threading;
 using DanpheEMR.Enums;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
+using System.Text;
 
 namespace DanpheEMR.Controllers
 {
@@ -159,7 +162,18 @@ namespace DanpheEMR.Controllers
                         {
                             var tokenWithoutBearer = tokenFromHeader.Split(' ')[1];
                             var handler = new JwtSecurityTokenHandler();
-                            var jwtSecurityToken = handler.ReadJwtToken(tokenWithoutBearer);
+                            var configuration = (IConfiguration)context.HttpContext.RequestServices.GetService(typeof(IConfiguration));
+                            var tokenValidationParameters = new TokenValidationParameters()
+                            {
+                                ValidateIssuerSigningKey = true,
+                                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtTokenConfig:JwtKey"])),
+                                ValidateIssuer = false,
+                                ValidateAudience = false,
+                                ValidAudience = configuration["JwtTokenConfig:JwtAudience"],
+                                ValidIssuer = configuration["JwtTokenConfig:JwtIssuer"]
+                            };
+                            handler.ValidateToken(tokenWithoutBearer, tokenValidationParameters, out SecurityToken validatedToken);
+                            var jwtSecurityToken = (JwtSecurityToken)validatedToken;
                             var userClaim = jwtSecurityToken.Claims.Where(claim => claim.Type == ENUM_ClaimTypes.currentUser).FirstOrDefault()?.Value; // Here currentUser is the claimType while generating the token., Krishna, 13thJan'23
                             var loggedInUserDetail = DanpheJSONConvert.DeserializeObject<RbacUser>(userClaim);
                             currentUser = loggedInUserDetail;
